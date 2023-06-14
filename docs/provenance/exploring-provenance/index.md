@@ -3,7 +3,7 @@ layout: default
 title: Exploring Provenance
 nav_order: 2
 has_children: true
-grand_parent: Information System
+grand_parent: Provena
 parent: Provenance
 ---
 

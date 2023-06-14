@@ -2,7 +2,7 @@
 layout: default
 title: Downloading a dataset
 nav_order: 7
-grand_parent: Information System
+grand_parent: Provena
 parent: Data store
 ---
 

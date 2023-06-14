@@ -2,7 +2,7 @@
 layout: default
 title: Setting up the AWS CLI for download and upload
 nav_order: 12
-grand_parent: Information System
+grand_parent: Provena
 parent: Data store
 ---
 

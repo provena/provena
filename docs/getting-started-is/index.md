@@ -2,8 +2,7 @@
 layout: default
 title: Getting started with M&DS IS
 nav_order: 2
-grand_parent: RRAP M&DS
-parent: Information System
+parent: Provena
 has_children: true
 ---
 

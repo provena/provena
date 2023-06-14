@@ -2,7 +2,7 @@
 layout: default
 title: Uploading dataset files
 nav_order: 5
-grand_parent: Information System
+grand_parent: Provena
 parent: Data store
 ---
 

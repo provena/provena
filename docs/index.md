@@ -1,10 +1,13 @@
 ---
 layout: default
-title: Information System
+title: Provena
 nav_order: 2
-grand_parent:
-parent: RRAP M&DS 
 has_children: true
 ---
 
-# Information System
+# Provena
+
+## Provena is a system for:
+
+-   Registering, storing and accessing datasets,
+-   Registering and accessing provenance information

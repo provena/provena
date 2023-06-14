@@ -2,7 +2,7 @@
 layout: default
 title: Logging in to M&DS IS
 nav_order: 1
-grand_parent: Information System
+grand_parent: Provena
 parent: Getting started with M&DS IS
 ---
 

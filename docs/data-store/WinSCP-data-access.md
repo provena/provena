@@ -2,7 +2,7 @@
 layout: default
 title: Data access to s3 with WinSCP
 nav_order: 11
-grand_parent: Information System
+grand_parent: Provena
 parent: Data store
 ---
 

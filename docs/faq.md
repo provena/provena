@@ -2,8 +2,7 @@
 layout: default
 title: FAQ
 nav_order: 5
-parent: Information System
-grand_parent: RRAP M&DS
+parent: Provena
 ---
 
 {: .no_toc }

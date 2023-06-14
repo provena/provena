@@ -4,7 +4,7 @@ title: Registry
 nav_order: 5
 has_children: true
 grand_parent: RRAP M&DS
-parent: Information System
+parent: Provena
 ---
 
 # Registry

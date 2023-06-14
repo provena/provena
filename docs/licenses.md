@@ -2,8 +2,7 @@
 layout: default
 title: Licenses
 nav_order: 6
-parent: Information System
-grand_parent: RRAP M&DS 
+parent: Provena
 ---
 {: .no_toc }
 # Licenses 

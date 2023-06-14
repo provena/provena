@@ -2,7 +2,7 @@
 layout: default
 title: Automated datastore access
 nav_order: 8
-grand_parent: Information System
+grand_parent: Provena
 parent: Data store
 published: false
 ---
