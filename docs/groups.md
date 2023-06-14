@@ -1,9 +1,7 @@
 ---
 layout: default
 title: Groups
-nav_order: 6
-parent: Information System
-grand_parent: RRAP M&DS
+nav_order: 7
 ---
 
 {: .no_toc }

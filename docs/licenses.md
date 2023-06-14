@@ -1,8 +1,7 @@
 ---
 layout: default
 title: Licenses
-nav_order: 6
-parent: Provena
+nav_order: 8
 ---
 {: .no_toc }
 # Licenses 
