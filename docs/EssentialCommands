@@ -1,0 +1,44 @@
+How to use the repo
+Mark down
+VS Code: Can preview the changes, MD plug-in Mark Down All In One
+Spli view: prview page
+
+
+https://github.com/gbrrestoration/rrap-mds-knowledge-hub
+
+
+Virt machien for docu
+
+lw-31-mel.it.csiro.au
+
+
+cd /srv/rrap/rrap-mds-knowledge-hub
+
+to run: ./serve.sh
+
+ctrl z suspends
+bg puts suspended into background
+fg
+
+token
+(fine) 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
+
+(classic) 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
+
+
+
+Sample Explore Registery Entities Screen
+
+Temp
+|
+|                                   Entity Type : Dataset                     |
+| :-----------------------------------------------------------------------------: | 
+ 
+| <img src="../../../assets/images/provenance/60_TypeDataset.png" alt="drawing" width="600"/>      |
+
+|                                   Entity Type : Model                     |
+| :-----------------------------------------------------------------------------: | 
+| <img src="../../../assets/images/provenance/61_TypeModel.png" alt="drawing" width="600"/>      |
+
+vario
+$20OFF-df6113138e97
