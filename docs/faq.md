@@ -1,8 +1,7 @@
 ---
 layout: default
 title: FAQ
-nav_order: 5
-parent: Provena
+nav_order: 9
 ---
 
 {: .no_toc }

@@ -1,8 +1,7 @@
 ---
 layout: default
 title: Digital object identifiers
-nav_order: 4
-parent: Provena
+nav_order: 6
 ---
 # About digital object identifiers
 <details  open markdown="block">
