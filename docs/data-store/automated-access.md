@@ -4,6 +4,7 @@ title: Automated datastore access
 nav_order: 8
 grand_parent: Information System
 parent: Data store
+published: false
 ---
 
 {: .no_toc }
@@ -127,8 +128,8 @@ The overall flow in any automated environment will be:
 -   using the key to exchange for a RRAP M&DS IS authorisation access token
 -   including this access token as a bearer token in API requests
 -   for downloading a dataset:
-    -   using the [data store API](https://data-api.rrap-is.com/docs){:target="\_blank"} to [fetch](https://data-api.stage.rrap-is.com/docs#/Registry%20Items/fetch_dataset_registry_items_fetch_dataset_get){:target="\_blank"} information about the location of the desired dataset (using a [handle](../digital-object-identifiers.md){:target="\_blank"})
-    -   using the [generate read credentials](https://data-api.stage.rrap-is.com/docs#/Registry%20credentials/generate_read_access_credentials_registry_credentials_generate_read_access_credentials_post){:target="\_blank"} API endpoint to generate AWS credentials enabling viewing/downloading of the data stored in that [handle's](../digital-object-identifiers.md){:target="\_blank"} dataset
+    -   using the [data store API](https://data-api.mds.gbrrestoration.org/docs){:target="\_blank"} to [fetch](https://data-api.mds.gbrrestoration.org/docs#/Registry%20Items/fetch_dataset_registry_items_fetch_dataset_get){:target="\_blank"} information about the location of the desired dataset (using a [handle](../digital-object-identifiers.md){:target="\_blank"})
+    -   using the [generate read credentials](https://data-api.mds.gbrrestoration.org/docs#/Registry%20credentials/generate_read_access_credentials_registry_credentials_generate_read_access_credentials_post){:target="\_blank"} API endpoint to generate AWS credentials enabling viewing/downloading of the data stored in that [handle's](../digital-object-identifiers.md){:target="\_blank"} dataset
     -   export these AWS credentials to the environment and run AWS CLI commands which view, download, sync etc against the dataset files. More information about downloading can be found [here](./downloading-datasets.md){:target="\_blank"}, more information about the AWS CLI can be found [here](./setting-up-the-aws-cli.md){:target="\_blank"}.
 
 ## End to end scripting examples

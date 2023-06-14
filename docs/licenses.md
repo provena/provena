@@ -3,7 +3,7 @@ layout: default
 title: Licenses
 nav_order: 6
 parent: Information System
-grand_parent: Reef Restoration and Adaptation Program M&DS 
+grand_parent: RRAP M&DS 
 ---
 {: .no_toc }
 # Licenses 
@@ -26,6 +26,8 @@ Products within the **Reef Restoration and Adaptation Program Modelling and Deci
 
 The details of the relevant licence conditions are available on the [Creative Commons](https://creativecommons.org/){:target="\_blank"} website, as is the full legal code for the CC BY 4.0 licence.
 
+Below are the licences that are currently used.
+<br>
 ___
 ### [Copyright](https://www.ipaustralia.gov.au/understanding-ip/getting-started-ip/types-of-ip#copyright){:target="\_blank"} (All Rights Reserved) © 
 
@@ -105,7 +107,7 @@ The licensor cannot revoke these freedoms as long as you follow the license term
 |:-:|:-:|
 |**Attribution**| You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.|
 |**NonCommercial** | You may not use the material for commercial purposes. |
-|**ShareAlike**| If you remix, transform, or build upon the material, you must distribute your contributions under the same licence as the orginal. | 
+|**ShareAlike**| If you remix, transform, or build upon the material, you must distribute your contributions under the same licence as the original. | 
 |**No additional restrictions**| You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.|
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
@@ -146,7 +148,7 @@ You are free to:
 - **Share** — copy and redistribute the material in any medium or format
 - **Adapt** — remix, transform, and build upon the material for any purpose, even commercially.
 
-The licensor cannot revoke these freedomws as long as you follow the licence terms.
+The licensor cannot revoke these freedoms as long as you follow the licence terms.
 
 || Under the following terms |
 |:-:|:-:|
@@ -161,7 +163,7 @@ You are free to:
 - **Share** — copy and redistribute the material in any medium or format
 - **Adapt** — remix, transform, and build upon the material for any purpose, even commercially.
 
-The licensor cannot revoke these freedomws as long as you follow the licence terms.
+The licensor cannot revoke these freedoms as long as you follow the licence terms.
 
 || Under the following terms |
 |:-:|:-:|

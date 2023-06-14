@@ -21,36 +21,48 @@ ____
 </details>
 
 ## User Roles
-Users will need to select **Roles** to be able to perform tasks. Once users are on the RRAP M&DS IS [landing page](https://www.rrap-is.com){:target="\_blank"}, they will need to select **Roles** under their user profile (silhouette of a person <img src="../../assets/images/access/profileIcon.png" alt="drawing" width="15"/>) from the top right of page. From the **Roles** page users can request levels of access (read only, read and write, administration) to particular parts of the system. 
 
-|                      Application                       |         Role         |                         Access Level                          |
-| :----------------------------------------------------: | :------------------: | :-----------------------------------------------------------: |
-|                     **Data Store**                     |   READ               | Allows read-only access to the Data Store. This will enable users to view, share and download datasets.             |
-|                                                        |   WRITE              | Allows read and write access to the Data Store. This will enable users to view, share, register, download and upload datasets |
-|                                                        |   ADMIN              | Allows full control of the Data Store.                        |
-| [**Handle Service**](../digital-object-identifiers.md){:target="\_blank"} | READ  | Acces to read only functions of the handle service. Users can view, retieve and list handles.                          |
-|                                                        | WRITE                | Access to read and write functions of the handle service. Users can register, view, retrieve and list handles.     |
-|                                                        | ADMIN                |  Full access to the handle service                             |
+You will need to be granted roles to be able to perform tasks in the M&DS Information System. Once you are logged in on the RRAP M&DS IS [landing page](https://mds.gbrrestoration.org){:target="\_blank"}, select the **User profile icon**, highlighted below.
 
-Below is an image of the **Profile** page with **Roles** option selected. Request access to roles, including admin roles, by sliding the appropriate toggle slider to the right.
+|                               User Profile Icon                                |
+| :----------------------------------------------------------------------------: |
+| <img src="../../assets/images/access/userIcon.png" alt="drawing" height="50"/> |
 
-|                                    User Roles                                    |
-| :------------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/user_roles.png" alt="drawing" width="600"/> |
+You then select the **Roles** tab on the left hand side of your profile page.
 
-Once users have completed selecting roles they click the **Request Roles Update** button. 
+|                                   Roles tab                                    |
+| :----------------------------------------------------------------------------: |
+| <img src="../../assets/images/access/rolesTab.png" alt="drawing" height="50"/> |
 
-|                                   User Roles Request                                     |
-| :------------------------------------------------------------------------------:         |
+## Access levels
+
+The roles page allows you to request levels of access (read only, read and write, administration) to particular parts of the information system.
+
+|      Component      |             Role name             | Access level |                                                                                                            Description                                                                                                             |
+| :-----------------: | :-------------------------------: | :----------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| **Entity registry** | Entity registry read only access  |     READ     |                                                                                    Allows read only access to the entity registry - list, view.                                                                                    |
+|                     | Entity registry write/read access |    WRITE     | Allows write level access to the entity registry - all actions except deletion. This enables the registration of records of **all types** including **Datasets** (in the Data Store) and **Model Runs** (in the Provenance Store). |
+
+Below is an image of the Profile page with the access levels shown. To request access to a role, slide the appropriate toggle slider to the right. By default, only standard user roles are shown. If you need to request administrative permissions, use the "Include admin-only roles" slider at the top of the page.
+
+|                                   User Roles                                    |
+| :-----------------------------------------------------------------------------: |
+| <img src="../../assets/images/access/userRoles.png" alt="drawing" width="600"/> |
+
+Once you have completed selecting the roles you require, click the **Request Roles Update** button at the top of the page.
+
+|                                    User Roles Request                                    |
+| :--------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/access/requestRolesUpdate.png" alt="drawing" width="600"/> |
 
-
-
-
-Users then confirm the request and can be taken back to the to the RRAP M&DS IS home page by clicking the **Return Home** button.
+You then confirm the request by clicking the **Confirm** button.
 
 |                                 User Roles Confirmation                                  |
-| :---------------------------------------------------------------------------------:      |
+| :--------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/access/confirmRolesUpdate.png" alt="drawing" width="600"/> |
 
-{% include notes.html content="We are intending to identify users without roles applied and provide a <strong>Welcome</strong> page with further instructions to requests roles." %}
+You go back to the to the RRAP M&DS IS home page by clicking the **Return Home** button.
+
+|                                   Return home                                    |
+| :------------------------------------------------------------------------------: |
+| <img src="../../assets/images/access/returnHome.png" alt="drawing" width="600"/> |
