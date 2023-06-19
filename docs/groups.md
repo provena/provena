@@ -19,17 +19,15 @@ ____
 
 # Groups overview
 
-The RRAP M&DS IS provides the ability to define groups and access to grant access to resources
-in the IS on a group-by-group basis. A group is simply a construct that is defined in the IS with a name and a set of users as members of the group. Each resource in the RRAP M&DS IS, e.g. a dataset, can then be configured to allow access to have read and/or write permissions. For example, a dataset on the RRAP M&DS IS Data Store can be made available to one or more groups with differing levels of read/write access.
+Provena provides the ability to define groups and access to grant access to resources in the Information System on a group-by-group basis. A group is simply a construct that is defined in the information system with a name and a set of users as members of the group. Each resource in Provena, e.g. a dataset, can then be configured to allow access to have read and/or write permissions. For example, a dataset on the Provena Data Store can be made available to one or more groups with differing levels of read/write access.
 
-Currently groups apply to datasets in the RRAP M&DS IS. However, group access control functionality may be
-offered in other RRAP M&DS IS components and resources in the future.
+Currently groups apply to datasets in Provena. However, group access control functionality may be offered in other Provena components and resources in the future.
 
 # Requesting a new group
 
 If you would a new group, you will need to send request for a new group to be added.
 
-Step 1. To request a new group, please submit a request via the M&DS IS Issues tracker via this link:
+Step 1. To request a new group, please submit a request via the Provena Issues tracker via this link:
 [https://github.com/gbrrestoration/mds-is-issues/issues/new/choose](https://github.com/gbrrestoration/mds-is-issues/issues/new/choose)
 
 Step 2. In "Request a new group", click on the "Get started" button to initiate a request issue (see screenshot below).
@@ -51,8 +49,8 @@ Step 4. Click the submit button.
 
 Once submitted, a notification will be sent to the IS team, who will administer the request. You will be contacted to confirm details for the group.
 
-Once the group is created, you may use it in the IS.
+Once the group is created, you may use it in the information system.
 
 ## Related pages
 
-[Group access and configuration for datasets in the Data Store](https://gbrrestoration.github.io/rrap-mds-knowledge-hub/information-system/provenance/registry/access-control.html#group-access)
+[Group access and configuration for datasets in the Data Store](https://provena.github.io/documents/information-system/provenance/registry/access-control.html#group-access)

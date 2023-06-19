@@ -16,11 +16,7 @@ ____
 </details>
 
 ## Copyright and Creative Commons
-The Great Barrier Reef Foundation's (GBRF) owns the copyright in all material produced by the Reef Restoration and Adaptation Program (RRAP).
-
-Apart from any use as permitted under the [Copyright Act 1968](https://www.legislation.gov.au/Details/C2017C00180){:target="\_blank"}, and those explicitly granted below, all other rights are reserved.
-
-Products within the **Reef Restoration and Adaptation Program Modelling and Decision Support Information System** (RRAP M&DS IS) may carry a Creative Commons Attribution licence. Licensing details will be clearly displayed within each product. Where no indication of licensing is provided within the product, full copyright terms will apply.
+Products within **Provena** may carry a Creative Commons Attribution licence. Licensing details will be clearly displayed within each product. Where no indication of licensing is provided within the product, full copyright terms will apply.
 
 The details of the relevant licence conditions are available on the [Creative Commons](https://creativecommons.org/){:target="\_blank"} website, as is the full legal code for the CC BY 4.0 licence.
 

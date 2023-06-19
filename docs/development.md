@@ -21,7 +21,7 @@ ____
 
 We are using a Jekyll Site to host documentation, and the 'Just-The-Docs' for theming.
 
-Documentation repository is hosted on Github [here](https://github.com/gbrrestoration/rrap-mds-knowledge-hub)
+Documentation repository is hosted on Github [here](https://github.com/provena/provena/tree/docs)
 
 There are a number of ways to edit/develop the documentation:
 
