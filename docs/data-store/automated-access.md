@@ -21,11 +21,11 @@ published: false
 ____
 </details>
 
-{% include danger.html content="Be aware that the following guide contains material intended for advanced users of the RRAP M&DS IS data store. This guide will make some assumptions about familiarity with scripting, APIs, authentication etc. If something is unclear, please contact us." %}
+{% include danger.html content="Be aware that the following guide contains material intended for advanced users of the Provena IS data store. This guide will make some assumptions about familiarity with scripting, APIs, authentication etc. If something is unclear, please contact us." %}
 
 ## Goals
 
-In order to facilitate data access in automated processes such as modelling workflows, data analytics, dashboards etc. the M&DS IS data store is capable of delivering data in a non-interactive (automated/scriptable) manner. This guide will describe how to:
+In order to facilitate data access in automated processes such as modelling workflows, data analytics, dashboards etc. the Provena IS data store is capable of delivering data in a non-interactive (automated/scriptable) manner. This guide will describe how to:
 
 -   produce a key/secret which provides access to the datastore
 -   use this key/secret to get access to the data store's functions
@@ -33,16 +33,16 @@ In order to facilitate data access in automated processes such as modelling work
 
 ## Prerequisites
 
-As a user of the RRAP M&DS IS, there are some steps you need to take to get automated access setup. Before we start, however, please ensure that you meet the following pre-requisites.
+As a user of the Provena IS, there are some steps you need to take to get automated access setup. Before we start, however, please ensure that you meet the following pre-requisites.
 
--   You have signed up as a user of the RRAP M&DS IS
+-   You have signed up as a user of the Provena IS
 -   You have the correct access permissions to download data (see [getting access](../getting-started-is/requesting-access-is.html){:target="\_blank"})
 -   You are comfortable using a scripting language which can perform HTTP REST API calls (example code will be provided in [Python](https://www.python.org/){:target="\_blank"} but could be easily transformed into other scripting languages)
 -   If you want to use the example scripts, you will need a working [Python](https://www.python.org/){:target="\_blank"} installation (version greater or equal to 3.8 recommended)
 
 ## Generating a reusable key
 
-In order to automate access without logging in through a browser, you need to perform the one time process of generating an RRAP M&DS IS API key. This key needs to be kept safe as it provides indiscriminate access to your account permissions. It can be revoked at any time, however, if something does go wrong.
+In order to automate access without logging in through a browser, you need to perform the one time process of generating a Provena IS API key. This key needs to be kept safe as it provides indiscriminate access to your account permissions. It can be revoked at any time, however, if something does go wrong.
 
 Begin by cloning this [code repository](https://github.com/gbrrestoration/mds-is-client-tools){:target="\_blank"}. The scripts in this repository are written in Python.
 
@@ -125,7 +125,7 @@ For examples of how to use this `access_token` in your automated workflows, see 
 The overall flow in any automated environment will be:
 
 -   reading the previously generated key from an environment variable (or loading it dynamically from a secure password management service/API)
--   using the key to exchange for a RRAP M&DS IS authorisation access token
+-   using the key to exchange for a Provena IS authorisation access token
 -   including this access token as a bearer token in API requests
 -   for downloading a dataset:
     -   using the [data store API](https://data-api.mds.gbrrestoration.org/docs){:target="\_blank"} to [fetch](https://data-api.mds.gbrrestoration.org/docs#/Registry%20Items/fetch_dataset_registry_items_fetch_dataset_get){:target="\_blank"} information about the location of the desired dataset (using a [handle](../digital-object-identifiers.md){:target="\_blank"})
@@ -138,7 +138,7 @@ The overall flow in any automated environment will be:
 
 The script `example_usage.py` (found in this [code repository](https://github.com/gbrrestoration/mds-is-client-tools){:target="\_blank"}) is provided as an end to end example of producing an API key if it isn't found as an environment variable, using the API key to generate a temporary access token, then using this token to make data store API requests to generate AWS credentials which allow downloading of a dataset. One method that you can use to download the dataset in Python is also demonstrated, making use of [cloudpathlib](https://cloudpathlib.drivendata.org/stable/){:target="\_blank"}.
 
-I'd recommend setting up an API key as described previously, exporting this as the `RRAP_OFFLINE_TOKEN` environment variable, then running this script, e.g.
+We recommend setting up an API key as described previously, exporting this as the `RRAP_OFFLINE_TOKEN` environment variable, then running this script, e.g.
 
 ```bash
 export RRAP_OFFLINE_TOKEN="<your token here>"
