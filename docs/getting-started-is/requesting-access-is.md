@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Requesting access to IS applications
+title: Requesting access to Provena applications
 nav_order: 2
 grand_parent: Provena
 parent: Getting started with Provena
