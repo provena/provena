@@ -3,7 +3,7 @@ layout: default
 title: Linking user account to a Person in the Registry
 nav_order: 3
 grand_parent: Information System
-parent: Getting started with M&DS IS
+parent: Getting started with Provena
 ---
 
 {: .no_toc }
@@ -22,7 +22,7 @@ ____
 
 ## Overview
 
-The RRAP M&DS IS enables users to create and modify resources of various types in various ways. Some actions performed by a user in the system are persisted as part of data and workflow [provenance](../provenance/overview/what-is-provenance). It is helpful, when [exploring provenance](../provenance/exploring-provenance), to link to the [Agent](../provenance/overview/what-are-entities#2-what-entity-types-are-used-in-the-rrap-mds-is) (Person), associated with an activity.
+Provena enables users to create and modify resources of various types in various ways. Some actions performed by a user in the system are persisted as part of data and workflow [provenance](../provenance/overview/what-is-provenance). It is helpful, when [exploring provenance](../provenance/exploring-provenance), to link to the [Agent](../provenance/overview/what-are-entities#2-what-entity-types-are-used-in-the-rrap-mds-is) (Person), associated with an activity.
 
 In order to minimise repetitive data entry, we require that users, who intend to create or modify resources, perform a **one time** process which links the user's account with a registered [Person](../provenance/registering-model-runs/establishing-required-entities#person) in the [Registry](../provenance/registry/overview).
 
@@ -31,7 +31,7 @@ The overview of this process is as follows:
 1. (If not already done) Register yourself as a [Person](../provenance/registering-model-runs/establishing-required-entities#person) in the [Registry](../provenance/registry/overview) - see [Registering yourself](#registering-yourself) below
 2. Use the provided tools to link your user account to your Person in the registry - see [Linking from your account to your Person](#linking-from-your-account-to-your-person) below
 
-{% include warning.html content="If you do not perform this process, you will be unable to create or modify resources in the RRAP M&DS IS. This includes registering and updating datasets, creating and editing Registry entries, and registering workflow provenance." %}
+{% include warning.html content="If you do not perform this process, you will be unable to create or modify resources in Provena. This includes registering and updating datasets, creating and editing registry entries, and registering workflow provenance." %}
 
 ## Registering yourself
 
