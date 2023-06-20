@@ -1,14 +1,14 @@
 ---
 layout: default
-title: Logging in to M&DS IS
+title: Logging in to Provena
 nav_order: 1
 grand_parent: Provena
-parent: Getting started with M&DS IS
+parent: Getting started with Provena
 ---
 
 {: .no_toc }
 
-# Logging in to M&DS IS
+# Logging in to Provena
 
 <details  open markdown="block">
   <summary>
@@ -22,24 +22,24 @@ ____
 
 ## Access
 
-The M&DS IS is a suite of applications for data and information capture and access. Two access types are required:
+Provena is a suite of applications for data and information capture and access. Two access types are required:
 
-1. M&DS IS access
-    - Access to M&DS Components, including the Entity Registry, Data Store and Provenance Store
+1. Provena access
+    - Access to Provena components, including the Entity Registry, Data Store and Provenance Store
 1. AWS access
     - Access to S3 bucket (Amazon Simple Storage Service), for downloading or uploading dataset files
     - AWS Access is provided automatically through temporary credentials where required
 
-## Accessing RRAP-M&DS Information System
+## Accessing Provena
 
-To log into the RRAP M&DS Information system, click on the **Click to login** button on the top right on the home page.
+To log into Provena, click on the **Click to login** button on the top right on the home page.
 **Note that your name and email address will be collected.**
 
-|                      RRAP M&DS Information System home page                       |
+|                      Provena home page                       |
 | :-------------------------------------------------------------------------------: |
 | <img src="../../assets/images/access/landingPage.png" alt="drawing" width="400"/> |
 
-From here you will be able to select from a list of identity providers to log into the RRAP M&DS IS.
+From here you will be able to select from a list of identity providers to log into Provena.
 
 |                           Existing account access option                           |
 | :--------------------------------------------------------------------------------: |
@@ -53,19 +53,19 @@ Click the **Australian Access Federation** option which will take you to the AAF
 | :------------------------------------------------------------------------------: |
 | <img src="../../assets/images/access/aaf_access.png" alt="drawing" width="400"/> |
 
-Search and select your organisation then select **Continue to your organisation**. You will then sign in with your usual organisation credentials, you will be redirected back to RRAP M&DS IS if successful.
+Search and select your organisation then select **Continue to your organisation**. You will then sign in with your usual organisation credentials, you will be redirected back to Provena if successful.
 
 ### GitHub
 
-Click the **GITHUB** option which will take you to your GitHub login screen, enter your GitHub credentials and click **Sign in**. You will be redirected back to RRAP M&DS IS if successful.
+Click the **GITHUB** option which will take you to your GitHub login screen, enter your GitHub credentials and click **Sign in**. You will be redirected back to Provena if successful.
 
 ### Google
 
-Click the **Google** option which will take you to your Google login screen, enter your Google credentials and click **Sign in**. You will be redirected back to RRAP M&DS IS if successful.
+Click the **Google** option which will take you to your Google login screen, enter your Google credentials and click **Sign in**. You will be redirected back to Provena if successful.
 
 ### Microsoft
 
-Click the **Microsoft** option which will take you to your Microsoft login page. You will be redirected back to RRAP M&DS IS if successful.
+Click the **Microsoft** option which will take you to your Microsoft login page, enter your Microsoft credentials and sign in. You will be redirected back to Provena if successful.
 
 ## Access Roles
 

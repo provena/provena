@@ -1,14 +1,14 @@
 ---
 layout: default
-title: Requesting access to IS applications
+title: Requesting access to Provena applications
 nav_order: 2
 grand_parent: Provena
-parent: Getting started with M&DS IS
+parent: Getting started with Provena
 ---
 
 {: .no_toc }
 
-# Requesting access to IS applications
+# Requesting access to Provena applications
 
 <details  open markdown="block">
   <summary>
@@ -22,7 +22,7 @@ ____
 
 ## User Roles
 
-You will need to be granted roles to be able to perform tasks in the M&DS Information System. Once you are logged in on the RRAP M&DS IS [landing page](https://mds.gbrrestoration.org){:target="\_blank"}, select the **User profile icon**, highlighted below.
+You will need to be granted roles to be able to perform tasks in Provena. Once you are logged in on the Provena [landing page](https://mds.gbrrestoration.org){:target="\_blank"}, select the **User profile icon**, highlighted below.
 
 |                               User Profile Icon                                |
 | :----------------------------------------------------------------------------: |
@@ -49,7 +49,7 @@ Below is an image of the Profile page with the access levels shown. To request a
 | :-----------------------------------------------------------------------------: |
 | <img src="../../assets/images/access/userRoles.png" alt="drawing" width="600"/> |
 
-Once you have completed selecting the roles you require, click the **Request Roles Update** button at the top of the page.
+Once you have completed selecting the roles you require, click the **Request Roles Update** button.
 
 |                                    User Roles Request                                    |
 | :--------------------------------------------------------------------------------------: |
@@ -61,7 +61,7 @@ You then confirm the request by clicking the **Confirm** button.
 | :--------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/access/confirmRolesUpdate.png" alt="drawing" width="600"/> |
 
-You go back to the to the RRAP M&DS IS home page by clicking the **Return Home** button.
+You go back to the to Provena's home page by clicking the **Return Home** button.
 
 |                                   Return home                                    |
 | :------------------------------------------------------------------------------: |
