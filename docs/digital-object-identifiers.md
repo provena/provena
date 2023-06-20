@@ -14,7 +14,7 @@ ____
 </details>
 
 ## What digital object identifier infrastructure is Provena IS using? 
-Provena IS is using Australian Research Data Commons (ARDC) [Handle Service](https://ardc.edu.au/services/identifier/handle/){:target="\_blank"} for creating persistent references to digital research objects.
+Provena is using Australian Research Data Commons (ARDC) [Handle Service](https://ardc.edu.au/services/identifier/handle/){:target="\_blank"} for creating persistent references to digital research objects.
 
 ___
 ### Handle.net 

@@ -24,7 +24,7 @@ You should make a user access request by visiting the [landing portal](https://m
 
 ## How do I get a Provena AWS account?
 
-If you have logged in to the Provena IS system and have requested the appropriate roles then you are setup and ready to access protected AWS resources. Users of Provena do not directly possess or own AWS accounts, rather we broker temporary credentials on your behalf as an authorised user of the system. When undertaking actions that require AWS access credentials, they will be generated automatically for you. For information about logging in see [logging in](./getting-started-is/logging-in.html){:target="\_blank"}. For information about requesting access see [requesting access](./getting-started-is/requesting-access-is.html){:target="\_blank"}.
+If you have logged in to Provena and have requested the appropriate roles then you are setup and ready to access protected AWS resources. Users of Provena do not directly possess or own AWS accounts, rather we broker temporary credentials on your behalf as an authorised user of the system. When undertaking actions that require AWS access credentials, they will be generated automatically for you. For information about logging in see [logging in](./getting-started-is/logging-in.html){:target="\_blank"}. For information about requesting access see [requesting access](./getting-started-is/requesting-access-is.html){:target="\_blank"}.
 
 ## How do I find a dataset someone else has uploaded?
 
@@ -36,11 +36,11 @@ By following the above procedure, you will have access to the list of datasets i
 
 ## How do I log a fault?
 
-In all of Provena IS web pages there is a button on the right side of the page; "Contact Us". Pressing this button will show a structured form you can fill out to report an issue to the development team. Please include as much pertinent information as you can to help us quickly identify and resolve the issue. We will contact you via the email provided as the status of the issue changes.
+In all of Provena web pages there is a button on the right side of the page; "Contact Us". Pressing this button will show a structured form you can fill out to report an issue to the development team. Please include as much pertinent information as you can to help us quickly identify and resolve the issue. We will contact you via the email provided as the status of the issue changes.
 
 ## Can I upload data on behalf of someone, as I'm not the owner of the data?
 
-In some cases, it might be useful to republish a dataset in the Provena IS for various reasons, e.g. automation, and long term storage of important data.
+In some cases, it might be useful to republish a dataset in the Provena for various reasons, e.g. automation, and long term storage of important data.
 For this reason, users can upload other people's data as long as they have permission or rights to republish that data. It may be useful to add this information to the dataset (e.g. written permission in an email attachment file, or description of details in the README file).
 
 ## My computer crashed while uploading the data - how do I see what was loaded?
