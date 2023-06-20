@@ -27,7 +27,7 @@ To explore the lineage of records in the [registry](../registry/overview), the r
 
 There are two methods to discover explorable records:
 
-1. Receive a shared link to an existing record - see [sharing an entity](../registry/sharing_an_entity). Clicking a shared link will bring you to the registry view of the item. For example: <img src="../../../assets/images/provenance/exploring/shared.png" alt="drawing" width="800"/>
+1. Receive a shared link to an existing record - see [sharing an entity](../registry/sharing_an_entity). Clicking a shared link will bring you to the registry view of the item. For example: <img src="../../assets/images/provenance/exploring/shared.png" alt="drawing" width="800"/>
 2. Use the [registry](../registry/overview) to list, filter and search for registered entities. See [exploring the registry](../registry/exploring_the_registry) for more information.
 
 ### Finding model run records
@@ -42,4 +42,4 @@ Once you have reached the registry landing page for the registered item, you can
 
 |                                        Moving to the Provenance Store                                        |
 | :----------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/exploring_highlighted.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/exploring_highlighted.png" alt="drawing" width="800"/> |
