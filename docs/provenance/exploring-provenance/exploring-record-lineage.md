@@ -27,16 +27,16 @@ This page will provide conceptual and practical advice on how to use this tool.
 
 The sections are outlined below
 
--   [What is the provenance graph](#what-is-the-provenance-graph) - explains what an RRAP IS provenance graph is
+-   [What is the provenance graph](#what-is-the-provenance-graph) - explains what a Provena provenance graph is
 -   [Understanding the provenance graph explorer](#understanding-the-provenance-graph-explorer) - provides an overview of the provenance graph explorer tool - showing the components of the tool, the page layout, and basic controls
 -   [Interacting with the provenance graph](#interacting-with-and-traversing-the-provenance-graph) - provides a more detailed view of how to interact with the graph and it's elements, including exploring and traversing
 -   [Common issues and FAQ](#common-issues-and-faq) - provides examples of where things can go wrong, what common errors mean, and other FAQs
 
 # What is the provenance graph
 
-In the RRAP IS, authorised users can register records in the [Registry](../registry/overview). Users can register [Model Runs](../registering-model-runs/registration-process/overview) which connect various registered entities - representing an activity, performed at a point in time, which possibly consumes inputs and produces (or contributes to) outputs. The collection of this chain of activities collectively forms [workflow provenance](../overview/what-is-provenance).
+In Provena, authorised users can register records in the [Registry](../registry/overview). Users can register [Model Runs](../registering-model-runs/registration-process/overview) which connect various registered entities - representing an activity, performed at a point in time, which possibly consumes inputs and produces (or contributes to) outputs. The collection of this chain of activities collectively forms [workflow provenance](../overview/what-is-provenance).
 
-In the RRAP IS, users can explore an interactive visualisation of registered provenance. The connections between registered entities are represented as links between nodes in a graph. In the image of a provenance graph below, a node (1) represents an item registered in the Registry. The directional link between nodes (2) represents a connection in the underlying provenance data. The connection is labelled (2) - this label describes the type of relationship between the registered entities.
+In the Provena, users can explore an interactive visualisation of registered provenance. The connections between registered entities are represented as links between nodes in a graph. In the image of a provenance graph below, a node (1) represents an item registered in the Registry. The directional link between nodes (2) represents a connection in the underlying provenance data. The connection is labelled (2) - this label describes the type of relationship between the registered entities.
 
 |                                         Parts of the graph                                         |
 | :------------------------------------------------------------------------------------------------: |
