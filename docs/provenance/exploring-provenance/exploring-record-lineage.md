@@ -40,7 +40,7 @@ In the RRAP IS, users can explore an interactive visualisation of registered pro
 
 |                                         Parts of the graph                                         |
 | :------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/parts.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/parts.png" alt="drawing" width="800"/> |
 
 ## Provenance relationships
 
@@ -67,7 +67,7 @@ The top section of the provenance explorer tool (shown below) provides detailed 
 
 |                                        Overview of the top section                                        |
 | :-------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/overview_top.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/overview_top.png" alt="drawing" width="800"/> |
 
 The **root record** is the "starting point" of the exploration - the central node in the provenance graph. Later, we will see [how to change the root node](#understanding-and-changing-the-root-node).
 
@@ -79,13 +79,13 @@ The graph contains nodes (1) and links (2). The meaning of these nodes and links
 
 |                                        Overview of the bottom section                                        |
 | :----------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/overview_bottom.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/overview_bottom.png" alt="drawing" width="800"/> |
 
 You can always come back to this page by using the help button, highlighted below (1).
 
 |                                               Getting Help                                               |
 | :------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/help_button.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/help_button.png" alt="drawing" width="800"/> |
 
 # Interacting with and traversing the provenance graph
 
@@ -111,7 +111,7 @@ If you would like the graph to occupy the full height of the screen (hiding the 
 
 |                                          Panning and Zooming                                          |
 | :---------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/pan_zoom.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/pan_zoom.png" alt="drawing" width="800"/> |
 
 ### Moving, locking and unlocking nodes
 
@@ -127,7 +127,7 @@ To **unlock** all nodes in the graph, use the open padlock icon (1) which appear
 
 |                                           Unlocking Nodes                                           |
 | :-------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/unlock.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/unlock.png" alt="drawing" width="800"/> |
 
 ### Disabling or enabling link labels
 
@@ -135,7 +135,7 @@ In some cases, it might be simpler to view the connections of the graph without 
 
 |                                               Link Labels                                                |
 | :------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/link_labels.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/link_labels.png" alt="drawing" width="800"/> |
 
 ## Investigating and interrogating the graph
 
@@ -160,7 +160,7 @@ To view a summary of a node's key details, simply hover over the node with your 
 
 |                                       Summary on mouse hover                                       |
 | :------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/hover.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/hover.png" alt="drawing" width="800"/> |
 
 ### Viewing node details
 
@@ -168,7 +168,7 @@ If the details included while hovering are insufficient, you can simply click on
 
 |                                         Viewing node details                                         |
 | :--------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/details.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/details.png" alt="drawing" width="800"/> |
 
 ## Traversing and exploring the graph
 
@@ -212,11 +212,11 @@ This results in the _after_ graph. We can see some highlighted new nodes. In par
 
 |                                                   Before                                                    |
 | :---------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/explore_before.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/explore_before.png" alt="drawing" width="800"/> |
 
 |                                                   After                                                    |
 | :--------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/explore_after.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/explore_after.png" alt="drawing" width="800"/> |
 
 ### Resetting the graph
 
@@ -224,7 +224,7 @@ If you would like to reset your graph to the starting view, you can use the rese
 
 |                                            Reset Graph                                             |
 | :------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/reset.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/reset.png" alt="drawing" width="800"/> |
 
 ### Understanding and changing the root node
 
@@ -243,7 +243,7 @@ To use the "View Selected Entity" button, first select the node to show it's [de
 
 |                                     Changing the selected root node                                      |
 | :------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/view_entity.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/view_entity.png" alt="drawing" width="800"/> |
 
 # Common issues and FAQs
 
@@ -253,7 +253,7 @@ It is not uncommon to see the following error message when exploring the provena
 
 |                                                Details 401 Error                                                |
 | :-------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/errors/details_401.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/errors/details_401.png" alt="drawing" width="800"/> |
 
 This error message occurs when the provenance graph tries to retrieve the metadata of an item for which the user does not have the required permissions to view. See [controlling access](../registry/access-control) for more information about access in the registry. The graph will still allow you to [explore the record](#traversing-and-exploring-the-graph), however, you will not be able to view any details of the item beyond it's identifier and type.
 
@@ -265,7 +265,7 @@ If you receive the following error message, it means the system believes you do 
 
 |                                                   Insufficient Permissions                                                   |
 | :--------------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/errors/insufficient_permissions.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/errors/insufficient_permissions.png" alt="drawing" width="800"/> |
 
 If you think the error is incorrect, you should first try refreshing the page. If that doesn't fix the issue, try logging out and back in. If you still experience this issue, follow the process in [requesting access](../../getting-started-is/requesting-access-is) to request access. Otherwise, please report an issue using the Contact Us link in the top panel.
 
@@ -277,6 +277,6 @@ An empty graph can be caused by a few issues
 
 |                                             Empty provenance graph                                              |
 | :-------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/exploring/graph/errors/empty_graph.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/provenance/exploring/graph/errors/empty_graph.png" alt="drawing" width="800"/> |
 
 **An issue fetching or loading the graph** - if you are experiencing an empty graph without any explanation or clear error messages, try refreshing the page. If that doesn't fix the issue, try using the graph reset button [explained here](#resetting-the-graph). If neither approach fixes the issue, please use the contact us button in the top panel to report the issue. Please note the root node ID in the report.
