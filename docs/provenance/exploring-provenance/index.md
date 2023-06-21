@@ -9,7 +9,7 @@ parent: Provenance
 
 # Exploring Provenance
 
-<img src="../../../assets/images/provenance/exploring/splash.png" alt="drawing" width="800"/>
+<img src="../../assets/images/provenance/exploring/splash.png" alt="drawing" width="800"/>
 
 The recording of data and workflow [provenance](../overview/what-is-provenance) enables the exploration of lineage for entities in the [registry](../registry/overview).
 
