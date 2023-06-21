@@ -36,7 +36,7 @@ The Data Store facilitates registration and creation of datasets for a project. 
 
 ## What can users do in the Data Store?
 
-Users can now login to Provena's Data Store to do the following.
+Users can login to Provena's Data Store to do the following.
 
 [**Register datasets**](./registering-a-dataset.md){:target="\_blank"}: Create a dataset record for a dataset relevant to a project. Dataset records could either point to a dataset that is managed externally (e.g. institutional repositories) or a location in Provena's Data Store. Valid examples of dataset records include:
 
@@ -49,6 +49,6 @@ Users can now login to Provena's Data Store to do the following.
 
 [**Download and synchronise datasets**](./downloading-datasets.md){:target="\_blank"}: Authorised users are able to access files on the Data Store and download them to a local computing environment using AWS tools and the AWS web console. Users can also synchronise dataset folders to a local computing environment, which only downloads updated files optimising file transfer. This will allow users to share data and synchronise data updates.
 
-**Automated archival**: Datasets that are registered and uploaded to the Data store will be archived using automation tools. Archival will allow RRAP to manage these datasets for future reference.
+**Automated archival**: Datasets that are registered and uploaded to the Data store will be archived using automation tools. Archival will allow Provena to manage these datasets for future reference.
 
 Browse to the [Provena Landing Page](https://mds.gbrrestoration.org/){:target="\_blank"}
