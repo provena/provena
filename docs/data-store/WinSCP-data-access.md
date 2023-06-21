@@ -22,7 +22,7 @@ ____
 
 ## Overview
 
-[WinSCP](https://winscp.net/eng/index.php){:target="\_blank"} is a client tool for Microsoft Windows. It allows for managing files between a local computer and remote servers. As RRAP data is stored in AWS S3 buckets WinSCP can be used to transfer data to and from the data store.
+[WinSCP](https://winscp.net/eng/index.php){:target="\_blank"} is a client tool for Microsoft Windows. It allows for managing files between a local computer and remote servers. As Provena data is stored in AWS S3 buckets WinSCP can be used to transfer data to and from the data store.
 
 ---
 
@@ -32,7 +32,7 @@ ____
 
 ### Required inputs to establish connection
 
-You can obtain authentication parameters from a dataset record from within [RRAP Data Store](https://data.mds.gbrrestoration.org/datasets){:target="\_blank"}. Select a target preconfigure dataset and then the **'Upload Data'** tab. Then click the **'Generate Credentials'** button. You will notice that there are three parts to the credentials.
+You can obtain authentication parameters from a dataset record from within the [Provena Data Store](https://data.mds.gbrrestoration.org/datasets){:target="\_blank"}. Select a target preconfigure dataset and then the **'Upload Data'** tab. Then click the **'Generate Credentials'** button. You will notice that there are three parts to the credentials.
 
 1. AWS_ACCESS_KEY_ID
 1. AWS_SECRET_ACCESS_KEY

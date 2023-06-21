@@ -24,7 +24,7 @@ ____
 
 Without taking some initial steps, data that other users share with you won't be visible nor accessible. Data cannot be shared directly using the AWS S3 storage backend as access is provided through our system.
 
-Ensure you have followed the below steps before attempting to download data from the RRAP M&DS IS data store.
+Ensure you have followed the below steps before attempting to download data from Provena's data store.
 
 ---
 
@@ -55,13 +55,13 @@ Once you open the [data store](https://data.mds.gbrrestoration.org){:target="\_b
 
 ### Using a shared link
 
-The [persistent identifier](../digital-object-identifiers.html){:target="\_blank"} generated when a dataset is minted can be shared in a special form to enable one click persistent navigation to that dataset. If someone shares a M&DS data store link with you, you will be navigated to the registry entry for the dataset. Clicking on the 'View in Datastore' button will display the dataset in the Data Store. You can follow on with the instructions below once you have reached the dataset listing.
+The [persistent identifier](../digital-object-identifiers.html){:target="\_blank"} generated when a dataset is minted can be shared in a special form to enable one click persistent navigation to that dataset. If someone shares a Provena data store link with you, you will be navigated to the registry entry for the dataset. Clicking on the 'View in Data Store' button will display the dataset in the Data Store. You can follow on with the instructions below once you have reached the dataset listing.
 
 ---
 
 ## Downloading files
 
-Once you select the dataset you want to download, you can click the entry and you will be redirected to a view of the dataset. This view shows four options **overview**, **download data**, **upload data** and _settings_. After using the preview section to view information about the dataset, you should choose the **download data** option and then click the **request credentials** button.
+Once you select the dataset you want to download, you can click the entry and you will be redirected to a view of the dataset. This view shows five options **overview**, **details**, **download data**, **upload data** and **settings**. After using the overview section to view information about the dataset, you should choose the **download data** option and then click the **request credentials** button.
 The download dataset files page will appear.
 
 |                                   Downloading dataset files                                    |
