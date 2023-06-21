@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Externally Hosted Datasets
+title: Externally hosted datasets
 nav_order: 13
 grand_parent: Information System
 parent: Data store
@@ -21,7 +21,7 @@ If you are unsure about whether a dataset can or should be stored in the Data St
 
 ## What can I do with an externally hosted dataset?
 
-Externally hosted datasets behave identically to normal Datasets with two exceptions:
+Externally hosted datasets behave identically to normal datasets with two exceptions:
 
 -   Downloading files - there is no way to download dataset files using the Data Store website or API endpoints
 -   Uploading files - there is no way to upload dataset files using the Data Store website or API endpoints
