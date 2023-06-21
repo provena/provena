@@ -18,20 +18,20 @@ In the context of modelling and producing data and information to support decisi
 * Analysis of workflows identifying benefits, risk and optimisation opportunities
 
 
-## The Provenance Approach in RRAP M&DS
+## The Provenance Approach in Provena
 
-To enable high-quality decisions, a key part of the M&DS Information System is to capture provenance information. Provenance information is that metadata that records details of activities such as the knowledge generation activity in RRAP M&DS (e.g. a model run) and respective inputs and outputs from those activities. A *Provenance Record* of the knowledge generation activity provides transparency of the activity and facilitates the option to reproduce/repeat the knowledge generation activity. Knowledge artefacts and their knowledge generation activities may need to be audited and/or reviewed during a decision-making process or a review in the future, with potential challenges to the integrity of those entities and activities. Therefore, an important capability for M&DS-IS is being able to review the knowledge generation activities, and their outputs and inputs via the provenance records of those activities.
+To enable high-quality decisions, a key part of Provena is to capture provenance information. Provenance information is that metadata that records details of activities such as the knowledge generation activity in Provena (e.g. a model run) and respective inputs and outputs from those activities. A *Provenance Record* of the knowledge generation activity provides transparency of the activity and facilitates the option to reproduce/repeat the knowledge generation activity. Knowledge artefacts and their knowledge generation activities may need to be audited and/or reviewed during a decision-making process or a review in the future, with potential challenges to the integrity of those entities and activities. Therefore, an important capability for Provena is being able to review the knowledge generation activities, and their outputs and inputs via the provenance records of those activities.
 
-In the RRAP M&DS Information System, the [PROV-O standard, a W3C Recommendation](https://www.w3.org/TR/prov-o/), is used as a conceptual model to capture and support interchange of provenance information in heterogeneous and distributed environments like RRAP M&DS. 
+In Provena, the [PROV-O standard, a W3C Recommendation](https://www.w3.org/TR/prov-o/), is used as a conceptual model to capture and support interchange of provenance information in heterogeneous and distributed environments like Provena. 
 
 According to PROV-O, provenance is information about entities, activities and agents (i.e. people) involved in producing a piece of data or a thing. The PROV-O core structure describes how these components are related by defining the following four property types: wasGeneratedBy, wasAssociatedWith, wasAttributedTo and used. 
 
-The figure below shows how the RRAP M&DS implements PROV-O to capture provenance information relating to model run workflows and other related information (input data, associated modellers, outputs data, modelling software/processes).
+The figure below shows how Provena implements PROV-O to capture provenance information relating to model run workflows and other related information (input data, associated modellers, outputs data, modelling software/processes).
 
 
-| Provenance model used in M&DS using PROV-O |
+| Provenance model used in Provena using PROV-O |
 |:-:|
-|<img src="../../../assets/images/provenance/provenance-abstract-model.jpg" alt="drawing" width="600"/>|
+|<img src="../../assets/images/provenance/provenance-abstract-model.jpg" alt="drawing" width="600"/>|
 
 
 See also:
