@@ -84,7 +84,7 @@ The graph contains nodes (1) and links (2). The meaning of these nodes and links
 You can always come back to this page by using the help button, highlighted below (1).
 
 |                                               Getting Help                                               |
-| :------------------------------------------------------------------------------------------------------: |
+|   :------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/help_button.png" alt="drawing" width="800"/> |
 
 # Interacting with and traversing the provenance graph
