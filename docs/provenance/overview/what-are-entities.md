@@ -11,7 +11,7 @@ parent: Provenance Overview
 
 ## 1. Overview
 
-In Provena, entities are things that are recorded in the M&DS IS Registry. Registration of entities is fundamental to establishing stable provenance. It establishes a record for each entity used or generated in producing or delivering an artifact in a provenance record.
+In Provena, entities are things that are recorded in the Provena Registry. Registration of entities is fundamental to establishing stable provenance. It establishes a record for each entity used or generated in producing or delivering an artifact in a provenance record.
 
 In Provena, each registered item (entity) is allocated a unique and persistent identifier (ID) upon successful registration. These IDs provide a mechanism for 2 things:
 
@@ -28,7 +28,7 @@ Registering provenance records using cross-references to the registered entity p
 | :-------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/provenance-graph.png" alt="drawing" width="600"/> |
 
-Provenance graphs provide users with a way to explore, query and traverse lineage of entities like datasets to the parent activities and entities upstream. The RRAP M&DS IS provides tools for navigating provenance graphs.
+Provenance graphs provide users with a way to explore, query and traverse lineage of entities like datasets to the parent activities and entities upstream. Provena provides tools for navigating provenance graphs.
 
 ## 2. What entity types are used in the Provena?
 
@@ -54,7 +54,7 @@ In RRAP M&DS, the PROV-O model is extended to enable capture of provenance infor
 
 |                               Provenance model used in M&DS using PROV-O                               |
 | :----------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/provenance-abstract-model.jpg" alt="drawing" width="600"/> |
+| <img src="../../assets/images/provenance/provenance-abstract-model.jpg" alt="drawing" width="600"/> |
 
 The specialised types used in M&DS IS are provided below:
 
