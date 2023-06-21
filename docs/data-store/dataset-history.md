@@ -26,7 +26,7 @@ Datasets are registered records in the [Registry](../provenance/registry/overvie
 
 ## Does this include the files within a dataset?
 
-Currently, the history of a dataset refers only to the metadata of the dataset (information about the dataset and it's files). This means that reverting to a previous version **does not restore the files at that point in time**.
+Currently, the history of a dataset refers **only** to the metadata of the dataset (information about the dataset and it's files). This means that reverting to a previous version **does not restore the files at that point in time**.
 
 If you need to revert your dataset's files to a previous point in time, please contact us.
 
