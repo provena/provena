@@ -26,18 +26,18 @@ ____
 
 The AWS CLI is a tool developed by Amazon Web Services (AWS) to enable programmatic access to resources deployed in AWS Cloud Computing environments.
 
-### How does RRAP M&DS IS use this tool?
+### How does Provena use this tool?
 
-The M&DS IS data store uses AWS Simple Storage Service (S3) to store dataset files. This means that the AWS CLI is a very useful and mature tool which can help us provide reliable, efficient and powerful access into the data store. In order to upload large or numerous files we recommend using the AWS CLI as it is faster than using the online AWS console (web GUI). The AWS console only allows the download of individual files meaning that downloading many small files in a dataset is also better served through the CLI. 
+Provena uses AWS Simple Storage Service (S3) to store dataset files. This means that the AWS CLI is a very useful and mature tool which can help Provena provide reliable, efficient and powerful access into the data store. In order to upload large or numerous files we recommend using the AWS CLI as it is faster than using the online AWS console (web GUI). The AWS console only allows the download of individual files meaning that downloading many small files in a dataset is also better served through the CLI. 
 
-### How will I know what commands to use
+### How will I know what commands to use?
 
 While there is extensive online documentation about using the AWS CLI, where possible we will provide dynamically generated commands which you can copy and paste into your terminal environment to execute AWS CLI commands which will download, upload or list data.
 
 
-### How does the M&DS IS provide secure access to these files
+### How does Provena provide secure access to these files?
 
-The M&DS IS uses single sign on to identify users. Users which have appropriate role permissions (see [requesting access](../getting-started-is/requesting-access-is.html){:target="\_blank"} for more information) will be able to use their RRAP M&DS identity token to generate AWS credentials on demand. The data store and other systems will provide credentials as you require them for download and upload operations.
+Provena uses single sign on to identify users. Users which have appropriate role permissions (see [requesting access](../getting-started-is/requesting-access-is.html){:target="\_blank"} for more information) will be able to use their Provena identity token to generate AWS credentials on demand. The data store and other systems will provide credentials as you require them for download and upload operations.
 
 ## Installing the AWS CLI v2
 
@@ -63,6 +63,6 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 sudo ./aws/install
 ```
-or for more detailed instructions, visit the linux section of this [documentation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html){:target="\_blank"}. 
+For more detailed instructions, visit the linux section of this [documentation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html){:target="\_blank"}. 
 
 Once the install executes, you should be able to run the `aws --version` command in your preferred bash terminal. This command should have no errors and should print out a version number (2.x.x).
