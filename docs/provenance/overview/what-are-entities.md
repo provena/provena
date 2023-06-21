@@ -34,7 +34,7 @@ Provenance graphs provide users with a way to explore, query and traverse lineag
 
 ### 2.1. Underlying conceptual model
 
-The underlying conceptual model for entities in the RRAP M&DS IS uses PROV-O. As depicted in the image below, 3 core concepts are defined:
+The underlying conceptual model for entities in Provena uses PROV-O. As depicted in the image below, 3 core concepts are defined:
 
 -   Entity
 -   Agent
@@ -48,15 +48,15 @@ An _Activity_ "is something that occurs over a period of time and acts upon or w
 
 "An _Agent_ is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity [1]. This may be a person or a piece of software that is executed and associated with the activity that generates the Entity. It provides a way to attribute the activity and generation of the Entity to that agent. The _Agent_ class could be considered as a sub-class of Entity, however, for the purposes of the IS and PROV, we treat it as an Abstract type at the same level as Entity and Activity.
 
-### 2.2. RRAP M&DS IS Conceptual Model
+### 2.2. Provena Conceptual Model
 
-In RRAP M&DS, the PROV-O model is extended to enable capture of provenance information relating to model run workflows and other related information (input data, associated modellers, outputs data, modelling software/processes) (see figure below).
+In Provena, the PROV-O model is extended to enable capture of provenance information relating to model run workflows and other related information (input data, associated modellers, outputs data, modelling software/processes) (see figure below).
 
-|                               Provenance model used in M&DS using PROV-O                               |
+|                               Provenance model used in Provena using PROV-O                               |
 | :----------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/provenance-abstract-model.jpg" alt="drawing" width="600"/> |
 
-The specialised types used in M&DS IS are provided below:
+The specialised types used in Provena are provided below:
 
 | Type     | Sub-type                                                                                                          | Description                                                                                                                                                                                                                                             |
 | -------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
