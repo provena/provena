@@ -11,14 +11,14 @@ parent: Provenance Overview
 
 ## 1. Overview
 
-In the RRAP M&DS Information System (IS), entities are things that are recorded in the M&DS IS Registry. Registration of entities is fundamental to establishing stable provenance. It establishes a record for each entity used or generated in producing or delivering an artifact in a provenance record.
+In Provena, entities are things that are recorded in the M&DS IS Registry. Registration of entities is fundamental to establishing stable provenance. It establishes a record for each entity used or generated in producing or delivering an artifact in a provenance record.
 
-In the RRAP M&DS IS, each registered item (entity) is allocated a unique and persistent identifier (ID) upon successful registration. These IDs provide a mechanism for 2 things:
+In Provena, each registered item (entity) is allocated a unique and persistent identifier (ID) upon successful registration. These IDs provide a mechanism for 2 things:
 
 1. It allows information to be attached to each entity in a defined way
 2. Entities are able to link to other entities (i.e. object cross-references rather than just text descriptions)
 
-In addition to this, the persistent IDs for each entity in the RRAP M&DS IS is able to be hyperlinked and looked up in the IS via the web.
+In addition to this, the persistent IDs for each entity in Provena is able to be hyperlinked and looked up in the IS via the web.
 
 These registered entities can then referenced in provenance records, e.g. a provenance record about a model run references a computational model that was used, the agent or person who ran the model, a list of input datasets, and the output dataset/results. The ability to refer to entities reduces manual error and duplication of descriptions, as they can be reused and simply referred to.
 
@@ -26,11 +26,11 @@ Registering provenance records using cross-references to the registered entity p
 
 |                                   Provenance graph example                                    |
 | :-------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/provenance-graph.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/provenance/provenance-graph.png" alt="drawing" width="600"/> |
 
 Provenance graphs provide users with a way to explore, query and traverse lineage of entities like datasets to the parent activities and entities upstream. The RRAP M&DS IS provides tools for navigating provenance graphs.
 
-## 2. What entity types are used in the RRAP M&DS IS?
+## 2. What entity types are used in the Provena?
 
 ### 2.1. Underlying conceptual model
 
