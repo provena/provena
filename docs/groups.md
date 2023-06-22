@@ -25,7 +25,7 @@ Currently groups apply to datasets in Provena. However, group access control fun
 
 # Requesting a new group
 
-If you would a new group, you will need to send request for a new group to be added.
+If you would like a new group, you will need to send request for a new group to be added.
 
 Step 1. To request a new group, please submit a request via the Provena Issues tracker via this link:
 [https://github.com/gbrrestoration/mds-is-issues/issues/new/choose](https://github.com/gbrrestoration/mds-is-issues/issues/new/choose)
@@ -47,7 +47,7 @@ a list of members needed in the group.
 
 Step 4. Click the submit button.
 
-Once submitted, a notification will be sent to the IS team, who will administer the request. You will be contacted to confirm details for the group.
+Once submitted, a notification will be sent to the Provena team, who will administer the request. You will be contacted to confirm details for the group.
 
 Once the group is created, you may use it in the information system.
 
