@@ -22,7 +22,7 @@ ____
 
 ## Overview
 
-Provena enables users to create and modify resources of various types in various ways. Some actions performed by a user in the system are persisted as part of data and workflow [provenance](../provenance/overview/what-is-provenance). It is helpful, when [exploring provenance](../provenance/exploring-provenance), to link to the [Agent](../provenance/overview/what-are-entities#2-what-entity-types-are-used-in-the-rrap-mds-is) (Person), associated with an activity.
+Provena enables users to create and modify resources of various types in various ways. Some actions performed by a user in the system are persisted as part of data and workflow [provenance](../provenance/overview/what-is-provenance). It is helpful, when [exploring provenance](../provenance/exploring-provenance), to link to the [Agent](../provenance/overview/what-are-entities#2-what-entity-types-are-used-in-the-provena) (Person), associated with an activity.
 
 In order to minimise repetitive data entry, we require that users, who intend to create or modify resources, perform a **one time** process which links the user's account with a registered [Person](../provenance/registering-model-runs/establishing-required-entities#person) in the [Registry](../provenance/registry/overview).
 
