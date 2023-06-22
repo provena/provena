@@ -32,12 +32,12 @@ Ensure you have followed the below steps before attempting to download data from
 
 To download dataset files, two access types are required:
 
--   Role level access: you must have **read** access to the Entity Registry - see [requesting access](../getting-started-is/requesting-access-is.html){:target="\_blank"} for information on how to request access.
+-   Role level access: you must have **read** access to the Entity Registry - see [requesting access](../getting-started-is/requesting-access-is) for information on how to request access.
 -   Resource role access: datasets are registered resources in the [Registry](../provenance/registry/overview) - downloading dataset files requires the 'Dataset Data Read' role. For more information about access control for registered entitites, see [access control](../provenance/registry/access-control).
 
 ### AWS CLI installation
 
-Downloading data is possible using only the AWS web console, however the features are very limited (in particular, you can only download one file at a time). We recommend and will focus on supporting the usage of the AWS CLI v2. Instructions on how to install this easy to use tool are available [here](setting-up-the-aws-cli.html){:target="\_blank"}.
+Downloading data is possible using only the AWS web console, however the features are very limited (in particular, you can only download one file at a time). We recommend and will focus on supporting the usage of the AWS CLI v2. Instructions on how to install this easy to use tool are available [here](setting-up-the-aws-cli).
 
 ---
 
@@ -49,13 +49,13 @@ In order to download a dataset, you must first identify it in the system. Once y
 
 ### Using the registry
 
-Once you open the [data store](https://data.mds.gbrrestoration.org){:target="\_blank"} and log in, you can navigate to datasets using the banner at the top and use the listing, filtering and searching functionality to locate the desired dataset to download. Select the dataset you wish to view and download from the list. See [viewing a dataset](../data-store/viewing-a-dataset.md){:target="\_blank"} for instructions on how to find a dataset.
+Once you open the [data store](https://data.dev.rrap-is.com/){:target="\_blank"} and log in, you can navigate to datasets using the banner at the top and use the listing, filtering and searching functionality to locate the desired dataset to download. Select the dataset you wish to view and download from the list. See [viewing a dataset](../data-store/viewing-a-dataset) for instructions on how to find a dataset.
 
 ---
 
 ### Using a shared link
 
-The [persistent identifier](../digital-object-identifiers.html){:target="\_blank"} generated when a dataset is minted can be shared in a special form to enable one click persistent navigation to that dataset. If someone shares a Provena data store link with you, you will be navigated to the registry entry for the dataset. Clicking on the 'View in Data Store' button will display the dataset in the Data Store. You can follow on with the instructions below once you have reached the dataset listing.
+The [persistent identifier](../digital-object-identifiers) generated when a dataset is minted can be shared in a special form to enable one click persistent navigation to that dataset. If someone shares a Provena data store link with you, you will be navigated to the registry entry for the dataset. Clicking on the **View in Data Store** button will display the dataset in the Data Store. You can follow on with the instructions below once you have reached the dataset listing.
 
 ---
 
@@ -98,7 +98,7 @@ Ensure that you create a new folder on your system, and navigate (using the term
 
 The data store provides a command ready to copy and paste - you will just need to change the name `folder` to suit the name of the folder you created.
 
-If you have issues following these instructions, please don't hesitate to contact the M&DS IS team for more detailed assistance.
+If you have issues following these instructions, please don't hesitate to contact the Provena team for more detailed assistance.
 
 ---
 

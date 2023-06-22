@@ -30,6 +30,6 @@ The Data Store will have a minimal dataset metadata record schema using [RO-CRAT
 
 {% include_relative generated-metadata-fields.md %}
 
-The metadata fields included in Data Store enables data registration, upload, sharing via the S3 APIs (application programming interface) to support current modelling activities in M&DS. Future releases will incrementally add additional capability to capture RRAP M&DS, ISO and Science related metadata for when we need wider data publication.
+The metadata fields included in Data Store enables data registration, upload, sharing via the S3 APIs (application programming interface) to support current modelling activities in projects. Future releases will incrementally add additional capability to capture project, ISO and Science related metadata for when we need wider data publication.
 
 ---
