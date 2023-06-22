@@ -23,13 +23,13 @@ ____
 
 Directly registering model run records by using the Provenance Store [API](https://en.wikipedia.org/wiki/API) is an efficient and scalable approach.
 
-RRAP APIs can be integrated in an automated way into any internet connected computing environment.
+Provena APIs can be integrated in an automated way into any internet connected computing environment.
 
 See the sections below for information about how to use the API.
 
 ## Endpoints and documentation
 
-The RRAP IS APIs are [REST](https://www.redhat.com/en/topics/api/what-is-a-rest-api)ful Python [ASGI](https://asgi.readthedocs.io/en/latest/) compliant services. All APIs exposes two documentation endpoints. The Provenance API documentation is linked below:
+The Provena APIs are [REST](https://www.redhat.com/en/topics/api/what-is-a-rest-api)ful Python [ASGI](https://asgi.readthedocs.io/en/latest/) compliant services. All APIs exposes two documentation endpoints. The Provenance API documentation is linked below:
 
 -   Provenance Store API
     -   [Swagger](https://swagger.io) documentation - [https://prov-api.mds.gbrrestoration.org/docs](https://prov-api.mds.gbrrestoration.org/docs)
@@ -37,13 +37,13 @@ The RRAP IS APIs are [REST](https://www.redhat.com/en/topics/api/what-is-a-rest-
 
 ## Authentication and authorisation
 
-All RRAP IS APIs use the same authorisation workflow.
+All Provena APIs use the same authorisation workflow.
 
-You can learn about using the RRAP APIs [here](../../../API-access/index). You can learn about authorising [here](../../../API-access/authentication/index).
+You can learn about using the Provena APIs [here](../../../API-access/index). You can learn about authorising [here](../../../API-access/authentication/index).
 
 ## Example payloads
 
-All RRAP IS APIs use JSON to communicate. This object notation is easy to read for computers and humans.
+All Provena APIs use JSON to communicate. This object notation is easy to read for computers and humans.
 
 All endpoints are automatically documented, including structurally valid example payloads, see [documentation](#endpoints-and-documentation) above.
 
@@ -86,9 +86,10 @@ The IDs and values used in these records are not real.
     "end_time": 1669442219
 }
 ```
-
+<!---
 ## Example notebooks
 
 To provide end to end examples of common API driven workflows, we have a blog style series of notebooks available [here](https://gbrrestoration.github.io/rrap-demo-blog/).
 
 The [modelling workflow demonstration notebook](https://gbrrestoration.github.io/rrap-demo-blog/jupyter/2022/09/09/rrap-is-workflow.html) provides an end to end example of managing data and provenance in the RRAP IS.
+-->

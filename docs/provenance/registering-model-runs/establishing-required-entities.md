@@ -90,7 +90,7 @@ Navigate to the new entity form (for help, see [registering an entity](../regist
     1.  The person being included and referenced in provenance and dataset records in the information system
     1.  Enabling users of the information system to query the system using the person identifier, e.g. related provenance and/or data records
 
-{% include warning.html content="All Person(s) registered in the Entity Registry must supply explicit consent for their registration and usage in the system. For this reason, we recommend that you only register yourself as a Person in the RRAP IS Registry. If someone requests that you register them in the system, you should recommend that they instead login and perform the process themselves. If it is required that you register someone else's identity, please ensure you explicitly seek their consent." %}
+{% include warning.html content="All Person(s) registered in the Entity Registry must supply explicit consent for their registration and usage in the system. For this reason, we recommend that you only register yourself as a Person in the Provena Registry. If someone requests that you register them in the system, you should recommend that they instead login and perform the process themselves. If it is required that you register someone else's identity, please ensure you explicitly seek their consent." %}
 
 Once you have completed your registration, you can view the record and take note of the identifier (noting that you can find your entity again at any time by [exploring the registry](../registry/exploring_the_registry.html)).
 

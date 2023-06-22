@@ -51,7 +51,7 @@ The resource settings (1) and access settings (2) (shown below) are only visible
 
 |                                          Finding resource settings                                           |
 | :----------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/finding_settings.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/finding_settings.png" alt="drawing" width="600"/> |
 
 ### Making and submitting changes
 
@@ -59,7 +59,7 @@ Access is configured by toggling sliders in the Granted column (1). Roles apply 
 
 |                                              Access controls                                              |
 | :-------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/access_layout.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/access_layout.png" alt="drawing" width="600"/> |
 
 Once a change is detected, you will see a popup appear at the top of the page. You can press "Submit Changes" to lodge this change, or "Revert Changes" to restore the access configuration to it's prior state. Once submission is completed the page will automatically refresh with the updated access configuration.
 
@@ -93,19 +93,19 @@ You can grant group access to a resource you have administrative control over by
 
 |                                              Adding groups                                               |
 | :------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/adding_group.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/adding_group.png" alt="drawing" width="600"/> |
 
 The resulting popup will allow you to select from the created groups. If you only want to show groups you are in, select the toggle button (1). If you can't see the group you are looking for, you may need to visit the next page (2). Select one or more groups by clicking on the row(s), and pressing submit (3).
 
 |                                           Submitting selected groups                                            |
 | :-------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/adding_groups_panel.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/adding_groups_panel.png" alt="drawing" width="600"/> |
 
 Once the selected groups are added, you will see a row for each group in the Group Access subsection. By default, each group is configured with no roles. To change the access configuration for a group, press the "Edit" pencil icon in it's row (1) and use the toggles on the resulting popup to grant access.
 
 |                                              Configuring group access                                              |
 | :----------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/selecting_group_access.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/selecting_group_access.png" alt="drawing" width="600"/> |
 
 ### Remove Group Access
 
@@ -113,7 +113,7 @@ To remove the access grants for a group, remove the group using the "x" icon (1)
 
 |                                             Removing a group                                             |
 | :------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/remove_group.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/remove_group.png" alt="drawing" width="600"/> |
 
 ### Creating a group
 
@@ -128,13 +128,13 @@ grant general user read access for both metadata read and dataset read:
 
 |                        Enabling general user read access to dataset metadata and data                         |
 | :-----------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/general_user_read.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/general_user_read.png" alt="drawing" width="600"/> |
 
 Furthermore, if you'd like to limit the editing rights to a group of team members, you can create an editors group and enable
 write permissions for them whilst leaving the general user write permissions (for metadata and data) _not_ granted.
 
 |                                        Editors group dataset access                                         |
 | :---------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/access_control/dataset_editors.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/access_control/dataset_editors.png" alt="drawing" width="600"/> |
 
 If at some point you wish to temporarily disable all updates/writes to the dataset, it may be easier to apply a [resource lock](./resource_lock) as opposed to the potentially more complex task of managing the group/user roles.

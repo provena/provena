@@ -32,7 +32,7 @@ There is a "Provenance Registration Tools" button located on the Provenance Stor
 
 |                                               Accessing Provenance Tooling                                               |
 | :----------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/access_tooling.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/access_tooling.png" alt="drawing" width="600"/> |
 
 
 
@@ -49,7 +49,7 @@ Upon successfully creating a Model Run Workflow Template in the entity registry,
 
 |                                                 Download CSV Template                                                 |
 | :-------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/downloading.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/downloading.png" alt="drawing" width="600"/> |
 
 
 
@@ -95,16 +95,16 @@ Select "Choose file" (2) to select the file to upload. Click upload (3) if you'r
 
 |                                            Upload CSV Template (1-2)                                             |
 | :--------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/lodge1.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/lodge1.png" alt="drawing" width="600"/> |
 
 |                                            Upload CSV Template (3-4)                                             |
 | :--------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/lodge2.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/lodge2.png" alt="drawing" width="600"/> |
 
 
 |                                                Upload CSV Template (5-6)                                                 |
 | :----------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/lodge3_observe.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/lodge3_observe.png" alt="drawing" width="600"/> |
 
 
 ### Confirming Success (Step 5)
@@ -113,7 +113,7 @@ Upon upload, you will be taken to the following screen where a batch ID (1) is p
 
 |                                                   Finishing the Upload                                                   |
 | :----------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/just_submitted.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/just_submitted.png" alt="drawing" width="600"/> |
 
 
 ### Re-downloading to get an updated template (Step 6)
@@ -124,7 +124,7 @@ After just uploading a CSV with model runs, re-download it using the button belo
 
 |                                Re-downloading a lodged Template for future additions                                 |
 | :------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/redownload.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/redownload.png" alt="drawing" width="600"/> |
 
 
 ### Viewing Job History (Step 7)
@@ -135,11 +135,11 @@ Evident is the batch ID, time stamp, and a Job Count (2). Job count represents t
 
 |                                                  Viewing Job History                                                  |
 | :-------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/job_history.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/job_history.png" alt="drawing" width="600"/> |
 
 |                                         Downloading the template used by a previous job                                         |
 | :-----------------------------------------------------------------------------------------------------------------------------: |
-| <img src="../../../../assets/images/provenance/csv_template_instructions/download_from_history.png" alt="drawing" width="600"/> |
+| <img src="../../../assets/images/provenance/csv_template_instructions/download_from_history.png" alt="drawing" width="600"/> |
 
 
 
