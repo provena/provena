@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Dataset metadata
+title: Dataset metadata history
 nav_order: 14
 grand_parent: Information System
 parent: Data store
@@ -29,6 +29,24 @@ Datasets are registered records in the [Registry](../provenance/registry/overvie
 Currently, the history of a dataset refers **only** to the metadata of the dataset (information about the dataset and it's files). This means that reverting to a previous version **does not restore the files at that point in time**.
 
 If you need to revert your dataset's files to a previous point in time, please contact us.
+
+## How do I update a metadata record?
+
+If new information regarding a dataset comes to light, the corresponding metadata record can be updated by clicking the **Update Metadata** button.
+
+|                                      Update metadata                                     |
+| :---------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/data_store/updateMetadataStep1.png" alt="drawing" width="800"/> |
+
+
+A reason for updating the metadata record **must** be entered before the updated record can be saved. An error will be seen at the bottom of the page and the **submit** button will be obscured if you do no tso this. Update the metadata record with the new information and click on submit at the bottom of the page.
+
+|                                      Update metadata reason                                     |
+| :---------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/data_store/updateMetadataStep2.png" alt="drawing" width="800"/> |
+
+
+
 
 ## How do I explore and revert to previous versions?
 
