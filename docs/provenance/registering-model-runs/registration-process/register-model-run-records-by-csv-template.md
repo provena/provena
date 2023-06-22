@@ -131,7 +131,11 @@ After just uploading a CSV with model runs, re-download it using the button belo
 
 The Job History Side tab (1) allows you to view your history of using the CSV ingestion tooling to register provenance records.
 
-Evident is the batch ID, time stamp, and a Job Count (2). Job count represents the number of records that were created in that batch. Search (3) and select an entry to explore it and its contents in more detail. This will also allow you to download the template used for a particular batch of runs as well as view the status of the registration of its records.
+Evident is the batch ID, time stamp, and a Job Count (2). Job count represents the number of records that were created in that batch. 
+<!--
+Search (3) and select an entry to explore it and its contents in more detail. 
+-->
+This will also allow you to download the template used for a particular batch of runs as well as view the status of the registration of its records.
 
 |                                                  Viewing Job History                                                  |
 | :-------------------------------------------------------------------------------------------------------------------: |
