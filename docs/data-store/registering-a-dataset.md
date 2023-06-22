@@ -62,19 +62,19 @@ You will not be able to progress unless all required fields are entered.
 ___
 ### Usage licence
 
-You can attribute the appropriate licence from the dropdown list. There are ten licences to choose from. For details of each licence please see the [Licenses](../licenses.md){:target="\_blank"} page.
+You can attribute the appropriate licence from the dropdown list. There are ten licences to choose from. For details of each licence please see the [Licenses](../licenses.html){:target="\_blank"} page.
 
 ___
 ### What happens during the minting dataset process?
 
-A Handle Identifier is minted with each dataset that is registered and will associated with the dataset metadata. This minted identifier can be used to persistently locate the dataset in the future. See [Digital Object Identifiers](../digital-object-identifiers.md){:target="\_blank"} for further details.
+A Handle Identifier is minted with each dataset that is registered and will associated with the dataset metadata. This minted identifier can be used to persistently locate the dataset in the future. See [Digital Object Identifiers](../digital-object-identifiers.html){:target="\_blank"} for further details.
 
 ___
 ## File types and maximum file size
 
-The Provena Data Store can store a variety of data files e.g. text, csv, netCDF, word documents, images, video etc... Users can upload files or folders using either the AWS web console (GUI), AWS command line interface (AWS CLI) or a program like [WinSCP](../data-store/WinSCP-data-access.md){:target="\_blank"}.
+The Provena Data Store can store a variety of data files e.g. text, csv, netCDF, word documents, images, video etc... Users can upload files or folders using either the AWS web console (GUI), AWS command line interface (AWS CLI) or a program like [WinSCP](../data-store/WinSCP-data-access.html){:target="\_blank"}.
 
 While the AWS CLI can handle large files (>100GB) and the AWS Console GUI can handle up to 160GB uploads, please contact the Provena team if you know you will be uploading large or numerous files. For technical information about the storage limitations of the S3 service (which the data store is built on) you can review the AWS FAQ [here](https://aws.amazon.com/s3/faqs/#:~:text=How%20much%20data%20can%20I%20store%20in%20Amazon%20S3?){:target="\_blank"}.
 
 The maximum file size that can be uploaded is 5TB.  
-To upload files, see [Uploading a dataset](../data-store/uploading-a-dataset.md){:target="\_blank"}.
+To upload files, see [Uploading a dataset](../data-store/uploading-a-dataset.html){:target="\_blank"}.
