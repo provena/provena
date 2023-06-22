@@ -22,7 +22,7 @@ ____
 
 ## User Roles
 
-You will need to be granted roles to be able to perform tasks in Provena. Once you are logged in on the Provena [landing page](https://mds.gbrrestoration.org){:target="\_blank"}, select the **User profile icon**, highlighted below.
+You will need to be granted roles to be able to perform tasks in Provena. Once you are logged in on the Provena [landing page](http://provena.io){:target="\_blank"}, select the **User profile icon**, highlighted below.
 
 |                               User Profile Icon                                |
 | :----------------------------------------------------------------------------: |
