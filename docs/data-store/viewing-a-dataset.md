@@ -22,12 +22,9 @@ ____
 
 ## Discovering Datasets
 
-You can find datasets a number of ways once you are logged into the RRAP M&DS IS Data Store. To get started, navigate to the 'Explore Datasets' view.
+You can find datasets a number of ways once you are logged into Provena's Data Store. To get started, navigate to the 'Explore Datasets' view.
 
-You can reach this page by:
-
--   Clicking on the **Explore datasets** button, or
--   Entering information, such as the dataset name, in the **Search Datasets** field and clicking the magnifying glass button
+You can reach this page by (1) Clicking on the **Explore datasets** button, or (2) entering information, such as the dataset name, in the **Search Datasets** field and clicking the magnifying glass button.
 
 |                               Exploring the data store                                |
 | :-----------------------------------------------------------------------------------: |
@@ -45,7 +42,7 @@ As you type, results will appear which match the search query.
 
 If you would like to stop searching and return to sorting and listing - simply delete the search input.
 
-{% include notes.html content="While it is a good idea to try to correctly spell search terms, the RRAP IS is now capable of returning search results which include partial matches or incorrectly spelled terms." %}
+{% include notes.html content="While it is a good idea to try to correctly spell search terms, Provena is now capable of returning search results which include partial matches or incorrectly spelled terms." %}
 
 ### Sorting datasets
 
