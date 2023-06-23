@@ -41,7 +41,7 @@ Entities are distinguished in three ways. Their colour (1), icon (2) and type (3
 
 |                                  Record Display                                   |
 | :-------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/record.png" alt="drawing" width="300"/> |
+| <img src="../../assets/images/registry/record.png" alt="drawing" width="300"/> |
 
 To view detailed information about a record, click on it's card in the grid.
 
@@ -84,9 +84,12 @@ For example, the following search query "Moore" found datasets which referenced 
 
 Once you have discovered a record, possibly by:
 
--   [listing, sorting and filtering records](#listing-sorting-and-filtering-entities)
--   [searching for records](#searching-the-registry)
--   having a record [shared](./sharing-an-entity.html) with you
+- [Exploring the registry](#exploring-the-registry)
+  - [Required Permissions](#required-permissions)
+  - [Finding records](#finding-records)
+    - [Listing, sorting and filtering entities](#listing-sorting-and-filtering-entities)
+    - [Searching the registry](#searching-the-registry)
+  - [Viewing records](#viewing-records)
 
 You can view detailed information about the record by visiting it's details page.
 
