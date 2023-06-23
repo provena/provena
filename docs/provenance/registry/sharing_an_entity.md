@@ -31,4 +31,4 @@ After [exploring](./exploring_the_registry.html) the registry to find a record a
 
 |                              Finding the share button                              |
 | :--------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/sharing.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/sharing.png" alt="drawing" width="800"/> |
