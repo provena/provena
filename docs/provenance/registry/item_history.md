@@ -35,13 +35,13 @@ For example, the following item has no previous version:
 
 |                                      No Versions                                       |
 | :------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/no_versions.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/no_versions.png" alt="drawing" width="800"/> |
 
 Where as the item below does:
 
 |                                      Previous Versions                                       |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/previous_versions.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/previous_versions.png" alt="drawing" width="800"/> |
 
 ## Viewing previous versions
 
@@ -56,13 +56,13 @@ If the item has previous versions (see [above](#which-registry-items-have-histor
 
 |                                     History Button                                      |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/history_icon.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/history_icon.png" alt="drawing" width="800"/> |
 
 This will open a dialog which allows you to select a previous item version.
 
 |                                      Version Selector                                       |
 | :-----------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/version_selector.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/version_selector.png" alt="drawing" width="800"/> |
 
 -   (1) Is a unique identifier for this historical version of the item - you may find this useful when referring to previous versions of a registry item - for the most part you can ignore this value
 -   (2) The date and time at which this update was performed
@@ -75,7 +75,7 @@ To view the metadata of a previous version, select it in the list (1) and click 
 
 |                                      Change Version                                       |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/change_version.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/change_version.png" alt="drawing" width="800"/> |
 
 When submitted, you will be returned to the item detail view, with the details matching the previous iteration of the record.
 
@@ -85,13 +85,13 @@ If you **cannot edit the item**, you will see the following options:
 
 |                              History Tool No Edit Permission                               |
 | :----------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/history_no_edit.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/history_no_edit.png" alt="drawing" width="800"/> |
 
 If you **have permission to edit the item** you will see the following options:
 
 |                                  History Tool With Edit Permission                                  |
 | :-------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/history_edit_permissions.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/history_edit_permissions.png" alt="drawing" width="800"/> |
 
 The _revert to version_ option is covered in the [section below](#reverting-to-previous-versions). The _return to latest_ button simply restores your record view to the latest version.
 
@@ -108,19 +108,19 @@ After changing to a different historical version of an item (see [above](#viewin
 
 |                                      Revert to version button                                       |
 | :-------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/revert_to_version_button.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/revert_to_version_button.png" alt="drawing" width="800"/> |
 
 Clicking this button will show a dialogue which prompts you for a reason (1). This reason should justify why this revert operation was necessary, explaining the change for future users. When you are happy with the reason provided, click submit (2).
 
 |                                      Revert version dialog                                       |
 | :----------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/revert_version_dialog.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/revert_version_dialog.png" alt="drawing" width="800"/> |
 
 Once the update is complete, you will be returned to the detailed item view at the new latest version. You can see in the item history that a new version is created which includes your provided reason:
 
 |                                      New Version                                       |
 | :------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/new_version.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/new_version.png" alt="drawing" width="800"/> |
 
 ### Exceptions
 
@@ -130,6 +130,6 @@ Some registry item types either don't have history enabled, or require modifying
 
 |                                    Reverting a dataset                                    |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/revert_dataset.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/revert_dataset.png" alt="drawing" width="800"/> |
 
 -   **Model Runs** - model runs currently cannot be updated and therefore do not have any history. Consequently, you cannot revert to a previous version of a model run.
