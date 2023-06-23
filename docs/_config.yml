@@ -1,0 +1,24 @@
+title: Provena
+description: User documentation for Provena
+# remote_theme: just-the-docs/just-the-docs
+remote_theme: pdmosses/just-the-docs@rec-nav-2
+#logo: "/assets/images/iconRestoration.png"
+search_enabled: true
+heading_anchors: true
+last_edit_timestamp: true
+markdown: kramdown
+#aux_links_new_tab: true
+#aux_links:
+#    "RRAP-IS M&DS":
+#        - "https://mds.gbrrestoration.org/"
+#    "RRAP":
+#        - "https://gbrrestoration.org/"
+
+exclude:
+    - development.md
+    - EDITING.md
+    - information-system/data-store/user-metadata-fields.md
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
