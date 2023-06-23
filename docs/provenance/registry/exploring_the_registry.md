@@ -58,7 +58,7 @@ You can refine the list of entities by using the sorting and filtering options. 
 
 |                                 Sorting and filtering                                 |
 | :-----------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/filter_bar.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/filter_bar.png" alt="drawing" width="800"/> |
 
 ### Searching the registry
 
@@ -78,7 +78,7 @@ For example, the following search query "Moore" found datasets which referenced 
 
 |                                         Searching                                         |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/search_results.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/search_results.png" alt="drawing" width="800"/> |
 
 ## Viewing records
 
@@ -101,4 +101,4 @@ Whenever you see a copy icon, as in the screenshot below, you can click to copy 
 
 |                                   Record detailed view                                   |
 | :--------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/detailed_view.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/detailed_view.png" alt="drawing" width="800"/> |
