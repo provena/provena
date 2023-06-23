@@ -1,0 +1,31 @@
+fastapi==0.88.0
+uvicorn
+requests
+python-jose
+setuptools
+boto3
+jsonschema
+httpx
+mangum
+aws-secretsmanager-caching
+types-requests
+pydantic
+pydantic[email]
+python-multipart
+aiocache
+cachetools
+types-cachetools
+prov
+# prov-db-connector (can't use original due to bug - this is forked version)
+git+https://github.com/gbrrestoration/prov-db-connector#egg=prov-db-connector
+neo4j
+networkx
+python-dotenv
+
+# this links to the utilities package deployed as part of 
+# this provena repo - ensure this is correct in your 
+# fast api application
+../utilities/packages/python/fast-api-keycloak-auth
+
+# Shared interfaces
+../utilities/packages/python/shared-interfaces

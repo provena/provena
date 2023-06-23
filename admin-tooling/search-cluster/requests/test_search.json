@@ -1,0 +1,13 @@
+{
+        "size": 100,
+        "query": {
+            "multi_match": {
+                "query": "Jonathan Yu",
+                "fields": ["*"],
+                "type" : "cross_fields",
+                "operator": "and",
+                "lenient": true,
+                "slop": 2
+            }
+        }
+}

@@ -1,0 +1,10 @@
+{
+    "entry": [
+        "src/index.tsx"
+    ],
+    "project": [
+        "src/**/*.{ts,tsx}",
+        "!**/shared-interfaces/**",
+        "!**/vite-env.d.ts"
+    ]
+}

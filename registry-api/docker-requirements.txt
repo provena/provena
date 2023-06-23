@@ -1,0 +1,22 @@
+fastapi==0.88.0
+uvicorn
+requests
+python-jose
+setuptools
+boto3
+jsonschema
+httpx
+mangum
+aws-secretsmanager-caching
+pydantic
+pydantic[email]
+python-dotenv
+
+# requires GITHUB_TOKEN as environment variable 
+# Keycloak auth test package
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=fast-api-keycloak-auth&subdirectory=utilities/packages/python/fast-api-keycloak-auth
+
+# Shared interfaces
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=shared-interfaces&subdirectory=utilities/packages/python/shared-interfaces
+# Shared registry functionality between integration tests and api
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=registry-shared-functionality&subdirectory=utilities/packages/python/registry-shared-functionality

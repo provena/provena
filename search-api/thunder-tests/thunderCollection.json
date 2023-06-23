@@ -1,0 +1,53 @@
+[
+  {
+    "_id": "591190c1-1e8d-444b-81b2-61286122b979",
+    "colName": "API",
+    "created": "2022-11-04T04:44:49.425Z",
+    "sortNum": 10000,
+    "folders": [
+      {
+        "_id": "a4d589a3-fe00-4eae-94a1-97f84fbbbcd7",
+        "name": "access-check",
+        "containerId": "",
+        "created": "2022-11-12T02:21:33.118Z",
+        "sortNum": 10000
+      },
+      {
+        "_id": "43dff455-d467-43ca-8880-46bc6c8d0d73",
+        "name": "search",
+        "containerId": "",
+        "created": "2022-11-12T02:21:37.769Z",
+        "sortNum": 20000
+      },
+      {
+        "_id": "b4f62376-4b8b-4d88-94bd-5fae27576b82",
+        "name": "data-store",
+        "containerId": "43dff455-d467-43ca-8880-46bc6c8d0d73",
+        "created": "2022-11-12T02:21:42.269Z",
+        "sortNum": 30000
+      },
+      {
+        "_id": "1928f4c8-410e-4be6-8875-b9df06a6b153",
+        "name": "registry",
+        "containerId": "43dff455-d467-43ca-8880-46bc6c8d0d73",
+        "created": "2022-11-12T23:54:28.311Z",
+        "sortNum": 40000
+      },
+      {
+        "_id": "8db053cd-6972-4a7c-8ecd-e9d0890ee495",
+        "name": "global",
+        "containerId": "43dff455-d467-43ca-8880-46bc6c8d0d73",
+        "created": "2022-11-13T06:19:47.329Z",
+        "sortNum": 50000
+      }
+    ],
+    "settings": {
+      "headers": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{token}}"
+      },
+      "tests": []
+    }
+  }
+]

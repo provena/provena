@@ -1,0 +1,17 @@
+fastapi==0.88.0
+uvicorn
+requests
+httpx
+python-jose
+setuptools
+boto3
+jsonschema
+mangum
+pydantic
+python-dotenv
+
+# this links to the utilities package deployed as part of 
+# this provena repo - ensure this is correct in your 
+# fast api application
+../utilities/packages/python/fast-api-keycloak-auth
+../utilities/packages/python/shared-interfaces

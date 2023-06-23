@@ -1,0 +1,32 @@
+{
+    "python.testing.pytestArgs": ["identity-service"],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "explorer.compactFolders": false,
+    "python.formatting.provider": "autopep8",
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.autoIndent": "keep",
+    "editor.tabSize": 4,
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.insertSpaces": true,
+    "[javascript]": {
+        "editor.tabSize": 4
+    },
+    "[javascriptreact]": {
+        "editor.tabSize": 4
+    },
+    "[typescript]": {
+        "editor.tabSize": 4
+    },
+    "autoDocstring.docstringFormat": "numpy",
+    "autoDocstring.customTemplatePath": "templates/docstrings/rrap_docstring.mustache",
+    "cSpell.words": ["authorised", "orcid", "rocrate", "Unauthorised"],
+    "search.exclude": {
+        "**/.venv": true,
+        "package-lock.json": true,
+        "yarn.lock": true
+    },
+    "workbench.editor.enablePreview": false
+}

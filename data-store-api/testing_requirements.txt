@@ -1,0 +1,10 @@
+-r requirements.txt
+
+pytest
+pytest-depends
+autopep8
+moto[s3, dynamodb]
+pytest-dotenv
+mypy
+httpx
+pytest-mock

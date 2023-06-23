@@ -1,0 +1,9 @@
+{
+    "exclude": [
+        "*cdk.out",
+        ".venv",
+        "**/__pycache__",
+        "**/lambda_utiltity/**",
+        "**/__pycache__"
+    ]
+}

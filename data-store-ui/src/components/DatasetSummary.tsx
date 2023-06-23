@@ -1,0 +1,69 @@
+import { Theme } from "@mui/material/styles";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
+import { Link } from "react-router-dom";
+import { timestampToLocalTime } from "react-libs";
+import { ItemDataset } from "../shared-interfaces/RegistryAPI";
+import { AuthorCompactDisplayComponent } from "./DatasetDisplayParts";
+
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        root: {
+            display: "flex",
+            flexWrap: "wrap",
+            flexFlow: "column",
+            justifyContent: "left",
+            alignItems: "left",
+            marginTop: 10,
+            borderBottom: "1px solid gray",
+        },
+        button: {
+            marginRight: theme.spacing(1),
+        },
+        instructions: {
+            marginTop: theme.spacing(1),
+            marginBottom: theme.spacing(1),
+        },
+        datasetHeader: {
+            marginTop: theme.spacing(1),
+            fontSize: 24,
+        },
+        datasetMeta: {
+            fontSize: 14,
+            color: "gray",
+        },
+    })
+);
+
+type DatasetPropsType = {
+    dataset: ItemDataset;
+};
+
+const Dataset = (props: DatasetPropsType) => {
+    const classes = useStyles();
+    const dataset = props.dataset;
+
+    const createdTime = timestampToLocalTime(props.dataset.created_timestamp);
+    return (
+        <div className={classes.root}>
+            <div className={classes.datasetHeader}>
+                <Link to={`/dataset/${dataset.id}`}>
+                    {" "}
+                    {dataset.collection_format.dataset_info.name}
+                </Link>
+            </div>
+            <div>
+                <AuthorCompactDisplayComponent
+                    username={dataset.owner_username}
+                />
+            </div>
+            <div>{dataset.collection_format.dataset_info.description}</div>
+            <div className={classes.datasetMeta}>
+                <div>Record creation time: {createdTime}</div>
+            </div>
+            <hr />
+        </div>
+    );
+};
+
+export default Dataset;

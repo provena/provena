@@ -1,0 +1,11 @@
+-r requirements.txt
+
+mypy
+pytest
+pytest-depends
+requests
+types-requests
+setuptools
+moto
+smtpdfix
+httpx

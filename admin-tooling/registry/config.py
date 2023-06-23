@@ -1,0 +1,2 @@
+LOCAL_STORAGE_TOKEN_LOCATION = ".tokens.json"
+SAVE_DIRECTORY = "dumps"

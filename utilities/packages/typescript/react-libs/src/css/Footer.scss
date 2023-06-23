@@ -1,0 +1,59 @@
+@import "../themes/default/style.module.scss";
+
+// Default Footer scss style
+.footer {
+    background-color: $color_deep_gray;
+    color: $color_gray;
+    text-align: center;
+    padding-top: 60px;
+    padding-bottom: 60px;
+    a {
+        color: $color_gray;
+        padding-left: 20px;
+        &:hover {
+            color: white;
+        }
+    }
+    h2,
+    h3,
+    h4 {
+        color: $color_light_gray;
+    }
+
+    .footer-container {
+        display: flex;
+        flex-direction: column;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        max-width: 1140px;
+    }
+
+    .footer-divider {
+        padding-top: 30px;
+        padding-bottom: 30px;
+        span {
+            width: 100%;
+            display: flex;
+            margin: 0;
+            direction: ltr;
+            border-top: 1px solid $color_gray;
+            &::before {
+                box-sizing: border-box;
+                background-color: $color_gray;
+            }
+        }
+    }
+    .footer-acknowledge {
+        display: flex;
+        position: relative;
+        justify-content: space-between;
+        a {
+            color: $color_gray;
+            padding-left: 20px;
+            &:hover {
+                color: white;
+            }
+        }
+    }
+}

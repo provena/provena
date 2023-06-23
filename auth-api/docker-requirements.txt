@@ -1,0 +1,18 @@
+fastapi==0.88.0
+uvicorn
+requests
+httpx
+python-jose
+setuptools
+boto3
+jsonschema
+mangum
+pydantic
+python-dotenv
+
+# Keycloak auth test package
+# requires GITHUB_TOKEN as environment variable 
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=fast-api-keycloak-auth&subdirectory=utilities/packages/python/fast-api-keycloak-auth
+
+# Shared interfaces
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=shared-interfaces&subdirectory=utilities/packages/python/shared-interfaces

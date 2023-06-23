@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+        // emit .d.ts
+        "declaration": true,
+
+        // JS target
+        "target": "ESNext",
+        "module": "ESNext",
+
+        // Directories
+        "rootDir": "src",
+        "outDir": "dist",
+
+        // Create a source map to help with debugging
+        "sourceMap": true,
+
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "types": ["vite/client", "vite-plugin-svgr/client"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": false,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": false,
+        "jsx": "react-jsx"
+    },
+    "include": ["src"],
+    "exclude": ["node_modules", "dist"]
+}

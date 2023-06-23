@@ -1,0 +1,26 @@
+{
+    "python.testing.pytestArgs": ["tests"],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.diagnosticMode": "workspace",
+    "cSpell.words": [
+        "autouse",
+        "boto3",
+        "botocore",
+        "dynamob",
+        "faketoken",
+        "fastapi",
+        "httpx",
+        "keycloak",
+        "moto",
+        "orcid",
+        "organisation",
+        "pydantic",
+        "rocrate",
+        "uvicorn"
+    ],
+    "thunder-client.saveToWorkspace": true,
+    "mypy.runUsingActiveInterpreter": true,
+    "jupyter.jupyterServerType": "local",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
+}

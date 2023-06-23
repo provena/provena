@@ -1,0 +1,13 @@
+requests
+pydantic
+typer[all]
+pytz
+
+# Shared interfaces
+../../utilities/packages/python/shared-interfaces
+# Shared reg functionality
+../../utilities/packages/python/registry-shared-functionality
+# Keycloak utilities
+../../utilities/packages/python/keycloak-utils
+# Tooling environment manager 
+../tooling-environment-manager

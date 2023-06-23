@@ -1,0 +1,35 @@
+@import "../themes/default/style.module.scss";
+
+// Default index scss
+html {
+    color: $font_color;
+    font-family: $font_family;
+    font-size: $font_size;
+    line-height: 1.6em;
+
+    // Default theme gradient color
+    background: #142c3f; /* fallback for old browsers */
+    background: -webkit-linear-gradient(
+        to bottom,
+        #2e9fcf,
+        #142c3f
+    ); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(
+        to bottom,
+        #2e9fcf,
+        #142c3f
+    ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+    body {
+        margin: 0;
+        padding: 0;
+        border: none;
+        display: block;
+        box-sizing: border-box;
+
+        a {
+            color: $a_color;
+            text-decoration: none;
+        }
+    }
+}

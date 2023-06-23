@@ -1,0 +1,15 @@
+fastapi==0.88.0
+uvicorn
+requests
+python-jose
+setuptools
+mangum
+pydantic
+pydantic[email]
+python-dotenv
+botocore
+boto3
+requests_aws4auth
+cachetools
+aws_secretsmanager_caching
+opensearch-py

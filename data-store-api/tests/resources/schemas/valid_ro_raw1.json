@@ -1,0 +1,34 @@
+{
+    "associations": {
+        "organisation_id" : "1234"
+    },
+    "approvals": {
+        "ethics_registration": {
+            "relevant": false
+        },
+        "ethics_access": {
+            "relevant": false
+        },
+        "indigenous_knowledge": {
+            "relevant": false
+        },
+        "export_controls": {
+            "relevant": false
+        }
+    },
+    "dataset_info": {
+        "name": "Coral results 2021-02-30",
+        "description": "Results of counterfactual model run",
+        "access_info": {
+            "reposited": true
+        },
+        "publisher_id": "1234",
+        "created_date": "2021-12-25",
+        "published_date": "2021-12-25",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "keywords": [
+            "keyword1",
+            "keyword2"
+        ]
+    }
+}

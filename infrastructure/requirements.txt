@@ -1,0 +1,6 @@
+aws-cdk-lib==2.81.0
+constructs
+boto3
+aws-cron-expression-validator==1.0.4
+checksumdir==1.2.0
+typer

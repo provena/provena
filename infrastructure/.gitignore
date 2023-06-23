@@ -1,0 +1,12 @@
+*.swp
+package-lock.json
+__pycache__
+.pytest_cache
+.venv
+*.egg-info
+
+# CDK asset staging directory
+*cdk.out
+
+# this is a temporary generated file during build time and should not be included
+provena/keycloak/customised-realm.json

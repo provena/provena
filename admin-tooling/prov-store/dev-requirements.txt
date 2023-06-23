@@ -1,0 +1,4 @@
+-r requirements.txt
+mypy
+types-requests
+autopep8

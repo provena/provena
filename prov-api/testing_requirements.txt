@@ -1,0 +1,16 @@
+-r requirements.txt
+
+docker-compose
+moto[s3, dynamodb]
+
+# pytest
+pytest
+
+# pytest plugins
+pytest-dotenv
+pytest-depends
+pytest-docker
+pytest-mock
+pytest-asyncio
+
+mypy

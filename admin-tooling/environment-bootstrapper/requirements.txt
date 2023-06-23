@@ -1,0 +1,8 @@
+mdsisclienttools
+typer[all]
+
+# Shared interfaces
+../../utilities/packages/python/shared-interfaces
+
+# Tooling environment manager 
+../tooling-environment-manager

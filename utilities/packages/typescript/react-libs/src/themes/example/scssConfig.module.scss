@@ -1,0 +1,35 @@
+// Custom Scss Theme config
+
+// Palette primary and secondary color codes should only be in the format #xxxxxx or #xxx
+$palette-primary-main-color: #004B87;
+$palette-secondary-main-color: #009ae5;
+
+$global-font-family: "Open Sans", Sans-serif;
+$global-font-size: 14; //number only, uses rem units
+$basic-font-color: #004B87;
+
+$global-a-link-color: #004B87;
+
+$h1-color: #004B87;
+$h2-color: #004B87;
+$h3-color: #004B87;
+$h4-color: #004B87;
+$h5-color: #004B87;
+
+// When customizing colors, please do not change the left-hand side export variable names.
+:export {
+    palettePrimaryMainColor: $palette-primary-main-color;
+    paletteSecondaryMainColor: $palette-secondary-main-color;
+
+    globalFontFamily: $global-font-family;
+    globalFontSize: $global-font-size;
+    basicFontColor: $basic-font-color;
+
+    globalALinkColor: $global-a-link-color;
+
+    h1Color: $h1-color;
+    h2Color: $h2-color;
+    h3Color: $h3-color;
+    h4Color: $h4-color;
+    h5Color: $h5-color;
+}

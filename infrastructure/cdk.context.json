@@ -1,0 +1,28 @@
+{
+  "availability-zones:account=239021088610:region=ap-southeast-2": [
+    "ap-southeast-2a",
+    "ap-southeast-2b",
+    "ap-southeast-2c"
+  ],
+  "acknowledged-issue-numbers": [
+    22090,
+    21902,
+    8607,
+    25356,
+    25714
+  ],
+  "ssm:account=239021088610:parameterName=/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2:region=ap-southeast-2": "ami-05805b49abf7d69c4",
+  "availability-zones:account=984415158203:region=ap-southeast-2": [
+    "ap-southeast-2a",
+    "ap-southeast-2b",
+    "ap-southeast-2c"
+  ],
+  "ssm:account=984415158203:parameterName=/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2:region=ap-southeast-2": "ami-0bc5c5e0b3ca50b02",
+  "ami:account=239021088610:filters.image-type.0=machine:filters.name.0=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211129:filters.state.0=available:region=ap-southeast-2": "ami-0b7dcd6e6fd797935",
+  "availability-zones:account=276094094713:region=ap-southeast-2": [
+    "ap-southeast-2a",
+    "ap-southeast-2b",
+    "ap-southeast-2c"
+  ],
+  "ssm:account=276094094713:parameterName=/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2:region=ap-southeast-2": "ami-048863e4cc29fc7b0"
+}

@@ -1,0 +1,28 @@
+name: migrate
+help: This CLI tool provides a set of migrations which are shell wrappers of automated migration processes.
+version: 0.1.0
+
+commands:
+    - name: example-migration
+      help: Performs an example migration (which does not modify anything)
+
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+    - name: clear-app-stage
+      help: "CAUTION: Clears all items from the registry and graph store for a given stage. This does not allow PROD by default. You will need to manually clear PROD. This is a migration used when other forms of migration are too time intensive for test items (usually when manual intervention required)."
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE"]
+      flags:
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments

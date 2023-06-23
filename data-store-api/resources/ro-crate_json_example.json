@@ -1,0 +1,64 @@
+{
+    "metadata": {
+        "@context": [
+            "https://w3id.org/ro/crate/1.1/context",
+            {
+                "@vocab": "https://schema.org/"
+            }
+        ],
+        "@graph": [
+            {
+                "@type": "CreativeWork",
+                "@id": "ro-crate-metadata.json",
+                "conformsTo": {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                "dateCreated": "2022-05-05",
+                "dateModified": "2022-05-10",
+                "datePublished": "2022-05-05",
+                "author": {
+                    "@id": "https://orcid.org/0000-0000-0000-0000"
+                },
+                "about": {
+                    "@id": "./"
+                }
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "identifier": "10378.1/1685868",
+                "publisher": {
+                    "@id": "https://ror.org/00rqy9422"
+                },
+                "datePublished": "2021-12-25",
+                "dateCreated": "2021-12-25",
+                "license": {
+                    "@id": "https://creativecommons.org/licenses/by/4.0/"
+                },
+                "version": "1.2.4",
+                "name": "Coral results 2021-02-30 - w Orcid",
+                "description": "Results of counterfactual model run",
+                "keywords": ["keyword1", "keyword2"]
+            },
+            {
+                "@type": ["Person", "ContactPoint"],
+                "name": "John Smitty",
+                "email": "John.SmithFake@gmail.com",
+                "worksFor": {
+                    "@id": "https://ror.org/019wvm592"
+                },
+                "@id": "https://orcid.org/0000-0000-0000-0000"
+            },
+            {
+                "@type": "Organization",
+                "name": "University of Canberra",
+                "@id": "https://ror.org/00rqy9422"
+            },
+            {
+                "@type": "Organization",
+                "name": "Australian National University",
+                "@id": "https://ror.org/019wvm592"
+            }
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+-r requirements.txt
+
+# aws mocking framework
+moto[s3, dynamodb]
+
+# pytest
+pytest
+httpx
+
+# pytest plugins
+pytest-dotenv
+pytest-depends
+pytest-cov
+
+mypy
+autopep8

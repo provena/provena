@@ -1,0 +1,8 @@
+# normal requirements
+pydantic[email]
+requests
+boto3
+botocore
+requests_aws4auth
+
+

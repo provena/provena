@@ -1,0 +1,6 @@
+.venv/*
+.vscode/*
+tests/*
+thunder-tests/*
+environment.yml
+requirements.txt

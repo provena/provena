@@ -1,0 +1,46 @@
+[
+  {
+    "_id": "80f5e0b6-1241-4d68-84d0-48d6bbaaa8e3",
+    "colName": "prov-api",
+    "created": "2022-08-08T05:33:16.532Z",
+    "sortNum": 10000,
+    "folders": [
+      {
+        "_id": "649644b5-6e36-4ed4-ba01-313520c7aae9",
+        "name": "model-run",
+        "containerId": "",
+        "created": "2022-08-08T05:33:21.863Z",
+        "sortNum": 10000
+      },
+      {
+        "_id": "0ab4f1a1-1c3b-485c-8c1c-508ed2e5d404",
+        "name": "lineage",
+        "containerId": "",
+        "created": "2022-08-18T01:31:12.492Z",
+        "sortNum": 20000
+      },
+      {
+        "_id": "81c94dd3-dea9-4eab-900d-c26b97a0bdb0",
+        "name": "admin",
+        "containerId": "",
+        "created": "2022-10-12T04:47:06.003Z",
+        "sortNum": 30000
+      },
+      {
+        "_id": "d88ff4c8-d7bf-4a55-84c0-2e536d7be0de",
+        "name": "bulk",
+        "containerId": "",
+        "created": "2022-10-31T22:38:14.015Z",
+        "sortNum": 50000
+      }
+    ],
+    "settings": {
+      "headers": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "Bearer {{token}}"
+      },
+      "tests": []
+    }
+  }
+]

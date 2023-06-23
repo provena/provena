@@ -1,0 +1,21 @@
+FROM quay.io/keycloak/keycloak:16.0.0
+
+# Include the modules in the plugin folder
+COPY ./modules/* /opt/jboss/keycloak/providers/
+
+# Copy the realm config to bootstrap new instances
+ARG STAGE
+ARG KEYCLOAK_IMPORT
+ARG REALM_CONFIG_SOURCE_PATH
+ARG KC_THEME_NAME
+
+# Expects an environment variable 
+COPY ./${REALM_CONFIG_SOURCE_PATH} /realm-export.json
+
+# Add the keycloak import env variable - this actually refers to the path This
+# is now exported in the CDK config but we pass through here to ensure it's
+# available at build time
+ENV KEYCLOAK_IMPORT ${KEYCLOAK_IMPORT}
+
+# Include our custom theme - this is configurable by the deployer
+COPY ./themes/${KC_THEME_NAME} /opt/jboss/keycloak/themes/${KC_THEME_NAME}

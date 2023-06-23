@@ -1,0 +1,238 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://mds.gbrrestoration.org/schema/dataset",
+    "type": "object",
+    "title": "Dataset Metadata",
+    "description": "This form collects metadata about the dataset you are registering as well as the registration itself. Please ensure the fields below are completed accurately.",
+    "required": ["associations", "dataset_info"],
+    "properties": {
+        "associations": {
+            "$id": "#/properties/associations",
+            "type": "object",
+            "title": "Dataset Associations",
+            "description": "Please provide information about the organisation on behalf of which you are registering this dataset.",
+            "required": ["organisation_id"],
+            "properties": {
+                "organisation_id": {
+                    "$id": "#/properties/author/properties/organisation_id",
+                    "type": "string",
+                    "title": "Record Creator Organisation",
+                    "description": "Please select the organisation on behalf of which you are registering this data."
+                }
+            },
+            "additionalProperties": false
+        },
+        "approvals": {
+            "$id": "#/properties/approvals",
+            "type": "object",
+            "title": "Dataset Approvals",
+            "description": "Please ensure that the following approvals are considered. Your dataset may not be fit for inclusion in the Data Store if it does not meet the following requirements.",
+            "required": [
+                "ethics_registration",
+                "ethics_access",
+                "indigenous_knowledge",
+                "export_controls"
+            ],
+            "properties": {
+                "ethics_registration": {
+                    "$id": "#/properties/approvals/ethics_registration",
+                    "type": "object",
+                    "title": "Dataset Registration Ethics and Privacy",
+                    "description": "Does this dataset include any human data or require ethics/privacy approval for its registration? If so, have you included any required ethics approvals, consent from the participants and/or appropriate permissions to register this dataset in this information system?",
+                    "required": ["relevant"],
+                    "properties": {
+                        "relevant": {
+                            "$id": "#/properties/approvals/ethics_registration/properties/relevant",
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "obtained": {
+                            "$id": "#/properties/approvals/ethics_registration/properties/obtained",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "ethics_access": {
+                    "$id": "#/properties/approvals/ethics_access",
+                    "type": "object",
+                    "title": "Dataset Access Ethics and Privacy",
+                    "description": "Does this dataset include any human data or require ethics/privacy approval for enabling its access by users of the information system? If so, have you included any required consent from the participants and/or appropriate permissions to facilitate access to this dataset in this information system?",
+                    "required": ["relevant"],
+                    "properties": {
+                        "relevant": {
+                            "$id": "#/properties/approvals/ethics_access/properties/relevant",
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "obtained": {
+                            "$id": "#/properties/approvals/ethics_access/properties/obtained",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "indigenous_knowledge": {
+                    "$id": "#/properties/approvals/indigenous_knowledge",
+                    "type": "object",
+                    "title": "Indigenous Knowledge and Consent",
+                    "description": "Does this dataset contain Indigenous Knowledge? If so, do you have consent from the relevant Aboriginal and Torres Strait Islander communities for its use and access via this data store?",
+                    "required": ["relevant"],
+                    "properties": {
+                        "relevant": {
+                            "$id": "#/properties/approvals/indigenous_knowledge/properties/relevant",
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "obtained": {
+                            "$id": "#/properties/approvals/indigenous_knowledge/properties/obtained",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "export_controls": {
+                    "$id": "#/properties/approvals/export_controls",
+                    "type": "object",
+                    "title": "Export Controls",
+                    "description": "Is this dataset subject to any export controls permits? If so, has this dataset cleared any required due diligence checks and have you obtained any required permits?",
+                    "required": ["relevant"],
+                    "properties": {
+                        "relevant": {
+                            "$id": "#/properties/approvals/export_controls/properties/relevant",
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "obtained": {
+                            "$id": "#/properties/approvals/export_controls/properties/obtained",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "dataset_info": {
+            "$id": "#/properties/dataset_info",
+            "type": "object",
+            "title": "Dataset Information",
+            "description": "Please provide information about this dataset, including the name, description, creation date and publisher information.",
+            "required": [
+                "name",
+                "description",
+                "access_info",
+                "publisher_id",
+                "created_date",
+                "published_date",
+                "license"
+            ],
+            "properties": {
+                "name": {
+                    "$id": "#/properties/name",
+                    "type": "string",
+                    "pattern": "[^\\s]",
+                    "title": "Dataset name",
+                    "description": "Please provide a readable name for the dataset."
+                },
+                "description": {
+                    "$id": "#/properties/description",
+                    "type": "string",
+                    "pattern": "[^\\s]",
+                    "title": "Description",
+                    "description": "Please provide a more detailed description of the dataset. This should include the nature of the data, the intended usage, and any other relevant information."
+                },
+                "access_info": {
+                    "$id": "#/properties/access_info",
+                    "type": "object",
+                    "title": "Access Info",
+                    "description": "Please specify whether data is going to be stored in the Data Store, or referenced from an existing, externally hosted, source.",
+                    "required": ["reposited"],
+                    "properties": {
+                        "reposited": {
+                            "$id": "#/properties/access_info/properties/reposited",
+                            "type": "boolean",
+                            "title": "Data Storage",
+                            "description": "Is the data going to be stored in the Data Store?"
+                        },
+                        "uri": {
+                            "$id": "#/properties/access_info/properties/uri",
+                            "title": "Dataset URI",
+                            "description": "Provide the best URI of the externally hosted data.",
+                            "minLength": 1,
+                            "maxLength": 65536,
+                            "format": "uri",
+                            "type": "string"
+                        },
+                        "description": {
+                            "$id": "#/properties/access_info/properties/description",
+                            "title": "Access Description",
+                            "description": "Provide information about how to access the externally hosted data, or other relevant notes.",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "publisher_id": {
+                    "$id": "#/properties/publisher_id",
+                    "type": "string",
+                    "title": "Publisher",
+                    "description": "Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below."
+                },
+                "created_date": {
+                    "$id": "#/properties/created_date",
+                    "type": "string",
+                    "format": "date",
+                    "title": "Dataset Creation Date",
+                    "description": "The date on which this version of the dataset was produced or generated."
+                },
+                "published_date": {
+                    "$id": "#/properties/published_date",
+                    "type": "string",
+                    "format": "date",
+                    "title": "Dataset Publish Date",
+                    "description": "The date on which this version of the dataset was first published. If the data has never been published before - please use today's date."
+                },
+                "license": {
+                    "$id": "#/properties/license",
+                    "type": "string",
+                    "pattern": "[^\\s]",
+                    "format": "uri",
+                    "title": "Usage license",
+                    "description": "Please select a standard license for usage, by default it will be 'Copyright'."
+                },
+                "preferred_citation": {
+                    "$id": "#/properties/preferred_citation",
+                    "type": "string",
+                    "title": "Preferred dataset citation",
+                    "description": "If you would like to specify how this dataset should be cited, please use the checkbox below to indicate this preference, and enter your preferred citation in the text box."
+                },
+                "keywords": {
+                    "$id": "#/properties/keywords",
+                    "type": "array",
+                    "title": "Keywords",
+                    "description": "Provide a list of keywords which describe your dataset [Optional].",
+                    "additionalItems": true,
+                    "items": {
+                        "$id": "#/properties/keywords/items",
+                        "anyOf": [
+                            {
+                                "$id": "#/properties/keywords/items/anyOf/0",
+                                "type": "string",
+                                "pattern": "[^\\s]",
+                                "title": "Keyword",
+                                "description": "Short keyword describing dataset."
+                            }
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

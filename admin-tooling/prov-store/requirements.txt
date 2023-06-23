@@ -1,0 +1,10 @@
+requests
+pydantic
+typer[all]
+
+# Shared interfaces
+../../utilities/packages/python/shared-interfaces
+# Keycloak utilities
+../../utilities/packages/python/keycloak-utils
+# Environment manager
+../tooling-environment-manager

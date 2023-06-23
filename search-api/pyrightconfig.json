@@ -1,0 +1,13 @@
+{
+    "exclude": [
+        "cdk.out",
+        "ops_cdk.out",
+        "test_cdk.out",
+        "dev_cdk.out",
+        "stage_cdk.out",
+        "prod_cdk.out",
+        ".venv",
+        "**/__pycache__",
+        "**/lambda_utiltity/**"
+    ]
+}

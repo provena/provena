@@ -1,0 +1,29 @@
+# Includes lambda runtime 
+FROM public.ecr.aws/lambda/python:3.9
+
+# Build arg input from deployment
+ARG github_token 
+ARG branch_name
+ARG repo_string
+
+# Expose for pip install which requires authorized pulls
+ENV GITHUB_TOKEN=$github_token
+ENV BRANCH_NAME=$branch_name
+ENV REPO_STRING=$repo_string
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+COPY . .
+
+# Install git for pip install which requires git packages
+RUN yum -y install git
+
+RUN python3 -m ensurepip
+
+# add cache buster layer which can be injected with hash of extra dirs or other changed things
+ARG CACHE_BUSTER 
+RUN echo "$CACHE_BUSTER"
+
+RUN pip install --no-cache-dir --upgrade -r docker-requirements.txt 
+
+CMD ["main.handler"]

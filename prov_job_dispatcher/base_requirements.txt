@@ -1,0 +1,7 @@
+# normal requirements
+pydantic[email]
+requests
+aws_secretsmanager_caching
+boto3
+botocore
+cachetools

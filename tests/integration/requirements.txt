@@ -1,0 +1,15 @@
+pytest
+pyjwt[crypto]
+setuptools
+requests
+pytest-dotenv
+mypy
+types-requests
+pydantic[email]
+pydantic
+
+
+# from utilities packages.
+../../utilities/packages/python/keycloak-utils
+../../utilities/packages/python/shared-interfaces
+../../utilities/packages/python/registry-shared-functionality

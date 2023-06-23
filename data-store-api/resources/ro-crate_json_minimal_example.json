@@ -1,0 +1,62 @@
+{
+    "metadata": {
+        "@context": [
+            "https://w3id.org/ro/crate/1.1/context",
+            {
+                "@vocab": "https://schema.org/"
+            }
+        ],
+        "@graph": [
+            {
+                "@type": "CreativeWork",
+                "@id": "ro-crate-metadata.json",
+                "conformsTo": {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                "dateCreated": "2022-05-05",
+                "dateModified": "2022-05-10",
+                "datePublished": "2022-05-05",
+                "author": {
+                    "@id": "record/author"
+                },
+                "about": {
+                    "@id": "./"
+                }
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "identifier": "10378.1/1685868",
+                "publisher": {
+                    "@id": "dataset/publisher"
+                },
+                "datePublished": "2021-12-25",
+                "dateCreated": "2021-12-25",
+                "license": {
+                    "@id": "https://creativecommons.org/licenses/by/4.0/"
+                },
+                "name": "Coral results 2021-02-30 - w Orcid",
+                "description": "Results of counterfactual model run"
+            },
+            {
+                "@type": ["Person", "ContactPoint"],
+                "name": "John Smith Baker",
+                "email": "John.fake@gmail.com",
+                "worksFor": {
+                    "@id": "record/author/organisation"
+                },
+                "@id": "record/author"
+            },
+            {
+                "@type": "Organization",
+                "name": "University of Canberra",
+                "@id": "record/author/organisation"
+            },
+            {
+                "@type": "Organization",
+                "name": "Australian National University",
+                "@id": "dataset/publisher"
+            }
+        ]
+    }
+}

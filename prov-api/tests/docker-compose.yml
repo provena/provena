@@ -1,0 +1,12 @@
+version: "3.3"
+
+services:
+  db:
+    # The latest community version 4 - went to 5 recently
+    image: neo4j:4.4.12-community
+    ports:
+      - "7474:7474"
+      - "7473:7473"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/test

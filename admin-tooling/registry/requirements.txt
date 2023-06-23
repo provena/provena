@@ -1,0 +1,13 @@
+requests
+python-jose
+mypy
+types-requests
+pydantic
+typer[all]
+
+# Shared interfaces
+../../utilities/packages/python/shared-interfaces
+# Keycloak utilities
+../../utilities/packages/python/keycloak-utils
+# Tooling environment manager 
+../tooling-environment-manager

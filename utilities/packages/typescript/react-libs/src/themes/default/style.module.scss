@@ -1,0 +1,32 @@
+// Default Scss Config
+
+$color_primary: #004B87;
+$color_secondary: #009ae5;
+
+$color_deep_gray: #323335;
+$color_gray: #7c7c7c;
+$color_light_gray: #dedfe1;
+
+$a_color: #004B87;
+
+$font_family: "Open Sans", Sans-serif;
+$font_color: #575757;
+$font_size: 14;
+
+// Material UI variables
+:export {
+    palettePrimaryMainColor: $color_primary;
+    paletteSecondaryMainColor: $color_secondary;
+
+    globalFontFamily: $font_family;
+    globalFontSize: $font_size;
+    basicFontColor: $font_color ;
+
+    globalALinkColor: $a_color;
+
+    h1Color: $color_primary;
+    h2Color: $color_primary;
+    h3Color: $color_primary;
+    h4Color: $color_primary;
+    h5Color: $color_primary;
+}

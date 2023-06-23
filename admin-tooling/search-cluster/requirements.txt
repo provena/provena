@@ -1,0 +1,18 @@
+requests
+python-jose
+mypy
+types-requests
+pydantic
+python-dotenv
+typer[all]
+
+# requirements for v4 signed auth
+boto3
+botocore
+requests_aws4auth
+
+# shared interfaces
+../../utilities/packages/python/shared-interfaces
+
+# Tooling environment manager 
+../tooling-environment-manager

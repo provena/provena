@@ -1,0 +1,22 @@
+{
+    "python.testing.pytestArgs": ["tests"],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.diagnosticMode": "workspace",
+    "cSpell.words": [
+        "botocore",
+        "dynamob",
+        "faketoken",
+        "httpx",
+        "moto",
+        "orcid",
+        "uvicorn",
+        "rocrate",
+        "boto3",
+        "keycloak",
+        "fastapi",
+    ],
+    "thunder-client.saveToWorkspace": true,
+    "mypy.runUsingActiveInterpreter": true,
+    "jupyter.jupyterServerType": "local"
+}

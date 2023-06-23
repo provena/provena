@@ -1,0 +1,60 @@
+[
+  {
+    "_id": "dc243d27-58ac-4e80-9316-da52251790e8",
+    "colName": "data-api",
+    "created": "2022-04-27T03:34:22.014Z",
+    "sortNum": 10000,
+    "folders": [
+      {
+        "_id": "a7729147-3e4b-4d0e-946f-9f538ecbedee",
+        "name": "register",
+        "containerId": "",
+        "created": "2022-04-27T03:35:21.052Z",
+        "sortNum": 10000
+      },
+      {
+        "_id": "951bb4c4-1c2c-439d-8241-067a399f3d26",
+        "name": "registry",
+        "containerId": "",
+        "created": "2022-04-27T03:47:47.183Z",
+        "sortNum": 30000
+      },
+      {
+        "_id": "ef1e8003-d1f7-4313-bb34-36b566306f3f",
+        "name": "items",
+        "containerId": "951bb4c4-1c2c-439d-8241-067a399f3d26",
+        "created": "2022-04-27T03:52:00.927Z",
+        "sortNum": 40000
+      },
+      {
+        "_id": "6fc0fc15-2771-460e-a794-90c9208d559e",
+        "name": "credentials",
+        "containerId": "951bb4c4-1c2c-439d-8241-067a399f3d26",
+        "created": "2022-04-27T03:52:17.498Z",
+        "sortNum": 50000
+      },
+      {
+        "_id": "d85f998b-1377-4ae0-9b16-e9f6dfcefbcf",
+        "name": "metadata",
+        "containerId": "",
+        "created": "2022-04-27T03:52:47.565Z",
+        "sortNum": 60000
+      },
+      {
+        "_id": "93e13525-e94e-4024-a716-762543dd775e",
+        "name": "admin",
+        "containerId": "",
+        "created": "2022-09-26T01:35:30.855Z",
+        "sortNum": 70000
+      }
+    ],
+    "settings": {
+      "headers": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{token}}"
+      },
+      "tests": []
+    }
+  }
+]

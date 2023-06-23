@@ -1,0 +1,10 @@
+{
+    "envs": [
+        {
+            "name": "EXAMPLE",
+            "stage": "PROD",
+            "domain": "demo.example.com",
+            "realm_name": "your_realm_name"
+        }
+    ]
+}

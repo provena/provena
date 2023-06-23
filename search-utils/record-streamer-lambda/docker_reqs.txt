@@ -1,0 +1,3 @@
+# Shared interfaces
+# not currently used
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=shared-interfaces&subdirectory=utilities/packages/python/shared-interfaces

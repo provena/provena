@@ -1,0 +1,20 @@
+-r requirements.txt
+
+# pytest
+pytest
+httpx
+
+# pytest plugins
+pytest-dotenv
+pytest-depends
+pytest-docker
+pytest-mock
+pytest-asyncio
+
+# typing
+mypy
+types-requests
+types-cachetools
+
+# styling 
+autopep8
