@@ -20,9 +20,9 @@ ____
 
 # API Authentication
 
-Access to any RRAP API requires providing proof of your system access. System access is controlled through a set of roles for each of the services.
+Access to any Provena API requires providing proof of your system access. System access is controlled through a set of roles for each of the services.
 
-Authentication is provisioned by our [Authentication Server](https://auth.mds.gbrrestoration.org/auth/realms/rrap/account) and signed using the [JSON Web Token](https://jwt.io/introduction) (JWT) standard.
+Authentication is provisioned by a authentication server and signed using the [JSON Web Token](https://jwt.io/introduction) (JWT) standard.
 
 Sending signed JWTs over an encrypted HTTPS connection is a trusted and secure way to communicate your authorisation.
 
@@ -34,4 +34,4 @@ We are also in the process of designing and documenting an API authorisation pat
 
 You can make an authenticated API call by including an `Authorization` Header with the value `Bearer <your access token here>`. Each of the APIs expose a set of access check endpoints which enable you to check your access to the API in a predictable way e.g. [data store check-write-access](https://data-api.mds.gbrrestoration.org/docs#/Access%20check/check_write_access).
 
-Authorisation is established by decoding the JWT, verifying the signing signature, and reading the list of roles that your user has been granted. You can check what roles you have access to and request additional access by [logging in](../../../getting-started-is/logging-in) and visiting the [roles view of your profile](https://mds.gbrrestoration.org/profile?function=roles).
+Authorisation is established by decoding the JWT, verifying the signing signature, and reading the list of roles that your user has been granted. You can check what roles you have access to and request additional access by [logging in](../../../getting-started-is/logging-in) and visiting the [roles view of your profile](https://dev.rrap-is.com/profile?function=roles).
