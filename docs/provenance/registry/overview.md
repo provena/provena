@@ -37,13 +37,13 @@ Your user session is shared between all RRAP M&DS Components - you may already b
 
 |                                      Logged in                                       |
 | :----------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/logged_in.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/logged_in.png" alt="drawing" width="800"/> |
 
 If you are not logged in, you will see a "Click to Login" button in the upper right hand corner:
 
 |                                      Not Logged in                                       |
 | :--------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/not_logged_in.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/not_logged_in.png" alt="drawing" width="800"/> |
 
 The login process for the registry is the same as other components, see [logging in](../../getting-started-is/logging-in.html) for more information.
 
