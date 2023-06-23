@@ -47,13 +47,13 @@ If you have the appropriate permissions, as mentioned [above](#required-permissi
 
 |                                     Clone Entity Button                                      |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/clone_item_button.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/clone_item_button.png" alt="drawing" width="800"/> |
 
 Clicking the clone button will bring you to the registration form. From there, you can edit the pre-filled details and create the new item.
 
 |                                     Clone Entity Form                                      |
 | :----------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/clone_item_form.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/clone_item_form.png" alt="drawing" width="800"/> |
 
 ## FAQ
 
@@ -69,6 +69,6 @@ No, cloning an item is equivalent to creating a new item with existing details p
 
 No, cloning an item is equivalent to creating a new item with existing details pre-filled. The history of the source item is not part of the history of the new item.
 
-**Does the RRAP IS API support cloning?**
+**Does the Provena API support cloning?**
 
 No, cloning is not implemented for programmatic API use. Instead, you can `fetch` the contents of an existing record, modify them, and post the new item using the appropriate `create` endpoint.
