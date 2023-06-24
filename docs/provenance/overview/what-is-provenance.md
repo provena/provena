@@ -1,7 +1,7 @@
 ---
 layout: default
 title: What is provenance
-nav_order: 2
+nav_order: 1
 has_children: false
 grand_parent: Provenance
 parent: Provenance Overview
