@@ -36,13 +36,13 @@ The locking of a dataset is not just cosmetic, the APIs which grant credentials 
 
 |                             Requesting upload credentials for a locked dataset                             |
 | :--------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/dataset_lock/locked_api_error.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/dataset_lock/locked_api_error.png" alt="drawing" width="600"/> |
 
 If a dataset is locked, the upload tab will show a customised message:
 
 |                                  View of locked Dataset in upload tab                                   |
 | :-----------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/dataset_lock/upload_locked.PNG" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/dataset_lock/upload_locked.PNG" alt="drawing" width="600"/> |
 
 ## Who can lock a resource?
 
@@ -54,10 +54,10 @@ To apply or remove a lock, navigate to the resource in the Registry, select the 
 
 |                                        Accessing lock controls                                         |
 | :----------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/dataset_lock/finding_lock.png" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/dataset_lock/finding_lock.png" alt="drawing" width="600"/> |
 
 A helpful, brief justification must be provided for the lock or unlock action. Your identity (email) and justification will be logged in the resources's lock history (visible below). As an example of a suitable lock justification is "completed initial round of modelling and outputs finalised".
 
 |                                            Resource lock history                                             |
 | :----------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/data_store/dataset_lock/lock_event_history.PNG" alt="drawing" width="600"/> |
+| <img src="../../assets/images/data_store/dataset_lock/lock_event_history.PNG" alt="drawing" width="600"/> |
