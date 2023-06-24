@@ -85,13 +85,13 @@ If there were no validation errors in the form, you will receive a success alert
 
 |                                      Form success                                       |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/form_success.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/form_success.png" alt="drawing" width="800"/> |
 
 If there were form validation errors, or another issue occurred, you will see an error indication either on the field itself (such as when a field is not completed), or at the top of the page (when more detailed validation catches an error after submission). In this case, the format of the URL did not include the required "https" component, so an error appeared on the field:
 
 |                                      Form error                                       |
 | :-----------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/form_error.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/form_error.png" alt="drawing" width="800"/> |
 
 After correcting the issue, the submit button can be pressed again - it is safe to repeat this process until the form is accepted.
 
@@ -110,18 +110,18 @@ Start by navigating to the entity (see [exploring the registry](./exploring-the-
 
 |                                          Edit                                          |
 | :------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/edit_button.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/edit_button.png" alt="drawing" width="800"/> |
 
 When updating a registered entity, you will need to provide a reason for performing the update. This reason is documented and helps to understand how a resource may have changed over time, and why. Enter your reason in the text field as highlighted below (1).
 
 |                                      Updating reason                                       |
 | :----------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/updating_reason.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/updating_reason.png" alt="drawing" width="800"/> |
 
 Then make the desired changes to the record on the resulting form, clicking submit when you are ready to publish the updates. For help completing these forms, see [registering an entity](#registering-an-entity) above.
 
-If you see the following warning and cannot submit then please double check you have entered a reason for the update, as mentioned above.
+If Submit button is greyed and you cannot submit then please double check you have entered a reason for the update, as mentioned above.
 
 |                                      No reason provided                                       |
 | :-------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/no_reason_provided.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/no_reason_provided.png" alt="drawing" width="800"/> |
