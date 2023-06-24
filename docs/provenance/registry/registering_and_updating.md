@@ -36,7 +36,7 @@ From the home page of the Registry, click the "Register a new entity" button, as
 
 |                                   Register a new entity                                   |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/register_start.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/register_start.png" alt="drawing" width="800"/> |
 
 ### Step 2. Selecting an Entity Type
 
@@ -44,7 +44,7 @@ At the top of the page, you can select the entity type from the dropdown. Simply
 
 |                                   Select an entity type                                    |
 | :----------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/register_select.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/register_select.png" alt="drawing" width="800"/> |
 
 ### Step 3. Filling out the form
 
@@ -54,7 +54,7 @@ Form fields will provide guidance on what is expected underneath the input field
 
 |                                      Form caption                                       |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/form_caption.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/form_caption.png" alt="drawing" width="800"/> |
 
 Form fields can be of various types:
 
@@ -65,17 +65,17 @@ Form fields can be of various types:
 
 |                                      Add item                                       |
 | :---------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/add_item.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/add_item.png" alt="drawing" width="800"/> |
 
 |                                      Remove item                                       |
 | :------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/remove_item.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/remove_item.png" alt="drawing" width="800"/> |
 
 -   **Other Entities**: Some entity types require references to other registered entities. To help this process, the form allows you to search for resources of a specific type based on their properties. You can search by name, ID, or other fields. For example, when registering a "Model Run Workflow Template" you can select a model by typing a search query into the input field, selecting your desired result, and clicking it in the list. To clear your selection, use the "Clear Selection" button that appears after selection.
 
 |                                      Selecting other entities                                       |
 | :-------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/registry/selecting_other_entities.png" alt="drawing" width="800"/> |
+| <img src="../../assets/images/registry/selecting_other_entities.png" alt="drawing" width="800"/> |
 
 ### Step 4. Submitting the form and handling errors
 
