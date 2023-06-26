@@ -20,13 +20,15 @@ ____
 
 # API Access Overview
 
-All Provena services can be accessed by authorised users through the system APIs.
+All Provena services can be accessed by authorised users through the suite of system APIs.
 
 These APIs can be integrated in an automated way into any internet connected computing environment.
 
-All Provena user interfaces use these APIs to perform system operations - anything that can be done through the interfaces can be automated using the Provena APIs.
+All Provena user interfaces use these APIs to coordinate system actions - anything that can be done through the user interfaces can be automated using the Provena APIs.
 
 ## Endpoints and documentation
+
+{% include notes.html content="In the URLs referenced below, we have used \"your-deployed-domain\" to refer to your deployed Provena application's domain name." %}
 
 The Provena APIs are [REST](https://www.redhat.com/en/topics/api/what-is-a-rest-api)ful Python [ASGI](https://asgi.readthedocs.io/en/latest/) compliant services. The API endpoints are linked below. Each API publishes two documentation pages:
 
@@ -46,6 +48,10 @@ The Provena APIs are [REST](https://www.redhat.com/en/topics/api/what-is-a-rest-
     -   API: https://auth-api.your-deployed-domain
     -   Swagger Documentation: https://auth-api.your-deployed-domain/docs
     -   Redoc Documentation: https://auth-api.your-deployed-domain/redoc
+-   **Search API**:
+    -   API: https://search.your-deployed-domain
+    -   Swagger Documentation: https://search.your-deployed-domain/docs
+    -   Redoc Documentation: https://search.your-deployed-domain/redoc
 
 ## How to use the Provena APIs
 
