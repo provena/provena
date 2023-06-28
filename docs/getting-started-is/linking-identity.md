@@ -57,7 +57,7 @@ If this link isn't working for you, please follow the instructions [here](../pro
 
 |                                  Person Registration Form                                   |
 | :-----------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/registry/person_registration.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/registry/person_registration.png" alt="drawing" width="800"/> |
 
 ### Fill out form details
 
@@ -89,13 +89,13 @@ Otherwise, you can click the profile icon in the top right (1), then "identity" 
 
 |                                       Identity Page                                       |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/link_service/identity_page.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/link_service/identity_page.png" alt="drawing" width="800"/> |
 
 Use the search tool (1) to input your name. This will search the registry. You will see your newly registered Person in the list. Select the item in the list (2).
 
 |                                   Search for yourself                                   |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/link_service/search_link.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/link_service/search_link.png" alt="drawing" width="800"/> |
 
 If you are not appearing try:
 
@@ -112,13 +112,13 @@ If validation succeeds, you will be prompted to confirm the assignment (1) or cl
 
 |                                     Successful Validation                                      |
 | :--------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/link_service/validation_success.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/link_service/validation_success.png" alt="drawing" width="800"/> |
 
 If a validation error occurs, the error will be displayed. For example, the below error indicates that the selected Person is not owned by you, therefore disabling linking.
 
 |                                       Failed Validation                                       |
 | :-------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/link_service/validation_failed.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/link_service/validation_failed.png" alt="drawing" width="800"/> |
 
 If you believe the validation error is incorrect, try:
 
@@ -133,7 +133,7 @@ Once you are confident you have selected the correct Person, you can click the "
 
 |                                Successfully Linked                                 |
 | :--------------------------------------------------------------------------------: |
-| <img src="../../assets/images/link_service/linked.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/link_service/linked.png" alt="drawing" width="800"/> |
 
 ## FAQ
 
@@ -168,7 +168,7 @@ All actions which are classified as creation or modification will be blocked. Yo
 
 |                                   Required Person Link                                   |
 | :--------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/link_service/require_link.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/link_service/require_link.png" alt="drawing" width="800"/> |
 
 These errors currently can appear when:
 
