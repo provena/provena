@@ -49,13 +49,13 @@ To start the upload process, (1) click on the **Upload data** tab, then request 
 
 |                                    Uploading small to medium files                                    |
 | :---------------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/uploadSmallMediumFilesStep1.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/uploadSmallMediumFilesStep1.png" alt="drawing" width="600"/> |
 
 Next, open the link to AWS system, by either clicking on the **Click to open storage location** button or the link in the text. You will then be taken to the AWS S3 bucket location which will house the dataset files. The associated metadata record will be seen as a ro-create-metadata.json file.
 
 |                                    Uploading small to medium files                                    |
 | :---------------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/uploadSmallMediumFilesStep2.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/uploadSmallMediumFilesStep2.png" alt="drawing" width="600"/> |
 
 In the AWS environment:
 
