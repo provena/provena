@@ -62,11 +62,11 @@ Open WinSCP and the Login dialog will appear, on the dialog enter the above cred
 
 |                                      WinSCP Login                                       |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/winSCP-Login1.png" alt="drawing" width="900"/> |
+| <img src="../assets/images/data_store/winSCP-Login1.png" alt="drawing" width="900"/> |
 
 |                             WinSCP Login (Advance settings)                             |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/winSCP-Login2.png" alt="drawing" width="900"/> |
+| <img src="../assets/images/data_store/winSCP-Login2.png" alt="drawing" width="900"/> |
 
 ---
 
@@ -78,7 +78,7 @@ Open WinSCP and the Login dialog will appear, on the dialog enter the above cred
 
 |                                        Uploading                                        |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/winSCP-Upload.png" alt="drawing" width="900"/> |
+| <img src="../assets/images/data_store/winSCP-Upload.png" alt="drawing" width="900"/> |
 
 ---
 
@@ -90,4 +90,4 @@ Open WinSCP and the Login dialog will appear, on the dialog enter the above cred
 
 |                                        Downloading                                        |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/winSCP-Download.png" alt="drawing" width="900"/> |
+| <img src="../assets/images/data_store/winSCP-Download.png" alt="drawing" width="900"/> |
