@@ -37,13 +37,13 @@ To log into Provena, click on the **Click to login** button on the top right on 
 
 |                      Provena home page                       |
 | :-------------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/landingPage.png" alt="drawing" width="400"/> |
+| <img src="../assets/images/access/landingPage.png" alt="drawing" width="400"/> |
 
 From here you will be able to select from a list of identity providers to log into Provena.
 
 |                           Existing account access option                           |
 | :--------------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/access_types.png" alt="drawing" width="400"/> |
+| <img src="../assets/images/access/access_types.png" alt="drawing" width="400"/> |
 
 ### (Recommended) Australian Access Federation (AAF)
 
@@ -51,7 +51,7 @@ Click the **Australian Access Federation** option which will take you to the AAF
 
 |                                AAF Access dialog                                 |
 | :------------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/aaf_access.png" alt="drawing" width="400"/> |
+| <img src="../assets/images/access/aaf_access.png" alt="drawing" width="400"/> |
 
 Search and select your organisation then select **Continue to your organisation**. You will then sign in with your usual organisation credentials, you will be redirected back to Provena if successful.
 
