@@ -26,13 +26,13 @@ You will need to be granted roles to be able to perform tasks in Provena. Once y
 
 |                               User Profile Icon                                |
 | :----------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/userIcon.png" alt="drawing" height="50"/> |
+| <img src="../assets/images/access/userIcon.png" alt="drawing" height="50"/> |
 
 You then select the **Roles** tab on the left hand side of your profile page.
 
 |                                   Roles tab                                    |
 | :----------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/rolesTab.png" alt="drawing" height="50"/> |
+| <img src="../assets/images/access/rolesTab.png" alt="drawing" height="50"/> |
 
 ## Access levels
 
@@ -47,22 +47,22 @@ Below is an image of the Profile page with the access levels shown. To request a
 
 |                                   User Roles                                    |
 | :-----------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/userRoles.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/access/userRoles.png" alt="drawing" width="600"/> |
 
 Once you have completed selecting the roles you require, click the **Request Roles Update** button.
 
 |                                    User Roles Request                                    |
 | :--------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/requestRolesUpdate.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/access/requestRolesUpdate.png" alt="drawing" width="600"/> |
 
 You then confirm the request by clicking the **Confirm** button.
 
 |                                 User Roles Confirmation                                  |
 | :--------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/confirmRolesUpdate.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/access/confirmRolesUpdate.png" alt="drawing" width="600"/> |
 
 You go back to the to Provena's home page by clicking the **Return Home** button.
 
 |                                   Return home                                    |
 | :------------------------------------------------------------------------------: |
-| <img src="../../assets/images/access/returnHome.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/access/returnHome.png" alt="drawing" width="600"/> |
