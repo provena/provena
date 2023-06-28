@@ -36,14 +36,14 @@ If new information regarding a dataset comes to light, the corresponding metadat
 
 |                                      Update metadata                                     |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/updateMetadataStep1.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/data_store/updateMetadataStep1.png" alt="drawing" width="800"/> |
 
 
 A reason for updating the metadata record **must** be entered before the updated record can be saved. An error will be seen at the bottom of the page and the **submit** button will be obscured if you do no tso this. Update the metadata record with the new information and click on submit at the bottom of the page.
 
 |                                      Update metadata reason                                     |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/updateMetadataStep2.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/data_store/updateMetadataStep2.png" alt="drawing" width="800"/> |
 
 
 
@@ -54,6 +54,6 @@ The data store's dataset detail view (see [viewing a dataset](./viewing-a-datase
 
 |                                      Dataset History                                      |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/dataset_history.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/data_store/dataset_history.png" alt="drawing" width="800"/> |
 
 For instructions on how to use this tool, see [registry item history](../provenance/registry/item_history).
