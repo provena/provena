@@ -28,7 +28,7 @@ You can reach this page by (1) Clicking on the **Explore datasets** button, or (
 
 |                               Exploring the data store                                |
 | :-----------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/viewDataset.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/viewDataset.png" alt="drawing" width="600"/> |
 
 ### Searching the data store
 
@@ -36,7 +36,7 @@ To search the data store, start entering a search query into the 'Search Dataset
 
 |                                   Searching the data store                                   |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/searchingDatastore.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/searchingDatastore.png" alt="drawing" width="600"/> |
 
 As you type, results will appear which match the search query.
 
@@ -52,7 +52,7 @@ To select a sorting option, use the sort drop down:
 
 |                              Sorting items in the data store                               |
 | :----------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/sortingDatastore.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/sortingDatastore.png" alt="drawing" width="600"/> |
 
 After selecting a different sort option, the list of datasets will be refreshed.
 
@@ -62,7 +62,7 @@ You can filter datasets by their organisation using the check boxes in the left 
 
 |                                  Filtering by organisation                                   |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/organisationFilter.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/organisationFilter.png" alt="drawing" width="600"/> |
 
 ### Loading more results
 
@@ -76,7 +76,7 @@ If you see the "Load More" button at the bottom of the list (1), click it to loa
 
 |                                Loading more results                                |
 | :--------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/loadMore.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/loadMore.png" alt="drawing" width="600"/> |
 
 ## Selecting a dataset
 
@@ -84,7 +84,7 @@ Once you have found the dataset you are looking for, click on the dataset name i
 
 |                                   Dataset metadata view                                   |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/datasetMetadata.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/datasetMetadata.png" alt="drawing" width="600"/> |
 
 ## Metadata
 
@@ -99,7 +99,7 @@ To share, click on the **Copy URL** button (1). Then paste the link into an emai
 
 |                                         Dataset handle link                                          |
 | :--------------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/shareDataset.png" alt="drawing" width="200" align ="left"/> |
+| <img src="../assets/images/data_store/shareDataset.png" alt="drawing" width="200" align ="left"/> |
 
 {% include notes.html content=" Users <strong>must</strong> to be logged into Provena to be able to access the data. Users without an Information System account will need to create one before viewing the data." %}
 
