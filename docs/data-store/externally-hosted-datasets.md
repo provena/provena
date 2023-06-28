@@ -30,4 +30,4 @@ If you need to download or upload files - you should consult the "External Acces
 
 |                             Externally hosted dataset details                              |
 | :----------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/externallyHosted.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/data_store/externallyHosted.png" alt="drawing" width="800"/> |
