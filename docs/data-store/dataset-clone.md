@@ -28,7 +28,7 @@ If you have sufficient [permissions](../provenance/registry/clone#required-permi
 
 |                                  Clone Dataset Button                                   |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/clone_dataset.png" alt="drawing" width="800"/> |
+| <img src="../assets/images/data_store/clone_dataset.png" alt="drawing" width="800"/> |
 
 Cloning a Dataset is no different to cloning other [Registry](../provenance/registry/overview) entity types - the metadata details will be prefilled.
 
