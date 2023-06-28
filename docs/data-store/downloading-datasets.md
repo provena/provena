@@ -66,7 +66,7 @@ The download dataset files page will appear.
 
 |                                   Downloading dataset files                                    |
 | :--------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/downloadDatasetFiles.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/downloadDatasetFiles.png" alt="drawing" width="600"/> |
 
 You will be able to download individual files (using a GIU) or the whole dataset (using AWS CLI) following the instructions on the screen (also listed below).
 
