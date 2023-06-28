@@ -32,7 +32,7 @@ The Data Store facilitates registration and creation of datasets for a project. 
 
 |                                      Simple Data Store                                      |
 | :-----------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/Data_Store_simple.jpg" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/Data_Store_simple.jpg" alt="drawing" width="600"/> |
 
 ## What can users do in the Data Store?
 
