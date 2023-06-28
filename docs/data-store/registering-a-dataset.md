@@ -25,7 +25,7 @@ Users start the dataset registration process by logging into Provena. They then 
 
 |                                Selecting Data Store from menu                           |
 | :-------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/data_store/selectDataStoreFromMenu.png" alt="menu_button" width = "200"/> |
+| <img src="../assets/images/data_store/selectDataStoreFromMenu.png" alt="menu_button" width = "200"/> |
 
 
 then they click on the **Register Dataset** button.
@@ -33,7 +33,7 @@ then they click on the **Register Dataset** button.
 
 |                                 Registering a dataset                                    |
 | :---------------------------------------------------------------------------------:      |
-| <img src="../../assets/images/data_store/registerDataset.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/registerDataset.png" alt="drawing" width="600"/> |
 
 
 When registering a dataset with Provena's Data Store you are initially required to complete a metadata record. The inputs requested are listed below, make sure you have these prior to filling out the form. After submitting, the system generates a persistent unique identifier that can be used similarly to a Digital Object Identifier (DOI). The generation of metadata records will facilitate the sharing and discovery of data.
