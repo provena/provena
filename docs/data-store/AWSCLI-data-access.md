@@ -34,7 +34,7 @@ Paste the credentials into your AWS CLI terminal.
 
 |                                 Uploading large files                                    |
 | :---------------------------------------------------------------------------------:      |
-| <img src="../../assets/images/data_store/uploadLargeFilesStep1.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/uploadLargeFilesStep1.png" alt="drawing" width="600"/> |
 
 
 Navigate to the location of your dataset on your computer using a terminal window and run the the AWS S3 sync command shown below. The XXXXX should be the folder where your dataset is and the number 10378-N-NNNNNN is the handle associated with the dataset that was minted when the user created the metadata record.
