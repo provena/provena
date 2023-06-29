@@ -20,10 +20,6 @@ parent: Uploading a dataset
 ____
 </details>
 
-## Overview
-
-TO DO
-
 ### Setting up the AWS CLI v2
 In order to use the AWS CLI for uploading (and downloading) you will need to install it first. Please see [this page](./setting-up-the-aws-cli.html){:target="\_blank"} for instructions on how to setup the AWS CLI v2 on your system.
 
