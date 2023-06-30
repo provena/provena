@@ -60,4 +60,3 @@ Some implementation notes:
 -   the class `DeviceFlowManager` exposes a method `get_auth` which can be used directly with the Python `Requests` library - an example of using this method is provided as discussed below
 -   a browser window is automatically opened when possible - otherwise, the user would need to open the link themselves
 
-The blog [notebooks](https://gbrrestoration.github.io/rrap-demo-blog/) make extensive use of this authorisation workflow and serve as a good example of how to use it.
