@@ -1,0 +1,6 @@
+.sass-cache/
+_site/
+.jekyll-cache/
+.jekyll-metadata
+scrape.sh
+scraped_files
