@@ -100,11 +100,7 @@ Once a Provena deployment has been configured and deployed as per the above guid
 
 Provena comes with a suite of fully developed User Interface web pages that facilitate a user friendly interaction with the Provena APIs and resources.
 
-Additionally, Provena has well documented REST APIs (see API endpoint documentation) which can be interacted with directly using a REST client such as Postman or thunderclient, or programmatically using Python, for example. Programmatic interactions are recommended for our power users and we have guide on authentication for this.
-
-### TODO
-
-_LINK TO DOCUMENTATION ON PROGRAMATIC INTERACTIONS WITH PROVENA_
+Additionally, all  Provena services can be accessed by authorised users through the system APIs. Provena has well documented REST APIs (see API endpoint documentation in READMEs) which can be interacted with directly using a REST client such as Postman or thunderclient, or programmatically using Python, for example. Programmatic interactions are recommended for our power users and we have guide on authentication for this. [Link to API access docs](http://docs.provena.io/API-access/).
 
 ## Testing
 
