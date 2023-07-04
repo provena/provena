@@ -1,3 +1,3 @@
-# RRAP M&DS Knowledge Hub
+# Provena Knowledge Hub
 
-[Documentation](https://gbrrestoration.github.io/rrap-mds-knowledge-hub/), knowledge sharing, issue tracking and discussions related to the RRAP M&DS sub-program of work.
+[Documentation](http://docs.provena.io), knowledge sharing, issue tracking and discussions related to the Provena system.
