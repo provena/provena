@@ -6,7 +6,7 @@ Spell checking can be done on the Markdown files using cspell. This can be acces
 
 This repo is configured with cspell:
 - Config: `cspell.json`
-- Special words: `rrap-mds-words.txt`
+- Special words: `provena-words.txt`
 
 ### Spell checking in VS code
 
