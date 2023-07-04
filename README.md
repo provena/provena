@@ -81,20 +81,10 @@ The Search API is used across many of the Provena UIs as a simple way to search 
 For more info on the Search API:  
 [Search API Readme](./search-api/README.md)
 
-## System Architecture
-
-The following diagrams represent that basic architecture of the system:
-
-### TODO
 
 ## Technologies Used
 
-Give a brief description, purpose, and justification of choice for each technology used in Provena.
-
-### TODO
-
--   Fast API, typescript, dynamo, neo4j, github, aws (pipelines, ec2 instances?), authentication
-    what else?
+Please visit the READMEs of the respective compoents for information on the technologies in each component. Links are included in component descriptions above.
 
 ## Getting Started
 
@@ -110,11 +100,7 @@ Once a Provena deployment has been configured and deployed as per the above guid
 
 Provena comes with a suite of fully developed User Interface web pages that facilitate a user friendly interaction with the Provena APIs and resources.
 
-Additionally, Provena has well documented REST APIs (see API endpoint documentation) which can be interacted with directly using a REST client such as Postman or thunderclient, or programmatically using Python, for example. Programmatic interactions are recommended for our power users and we have guide on authentication for this.
-
-### TODO
-
-_LINK TO DOCUMENTATION ON PROGRAMATIC INTERACTIONS WITH PROVENA_
+Additionally, all  Provena services can be accessed by authorised users through the system APIs. Provena has well documented REST APIs (see API endpoint documentation in READMEs) which can be interacted with directly using a REST client such as Postman or thunderclient, or programmatically using Python, for example. Programmatic interactions are recommended for our power users and we have guide on authentication for this. See our API access docs: [API access docs](http://docs.provena.io/API-access/).
 
 ## Testing
 
@@ -132,9 +118,8 @@ These are some basic end-to-end system tests which test core functionality pathw
 
 ## Documentation
 
-### TODO
-
-Where is the general purpose documentation hub for Provena?
+### General Provena Docs
+[Click here for general purpose Provena documentation](http://docs.provena.io/)
 
 ### API endpoint documentation
 
@@ -146,11 +131,7 @@ Provena is available via an open-source licence (BSD 3-clause) allowing your pro
 
 ## Contact Information
 
-### TODO
-
-Determine desired email address for contact.
-
-To contact the Provena development team, use this email address: [@csiro.au](mailto:@csiro.au)
+Contact Provena Developers via [https://www.csiro.au/en/contact](https://www.csiro.au/en/contact)
 
 ## Contributing
 
