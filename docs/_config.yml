@@ -1,7 +1,8 @@
 title: Provena
 description: User documentation for Provena
-theme: "just-the-docs"
+#theme: "just-the-docs"
 #remote_theme: pdmosses/just-the-docs@rec-nav-2
+remote_theme: just-the-docs/just-the-docs@v0.5.3
 logo: "/assets/images/provena-logo.png"
 search_enabled: true
 heading_anchors: true
