@@ -1,5 +1,7 @@
 title: Provena
 description: User documentation for Provena
+theme: just-the-docs
+url: http://docs.provena.io
 #theme: "just-the-docs"
 #remote_theme: pdmosses/just-the-docs@rec-nav-2
 remote_theme: just-the-docs/just-the-docs@v0.5.3
