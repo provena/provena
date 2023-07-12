@@ -2,7 +2,6 @@
 layout: default
 title: Discovering and viewing datasets
 nav_order: 6
-grand_parent: Provena
 parent: Data store
 ---
 

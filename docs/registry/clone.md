@@ -2,7 +2,6 @@
 layout: default
 title: Cloning an Item
 nav_order: 8
-grand_parent: Information System
 parent: Registry
 ---
 

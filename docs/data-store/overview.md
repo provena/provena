@@ -3,7 +3,6 @@ layout: default
 title: Overview
 nav_order: 1
 parent: Data store
-grand_parent: Provena
 ---
 
 {: .no_toc }

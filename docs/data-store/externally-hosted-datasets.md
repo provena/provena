@@ -2,7 +2,6 @@
 layout: default
 title: Externally hosted datasets
 nav_order: 13
-grand_parent: Information System
 parent: Data store
 ---
 

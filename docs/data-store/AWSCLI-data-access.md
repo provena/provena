@@ -2,8 +2,8 @@
 layout: default
 title: Data access to S3 with AWS CLI 
 nav_order: 10
-grand_parent: Data Store
-parent: Uploading a dataset
+grand_parent: Data store
+parent: Uploading dataset files
 ---
 
 {: .no_toc }

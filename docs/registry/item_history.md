@@ -3,7 +3,6 @@ layout: default
 title: Item History
 nav_order: 7
 has_children: false
-grand_parent: Information System
 parent: Registry
 ---
 

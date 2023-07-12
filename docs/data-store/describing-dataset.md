@@ -2,7 +2,6 @@
 layout: default
 title: Describing a dataset
 nav_order: 4
-grand_parent: Provena
 parent: Data store
 ---
 

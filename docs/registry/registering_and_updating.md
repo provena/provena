@@ -3,7 +3,6 @@ layout: default
 title: Registering an Entity
 nav_order: 2
 has_children: false
-grand_parent: Information System
 parent: Registry
 ---
 
