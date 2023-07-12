@@ -2,7 +2,6 @@
 layout: default
 title: Access Control
 nav_order: 5
-grand_parent: Information System
 parent: Registry
 ---
 

@@ -2,7 +2,6 @@
 layout: default
 title: Linking user account to a Person in the Registry
 nav_order: 3
-grand_parent: Information System
 parent: Getting started with Provena
 ---
 

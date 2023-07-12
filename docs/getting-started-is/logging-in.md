@@ -2,7 +2,6 @@
 layout: default
 title: Logging in to Provena
 nav_order: 1
-grand_parent: Provena
 parent: Getting started with Provena
 ---
 

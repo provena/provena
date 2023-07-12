@@ -2,7 +2,6 @@
 layout: default
 title: Cloning datasets
 nav_order: 16
-grand_parent: Information System
 parent: Data store
 ---
 

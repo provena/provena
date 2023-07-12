@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Digital object identifiers
-nav_order: 6
+nav_order: 7
 ---
 # About digital object identifiers
 <details  open markdown="block">

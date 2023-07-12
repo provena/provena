@@ -2,7 +2,6 @@
 layout: default
 title: Resource Locks
 nav_order: 6
-grand_parent: Information System
 parent: Registry
 ---
 

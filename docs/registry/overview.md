@@ -3,7 +3,6 @@ layout: default
 title: Registry Overview
 nav_order: 1
 has_children: false
-grand_parent: Information System
 parent: Registry
 ---
 

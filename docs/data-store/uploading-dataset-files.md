@@ -2,8 +2,8 @@
 layout: default
 title: Uploading dataset files
 nav_order: 5
-grand_parent: Provena
 parent: Data store
+has_children: true
 ---
 
 {: .no_toc }

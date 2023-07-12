@@ -3,13 +3,9 @@ layout: default
 title: Registry
 nav_order: 5
 has_children: true
-grand_parent: RRAP M&DS
-parent: Provena
 ---
 
 # Registry
-
-Click [here](https://registry.mds.gbrrestoration.org){:target="\_blank"} to visit the RRAP M&DS IS Registry.
 
 ## What's in this section?
 
