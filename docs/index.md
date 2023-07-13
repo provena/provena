@@ -22,10 +22,10 @@ Features:
 - **Open-source**: Provena is available via an open-source licence (BSD 3-clause) allowing your project to deploy an instance with freedom to operate.
 - **Theming and branding**: Configure and customise a Provena instance with your organisational branding and styling.
 
-**Github repository link:** https://github.com/provena/provena
+**Github repository link:** [https://github.com/provena/provena](https://github.com/provena/provena)
 
 # Acknowledgements
 
-The development of Provena Version 1.0 was funded by Reef Restoration and Adaptation Program (RRAP), which is a partnership between the Australian Government’s Reef Trust and the Great Barrier Reef Foundation, and is being used to support the RRAP Modelling and Decision Support (MDS) Subprogram (https://gbrrestoration.org/program/modelling-and-decision-support/).
+The development of Provena Version 1.0 was funded by [Reef Restoration and Adaptation Program (RRAP)](https://gbrrestoration.org), which is a partnership between the Australian Government’s Reef Trust and the Great Barrier Reef Foundation, and is being used to support the RRAP Modelling and Decision Support (MDS) Subprogram ([https://gbrrestoration.org/program/modelling-and-decision-support/](https://gbrrestoration.org/program/modelling-and-decision-support/)).
 
 
