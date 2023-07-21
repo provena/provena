@@ -8,7 +8,7 @@ jsonschema
 httpx
 mangum
 aws-secretsmanager-caching
-pydantic
+pydantic==1.*
 python-dotenv
 aiocache
 

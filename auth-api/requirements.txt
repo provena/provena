@@ -7,7 +7,7 @@ setuptools
 boto3
 jsonschema
 mangum
-pydantic
+pydantic==1.*
 python-dotenv
 
 # this links to the utilities package deployed as part of 

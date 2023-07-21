@@ -11,9 +11,8 @@ setup(
         ]
     ),
     install_requires=[
-        'pydantic',
         'fastapi',
-        'pydantic[email]',
+        'pydantic[email]==1.*',
         'email-validator'
     ],
     package_data={

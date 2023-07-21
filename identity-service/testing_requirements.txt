@@ -6,7 +6,6 @@ pytest
 # pytest plugins
 pytest-dotenv
 pytest-depends
-pytest-docker
 pytest-mock
 pytest-asyncio
 httpx
