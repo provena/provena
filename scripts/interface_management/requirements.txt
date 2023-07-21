@@ -1,2 +1,2 @@
 pydantic-to-typescript
-pydantic[email]
+pydantic[email]==1.*

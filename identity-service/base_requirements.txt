@@ -4,8 +4,7 @@ requests
 python-jose
 setuptools
 mangum
-pydantic
-pydantic[email]
+pydantic[email]==1.*
 python-dotenv
 botocore
 boto3

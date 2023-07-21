@@ -8,8 +8,7 @@ jsonschema
 httpx
 mangum
 aws-secretsmanager-caching
-pydantic
-pydantic[email]
+pydantic[email]==1.*
 python-dotenv
 
 # requires GITHUB_TOKEN as environment variable 

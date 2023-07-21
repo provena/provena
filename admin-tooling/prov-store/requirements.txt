@@ -1,5 +1,5 @@
 requests
-pydantic
+pydantic==1.*
 typer[all]
 
 # Shared interfaces

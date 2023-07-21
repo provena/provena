@@ -2,7 +2,7 @@ requests
 python-jose
 mypy
 types-requests
-pydantic
+pydantic==1.*
 python-dotenv
 typer[all]
 

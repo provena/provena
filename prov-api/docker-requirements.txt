@@ -9,11 +9,10 @@ jsonschema
 httpx
 mangum
 aws-secretsmanager-caching
-pydantic
+pydantic==1.*
 cachetools
 aiocache
 types-cachetools
-pydantic[email]
 prov
 # prov-db-connector (can't use original due to bug - this is forked version)
 git+https://github.com/gbrrestoration/prov-db-connector#egg=prov-db-connector

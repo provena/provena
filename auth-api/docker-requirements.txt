@@ -7,7 +7,7 @@ setuptools
 boto3
 jsonschema
 mangum
-pydantic
+pydantic==1.*
 python-dotenv
 
 # Keycloak auth test package

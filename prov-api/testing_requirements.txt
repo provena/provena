@@ -9,7 +9,7 @@ pytest
 # pytest plugins
 pytest-dotenv
 pytest-depends
-pytest-docker
+pytest-docker==1.*
 pytest-mock
 pytest-asyncio
 

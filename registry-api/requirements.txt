@@ -9,8 +9,7 @@ httpx
 mangum
 aws-secretsmanager-caching
 types-requests
-pydantic
-pydantic[email]
+pydantic[email]==1.*
 python-dotenv
 
 # this links to the utilities package deployed as part of 

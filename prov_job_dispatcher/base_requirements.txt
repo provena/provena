@@ -1,5 +1,5 @@
 # normal requirements
-pydantic[email]
+pydantic[email]==1.*
 requests
 aws_secretsmanager_caching
 boto3

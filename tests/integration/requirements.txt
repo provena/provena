@@ -5,8 +5,7 @@ requests
 pytest-dotenv
 mypy
 types-requests
-pydantic[email]
-pydantic
+pydantic[email]==1.*
 
 
 # from utilities packages.
