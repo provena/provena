@@ -2,7 +2,7 @@
 layout: default
 nav_order: 2
 title: Versioning Overview 
-has_children: true
+has_children: false
 parent: Versioning
 ---
 # Versioning Overview 
@@ -36,3 +36,8 @@ Other use cases include:
 6. A versioned item is a separate entity to other versioned items. Users should be able to view a versioned item independently of previous versions
 7. Provena provides functionality to navigate to the current revision and previous revisions distinctly
 
+## Next steps
+
+* [Versioning FAQs](./versioning-faq.html)
+* [How to create versions](./how-to-version.html) 
+* [How to create versions](./how-to-view-versions.html)
