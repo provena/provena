@@ -11,7 +11,7 @@ parent: Versioning
 ## Viewing version info in the Registry
 
 
-### Step 1. Navigate to Versioning tab in the dataset record in the Data Store
+### Step 1. Navigate to Versioning tab in the item record in the Registry
 
 - Ensure you're logged in.
 - Navigate to the Registry.
@@ -20,7 +20,7 @@ parent: Versioning
 
 |                         Versioning Tab                                                                 |
 | :----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-registry-versioning-tab.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-registry-versioning-tab.jpg" alt="drawing" width="600"/> |
 
 
 You will be able to view the version history including the current and previous versions.
@@ -41,13 +41,13 @@ Clicking on the link of the ID of the version will enable you to navigate to tha
 
 ### Step 2. Viewing lineage
 
-If you would like to view the lineage graph of the dataset, click on the "LINEAGE GRAPH" tab to view the dataset lineage.
+If you would like to view the lineage graph of the item, click on the "EXPLORE LINEAGE" button to view the lineage.
 
 |             Select Explore Lineage button                                     |
 | :----------------------------------------------------------------------------------------------------: |
 |<img src="../assets/images/versioning/versioning-registry-view-lineage.png" alt="drawing" width="600"/> |
 
-You will see the direct lineage of the dataset in the provenance graph viewer as shown below.
+You will see the direct lineage of the item in the provenance graph viewer as shown below.
 
 |              Explore Lineage in Provenance Store                                     |
 | :----------------------------------------------------------------------------------------------------: |

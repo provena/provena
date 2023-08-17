@@ -39,5 +39,6 @@ Other use cases include:
 ## Next steps
 
 * [Versioning FAQs](./versioning-faq.html)
-* [How to create versions](./how-to-version.html) 
-* [How to create versions](./how-to-view-versions.html)
+* [How to create versions in the Registry](./how-to-version.html) 
+* [How to create versions in the Data Store](./how-to-version-in-data-store.html)
+* [How to view version information and lineage](./how-to-view-versions.html)
