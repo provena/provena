@@ -48,7 +48,7 @@ _Agents_ and _Activities_ cannot be versioned, this includes:
 
 ## Next steps
 
--   [Versioning FAQs](./versioning-faq.html)
+-   [Versioning FAQs](../faq.html#versioning)
 -   [How to create versions in the Registry](./how-to-version.html)
 -   [How to create versions in the Data Store](./how-to-version-in-data-store.html)
 -   [How to view version information and lineage](./how-to-view-versions.html)

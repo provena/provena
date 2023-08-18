@@ -107,3 +107,9 @@ If you continue expanding the nodes including the version activity node, and res
 |             Dataset lineage graph including expanded versioning info                                   |
 | :----------------------------------------------------------------------------------------------------: |
 | <img src="../assets/images/versioning/versioning-lineage.png" alt="drawing" /> |
+
+
+## Related resources
+
+- [Versioning Overview](../versioning-overview.html)
+- [Versioning FAQs](../faq.html#versioning)
