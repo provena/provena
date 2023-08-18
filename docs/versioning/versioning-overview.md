@@ -35,6 +35,7 @@ Other use cases include:
 5. Versioned items shall link to the previous revision. Users should be able to navigate back to other versions (previous and later versions)
 6. A versioned item is a separate entity to other versioned items. Users should be able to view a versioned item independently of previous versions
 7. Provena provides functionality to navigate to the current revision and previous revisions distinctly
+8. When a new version is created for a Dataset and if users want to use the Provena data storage feature, a new storage location is created. This storage location will be empty for users to upload relevant data for that version.
 
 ## Next steps
 

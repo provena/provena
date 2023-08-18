@@ -29,4 +29,7 @@ Functionality wise, the clone and versioning feature looks similar - metadata is
 - the new versioned item is linked to the previous version of the item
 - a version activity is generated in the provenance graph linking the versioned items with each other
 
+## What happens when a version is created for Datasets?
+
+When a new version is created for a Dataset and if users want to use the Provena data storage feature, a new storage location is created. This storage location will be empty for users to upload relevant data for that version.
 

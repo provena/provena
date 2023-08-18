@@ -7,10 +7,15 @@ parent: Versioning
 ---
 # How to create versions in the Data Store
 
+## Pre-requisites
+
+- Ensure you're logged in to Provena
+- The logged in user has registry write permissions 
+- The logged in user has ADMIN permissions for the Dataset
+
 ## Step 1. Navigate to the dataset record in the Data Store
 
-- Ensure you're logged in.
-- Navigate to the dataset record
+- Navigate to the dataset record in the Data Store (ensure you're on the latest version of the dataset)
 - Click on the "VERSIONING" tab as shown below
 
 |                         Versioning Tab                                                                 |
