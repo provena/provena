@@ -8,6 +8,8 @@ parent: Versioning
 
 # How to create versions in the Registry
 
+## Pre-requisites
+
 - Ensure you're logged in to Provena
 - The logged in user has registry write permissions 
 - The logged in user has ADMIN permissions for the registry item
