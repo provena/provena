@@ -25,7 +25,8 @@ parent: Versioning
 
 ## Step 2. Create a new version
 
--   Click on the "Create New Version" button to create a new version of the dataset.
+- To create a new version, ensure that you have navigated to the latest version of the dataset. 
+- Once you're at the latest version of the item, you can click on the "Create New Version" button to create a new version of the dataset.
 
 |                           Click on the "Create new version" button                           |
 | :------------------------------------------------------------------------------------------: |
@@ -41,6 +42,13 @@ Upon clicking the "Submit" button, the new version of the dataset will be create
 A set of jobs will be sent to be processed in order for the provenance graphs to be created and updated.
 
 The page will be refreshed to the version of the dataset you just created.
+
+In addition to this, when a new version is created for a Dataset and if users want to use the Provena data storage feature, a new storage location is created. This storage location will be empty for users to upload relevant data for that version.
+
+Other things that happen when a version is created for a dataset:
+- The new versioned dataset is linked to the previous version of the dataset
+- A version activity is generated in the provenance graph linking the versioned dataset with each other
+- Both versions of the dataset contain information in their metadata which the user can view to see the links to previous/next versions. Both are managed independently of each other
 
 |                                   Updated versioning details                                    |
 | :---------------------------------------------------------------------------------------------: |

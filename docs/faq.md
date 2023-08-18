@@ -103,9 +103,10 @@ The difference between "clone" and "versioning" is that for a new version:
 
 When a new version is created for a Dataset and if users want to use the Provena data storage feature, a new storage location is created. This storage location will be empty for users to upload relevant data for that version.
 
--   the new versioned item is linked to the previous version of the item
--   a version activity is generated in the provenance graph linking the versioned items with each other
--   both items contain information in their metadata which the user can view to see the links to previous/next versions
+Other things that happen when a version is created:
+- The new versioned dataset is linked to the previous version of the dataset
+- A version activity is generated in the provenance graph linking the versioned dataset with each other
+- Both versions of the dataset contain information in their metadata which the user can view to see the links to previous/next versions. Both are managed independently of each other
 
 ## Support
 

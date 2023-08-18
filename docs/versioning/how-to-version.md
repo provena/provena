@@ -26,7 +26,8 @@ parent: Versioning
 
 ## Step 2. Create a new version
 
--   Click on the "Create New Version" button to create a new version of the item.
+- To create a new version, ensure that you have navigated to the latest version of the item. 
+- Once you're at the latest version of the item, you can click on the "Create New Version" button to create a new version of the item.
 
 |               Click on the "Create new version" button                                                      |
 | :----------------------------------------------------------------------------------------------------: |
