@@ -90,7 +90,7 @@ In this example, the "Number getting model" was registered and 2 new versions of
 
 |                             Explore version provenance lineage graph                              |
 | :-----------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/prov-store-version-lineage.gif" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/prov-store-version-lineage.gif" alt="drawing"/> |
 
 
 
