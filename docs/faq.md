@@ -108,6 +108,32 @@ Other things that happen when a version is created:
 - A version activity is generated in the provenance graph linking the versioned dataset with each other
 - Both versions of the dataset contain information in their metadata which the user can view to see the links to previous/next versions. Both are managed independently of each other
 
+### Why can't I create a version for this item in the Registry?
+
+To be able to version an item in the registry, you will need:
+- to ensure you are logged in and have Admin permissions for the item
+- to ensure you have navigated to the latest version of an item in the Registry
+- to ensure the item is an allowable type to be versioned (see below)
+
+#### What can be versioned?
+
+All registered items which are in the _Entity_ category, can be versioned. For more information about the categories of registered items, see the [provenance overview](../provenance/overview/what-are-entities).
+
+This includes:
+
+-   Dataset
+-   Model
+-   Dataset Template
+-   Model Run Workflow Template
+
+#### What cannot be versioned?
+
+_Agents_ and _Activities_ cannot be versioned, this includes:
+
+-   Person
+-   Organisation
+-   Model Run
+
 ## Support
 
 ### How do I log a fault?
