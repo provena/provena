@@ -21,7 +21,7 @@ parent: Versioning
 
 |                                    Versioning Tab                                     |
 | :-----------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-tab.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-tab.png" alt="drawing" /> |
 
 ## Step 2. Create a new version
 
@@ -29,26 +29,32 @@ parent: Versioning
 
 |                           Click on the "Create new version" button                           |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-create-btn.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-create-btn.png" alt="drawing" /> |
 
 ## Step 3. Add a reason for the new version
 
 |                              Add details to the versioning action                               |
 | :---------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-create-reason.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-create-reason.png" alt="drawing" /> |
 
 Upon clicking the "Submit" button, the new version of the dataset will be created.
 A set of jobs will be sent to be processed in order for the provenance graphs to be created and updated.
 
 The page will be refreshed to the version of the dataset you just created.
 
-## Step 5. View the version info
-
-You now have a new version of the dataset. You can view the version history including the current and previous versions.
-
 |                                   Updated versioning details                                    |
 | :---------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-create-result.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-create-result.png" alt="drawing" /> |
+
+
+## Step 5. View the version info
+
+You now have a new version of the dataset. You can view the version history including the current and previous versions. If there are 3 or more versions, you can click on the icon with 3 dots in the versioning timeline to expand to display additional versions (shown below).
+
+
+|                                   Expandable version details                                    |
+| :---------------------------------------------------------------------------------------------: |
+| <img src="../assets/images/versioning/versioning-expand-details.png" alt="drawing" /> |
 
 If you would like to view the lineage graph of the dataset, click on the "LINEAGE GRAPH" tab to view the dataset lineage.
 
@@ -56,7 +62,7 @@ You will see the direct lineage of the dataset in the provenance graph viewer as
 
 |                      Dataset lineage graph including direct versioning info                      |
 | :----------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-lineage-direct.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-lineage-direct.png" alt="drawing" /> |
 
 To view previous versions, you can use your mouse to double-click on the dataset node. This will expand the nodes.
 
@@ -64,4 +70,4 @@ If you continue expanding the nodes including the version activity node, and res
 
 |                 Dataset lineage graph including expanded versioning info                  |
 | :---------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-lineage.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-lineage.png" alt="drawing" /> |

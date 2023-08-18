@@ -20,7 +20,7 @@ parent: Versioning
 
 |                         Versioning Tab                                                                 |
 | :----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-registry-versioning-tab.jpg" alt="drawing" /> |
+| <img src="../assets/images/versioning/versioning-registry-versioning-tab.png" alt="drawing" /> |
 
 ## Step 2. Create a new version
 
@@ -32,37 +32,26 @@ parent: Versioning
 
 ## Step 3. Add a reason for the new version
 
-<<<<<<< HEAD
 
 |               Add details to the versioning action                                                      |
 | :----------------------------------------------------------------------------------------------------: |
 | <img src="../assets/images/versioning/versioning-registry-create-reason.png" alt="drawing" /> |
-=======
-|                                   Add details to the versioning action                                   |
-| :------------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-registry-create-reason.png" alt="drawing" width="600"/> |
->>>>>>> fffd9a500f56709b5d76e128a54ddd1b24b0731d
 
 Upon clicking the "Submit" button, the new version of the item will be created.
 A set of jobs will be sent to be processed in order for the provenance graphs to be created and updated.
 
 The page will be refreshed to the version of the item you just created.
 
+
+|               New version                                                   |
+| :----------------------------------------------------------------------------------------------------: |
+| <img src="../assets/images/versioning/versioning-registry-create-version-result.png" alt="drawing" /> |
+
 ## Step 5. View the version info
 
 You now have a new version of the item. You can view the version history including the current and previous versions.
 
-<<<<<<< HEAD
-|               Updated versioning details                                                    |
-| :----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-registry-create-version-result.png" alt="drawing" /> |
-=======
-|                                            Updated versioning details                                            |
-| :--------------------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-registry-create-version-result.png" alt="drawing" width="600"/> |
->>>>>>> fffd9a500f56709b5d76e128a54ddd1b24b0731d
-
-You can click on the icon with 3 dots in the versioning timeline to expand to display additional versions ().
+If there are 3 or more versions, you can click on the icon with 3 dots in the versioning timeline to expand to display additional versions.
 
 <img src="../assets/images/versioning/versioning-registry-create-version-result-arrow.png" alt="drawing" />
 
