@@ -13,8 +13,14 @@ Use cases include:
 * Creating a version of the item as the item is now deprecated or erroneous
 * Maintaining two versions of items that are valid but have different lineages and uses
 
--   Marking a previous version of an item as deprecated or erroneous
--   Maintaining two versions of items that are both valid, but have different lineages
+The screenshot below shows an example set of versions created for a dataset.
+
+|                 Example dataset version info                  |
+| :---------------------------------------------------------------------------------------: |
+| <img src="../assets/images/versioning/versioning-overview-1.png" alt="drawing" width="600"/> |
+
+
+
 
 ## What can be versioned?
 
