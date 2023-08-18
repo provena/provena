@@ -19,7 +19,7 @@ parent: Versioning
 
 |                                              Versioning Tab                                               |
 | :-------------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-registry-versioning-tab.jpg" alt="drawing" /> |
+| <img src="../assets/images/versioning/versioning-registry-versioning-tab.png" alt="drawing" /> |
 
 You will be able to view the version history including the current and previous versions.
 
@@ -80,7 +80,7 @@ You will be able to view the version history including the current and previous 
 
 You can click on the icon with 3 dots in the versioning timeline to expand to display additional versions.
 
-<img src="../assets/images/versioning/versioning-view-expand.png" alt="drawing" />
+<img src="../assets/images/versioning/versioning-expand-details.png" alt="drawing" />
 
 Sorting is available in the drop down menu.
 
