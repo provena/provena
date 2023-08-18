@@ -31,11 +31,11 @@ You will be able to view the version history including the current and previous 
 
 You can click on the icon with 3 dots in the versioning timeline to expand to display additional versions.
 
-<img src="../assets/images/versioning/versioning-registry-view-expand.png" alt="drawing" width="400"/>
+<img src="../assets/images/versioning/versioning-registry-view-expand.png" alt="drawing" width="600"/>
 
 Sorting is available in the drop down menu.
 
-<img src="../assets/images/versioning/versioning-registry-view-sort.png" alt="drawing" width="400"/>
+<img src="../assets/images/versioning/versioning-registry-view-sort.png" alt="drawing" width="600"/>
 
 Clicking on the link of the ID of the version will enable you to navigate to that particular version.
 
@@ -86,11 +86,11 @@ You will be able to view the version history including the current and previous 
 
 You can click on the icon with 3 dots in the versioning timeline to expand to display additional versions.
 
-<img src="../assets/images/versioning/versioning-view-expand.png" alt="drawing" width="400"/>
+<img src="../assets/images/versioning/versioning-view-expand.png" alt="drawing" width="600"/>
 
 Sorting is available in the drop down menu.
 
-<img src="../assets/images/versioning/versioning-view-sort.png" alt="drawing" width="400"/>
+<img src="../assets/images/versioning/versioning-view-sort.png" alt="drawing" width="600"/>
 
 Clicking on the link of the ID of the version will enable you to navigate to that particular version.
 
@@ -104,7 +104,7 @@ You will see the direct lineage of the dataset in the provenance graph viewer as
 
 |             Dataset lineage graph including direct versioning info                                     |
 | :----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-registry-view-lineage-direct.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-lineage-direct.png" alt="drawing" width="600"/> |
 
 
 To view previous versions, you can use your mouse to double-click on the dataset node. This will expand the nodes. 
@@ -114,4 +114,4 @@ If you continue expanding the nodes including the version activity node, and res
 
 |             Dataset lineage graph including expanded versioning info                                   |
 | :----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/versioning/versioning-lineage.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/versioning/versioning-lineage.png" alt="drawing" /> |
