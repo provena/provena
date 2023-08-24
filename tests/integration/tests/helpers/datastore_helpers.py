@@ -6,7 +6,8 @@ from KeycloakRestUtilities.Token import BearerAuth
 from tests.helpers.registry_helpers import get_item_subtype_domain_info_example
 from tests.config import config
 from SharedInterfaces.RegistryModels import ItemSubType, DatasetDomainInfo
-from SharedInterfaces.RegistryAPI import ItemRevertRequest, ItemRevertResponse
+from SharedInterfaces.RegistryAPI import *
+from SharedInterfaces.DataStoreAPI import *
 from requests import Response
 from tests.helpers.general_helpers import py_to_dict
 
@@ -123,3 +124,33 @@ def revert_dataset_successfully(dataset_id: str, history_id: int, token: str, re
         response.json())
     assert revert_metadata_response.status.success
     return revert_metadata_response
+
+
+def ds_version_item(id: str, token: str, reason: str = "Integration testing") -> Response:
+    version_route = config.DATA_STORE_API_ENDPOINT + "/register/version"
+    req = py_to_dict(VersionRequest(id=id, reason=reason))
+    version_resp = requests.post(
+        url=version_route,
+        json=req,
+        auth=BearerAuth(token)
+    )
+    return version_resp
+
+
+def ds_parsed_version_item(id: str, token: str, reason: str = "Integration testing") -> VersionResponse:
+    raw = ds_version_item(id=id, token=token,
+                          reason=reason)
+    assert raw.status_code == 200, f"Non 200 status code {raw.status_code}. Res: {raw.text}."
+    return VersionResponse.parse_obj(raw.json())
+
+
+def ds_fail_version_item(id: str, token: str, reason: str = "Integration testing", expected_code: Optional[int] = 400) -> Response:
+    raw = ds_version_item(id=id, token=token,
+                          reason=reason)
+
+    if expected_code is not None:
+        assert raw.status_code == expected_code, f"Non {expected_code} status code {raw.status_code}. Res: {raw.text}."
+    else:
+        assert raw.status_code != 200, f"200 status code. Expected failure. Res: {raw.text}."
+
+    return raw

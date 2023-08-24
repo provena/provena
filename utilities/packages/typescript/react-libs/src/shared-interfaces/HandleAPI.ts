@@ -54,3 +54,10 @@ export interface ValueRequestBase {
   value_type: ValueType;
   value: string;
 }
+export interface VersionDetails {
+  commit_id?: string;
+  commit_url?: string;
+  tag_name?: string;
+  release_title?: string;
+  release_url?: string;
+}

@@ -7,117 +7,8 @@ from tests.helpers.registry_helpers import *
 from tests.helpers.link_helpers import *
 from resources.example_models import *
 from tests.config import config, Tokens
-from typing import Generator, cast
-import pytest
-from uuid import uuid4
+from tests.helpers.fixtures import *
 
-cleanup_items: List[Tuple[ItemSubType, IdentifiedResource]] = []
-
-# fixture to clean up items
-@pytest.fixture(scope='session', autouse=True)
-def entity_cleanup_fixture() -> Generator:
-    
-    yield
-    
-    if config.LEAVE_ITEMS_FOR_INITIALISATION:
-        print('Skipping entity cleanup for workflow tests - Leaving Items for intialisation of deployment.')
-    else:
-        print("Performing entity cleanup in workflow tests.")
-        perform_entity_cleanup(cleanup_items, token=Tokens.admin())
-
-
-@pytest.fixture(scope='session', autouse=False)
-def person_fixture() -> Generator[ItemPerson, None, None]:
-    # create person 1 and 2  (user 1 and 2)
-    person = create_item_successfully(
-        item_subtype=ItemSubType.PERSON,
-        token=Tokens.user1()
-    )
-    cleanup_items.append((person.item_subtype, person.id))
-    # provide to any test that uses them
-    yield cast(ItemPerson, person)
-    
-
-
-@pytest.fixture(scope='session', autouse=False)
-def linked_person_fixture(person_fixture: ItemPerson) -> Generator[ItemPerson, None, None]:
-    person = person_fixture
-
-    # link this person to person1, person2 and admin - need to perform as admin
-    # to overcome ownership issue
-    assign_user_admin_assert_success(token=Tokens.admin(
-    ), person_id=person.id, username=Tokens.user1_username, force=True)
-    assign_user_admin_assert_success(token=Tokens.admin(
-    ), person_id=person.id, username=Tokens.user2_username, force=True)
-    assign_user_admin_assert_success(token=Tokens.admin(
-    ), person_id=person.id, username=Tokens.admin_username, force=True)
-
-    # provide to any test that uses them
-    yield person
-
-    # clean up links
-    perform_link_cleanup([
-        Tokens.user1_username,
-        Tokens.user2_username,
-        Tokens.admin_username,
-    ], token=Tokens.admin())
-
-
-@pytest.fixture(scope='session', autouse=False)
-def organisation_fixture() -> Generator[ItemOrganisation, None, None]:
-    # create person 1 and 2  (user 1 and 2)
-    org = create_item_successfully(
-        item_subtype=ItemSubType.ORGANISATION,
-        token=Tokens.user1()
-    )
-    cleanup_items.append((org.item_subtype, org.id))
-    # provide to any test that uses them
-    yield cast(ItemOrganisation, org)
-
-
-@pytest.fixture(scope='session', autouse=False)
-def dataset_io_fixture(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> Generator[Tuple[str, str], None, None]:
-    # pull out prebuilt references from the fixture
-    person = linked_person_fixture
-    organisation = organisation_fixture
-
-    # models to test
-    cf_1 = valid_collection_format1
-    cf_2 = valid_collection_format2
-
-    # create person 1 and 2
-    datasets = cast(Tuple[str, str], (
-        mint_basic_dataset_successfully(
-            token=Tokens.user1(),
-            author_organisation_id=organisation.id,
-            publisher_organisation_id=organisation.id,
-            model=DatasetDomainInfo(
-                collection_format=cf_1,
-                display_name=cf_1.dataset_info.name,
-                s3=S3Location(
-                    bucket_name="", path="", s3_uri="")
-            )
-        ).handle,
-        mint_basic_dataset_successfully(
-            token=Tokens.user1(),
-            author_organisation_id=organisation.id,
-            publisher_organisation_id=organisation.id,
-            model=DatasetDomainInfo(
-                collection_format=cf_2,
-                display_name=cf_2.dataset_info.name,
-                s3=S3Location(
-                    bucket_name="", path="", s3_uri="")
-            )
-        ).handle))
-
-    cleanup_items.extend([
-        (ItemSubType.DATASET, datasets[0]),
-        (ItemSubType.DATASET, datasets[1]),
-    ])
-
-    # provide to any test that uses them
-    yield datasets
-    
 
 def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
     # prov test that will create the requirements needed for a model run record and register it
@@ -158,6 +49,12 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     )
     cleanup_items.append((input_template.item_subtype, input_template.id))
 
+    # cleanup create activity 
+    cleanup_create_activity_from_item_base(
+        item=input_template,
+        get_token=Tokens.user1
+    )
+
     output_deferred_resource_key = "Key2"
     output_template = create_item_from_domain_info_successfully(
         item_subtype=ItemSubType.DATASET_TEMPLATE,
@@ -183,10 +80,23 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     )
     cleanup_items.append((output_template.item_subtype, output_template.id))
 
+    # cleanup create activity 
+    cleanup_create_activity_from_item_base(
+        item=output_template,
+        get_token=Tokens.user1
+    )
+
     # regiter the model used in the model run
     model = create_item_successfully(
         item_subtype=ItemSubType.MODEL, token=write_token())
     cleanup_items.append((model.item_subtype, model.id))
+    
+    
+    # cleanup create activity 
+    cleanup_create_activity_from_item_base(
+        item=model,
+        get_token=Tokens.user1
+    )
 
     # create and register model run workflow template
     required_annotation_key = "annotation_key1"
@@ -207,7 +117,13 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     mrwt = create_item_from_domain_info_successfully(
         item_subtype=ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE, token=write_token(), domain_info=mrwt_domain_info)
     cleanup_items.append((mrwt.item_subtype, mrwt.id))
-    description_UUID = "integration test description_UUID: " + str(uuid4())
+    
+    # cleanup create activity 
+    cleanup_create_activity_from_item_base(
+        item=mrwt,
+        get_token=Tokens.user1
+    )
+    
     # create model run to register
     model_run_record = ModelRunRecord(
         workflow_template_id=mrwt.id,
@@ -231,9 +147,10 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
             modeller_id=person.id,
             requesting_organisation_id=organisation.id
         ),
+        display_name="Integration test fake model run display name",
         start_time=(datetime.now().timestamp()),
         end_time=(datetime.now().timestamp()),
-        description="Integration test fake model run " + description_UUID,
+        description="Integration test fake model run",
         annotations={
             required_annotation_key: 'somevalue',
             optional_annotation_key: 'some other optional value'
@@ -241,10 +158,10 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     )
 
     # register model run
-    model_run_id, model_run_record = register_modelrun_from_record_info_successfully_potential_timeout(
-        token=write_token(), model_run_record=model_run_record, description_UUID=description_UUID)
+    model_run_record = register_modelrun_from_record_info_successfully(
+        get_token=write_token, model_run_record=model_run_record)
+    model_run_id = model_run_record.id
     cleanup_items.append((ItemSubType.MODEL_RUN, model_run_id))
-
 
 
 def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
@@ -430,6 +347,10 @@ def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_p
 
     # check reason is not empty
     assert history_item.reason != ""
+    
+    # Clean up Create Activity 
+    cleanup_create_activity_from_item_base(item=item, get_token=write_token)
+    
 
     # grant write
     # --------------

@@ -13,33 +13,42 @@ import {
     Stack,
     Tab,
     Tabs,
+    Typography,
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
+import { useKeycloak } from "@react-keycloak/web";
 import { useQuery } from "@tanstack/react-query";
 import { CopyButton } from "components/CopyButton";
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import {
-    DOCUMENTATION_BASE_URL,
     CopyFloatingButton,
+    DOCUMENTATION_BASE_URL,
     DatasetAccess,
+    JsonDetailViewWrapperComponent,
     LANDING_PAGE_LINK_PROFILE,
+    MetadataHistory,
+    ProvGraphTabView,
     REGISTRY_LINK,
     TabPanel,
-    VersionStatusDisplay,
+    VersioningView,
+    WorkflowDefinition,
+    WorkflowVisualiserComponent,
     combineLoadStates,
     deriveDatasetAccess,
     fetchDataset,
     timestampToLocalTime,
     useAccessCheck,
     useHistoricalDrivenItem,
+    useMetadataHistorySelector,
     useQueryStringVariable,
     useRevertDialog,
-    useVersionSelector,
 } from "react-libs";
+import { useWorkflowHelper } from "react-libs/hooks/useWorkflowHelper";
 import { Link as RouteLink, useParams } from "react-router-dom";
+import { datasetVersionIdLinkResolver } from "util/helper";
 import BreadcrumbLinks from "../components/BreadcrumbLinks";
 import {
     AWSCredentialDisplay,
@@ -53,7 +62,6 @@ import {
 } from "../shared-interfaces/RegistryAPI";
 import datasetDetailStore from "../stores/datasetDetailStore";
 import { DatedCredentials } from "../types/types";
-import { JsonDetailViewWrapperComponent } from "react-libs";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -114,6 +122,9 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: theme.spacing(2),
             wordWrap: "break-word",
         },
+        fullWidth: {
+            width: "100%",
+        },
     })
 );
 
@@ -155,6 +166,32 @@ const DatasetApprovalsComponent = (props: DatasetApprovalsComponentProps) => {
                     : "Contains export sensitive data - consent pending."
                 : "NA"}
         </div>
+    );
+};
+
+// Workflow visualiser render
+interface WorkflowViewComponentProps {
+    startingSessionId: string;
+    workflowDefinition: WorkflowDefinition;
+    defaultExpanded?: boolean;
+    adminMode: boolean;
+}
+
+const WorkflowViewComponent = (
+    props: WorkflowViewComponentProps
+): JSX.Element => {
+    return (
+        <Box paddingTop={8}>
+            <WorkflowVisualiserComponent
+                startingSessionID={props.startingSessionId}
+                workflowDefinition={props.workflowDefinition}
+                key={props.startingSessionId}
+                direction="column"
+                enableExpand={true}
+                defaultExpanded={props.defaultExpanded}
+                adminMode={props.adminMode}
+            />
+        </Box>
     );
 };
 
@@ -278,6 +315,53 @@ const DatasetDetailsComponent = (props: DatasetDetailsComponentProps) => {
         <Grid>
             <CircularProgress />
         </Grid>
+    );
+};
+
+interface LineageGraphComponentProps {
+    rootID: string;
+}
+
+const LineageGraphComponent = (props: LineageGraphComponentProps) => {
+    /**
+    * Component: LineageGraphComponent
+
+    * This component renders ProveGraph
+    */
+    return props.rootID ? (
+        <div style={{ width: "inherit" }}>
+            <h2>Lineage Graph</h2>
+            <ProvGraphTabView rootID={props.rootID} />
+        </div>
+    ) : (
+        <Grid>
+            <CircularProgress />
+        </Grid>
+    );
+};
+
+interface VersioningViewComponentProps {
+    item: ItemBase;
+    isAdmin: boolean;
+}
+
+const VersioningViewComponent = (props: VersioningViewComponentProps) => {
+    /**
+    * Component: VersioningViewComponent
+
+    * This component renders Versioning tab
+    */
+
+    return (
+        <Stack direction="column" sx={{ width: "inherit" }} rowGap={2}>
+            <h2>Dataset Versioning</h2>
+            <VersioningView
+                item={props.item}
+                isAdmin={props.isAdmin}
+                showSubtypeHeaderComponent={false}
+                versionIdLinkResolver={datasetVersionIdLinkResolver}
+            />
+        </Stack>
     );
 };
 
@@ -917,7 +1001,17 @@ const MetadataSummary = observer((props: MetadataSummaryProps) => {
 
     return (
         <div>
-            <h2 id="metadata-title">Metadata</h2>
+            <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+            >
+                <h2 id="metadata-title">Metadata</h2>
+                <h3>
+                    Dataset Version {props.dataset.versioning_info?.version}
+                </h3>
+            </Stack>
+
             {
                 // Conditionally expose the update button
                 // if write privileges exist
@@ -1030,6 +1124,55 @@ const MetadataSummary = observer((props: MetadataSummaryProps) => {
     );
 });
 
+interface MetadataSummaryWorkflowComponentProps {
+    handle_id: string;
+    dataset: ItemDataset;
+    datasetAccess?: DatasetAccess;
+    locked: boolean;
+    workflowConfiguration: {
+        visible: boolean;
+        startingSessionId: string;
+        workflowDefinition: WorkflowDefinition;
+        adminMode: boolean;
+        defaultExpanded: boolean;
+    };
+}
+const MetadataSummaryWorkflowComponent = (
+    props: MetadataSummaryWorkflowComponentProps
+) => {
+    /**
+    Component: MetadataSummaryWorkflowComponent
+
+    Combines the metadata summary component and workflow viewer (optionally displayed by default)
+    
+    */
+    // TODO Destub
+    return (
+        <React.Fragment>
+            <MetadataSummary
+                id={props.handle_id}
+                dataset={props.dataset}
+                datasetAccess={props.datasetAccess}
+                locked={props.locked}
+            ></MetadataSummary>
+            {props.workflowConfiguration.visible && (
+                <WorkflowViewComponent
+                    startingSessionId={
+                        props.workflowConfiguration.startingSessionId
+                    }
+                    workflowDefinition={
+                        props.workflowConfiguration.workflowDefinition
+                    }
+                    defaultExpanded={
+                        props.workflowConfiguration.defaultExpanded
+                    }
+                    adminMode={props.workflowConfiguration.adminMode}
+                />
+            )}
+        </React.Fragment>
+    );
+};
+
 interface UpdateMetadataParams {
     id: string;
 }
@@ -1085,6 +1228,9 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
         DatasetAccess | undefined
     >(undefined);
 
+    // Keycloak
+    const { keycloak } = useKeycloak();
+
     // These are derived from the dataset access object, see authHelpers
     // deriveDatasetAccess function
     const reposited =
@@ -1097,7 +1243,7 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
         datasetAccess?.readData &&
         datasetDetailStore.datasetDetail &&
         !reposited;
-    const seeSettings = !!datasetAccess?.admin;
+    const seeSettingsAdminRequiredContent = !!datasetAccess?.admin;
     const seeCloneButton =
         // Must have metadata write
         writeCheck.fallbackGranted &&
@@ -1145,7 +1291,7 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
     // We can then use the driven historical item to manage this
 
     // use version selector to manage state and controls over version
-    const versionControls = useVersionSelector({
+    const versionControls = useMetadataHistorySelector({
         item: initialDataset as unknown as ItemBase,
     });
 
@@ -1175,6 +1321,15 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
         onSuccess: onRevertFinished,
         subtype: "DATASET",
         context: "data-store",
+    });
+
+    // Workflow
+    // --------
+
+    // Manage parsing and determining access for workflow visualiser
+    const workflowConfiguration = useWorkflowHelper({
+        // Error in pydantic2ts which makes category optional - this is fine
+        item: dataset as ItemBase,
     });
 
     // Define the error dialog fragment in case something goes wrong with the
@@ -1245,38 +1400,6 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
         </Grid>
     );
 
-    const versionControlContent = (
-        <VersionStatusDisplay
-            // Should be hidden if there is a history error or if there is no history
-            hide={historyError || dataset?.history.length === 1}
-            controlButtonStackOrientation="row"
-            controlButtonSpacing={2}
-            locked={locked}
-            writePermission={
-                writeCheck.fallbackGranted && !!datasetAccess?.writeMetadata
-            }
-            historyId={versionControls.state?.historyId}
-            isLatest={isLatest ?? true}
-            onRequestCheckout={() => {
-                if (versionControls.controls?.startSelection !== undefined) {
-                    versionControls.controls.startSelection();
-                }
-            }}
-            onRequestRevert={() => {
-                if (revertControls.startRevert !== undefined) {
-                    revertControls.startRevert();
-                }
-            }}
-            onRequestReturnToLatest={() => {
-                if (versionControls.controls?.manuallySetId !== undefined) {
-                    if (latestId !== undefined) {
-                        versionControls.controls.manuallySetId(latestId);
-                    }
-                }
-            }}
-        />
-    );
-
     const headerContent = (
         <Stack direction="row" justifyContent={"space-between"}>
             <BreadcrumbLinks links={breadcrumbLinks} />
@@ -1291,11 +1414,7 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                     alignItems="center"
                     divider={<Divider flexItem orientation="vertical" />}
                 >
-                    {versionControlContent}
-                    <Stack
-                        direction={isLatest ?? true ? "row" : "column"}
-                        spacing={1}
-                    >
+                    <Stack direction="row" spacing={1}>
                         {
                             // Clone button (sometimes)
                         }
@@ -1329,6 +1448,25 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
         </Stack>
     );
 
+    const getCustomisedMetadataSummary = (showWorkflowDefault: boolean) => {
+        return (
+            <MetadataSummaryWorkflowComponent
+                handle_id={handle_id}
+                dataset={dataset!}
+                datasetAccess={datasetAccess}
+                locked={locked}
+                workflowConfiguration={{
+                    visible: workflowConfiguration.visible,
+                    startingSessionId: workflowConfiguration.startingSessionId!,
+                    workflowDefinition:
+                        workflowConfiguration.workflowDefinition!,
+                    defaultExpanded: showWorkflowDefault,
+                    adminMode: workflowConfiguration.adminMode,
+                }}
+            />
+        );
+    };
+
     // Ensure that dataset is not undefined before trying to render this segment!
     const mainBodyContent = (
         <Grid container className={classes.dataset}>
@@ -1349,6 +1487,18 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                             value={"details"}
                             component={RouteLink}
                             to={`/dataset/${handle_id}?view=details`}
+                        ></Tab>
+                        <Tab
+                            label={"Lineage Graph"}
+                            value={"lineage"}
+                            component={RouteLink}
+                            to={`/dataset/${handle_id}?view=lineage`}
+                        ></Tab>
+                        <Tab
+                            label={"Versioning"}
+                            value={"versioning"}
+                            component={RouteLink}
+                            to={`/dataset/${handle_id}?view=versioning`}
                         ></Tab>
                         {
                             // conditionally show tabs based on dataset and
@@ -1378,25 +1528,18 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                                 to={`/dataset/${handle_id}?view=external`}
                             ></Tab>
                         )}
-                        {seeSettings && (
-                            <Tab
-                                label={"Settings"}
-                                value={"settings"}
-                                component={RouteLink}
-                                to={`/dataset/${handle_id}?view=settings`}
-                            ></Tab>
-                        )}
+                        <Tab
+                            label={"Settings"}
+                            value={"settings"}
+                            component={RouteLink}
+                            to={`/dataset/${handle_id}?view=settings`}
+                        ></Tab>
                     </Tabs>
                 </Box>
                 <TabPanel index={"overview"} currentIndex={desiredView}>
                     <Grid container className={classes.tabs}>
                         <Grid xs={4} className={classes.metadataOverview}>
-                            <MetadataSummary
-                                id={handle_id}
-                                dataset={dataset!}
-                                datasetAccess={datasetAccess}
-                                locked={locked}
-                            ></MetadataSummary>
+                            {getCustomisedMetadataSummary(true)}
                         </Grid>
                         <Grid xs={8} className={classes.tabsRHContent}>
                             <PreviewDataset dataset={dataset!} />
@@ -1410,7 +1553,19 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                         />
                     </Grid>
                 </TabPanel>
-
+                <TabPanel index={"lineage"} currentIndex={desiredView}>
+                    <Grid container className={classes.tabs}>
+                        <LineageGraphComponent rootID={handle_id} />
+                    </Grid>
+                </TabPanel>
+                <TabPanel index={"versioning"} currentIndex={desiredView}>
+                    <Grid container className={classes.tabs}>
+                        <VersioningViewComponent
+                            item={dataset as ItemBase}
+                            isAdmin={!!datasetAccess?.admin}
+                        />
+                    </Grid>
+                </TabPanel>
                 {
                     // conditionally show tabs based on dataset and
                     // general access permission
@@ -1419,12 +1574,7 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                     <TabPanel index={"download"} currentIndex={desiredView}>
                         <Grid container className={classes.tabs}>
                             <Grid xs={4} className={classes.metadataOverview}>
-                                <MetadataSummary
-                                    id={handle_id}
-                                    dataset={dataset!}
-                                    datasetAccess={datasetAccess}
-                                    locked={locked}
-                                ></MetadataSummary>
+                                {getCustomisedMetadataSummary(false)}
                             </Grid>
                             <Grid xs={8} className={classes.tabsRHContent}>
                                 <DownloadGuidance dataset={dataset!} />
@@ -1436,12 +1586,7 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                     <TabPanel index={"upload"} currentIndex={desiredView}>
                         <Grid container className={classes.tabs}>
                             <Grid xs={4} className={classes.metadataOverview}>
-                                <MetadataSummary
-                                    id={handle_id}
-                                    dataset={dataset!}
-                                    datasetAccess={datasetAccess}
-                                    locked={locked}
-                                ></MetadataSummary>
+                                {getCustomisedMetadataSummary(false)}
                             </Grid>
                             <Grid xs={8} className={classes.tabsRHContent}>
                                 <UploadGuidance
@@ -1460,13 +1605,32 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                         </Grid>
                     </TabPanel>
                 )}
-
-                {seeSettings && (
-                    <TabPanel index={"settings"} currentIndex={desiredView}>
-                        <Grid container className={classes.tabs}>
-                            <div>
+                <TabPanel index={"settings"} currentIndex={desiredView}>
+                    <Grid container className={classes.tabs}>
+                        {/* Metadata history */}
+                        <Stack
+                            direction="column"
+                            spacing={2}
+                            className={classes.fullWidth}
+                        >
+                            <MetadataHistory
+                                hide={historyError}
+                                locked={locked}
+                                writeAccessGranted={
+                                    writeCheck.fallbackGranted &&
+                                    !!datasetAccess?.writeMetadata
+                                }
+                                isLatest={isLatest ?? true}
+                                latestId={latestId}
+                                versionControls={versionControls}
+                                revertControls={revertControls}
+                            />
+                            <Divider />
+                            <Grid item xs={12}>
                                 <h2>Settings</h2>
-                                <p>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="body1">
                                     View this item in the{" "}
                                     <a
                                         href={registryLink + "?view=settings"}
@@ -1476,11 +1640,11 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
                                         registry
                                     </a>{" "}
                                     to manage it's settings.
-                                </p>
-                            </div>
-                        </Grid>
-                    </TabPanel>
-                )}
+                                </Typography>
+                            </Grid>
+                        </Stack>
+                    </Grid>
+                </TabPanel>
             </Grid>
         </Grid>
     );
@@ -1507,7 +1671,11 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
     );
 
     // Is it still loading?
-    if (datasetLoading || readCheck.loading || writeCheck.loading) {
+    if (
+        datasetLoading ||
+        (!readCheck.fallbackGranted && readCheck.loading) ||
+        (!readCheck.fallbackGranted && writeCheck.loading)
+    ) {
         bodyContent = loadingBodyContent;
     } else if (isError) {
         // Finished loading but there was an error

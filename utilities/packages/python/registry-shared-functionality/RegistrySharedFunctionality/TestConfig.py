@@ -5,13 +5,14 @@ from dataclasses import dataclass
 from datetime import datetime
 
 # Type variables to describe generic parent classes
-SeedResponseTypeVar = TypeVar('SeedResponseTypeVar', bound=GenericSeedResponse)
+SeedResponseTypeVar = TypeVar(
+    'SeedResponseTypeVar', bound=Union[None, GenericSeedResponse])
 FetchResponseTypeVar = TypeVar(
     'FetchResponseTypeVar', bound=GenericFetchResponse)
 ListResponseTypeVar = TypeVar(
     'ListResponseTypeVar', bound=GenericListResponse)
 CreateResponseTypeVar = TypeVar(
-    'CreateResponseTypeVar', bound=GenericCreateResponse)
+    'CreateResponseTypeVar', bound=Union[None, GenericCreateResponse])
 ItemModelTypeVar = TypeVar('ItemModelTypeVar', bound=ItemBase)
 ItemDomainInfoTypeVar = TypeVar('ItemDomainInfoTypeVar', bound=DomainInfoBase)
 
@@ -30,10 +31,10 @@ class TypeParameters(Generic[
 ]):
     domain_info: Type[ItemDomainInfoTypeVar]
     item_model: Type[ItemModelTypeVar]
-    seed_response: Type[SeedResponseTypeVar]
+    seed_response: Optional[Type[SeedResponseTypeVar]]
     fetch_response: Type[FetchResponseTypeVar]
     list_response: Type[ListResponseTypeVar]
-    create_response: Type[CreateResponseTypeVar]
+    create_response: Optional[Type[CreateResponseTypeVar]]
 
 # Class containing example models for each required type
 # e.g. create requires example domain info types
@@ -131,6 +132,7 @@ route_params: List[RouteParameters] = [
                         ),
                         start_time=(datetime.now().timestamp()),
                         end_time=(datetime.now().timestamp()),
+                        display_name="Example model run",
                         description="This is a fake model run",
                         annotations={
                             'somekey': 'somevalue'
@@ -156,6 +158,8 @@ route_params: List[RouteParameters] = [
                             modeller_id="324dsjfilks7uy82",
                             requesting_organisation_id="584jdlsf93058"
                         ),
+                        display_name="Example model run 2",
+                        description="This is a fake model run 2",
                         start_time=(datetime.now().timestamp()),
                         end_time=(datetime.now().timestamp()),
                     )
@@ -507,6 +511,91 @@ route_params: List[RouteParameters] = [
                     ],
                 ),
             ]
+        )
+    ),
+]
+
+# E.g. Create, Version
+non_test_route_params: List[RouteParameters] = [
+    # ACTIVITY - REGISTRY CREATE
+    RouteParameters(
+        # This is read only so not really applicable
+        use_special_proxy_modify_routes=False,
+        route="/activity/create",
+        name="Activity - Registry Create",
+        category=ItemCategory.ACTIVITY,
+        subtype=ItemSubType.CREATE,
+        typing_information=TypeParameters[
+            CreateDomainInfo,
+            ItemCreate,
+            None,  # no seed response
+            CreateFetchResponse,
+            CreateListResponse,
+            None,  # no create response
+        ](
+            domain_info=CreateDomainInfo,
+            item_model=ItemCreate,
+            seed_response=None,
+            fetch_response=CreateFetchResponse,
+            list_response=CreateListResponse,
+            create_response=None
+        ),
+        model_examples=ModelExamples[CreateDomainInfo](
+            domain_info=[
+                CreateDomainInfo(
+                    display_name="Example Registry Create Activity Entity",
+                    created_item_id="1234",
+                ),
+                CreateDomainInfo(
+                    display_name="Example Registry Create Activity Entity 2 ",
+                    created_item_id="5678",
+                )
+            ]
+
+        )
+    ),
+
+    # ACTIVITY - REGISTRY VERSION
+    RouteParameters(
+        # This is read only so not really applicable
+        use_special_proxy_modify_routes=False,
+        route="/activity/version",
+        name="Activity - Registry Version",
+        category=ItemCategory.ACTIVITY,
+        subtype=ItemSubType.VERSION,
+        typing_information=TypeParameters[
+            VersionDomainInfo,
+            ItemVersion,
+            None,  # no seed response
+            VersionFetchResponse,
+            VersionListResponse,
+            None,  # no create response
+        ](
+            domain_info=VersionDomainInfo,
+            item_model=ItemVersion,
+            seed_response=None,
+            fetch_response=VersionFetchResponse,
+            list_response=VersionListResponse,
+            create_response=None
+        ),
+        model_examples=ModelExamples[VersionDomainInfo](
+            domain_info=[
+                VersionDomainInfo(
+                    display_name="Example Registry Version Activity Entity 1",
+                    from_item_id="123",
+                    to_item_id="1234",
+                    new_version_number=2,
+                    reason="test"
+                ),
+                VersionDomainInfo(
+                    display_name="Example Registry Version Activity Entity 2",
+                    from_item_id="1234",
+                    to_item_id="12345",
+                    new_version_number=3,
+                    reason="test 2"
+                )
+            ]
+
         )
     ),
 ]

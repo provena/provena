@@ -21,7 +21,7 @@ import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
 import {
     renderHandleIdLink,
     searchOnlyDataToolbar,
-} from "../components/DataGridHelpers";
+} from "../react-libs/util/DataGridHelpers";
 
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
@@ -107,7 +107,7 @@ const WorkflowTemplateList = observer((props: WorkflowTemplateListProps) => {
     if (searchResults.error) {
         gridSection = (
             <p>
-                An error occured, error:{" "}
+                An error occurred, error:{" "}
                 {searchResults.errorMessage ?? "Unknown error."}.
             </p>
         );
@@ -172,6 +172,17 @@ const WorkflowTemplateList = observer((props: WorkflowTemplateListProps) => {
                             }}
                             columns={columns}
                             rows={rows}
+                            sx={{
+                                // From https://stackoverflow.com/questions/74624999/how-to-make-material-ui-datagrid-row-cliccable-and-with-pointer-cursor-withou
+                                // disable cell selection style
+                                ".MuiDataGrid-cell:focus": {
+                                    outline: "none",
+                                },
+                                // pointer cursor on ALL rows
+                                "& .MuiDataGrid-row:hover": {
+                                    cursor: "pointer",
+                                },
+                            }}
                         ></DataGrid>
                     </div>
                 </Grid>

@@ -26,6 +26,8 @@ class ItemSubType(str, Enum):
     # Activities
     WORKFLOW_RUN = "WORKFLOW_RUN"
     MODEL_RUN = "MODEL_RUN"  # is a WORKFLOW_RUN
+    CREATE = "CREATE"
+    VERSION = "VERSION"
 
     # Agents
     PERSON = "PERSON"  # ✓
@@ -39,9 +41,6 @@ class ItemSubType(str, Enum):
         "MODEL_RUN_WORKFLOW_TEMPLATE"  # is a WORKFLOW_DEF'N # ✓
     DATASET = "DATASET"  # ✓
     DATASET_TEMPLATE = "DATASET_TEMPLATE"  # ✓
-
-    # Non Registry items
-    QUALIFIED_ASSOCIATION = "QUALIFIED_ASSOCIATION"
 
 
 """
@@ -278,6 +277,31 @@ class HistoryBase(GenericModel, Generic[DomainInfoTypeVar]):
     history: List[HistoryEntry[DomainInfoTypeVar]]
 
 
+class VersioningInfo(BaseModel):
+    previous_version: Optional[str]
+    version: int
+    reason: Optional[str]
+    next_version: Optional[str]
+
+    @root_validator(pre=False, skip_on_failure=True)
+    def check_reason_provided(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
+        prev_version = values['previous_version']
+        reason = values['reason']
+        if prev_version is not None:
+            if reason is None:
+                raise ValueError(
+                    "Items with a previous version must specify a reason for the updated version.")
+        return values
+
+
+class WorkflowLinks(BaseModel):
+    # Create prov session id spinoff (optionally)
+    create_activity_workflow_id: Optional[str] = None
+
+    # Version prov session id spinoff
+    version_activity_workflow_id: Optional[str] = None
+
+
 class RecordInfo(BaseModel):
     # Handle ID
     # optional for unseeded identities
@@ -303,6 +327,12 @@ class RecordInfo(BaseModel):
 
     # is this seed or complete
     record_type: RecordType
+
+    # Not all types have workflow links - only prov versioning enabled
+    workflow_links: Optional[WorkflowLinks] = None
+
+    # Versioning (all optional)
+    versioning_info: Optional[VersioningInfo] = None
 
     @staticmethod
     def get_searchable_fields() -> List[str]:
@@ -1072,6 +1102,100 @@ class WorkflowRunCompletionStatus(str, Enum):
     COMPLETE = "COMPLETE"
     LODGED = "LODGED"
 
+# ==========================================
+# Registry Version (Activity <- Registry Version)
+# ==========================================
+
+
+class VersionDomainInfo(DomainInfoBase):
+    # Should include link to the created item
+    reason: str
+    from_item_id: str
+    to_item_id: str
+    new_version_number: int
+
+
+class ItemVersion(ActivityBase, VersionDomainInfo):
+    item_subtype: ItemSubType = ItemSubType.VERSION
+
+    # override history
+    history: List[HistoryEntry[VersionDomainInfo]]  # type: ignore
+
+    _validate_subtype = validate_subtype(
+        'item_subtype', ItemSubType.VERSION)
+
+    def get_search_ready_object(self) -> Dict[str, str]:
+        # no extra searchable info - just return parent
+        item_base = ItemBase.parse_obj(self.dict())
+        base = item_base.get_search_ready_object()
+        extended: Dict[str, str] = {
+            'from_item_id': self.from_item_id,
+            'to_item_id': self.to_item_id,
+            'new_version_number': self.new_version_number
+        }
+        base.update(extended)
+        return base
+
+    @staticmethod
+    def get_searchable_fields() -> List[str]:
+        # no extra searchable info - just return parent
+        return ItemBase.get_searchable_fields() + [
+            'from_item_id',
+            'to_item_id',
+            'new_version_number'
+        ]
+
+    @validator('history')
+    def unique_history(cls: Any, v: List[HistoryEntry[Any]]) -> Any:
+        # validate that the ids are unique in the history
+        unique_history_ids(v)
+        return v
+
+
+# ==========================================
+# Registry Create (Activity <- Workflow Run)
+# ==========================================
+
+
+class CreateDomainInfo(DomainInfoBase):
+    # The base info includes other important info e.g. person, time etc
+
+    # Should include link to the created item
+    created_item_id: str
+
+
+class ItemCreate(ActivityBase, CreateDomainInfo):
+    item_subtype: ItemSubType = ItemSubType.CREATE
+
+    # override history
+    history: List[HistoryEntry[CreateDomainInfo]]  # type: ignore
+
+    _validate_subtype = validate_subtype(
+        'item_subtype', ItemSubType.CREATE)
+
+    def get_search_ready_object(self) -> Dict[str, str]:
+        # no extra searchable info - just return parent
+        item_base = ItemBase.parse_obj(self.dict())
+        base = item_base.get_search_ready_object()
+        extended: Dict[str, str] = {
+            "created_item_id": self.created_item_id
+        }
+        base.update(extended)
+        return base
+
+    @staticmethod
+    def get_searchable_fields() -> List[str]:
+        # no extra searchable info - just return parent
+        return ItemBase.get_searchable_fields() + [
+            "created_item_id"
+        ]
+
+    @validator('history')
+    def unique_history(cls: Any, v: List[HistoryEntry[Any]]) -> Any:
+        # validate that the ids are unique in the history
+        unique_history_ids(v)
+        return v
+
 # ========================================
 # Workflow Run (Activity - Workflow Run)
 # ========================================
@@ -1276,6 +1400,8 @@ class ItemOrganisation(AgentBase, OrganisationDomainInfo):
 
 MODEL_TYPE_MAP: Dict[Tuple[ItemCategory, ItemSubType], Type[ItemBase]] = {
     (ItemCategory.ACTIVITY, ItemSubType.MODEL_RUN): ItemModelRun,
+    (ItemCategory.ACTIVITY, ItemSubType.CREATE): ItemCreate,
+    (ItemCategory.ACTIVITY, ItemSubType.VERSION): ItemVersion,
     (ItemCategory.AGENT, ItemSubType.PERSON): ItemPerson,
     (ItemCategory.AGENT, ItemSubType.ORGANISATION): ItemOrganisation,
     (ItemCategory.ENTITY, ItemSubType.MODEL): ItemModel,
@@ -1285,6 +1411,8 @@ MODEL_TYPE_MAP: Dict[Tuple[ItemCategory, ItemSubType], Type[ItemBase]] = {
 }
 MODEL_DOMAIN_INFO_TYPE_MAP: Dict[Tuple[ItemCategory, ItemSubType], Type[DomainInfoBase]] = {
     (ItemCategory.ACTIVITY, ItemSubType.MODEL_RUN): ModelRunDomainInfo,
+    (ItemCategory.ACTIVITY, ItemSubType.CREATE): CreateDomainInfo,
+    (ItemCategory.ACTIVITY, ItemSubType.VERSION): VersionDomainInfo,
     (ItemCategory.AGENT, ItemSubType.PERSON): PersonDomainInfo,
     (ItemCategory.AGENT, ItemSubType.ORGANISATION): OrganisationDomainInfo,
     (ItemCategory.ENTITY, ItemSubType.MODEL): ModelDomainInfo,

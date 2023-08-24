@@ -82,6 +82,7 @@ def generate_integration_tests(
     id: str,
     config: ProvenaConfig,
     data_store_api_endpoint: CfnOutput,
+    job_api_endpoint: CfnOutput,
     registry_api_endpoint: CfnOutput,
     keycloak_endpoint: CfnOutput,
     prov_api_endpoint: CfnOutput,
@@ -131,7 +132,8 @@ def generate_integration_tests(
         registry_api_endpoint=registry_api_endpoint,
         keycloak_endpoint=keycloak_endpoint,
         prov_api_endpoint=prov_api_endpoint,
-        auth_api_endpoint=auth_api_endpoint
+        auth_api_endpoint=auth_api_endpoint,
+        job_api_endpoint=job_api_endpoint
     )
 
     # secret env

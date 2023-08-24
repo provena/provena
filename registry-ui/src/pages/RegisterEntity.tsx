@@ -335,7 +335,7 @@ const CreateItemResultDisplayComponent = (
                 <p>
                     {" "}
                     An error occurred while creating the entity. Error:{" "}
-                    {status?.errorMessage ?? "Unknown"}. <br />
+                    {status?.errorMessage ?? "Unknown"} <br />
                     If you cannot determine how to fix this issue, try
                     refreshing, or contact us to get help.
                 </p>
@@ -884,7 +884,6 @@ const RegisterEntity = observer((props: RegisterEntityProps) => {
     // User link enforcement
     // =====================
 
-    // TODO disable/enable when ready
     const userLinkEnforced =
         relevantSubtype !== "PERSON" && (isCreateMode || isCloneMode);
 
@@ -921,10 +920,8 @@ const RegisterEntity = observer((props: RegisterEntityProps) => {
     );
 
     const linkEnforcer = useUserLinkEnforcer({
-        // TODO re-enable when ready - change to userLinkEnforced above
-        blockEnabled: false,
-        // TODO re-enable when ready
-        blockOnError: false,
+        blockEnabled: userLinkEnforced,
+        blockOnError: userLinkEnforced,
         missingLinkMessage: overridedMissingLinkMessage,
     });
 

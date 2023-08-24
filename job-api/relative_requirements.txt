@@ -1,0 +1,7 @@
+# this links to the utilities package deployed as part of 
+# this provena repo - ensure this is correct in your 
+# fast api application
+../utilities/packages/python/fast-api-keycloak-auth
+
+# Shared interfaces
+../utilities/packages/python/shared-interfaces

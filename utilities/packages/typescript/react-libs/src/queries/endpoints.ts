@@ -19,6 +19,7 @@ export const PROV_API_URL = import.meta.env.VITE_PROV_API_ENDPOINT;
 export const KEYCLOAK_AUTH_ENDPOINT = import.meta.env
     .VITE_KEYCLOAK_AUTH_ENDPOINT;
 export const WARMER_API_URL = import.meta.env.VITE_WARMER_API_ENDPOINT;
+export const JOB_API_URL = import.meta.env.VITE_JOB_API_ENDPOINT;
 
 /**
 ==================
@@ -52,6 +53,7 @@ const required: Array<[string | undefined, string]> = [
     [REGISTRY_STORE_API_URL, "Registry API URL"],
     [SEARCH_API_URL, "Search API URL"],
     [PROV_API_URL, "Prov API URL"],
+    [JOB_API_URL, "Job API URL"],
     [KEYCLOAK_AUTH_ENDPOINT, "Keycloak Auth Endpoint URL"],
     [WARMER_API_URL, "Lambda Function Warmer API URL"],
     [
@@ -89,6 +91,21 @@ export const REGISTRY_STORE_GENERIC_API_ENDPOINTS = {
 export const SEARCH_API_ENDPOINTS = {
     ROOT_URL: SEARCH_API_URL,
     SEARCH_REGISTRY: SEARCH_API_URL + "/search/entity-registry",
+};
+
+export const JOB_API_ENDPOINTS = {
+    ROOT_URL: JOB_API_URL,
+
+    // User endpoints
+    USER_FETCH: JOB_API_URL + "/jobs/user/fetch",
+    USER_LIST: JOB_API_URL + "/jobs/user/list",
+    USER_LIST_BATCH: JOB_API_URL + "/jobs/user/list_batch",
+
+    // Admin endpoints
+    ADMIN_LIST: JOB_API_URL + "/jobs/admin/list",
+    ADMIN_LIST_BATCH: JOB_API_URL + "/jobs/admin/list_batch",
+    ADMIN_FETCH: JOB_API_URL + "/jobs/admin/fetch",
+    ADMIN_LAUNCH_JOB: JOB_API_URL + "/jobs/admin/launch",
 };
 
 const userLinkPrefix = "/link/user";
@@ -135,21 +152,21 @@ export const AUTH_API_ENDPOINTS = {
     USER_LINK_ASSIGN: AUTH_API_URL + userLinkPrefix + "/assign",
 };
 
+const SPECIAL_QUERY_BASE = PROV_API_URL + "/explore/special";
 export const PROV_API_ENDPOINTS = {
     ROOT_URL: PROV_API_URL,
-    REGISTER_MODEL_RUN_COMPLETE:
-        PROV_API_URL + "/model_run/register_complete",
+    REGISTER_MODEL_RUN_COMPLETE: PROV_API_URL + "/model_run/register",
+    REGISTER_MODEL_RUN_BATCH: PROV_API_URL + "/model_run/register_batch",
     EXPLORE_UPSTREAM: PROV_API_URL + "/explore/upstream",
     EXPLORE_DOWNSTREAM: PROV_API_URL + "/explore/downstream",
-    GENERATE_CSV_TEMPLATE:
-        PROV_API_URL + "/bulk/generate_template/csv",
-    CONVERT_CSV_TEMPLATE:
-        PROV_API_URL + "/bulk/convert_model_runs/csv",
-    SUBMIT_MODEL_RUNS: PROV_API_URL + "/bulk/submit",
-    DESCRIBE_BATCH: PROV_API_URL + "/bulk/describe_batch",
-    BATCH_HISTORY: PROV_API_URL + "/bulk/batch_history",
-    REGENERATE_FROM_BATCH:
-        PROV_API_URL + "/bulk/regenerate_from_batch/csv",
+    GENERATE_CSV_TEMPLATE: PROV_API_URL + "/bulk/generate_template/csv",
+    CONVERT_CSV_TEMPLATE: PROV_API_URL + "/bulk/convert_model_runs/csv",
+    SUBMIT_MODEL_RUNS: PROV_API_URL + "/model_run/register_batch",
+    REGENERATE_FROM_BATCH: PROV_API_URL + "/bulk/regenerate_from_batch/csv",
+    UPSTREAM_DATASETS: SPECIAL_QUERY_BASE + "/contributing_datasets",
+    DOWNSTREAM_DATASETS: SPECIAL_QUERY_BASE + "/effected_datasets",
+    UPSTREAM_AGENTS: SPECIAL_QUERY_BASE + "/contributing_agents",
+    DOWNSTREAM_AGENTS: SPECIAL_QUERY_BASE + "/effected_agents",
 };
 
 export const DATA_STORE_API_ENDPOINTS = {
@@ -167,6 +184,8 @@ export const DATA_STORE_API_ENDPOINTS = {
     //Update metadata
     UPDATE_METADATA: DATA_STORE_API_URL + "/register/update-metadata",
     REVERT_METADATA: DATA_STORE_API_URL + "/register/revert-metadata",
+    //Version
+    VERSION_DATASET: DATA_STORE_API_URL + "/register/version",
     //Registry Items
     LIST_DATASETS: DATA_STORE_API_URL + "/registry/items/list",
     FETCH_DATASET: DATA_STORE_API_URL + "/registry/items/fetch-dataset",

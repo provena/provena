@@ -14,14 +14,16 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import {
     DOCUMENTATION_BASE_URL,
+    LegendInformation,
+    LegendInformationProps,
     Swatches,
     keycloak,
     useCombinedLoadedItem,
     useQueryStringVariable,
 } from "react-libs";
-import { ItemDisplayWithStatusComponent } from "../components/ItemDisplayWithStatus";
-import ProvGraph from "../components/ProvGraph";
 import accessStore from "../stores/accessStore";
+import { ItemDisplayWithStatusComponent } from "react-libs/components/ItemDisplayWithStatus";
+import ProvGraph from "react-libs/components/ProvGraph";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -368,113 +370,24 @@ const View = observer(() => {
                                             marginBottom: "12px",
                                         }}
                                     />
-                                    <LegendItem
-                                        colour={Swatches.personSwatch.colour}
-                                        acronym="P"
-                                        name={
-                                            <span>
-                                                <a
-                                                    href={DOCUMENTATION_BASE_URL + "/information-system/provenance/registering-model-runs/establishing-required-entities#person"}
-                                                    target="_blank"
-                                                >
-                                                    Person
-                                                </a>
-                                            </span>
-                                        }
-                                    />
-                                    <LegendItem
-                                        colour={
-                                            Swatches.organisationSwatch.colour
-                                        }
-                                        acronym="O"
-                                        name={
-                                            <span>
-                                                <a
-                                                    href={DOCUMENTATION_BASE_URL + "/information-system/provenance/registering-model-runs/establishing-required-entities#organisation"}
-                                                    target="_blank"
-                                                >
-                                                    Organisation
-                                                </a>
-                                            </span>
-                                        }
-                                    />
-                                    <LegendItem
-                                        colour={Swatches.datasetSwatch.colour}
-                                        acronym="D"
-                                        name={
-                                            <span>
-                                                <a
-                                                    href={DOCUMENTATION_BASE_URL + "/information-system/data-store/overview#data-store-overview"}
-                                                    target="_blank"
-                                                >
-                                                    Dataset
-                                                </a>
-                                            </span>
-                                        }
-                                    />
-                                    <LegendItem
-                                        colour={
-                                            Swatches.datasetTemplateSwatch
-                                                .colour
-                                        }
-                                        acronym="DT"
-                                        name={
-                                            <span>
-                                                <a
-                                                    href={DOCUMENTATION_BASE_URL + "/information-system/provenance/registering-model-runs/model-workflow-configuration.html#dataset-template"}
-                                                    target="_blank"
-                                                >
-                                                    Dataset Template
-                                                </a>
-                                            </span>
-                                        }
-                                    />
-                                    <LegendItem
-                                        colour={Swatches.modelSwatch.colour}
-                                        acronym="M"
-                                        name={
-                                            <span>
-                                                <a
-                                                    href={DOCUMENTATION_BASE_URL + "/information-system/provenance/registering-model-runs/establishing-required-entities#model"}
-                                                    target="_blank"
-                                                >
-                                                    Model
-                                                </a>
-                                            </span>
-                                        }
-                                    />
-                                    <LegendItem
-                                        colour={Swatches.modelRunSwatch.colour}
-                                        acronym="MR"
-                                        name={
-                                            <span>
-                                                <a
-                                                    href={DOCUMENTATION_BASE_URL + "/information-system/provenance/registering-model-runs/registration-process/overview.html#model-run-overview"}
-                                                    target="_blank"
-                                                >
-                                                    Model Run
-                                                </a>
-                                            </span>
-                                        }
-                                    />
-                                    <LegendItem
-                                        colour={
-                                            Swatches
-                                                .modelRunWorkflowDefinitionSwatch
-                                                .colour
-                                        }
-                                        acronym="MRWT"
-                                        name={
-                                            <span>
-                                                <a
-                                                    href={DOCUMENTATION_BASE_URL + "/information-system/provenance/registering-model-runs/model-workflow-configuration#model-run-workflow-template"}
-                                                    target="_blank"
-                                                >
-                                                    Model Run Workflow Template
-                                                </a>
-                                            </span>
-                                        }
-                                    />
+                                    {LegendInformation.map(
+                                        (legend: LegendInformationProps) => (
+                                            <LegendItem
+                                                colour={legend.colour}
+                                                acronym={legend.acronym}
+                                                name={
+                                                    <span>
+                                                        <a
+                                                            href={legend.href}
+                                                            target="_blank"
+                                                        >
+                                                            {legend.name}
+                                                        </a>
+                                                    </span>
+                                                }
+                                            />
+                                        )
+                                    )}
                                 </Grid>
                             </Grid>
                         </Grid>

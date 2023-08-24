@@ -11,10 +11,11 @@ export const entityTypes: ItemSubType[] = [
     "MODEL_RUN_WORKFLOW_TEMPLATE",
     "ORGANISATION",
     "PERSON",
-    "QUALIFIED_ASSOCIATION",
     "SOFTWARE",
     "WORKFLOW_TEMPLATE",
     "WORKFLOW_RUN",
+    "CREATE",
+    "VERSION",
 ];
 
 export const filterableEntityTypes: ItemSubType[] = [
@@ -25,6 +26,8 @@ export const filterableEntityTypes: ItemSubType[] = [
     "MODEL_RUN_WORKFLOW_TEMPLATE",
     "ORGANISATION",
     "PERSON",
+    "CREATE",
+    "VERSION",
 ];
 
 export const searchableEntityTypes: ItemSubType[] = [
@@ -35,13 +38,14 @@ export const searchableEntityTypes: ItemSubType[] = [
     "MODEL_RUN_WORKFLOW_TEMPLATE",
     "ORGANISATION",
     "PERSON",
+    "CREATE",
+    "VERSION",
 ];
 
 export const registerableEntityTypes: ItemSubType[] = [
     "DATASET_TEMPLATE",
     "MODEL",
     "DATASET",
-    "MODEL_RUN",
     "MODEL_RUN_WORKFLOW_TEMPLATE",
     "ORGANISATION",
     "PERSON",

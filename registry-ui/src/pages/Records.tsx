@@ -66,6 +66,10 @@ const useStyles = makeStyles((theme: Theme) =>
             overflowY: "auto",
             height: "60vh",
         },
+        gridFlowBoxContainer: {
+            display: "grid",
+            gridTemplateColumns: `repeat( auto-fill, minmax(280px, 1fr) );`,
+        },
         loadingIndicatorContainer: {
             display: "flex",
             flexDirection: "row",
@@ -580,7 +584,7 @@ const Records = observer(() => {
                         item
                         xs={12}
                         flexDirection={"row"}
-                        className={classes.gridContainer}
+                        className={`${classes.gridContainer} ${classes.gridFlowBoxContainer}`}
                     >
                         {records && records.length > 0 ? (
                             records?.map((i) => (

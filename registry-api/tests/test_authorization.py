@@ -21,6 +21,7 @@ def provide_global_config() -> Config:
         enforce_user_auth=False,
         enforce_special_proxy_roles=False,
         auth_api_endpoint="",
+        job_api_endpoint="",
 
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
@@ -32,6 +33,7 @@ def provide_global_config() -> Config:
         mock_handle=True,
         # dont perform user link validation
         enforce_user_links=False,
+        test_mode=True
     )
 
 # for each function, override settings and clear deps at end

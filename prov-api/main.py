@@ -9,7 +9,7 @@ from routes.check_access import checks
 from routes.model_run import model_run
 from routes.explore import explore
 from routes.admin import general_admin, restore_from_registry, graph_admin
-from routes.bulk import templates, jobs
+from routes.bulk import templates
 from typing import Dict
 
 # Setup app
@@ -45,14 +45,9 @@ app.include_router(model_run.router,
 app.include_router(explore.router,
                    prefix="/explore",
                    tags=["Explore Lineage"])
-
 app.include_router(templates.router,
                    prefix="/bulk",
-                   tags=["Bulk Ingestion"])
-
-app.include_router(jobs.router,
-                   prefix="/bulk",
-                   tags=["Bulk Ingestion"])
+                   tags=["CSV Template Tools"])
 
 # Admin
 app.include_router(

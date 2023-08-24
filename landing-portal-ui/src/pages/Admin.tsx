@@ -27,8 +27,6 @@ const useStyles = makeStyles((theme: Theme) =>
         root: {
             padding: theme.spacing(4),
             display: "flex",
-            marginTop: 100,
-            marginBottom: 100,
         },
         tabPanel: {
             paddingLeft: theme.spacing(4),

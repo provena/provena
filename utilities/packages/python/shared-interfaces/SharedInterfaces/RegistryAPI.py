@@ -175,12 +175,43 @@ class PaginatedListResponse(StatusResponse):
     pagination_key: Optional[PaginationKey]
 
 
+class UpdateResponse(StatusResponse):
+    # if this item has provenance enabled versioning AND the update was from
+    # seed -> complete
+    register_create_activity_session_id: Optional[str]
+
+
 class GenericSeedResponse(StatusResponse):
     seeded_item: Optional[SeededItem]
 
 
 class GenericCreateResponse(StatusResponse):
     created_item: Optional[ItemBase]
+
+    # if this item has provenance enabled versioning, this job spins off from
+    # creation to create and then lodge the CreateActivity
+    register_create_activity_session_id: Optional[str]
+
+
+class VersionResponse(BaseModel):
+    new_version_id: str
+
+    # Whenever versioning occurs, there is a job spun off to create the
+    # associated Version activity, update various models, and lodge the
+    # Version activity provenance
+    version_job_session_id: str
+
+
+class VersionRequest(BaseModel):
+    # Which item to create version of
+    id: str
+
+    # Reason for the version being required
+    reason: str
+
+
+class ProxyVersionRequest(VersionRequest):
+    username: str
 
 
 class UiSchemaResponse(StatusResponse):
@@ -260,6 +291,31 @@ class ModelCreateResponse(GenericCreateResponse):
 
 class ModelListResponse(GenericListResponse):
     items: Optional[List[ItemModel]]
+
+# ============================================
+# Registry Version (Activity - Registry Version)
+# ============================================
+
+
+class VersionFetchResponse(GenericFetchResponse):
+    item: Optional[Union[ItemVersion, SeededItem]]
+
+
+class VersionListResponse(GenericListResponse):
+    items: Optional[List[ItemVersion]]
+
+# ============================================
+# Registry Create (Activity - Registry Create)
+# ============================================
+
+
+class CreateFetchResponse(GenericFetchResponse):
+    item: Optional[Union[ItemCreate, SeededItem]]
+
+
+class CreateListResponse(GenericListResponse):
+    items: Optional[List[ItemCreate]]
+
 
 # ================================================================
 # Workflow Template (Entity - Workflow Template) (NO ENDPOINT)

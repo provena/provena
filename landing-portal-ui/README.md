@@ -12,16 +12,16 @@ However, advanced users can follow the steps below to deploy a local development
 
 We recommend using [node version manager](https://github.com/nvm-sh/nvm) (nvm) to manage your installed Node instance.
 
-Once you have `nvm` installed, install node 16 using `nvm`:
+Once you have `nvm` installed, install node 20 using `nvm`:
 
 ```
-nvm install 16
+nvm install 20
 ```
 
 and activate it:
 
 ```
-nvm use 16
+nvm use 20
 ```
 
 Now ensure you are working in this folder, and install the dependencies.

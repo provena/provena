@@ -100,6 +100,7 @@ class MintResponse(BaseModel):
     status: Status
     handle: Optional[str]
     s3_location: Optional[S3Location]
+    register_create_activity_session_id: Optional[str]
 
 
 class UpdateMetadataResponse(BaseModel):

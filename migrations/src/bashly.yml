@@ -3,6 +3,20 @@ help: This CLI tool provides a set of migrations which are shell wrappers of aut
 version: 0.1.0
 
 commands:
+    - name: history-migration
+      help: Peforms the RRAPIS-1247 migration - updating registry items to include the starting history entry.
+
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+
     - name: example-migration
       help: Performs an example migration (which does not modify anything)
 
@@ -16,6 +30,71 @@ commands:
             help: Apply the changes - do not run in dry run mode.
           - long: --reuse_venv
             help: Don't rebuild the python virtual environments
+
+      name: f1339-modelrun-display-name-migration
+      help: Performs model run display name migration
+
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+
+    - name: f1249-migration
+      help: Migrations required for f1249 feature (dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics
+
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+
+    - name: f1249-f1247-migration
+      help: Migrations required for f1249 + f1247 features (history + dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics
+
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+
+    - name: f1176-migration
+      help: Migrations required for f1176 feature - adds owner_username, renames author -> associations, changes publisher/org to IDs, removes rocrate_metadata field - only runs on PROD - no migration defined for other stages - just clear them.
+
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+
+    - name: f1442-migration
+      help: Migrations required for f1442 feature - adds the versioning info version = 1 for Entity category items
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+
     - name: clear-app-stage
       help: "CAUTION: Clears all items from the registry and graph store for a given stage. This does not allow PROD by default. You will need to manually clear PROD. This is a migration used when other forms of migration are too time intensive for test items (usually when manual intervention required)."
       args:

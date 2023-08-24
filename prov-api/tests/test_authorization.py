@@ -12,15 +12,13 @@ from tests.test_config import *
 auth_test_config = Config(
     stage=stage,
     keycloak_endpoint=base_config.keycloak_endpoint,
-    SERVICE_ACCOUNT_SECRET_ARN="",
-    REGISTRY_API_ENDPOINT="",
-    MOCK_GRAPH_DB=False,
-    NEO4J_HOST="",
-    NEO4J_PORT=0,
-    # Sort these out
-    PROV_JOB_TOPIC_ARN="",
-    PROV_JOB_TABLE_NAME="",
-    BATCH_TABLE_NAME=""
+    service_account_secret_arn="",
+    # This should not be used
+    job_api_endpoint="",
+    registry_api_endpoint="",
+    mock_graph_db=False,
+    neo4j_host="",
+    neo4j_port=0
 )
 
 client = TestClient(app)
@@ -28,7 +26,7 @@ client = TestClient(app)
 
 write_role_secured_endpoints = [
     ("/check-access/check-write-access", "GET"),
-    ("/model_run/register_complete", "POST")
+    ("/model_run/register", "POST")
 ]
 
 read_role_secured_endpoints = [
@@ -38,6 +36,7 @@ read_role_secured_endpoints = [
 ]
 
 admin_role_secured_endpoints: List[Tuple[str, str]] = [
+    ("/model_run/register_sync", "POST")
 ]
 
 all_secured_endpoints = write_role_secured_endpoints + \
@@ -213,7 +212,7 @@ def test_access_denied_expired_token() -> None:
     access_denied_check_general_secured(client, headers)
 
 # Deprecated
-#def test_access_denied_invalid_token() -> None:
+# def test_access_denied_invalid_token() -> None:
 #    # Checks that providing valid token but for an invalid
 #    # idp/signature denies access
 #    token = str(open('tests/resources/invalid_token.txt', 'r').read())

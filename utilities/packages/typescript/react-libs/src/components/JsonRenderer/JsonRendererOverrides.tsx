@@ -11,7 +11,15 @@ import {
 import { createStyles, makeStyles } from "@mui/styles";
 import { unset } from "lodash";
 import { useState } from "react";
-import { useTypedLoadedItem } from "../../hooks";
+import { Link } from "react-router-dom";
+import {
+    BATCH_ID_QSTRING,
+    JOB_BATCH_ROUTE,
+    JOB_DETAILS_ROUTE,
+    SESSION_ID_QSTRING,
+    useTypedLoadedItem,
+    useUntypedLoadedItem,
+} from "../../";
 import { ItemBase, ItemSubType } from "../../shared-interfaces/RegistryModels";
 import {
     prepareObject,
@@ -90,6 +98,66 @@ export const urlOverride: RendererOverride<string> = (
     const rhContent = (
         <Typography className={classes.valueText}>
             <CopyableLinkComponent link={val} />
+        </Typography>
+    );
+
+    return genericStyledRenderer({
+        style: props.style,
+        lhContent,
+        rhContent,
+    });
+};
+
+export const jobSessionLinkOverride: RendererOverride<string> = (
+    name: string,
+    val: string,
+    props: JsonDetailViewComponentProps
+) => {
+    const classes = useStyles();
+
+    // LH Content
+    const lhContent = (
+        <Typography className={classes.boldText}>
+            {prettifyRecordName(name)}
+        </Typography>
+    );
+
+    // RH Content
+    const rhContent = (
+        <Typography className={classes.valueText}>
+            <Link to={`${JOB_DETAILS_ROUTE}?${SESSION_ID_QSTRING}=${val}`}>
+                {val}
+            </Link>
+        </Typography>
+    );
+
+    return genericStyledRenderer({
+        style: props.style,
+        lhContent,
+        rhContent,
+    });
+};
+
+export const jobBatchLinkOverride: RendererOverride<string> = (
+    name: string,
+    val: string,
+    props: JsonDetailViewComponentProps
+) => {
+    const classes = useStyles();
+
+    // LH Content
+    const lhContent = (
+        <Typography className={classes.boldText}>
+            {prettifyRecordName(name)}
+        </Typography>
+    );
+
+    // RH Content
+    const rhContent = (
+        <Typography className={classes.valueText}>
+            <Link to={`${JOB_BATCH_ROUTE}?${BATCH_ID_QSTRING}=${val}`}>
+                {val}
+            </Link>
         </Typography>
     );
 
@@ -441,6 +509,132 @@ function subtypedIdResolverOverrideGenerator(inputs: {
     return override;
 }
 
+function untypedIdResolverOverrideGenerator(inputs: {
+    fieldnameOverride?: string;
+}): RendererOverride<string> {
+    // Defines a handle display renderer override
+    const override: RendererOverride<string> = (
+        name: string,
+        val: string,
+        props: JsonDetailViewComponentProps
+    ) => {
+        const classes = useStyles();
+        const [expanded, setExpanded] = useState<boolean>(false);
+
+        const untypedFetch = useUntypedLoadedItem({
+            enabled: expanded,
+            id: val,
+        });
+        const subtype = untypedFetch.data?.item_subtype;
+        const untypedItem = untypedFetch.data;
+
+        // avoids recursive lookup of owner username on Person - it is assumed
+        // the person is the owner.
+
+        // TODO do we want a more elegant approach?
+        if (subtype === "PERSON" && untypedItem !== undefined) {
+            unset(untypedItem, "owner_username");
+        }
+
+        // LH Content (same as usual)
+        const lhContent = (
+            <Stack
+                direction="row"
+                spacing={1.5}
+                alignItems="center"
+                justifyContent="flex-start"
+            >
+                <Typography className={classes.boldText}>
+                    {inputs.fieldnameOverride ?? prettifyRecordName(name)}
+                </Typography>
+                <Button
+                    variant="outlined"
+                    onClick={(e) => {
+                        setExpanded((old) => !old);
+                    }}
+                >
+                    {expanded ? "Collapse" : "Expand"}
+                </Button>
+            </Stack>
+        );
+
+        // Always resolve this even if object is empty - just to avoid unstable hook
+        // order
+        const rhRenderedObject = objectRenderer({
+            ...props,
+            json: {
+                // Top level render
+                name: undefined,
+                value: prepareObject(untypedItem ?? {}) as unknown as {
+                    [k: string]: JsonTypes;
+                },
+            },
+        });
+        var readyToDisplay = false;
+
+        // RH Content -> depends on if resolved yet
+
+        var rhContent = <p>Loading...</p>;
+
+        if (!expanded) {
+            rhContent = (
+                <Typography className={classes.valueText}>
+                    <CopyableLinkedHandleComponent handleId={val} />
+                </Typography>
+            );
+        } else {
+            if (untypedFetch.loading) {
+                rhContent = <CircularProgress />;
+            } else if (untypedFetch.error) {
+                rhContent = (
+                    <div style={{ width: "100%" }}>
+                        <Alert severity="error" variant="outlined">
+                            <AlertTitle>Error Loading ID: {val}</AlertTitle>
+                            Error : {untypedFetch.errorMessage ?? "Unknown"}
+                        </Alert>
+                    </div>
+                );
+            } else if (untypedItem !== undefined) {
+                readyToDisplay = true;
+            }
+        }
+
+        if (readyToDisplay) {
+            return genericStyledRenderer({
+                // Force stack layout for loaded object - use boxer to reuse
+                // boxing logic but retain customised entry
+
+                // Override to stack
+                style: { ...props.style, layout: "stack" },
+                lhContent,
+
+                // Show the rendered object within box
+                rhContent: objectRendererBoxer({
+                    style: props.style,
+                    interior: (
+                        <Stack direction="column" spacing={ROW_GAP}>
+                            <SubtypeHeaderComponent
+                                item={untypedItem! as ItemBase}
+                                compact={true}
+                            />
+                            {rhRenderedObject}
+                        </Stack>
+                    ),
+                }),
+            });
+        } else {
+            return genericStyledRenderer({
+                // Force stack layout for loaded object
+                style: props.style,
+                lhContent,
+                rhContent,
+            });
+        }
+    };
+
+    return override;
+}
+
 function renamerOverrideGenerator(
     renamer: (input: string) => string
 ): RendererOverride<string> {
@@ -504,6 +698,16 @@ export const STRING_RENDER_OVERRIDES: FieldRendererMap<string> = new Map([
         }),
     ],
     [
+        "to_version_id",
+        untypedIdResolverOverrideGenerator({ fieldnameOverride: "To Version" }),
+    ],
+    [
+        "from_version_id",
+        untypedIdResolverOverrideGenerator({
+            fieldnameOverride: "From Version",
+        }),
+    ],
+    [
         "publisher_id",
         subtypedIdResolverOverrideGenerator({
             subtype: "ORGANISATION",
@@ -522,6 +726,19 @@ export const STRING_RENDER_OVERRIDES: FieldRendererMap<string> = new Map([
         subtypedIdResolverOverrideGenerator({
             subtype: "MODEL",
             fieldnameOverride: "Model",
+        }),
+    ],
+    [
+        "creation_activity_id",
+        subtypedIdResolverOverrideGenerator({
+            subtype: "CREATE",
+            fieldnameOverride: "Registry Creation Activity",
+        }),
+    ],
+    [
+        "created_item_id",
+        untypedIdResolverOverrideGenerator({
+            fieldnameOverride: "Created Item",
         }),
     ],
     [
@@ -567,6 +784,18 @@ export const STRING_RENDER_OVERRIDES: FieldRendererMap<string> = new Map([
     ["s3_uri", copyableOverride],
     ["bucket_name", copyableOverride],
     ["path", copyableOverride],
+
+    // Job overrides
+    ["session_id", jobSessionLinkOverride],
+    ["lodge_session_id", jobSessionLinkOverride],
+    ["batch_id", jobBatchLinkOverride],
+
+    // Workflow Links
+    ["version_activity_workflow_id", jobSessionLinkOverride],
+
+    // Versioning Info
+    ["previous_version", handleOverride],
+    ["next_version", handleOverride],
 
     // Show prov serialisation of model run as object
 

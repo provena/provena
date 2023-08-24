@@ -127,6 +127,35 @@ const labelValueInitialSet: LabelPathAndValue[] = [
     { labelPath: "approvals.export_controls.obtained", value: false },
 ];
 
+// Set initial reposited, to avoid reposited be undefined
+const initializeRepositedValue = () => {
+    const access_info_path = "dataset_info.access_info";
+
+    const repositedValue = updateStore.getLabelValue(
+        access_info_path + ".reposited"
+    );
+    const uriValue = updateStore.getLabelValue(access_info_path + ".uri");
+    const descriptionValue = updateStore.getLabelValue(
+        access_info_path + ".description"
+    );
+
+    // If uri/description are present but reposited value isn't, then reposited value should be false
+    const uriOrDesc =
+        (uriValue.status && uriValue.value !== undefined) ||
+        (descriptionValue.status && descriptionValue.value !== undefined);
+
+    if (
+        repositedValue.status &&
+        (repositedValue.value === undefined || repositedValue.value === null)
+    ) {
+        // Default reposited value is true
+        const repositedRes = uriOrDesc ? false : true;
+        updateStore.setLabelValue([
+            { labelPath: access_info_path + ".reposited", value: repositedRes },
+        ]);
+    }
+};
+
 const UpdateMetadata = observer((props: UpdateMetadataProps) => {
     const { id: handle_id } = useParams<UpdateMetadataParams>();
     const history = useHistory();
@@ -146,12 +175,20 @@ const UpdateMetadata = observer((props: UpdateMetadataProps) => {
 
     useEffect(() => {
         if (
-            isCloneMode &&
             needToSetInitialValue.current &&
             updateStore.currentValue !== undefined
         ) {
-            // Set label value when initiate the form in cline mode
-            updateStore.setLabelValue(labelValueInitialSet);
+            // For initiating values
+            if (isCloneMode) {
+                // For clone mode initialize values only
+                // Set label values when initialize the form in clone mode
+                updateStore.setLabelValue(labelValueInitialSet);
+            }
+            // For both clone mode and edit mode
+            // Initialize reposited value, and never set it to undefined
+            initializeRepositedValue();
+
+            // Initialized
             needToSetInitialValue.current = false;
         }
     }, [updateStore.currentValue]);
@@ -169,7 +206,7 @@ const UpdateMetadata = observer((props: UpdateMetadataProps) => {
             "Please provide a reason for this update using the input at the top of the page.";
     }
 
-    // user id link enforcer
+    // user id link enforcer (enabled for Datasets)
     const linkEnforcer = useUserLinkEnforcer({
         blockEnabled: true,
         blockOnError: true,

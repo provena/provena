@@ -1,27 +1,27 @@
 from fastapi import HTTPException, Depends
 from neo4j import GraphDatabase, Record, graph, basic_auth  # type: ignore
 from config import Config
-from typing import Optional, List, Any, Dict, Tuple
+from typing import Optional, List, Any, Dict, Tuple, Callable
 import networkx  # type: ignore
 from dependencies.dependencies import secret_cache
 from helpers.keycloak_helpers import retrieve_secret_value
 
 
-def get_credentials(config : Config) -> Tuple[str, str]:
-    if config.NEO4J_TEST_PASSWORD and config.NEO4J_TEST_USERNAME:
+def get_credentials(config: Config) -> Tuple[str, str]:
+    if config.neo4j_test_password and config.neo4j_test_username:
         print("Using testing user/pass for neo4j!")
-        return config.NEO4J_TEST_USERNAME, config.NEO4J_TEST_PASSWORD
+        return config.neo4j_test_username, config.neo4j_test_password
     # Make sure something is defined
-    assert config.NEO4J_AUTH_ARN
+    assert config.neo4j_auth_arn
     value = retrieve_secret_value(
-        secret_arn=config.NEO4J_AUTH_ARN, secret_cache=secret_cache)
+        secret_arn=config.neo4j_auth_arn, secret_cache=secret_cache)
     split_auth = value.split('/')
     assert len(
         split_auth) == 2, "Couldn't split auth properly, is it in <user>/<password> format?"
     return (split_auth[0], split_auth[1])
 
 
-def connect_to_neo4j(config : Config) -> GraphDatabase.driver:
+def connect_to_neo4j(config: Config) -> GraphDatabase.driver:
     """    connect_to_neo4j
         Connects to the neo4j endpoint using the bolt protocol.
 
@@ -41,13 +41,13 @@ def connect_to_neo4j(config : Config) -> GraphDatabase.driver:
     """
     user, password = get_credentials(config)
     return GraphDatabase.driver(
-        f"bolt://{config.NEO4J_HOST}:{config.NEO4J_PORT}",
+        f"bolt://{config.neo4j_host}:{config.neo4j_port}",
         encrypted=False,
         auth=basic_auth(user, password),
     )
 
 
-def run_query(query: str, config : Config) -> List[Record]:
+def run_query(query: str, config: Config) -> List[Record]:
     """    run_query
         Will generate a neo4j driver, then open a managed session, 
         run the query, and stream all results into a list of records.
@@ -163,7 +163,134 @@ def generate_networkx_graph_from_lineage_paths(
     return digraph
 
 
-def upstream_query(starting_id: str, depth: int, config : Config) -> Dict[str, Any]:
+def special_contributing_dataset_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
+    # The neo4j tag created by prov-db-connector which contains just the
+    # handle ID to match against
+    id_tag = "meta:identifier_original"
+
+    # The cypher query to make for upstream lineage - only concerned with datasets upstream
+    query = f"""
+    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) <-[*1..{depth}]-(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    """
+
+    # Run the query
+    try:
+        result = run_query(query, config)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Neo4j lineage query experienced an exception: {e}."
+        )
+
+    # Convert to list of paths by pulling out the 'r' field from the RETURN r in above
+    # cypher query
+    paths: List[Optional[graph.Path]] = [record.get('r') for record in result]
+
+    # Apply simple exploration algorithm to traverse paths and produce networkx digraph
+    graph = generate_networkx_graph_from_lineage_paths(
+        lineage_paths=paths
+    )
+
+    # Return D3.js friendly serialisation
+    return networkx.node_link_data(graph)
+
+
+def special_effected_dataset_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
+    # The neo4j tag created by prov-db-connector which contains just the
+    # handle ID to match against
+    id_tag = "meta:identifier_original"
+
+    # The cypher query to make for upstream lineage - only concerned with datasets upstream
+    query = f"""
+    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) -[*1..{depth}]->(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    """
+
+    # Run the query
+    try:
+        result = run_query(query, config)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Neo4j lineage query experienced an exception: {e}."
+        )
+
+    # Convert to list of paths by pulling out the 'r' field from the RETURN r in above
+    # cypher query
+    paths: List[Optional[graph.Path]] = [record.get('r') for record in result]
+
+    # Apply simple exploration algorithm to traverse paths and produce networkx digraph
+    graph = generate_networkx_graph_from_lineage_paths(
+        lineage_paths=paths
+    )
+
+    # Return D3.js friendly serialisation
+    return networkx.node_link_data(graph)
+
+def special_contributing_agent_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
+    # The neo4j tag created by prov-db-connector which contains just the
+    # handle ID to match against
+    id_tag = "meta:identifier_original"
+
+    # The cypher query to make for upstream lineage - only concerned with datasets upstream
+    query = f"""
+    MATCH r=((parent : Agent) <-[*1..{depth}]-(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    """
+
+    # Run the query
+    try:
+        result = run_query(query, config)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Neo4j lineage query experienced an exception: {e}."
+        )
+
+    # Convert to list of paths by pulling out the 'r' field from the RETURN r in above
+    # cypher query
+    paths: List[Optional[graph.Path]] = [record.get('r') for record in result]
+
+    # Apply simple exploration algorithm to traverse paths and produce networkx digraph
+    graph = generate_networkx_graph_from_lineage_paths(
+        lineage_paths=paths
+    )
+
+    # Return D3.js friendly serialisation
+    return networkx.node_link_data(graph)
+
+
+def special_effected_agent_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
+    # The neo4j tag created by prov-db-connector which contains just the
+    # handle ID to match against
+    id_tag = "meta:identifier_original"
+
+    # The query to see effected agents one step removed from any downstream occurrences i.e. 'effected people/organisations'
+    query = f"""
+    MATCH r=((agent: Agent) <-[]- (downstream) -[*0..{depth}]->(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    """
+
+    # Run the query
+    try:
+        result = run_query(query, config)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Neo4j lineage query experienced an exception: {e}."
+        )
+
+    # Convert to list of paths by pulling out the 'r' field from the RETURN r in above
+    # cypher query
+    paths: List[Optional[graph.Path]] = [record.get('r') for record in result]
+
+    # Apply simple exploration algorithm to traverse paths and produce networkx digraph
+    graph = generate_networkx_graph_from_lineage_paths(
+        lineage_paths=paths
+    )
+
+    # Return D3.js friendly serialisation
+    return networkx.node_link_data(graph)
+
+
+def upstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
     """    lineage_query
         Performs a depth limited upstream query for a neo4j database. 
         This query is defined as, starting at a node identified uniquely by

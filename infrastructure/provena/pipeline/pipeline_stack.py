@@ -26,6 +26,8 @@ from provena.config.config_helpers import resolve_endpoints
 from provena.utility.cfn_output_helpers import get_output_name, get_stack_name
 from typing import List, Dict
 
+VERSION_INFO_FILE_PATH = "../repo-tools/github-version/version_info.json"
+
 
 def create_artifact_bucket(scope: Construct, id: str) -> s3.Bucket:
     # creates a cleaned up auto deleting bucket
@@ -98,6 +100,45 @@ class ProvenaPipelineStack(Stack):
             effect=iam.Effect.ALLOW
         )
 
+        install_commands = [
+            # use node 18
+            "n 18"
+        ]
+        shared_synth_code_build_step_commands = [
+            # node and npm version
+            "node -v",
+            "npm -v",
+            # move to repo tooling
+            "cd repo-tools/github-version",
+            "pip install -r requirements.txt",
+            # run get version info which writes to file
+            f"python get_version_info.py {config.deployment.git_repo_string} $GIT_COMMIT_ID --export",
+            "cd ../../infrastructure",
+            # install jq for parsing file w version info
+            "apt-get install jq",
+            # Install cdk
+            "npm install -g aws-cdk",
+            # Install the pip dependencies
+            "pip install -r requirements.txt",
+            # read version info from file and export to env to be used in synth of pipeline stack
+            ". scripts/export_version_info.sh",
+            # Synthesize pipeline stack
+            config.deployment.cdk_synth_command
+        ]
+
+        # Dockerhub creds setup for pipeline asset publishing
+        dh_secret = sm.Secret.from_secret_complete_arn(
+            scope=self,
+            id='dh_secret',
+            secret_complete_arn=config.general.dockerhub_creds_arn
+        )
+        # Pipelines connection
+        dh_login = pipelines.DockerCredential.docker_hub(
+            secret=dh_secret,
+            secret_password_field="password",
+            secret_username_field="username"
+        )
+
         if config.deployment.cross_account or not config.deployment.feature_deployment:
             if config.deployment.cross_account:
                 Annotations.of(self).add_warning(
@@ -106,8 +147,18 @@ class ProvenaPipelineStack(Stack):
                 Annotations.of(self).add_info(
                     "Since this is not a feature deployment, old style artifact buckets are used - these are encrypted...")
 
+            github_source_synth = pipelines.CodePipelineSource.git_hub(
+                repo_string=config.deployment.git_repo_string,
+                branch=config.deployment.git_branch_name,
+                authentication=o_auth_token,
+                trigger=config.deployment.main_pipeline_trigger
+            )
+
             deployment_pipeline = pipelines.CodePipeline(
                 self, "fullpipe",
+                
+                # Tell pipeline to use docker login 
+                docker_credentials=[dh_login],
 
                 # Is this a cross account deployment?
                 # If so we need to enable cross account keys
@@ -129,29 +180,38 @@ class ProvenaPipelineStack(Stack):
                     role_policy=[secret_manager_policy]
                 ),
 
-                synth=pipelines.ShellStep("Synth",
-                                          input=pipelines.CodePipelineSource.git_hub(
-                                              repo_string=config.deployment.git_repo_string,
-                                              branch=config.deployment.git_branch_name,
-                                              authentication=o_auth_token,
-                                              trigger=config.deployment.main_pipeline_trigger
-                                          ),
-                                          commands=[
-                                              # Install cdk
-                                              "npm install -g aws-cdk",
-                                              # Move into infrastructure folder
-                                              "cd infrastructure",
-                                              # Install the pip dependencies
-                                              "pip install -r requirements.txt",
-                                              # Synthesize pipeline stack
-                                              config.deployment.cdk_synth_command
-                                          ],
-                                          primary_output_directory=f"infrastructure/{config.deployment.cdk_out_path}"
-                                          )
+                synth=pipelines.CodeBuildStep("Synth",
+                                              input=github_source_synth,
+                                              commands=shared_synth_code_build_step_commands,
+                                              # installs the node v18 runtime
+                                              install_commands=install_commands,
+                                              env={
+                                                  "GIT_COMMIT_ID": github_source_synth.source_attribute("CommitId"),
+                                                  "VERSION_INFO_FILE_PATH": VERSION_INFO_FILE_PATH,
+                                              },
+                                              primary_output_directory=f"infrastructure/{config.deployment.cdk_out_path}",
+                                              build_environment=build.BuildEnvironment(
+                                                  environment_variables={"github_oauth_token": build.BuildEnvironmentVariable(
+                                                      value=config.deployment.github_token_arn,
+                                                      type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
+                                                  )}
+                                              )
+                                              )
             )
-        else:
+        else:  # not cross account and is feature deployment
+
+            github_source_synth = pipelines.CodePipelineSource.git_hub(
+                repo_string=config.deployment.git_repo_string,
+                branch=config.deployment.git_branch_name,
+                authentication=o_auth_token,
+                trigger=pipeline_actions.GitHubTrigger.NONE
+            )
+
             deployment_pipeline = pipelines.CodePipeline(
                 self, "fullpipe",
+                
+                # Tell pipeline to use docker login 
+                docker_credentials=[dh_login],
 
                 # use a base pipeline so we have an artifact bucket
                 code_pipeline=create_base_pipeline(scope=self, id='full'),
@@ -170,25 +230,23 @@ class ProvenaPipelineStack(Stack):
                     role_policy=[secret_manager_policy]
                 ),
 
-                synth=pipelines.ShellStep("Synth",
-                                          input=pipelines.CodePipelineSource.git_hub(
-                                              repo_string=config.deployment.git_repo_string,
-                                              branch=config.deployment.git_branch_name,
-                                              authentication=o_auth_token,
-                                              trigger=pipeline_actions.GitHubTrigger.NONE
-                                          ),
-                                          commands=[
-                                              # Install cdk
-                                              "npm install -g aws-cdk",
-                                              # Move into infrastructure folder
-                                              "cd infrastructure",
-                                              # Install the pip dependencies
-                                              "pip install -r requirements.txt",
-                                              # Synthesize pipeline stack
-                                              config.deployment.cdk_synth_command
-                                          ],
-                                          primary_output_directory=f"infrastructure/{config.deployment.cdk_out_path}"
-                                          )
+                synth=pipelines.CodeBuildStep("Synth",
+                                              input=github_source_synth,
+                                              # installs the node v18 runtime
+                                              install_commands=install_commands,
+                                              commands=shared_synth_code_build_step_commands,
+                                              env={
+                                                  "GIT_COMMIT_ID": github_source_synth.source_attribute("CommitId"),
+                                                  "VERSION_INFO_FILE_PATH": VERSION_INFO_FILE_PATH,
+                                              },
+                                              primary_output_directory=f"infrastructure/{config.deployment.cdk_out_path}",
+                                              build_environment=build.BuildEnvironment(
+                                                  environment_variables={"github_oauth_token": build.BuildEnvironmentVariable(
+                                                      value=config.deployment.github_token_arn,
+                                                      type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
+                                                  )}
+                                              )
+                                              )
             )
 
         # Deploy infrastructure
@@ -205,6 +263,7 @@ class ProvenaPipelineStack(Stack):
 
 
             "VITE_WARMER_API_ENDPOINT": self.endpoints.warmer_api,
+            "VITE_JOB_API_ENDPOINT": self.endpoints.async_jobs_api,
             "VITE_REGISTRY_API_ENDPOINT": self.endpoints.registry_api,
             "VITE_AUTH_API_ENDPOINT": self.endpoints.auth_api,
             "VITE_PROV_API_ENDPOINT": self.endpoints.prov_api,
@@ -282,7 +341,8 @@ class ProvenaPipelineStack(Stack):
                 # /realms/realm_name form
                 keycloak_endpoint=self.deployment.keycloak_auth_endpoint_cfn_output,
                 prov_api_endpoint=self.deployment.prov_api_endpoint,
-                auth_api_endpoint=self.deployment.auth_api_endpoint
+                auth_api_endpoint=self.deployment.auth_api_endpoint,
+                job_api_endpoint=self.deployment.job_api_endpoint
             )
             post.append(integration_test_step)
             # integration test first then build
@@ -322,6 +382,70 @@ class ProvenaPipelineStack(Stack):
 
         # build pipeline so that underlying object is resolved
         deployment_pipeline.build_pipeline()
+
+        """
+        =====================
+        QUICK DEPLOY PIPELINE
+        =====================
+        """
+
+        if config.deployment.quick_deploy_pipeline:
+
+            github_source_synth = pipelines.CodePipelineSource.git_hub(
+                repo_string=config.deployment.git_repo_string,
+                branch=config.deployment.git_branch_name,
+                authentication=o_auth_token,
+                trigger=pipeline_actions.GitHubTrigger.NONE
+            )
+
+            quick_deploy_pipeline = pipelines.CodePipeline(
+                self, "quickpipe",
+                
+                # Tell pipeline to use docker login 
+                docker_credentials=[dh_login],
+
+                # use a base pipeline so we have an artifact bucket
+                code_pipeline=create_base_pipeline(
+                    scope=self, id='quick-deploy'),
+
+                # Enable docker
+                docker_enabled_for_self_mutation=True,
+                docker_enabled_for_synth=True,
+
+                # Add s3 permissions for code build projects
+                # //TODO investigate making this on a per step basis
+                code_build_defaults=pipelines.CodeBuildOptions(
+                    role_policy=[bucket_policy, secret_manager_policy]
+                ),
+
+                synth_code_build_defaults=pipelines.CodeBuildOptions(
+                    role_policy=[secret_manager_policy]
+                ),
+
+                synth=pipelines.CodeBuildStep("Synth",
+                                              input=github_source_synth,
+                                              install_commands=install_commands,
+                                              commands=shared_synth_code_build_step_commands,
+                                              env={
+                                                  "GIT_COMMIT_ID": github_source_synth.source_attribute("CommitId"),
+                                                  "VERSION_INFO_FILE_PATH": VERSION_INFO_FILE_PATH,
+                                              },
+                                              primary_output_directory=f"infrastructure/{config.deployment.cdk_out_path}",
+                                              build_environment=build.BuildEnvironment(
+                                                  environment_variables={"github_oauth_token": build.BuildEnvironmentVariable(
+                                                      value=config.deployment.github_token_arn,
+                                                      type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
+                                                  )}
+                                              )
+                                              )
+            )
+
+            # Add to pipeline
+            quick_deploy_pipeline.add_stage(
+                self.deployment,
+            )
+
+            quick_deploy_pipeline.build_pipeline()
 
         """
         ===================================
@@ -1185,8 +1309,30 @@ class ProvenaUIOnlyPipelineStack(Stack):
             effect=iam.Effect.ALLOW
         )
 
+        install_commands = [
+            # use node 18
+            "n 18"
+        ]
+
+
+        # Dockerhub creds setup for pipeline asset publishing
+        dh_secret = sm.Secret.from_secret_complete_arn(
+            scope=self,
+            id='dh_secret',
+            secret_complete_arn=config.dockerhub_creds_arn
+        )
+        # Pipelines connection
+        dh_login = pipelines.DockerCredential.docker_hub(
+            secret=dh_secret,
+            secret_password_field="password",
+            secret_username_field="username"
+        )
+
         deployment_pipeline = pipelines.CodePipeline(
             self, "fullpipe",
+
+            # Tell pipeline to use docker login 
+            docker_credentials=[dh_login],
 
             # use a base pipeline so we have an artifact bucket
             code_pipeline=create_base_pipeline(scope=self, id='full'),
@@ -1208,6 +1354,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
                                           authentication=o_auth_token,
                                           trigger=pipeline_actions.GitHubTrigger.NONE
                                       ),
+                                      install_commands=install_commands,
                                       commands=[
                                           # Install cdk
                                           "npm install -g aws-cdk",
@@ -1259,6 +1406,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
             "VITE_THEME_ID": self.config.ui_theme_id,
 
             "VITE_WARMER_API_ENDPOINT": self.config.domains.warmer_api_endpoint,
+            "VITE_JOB_API_ENDPOINT": self.config.domains.async_jobs_api_endpoint,
             "VITE_REGISTRY_API_ENDPOINT": self.config.domains.registry_api_endpoint,
             "VITE_AUTH_API_ENDPOINT": self.config.domains.auth_api_endpoint,
             "VITE_PROV_API_ENDPOINT": self.config.domains.prov_api_endpoint,
@@ -1269,8 +1417,8 @@ class ProvenaUIOnlyPipelineStack(Stack):
             "VITE_DATA_STORE_LINK": data_store_url,
             "VITE_PROV_STORE_LINK":  prov_store_url,
             "VITE_REGISTRY_LINK": registry_url,
-            
-            "VITE_DOCUMENTATION_BASE_LINK" : self.config.domains.documentation_base_link,
+
+            "VITE_DOCUMENTATION_BASE_LINK": self.config.domains.documentation_base_link,
             "VITE_CONTACT_US_LINK":  self.config.domains.contact_us_link,
 
             "VITE_DOCUMENTATION_BASE_LINK": self.config.domains.documentation_base_link,

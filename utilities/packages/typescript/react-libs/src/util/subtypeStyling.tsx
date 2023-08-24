@@ -119,9 +119,6 @@ export const getSwatchForSubtype = (subtype: ItemSubType | undefined) => {
         case "PERSON":
             baseSwatch = Swatches.personSwatch;
             break;
-        case "QUALIFIED_ASSOCIATION":
-            baseSwatch = Swatches.qualifiedAssociationSwatch;
-            break;
         case "SOFTWARE":
             baseSwatch = Swatches.softwareSwatch;
             break;
@@ -129,6 +126,14 @@ export const getSwatchForSubtype = (subtype: ItemSubType | undefined) => {
             baseSwatch = Swatches.workflowDefinitonSwatch;
             break;
         case "WORKFLOW_RUN":
+            baseSwatch = Swatches.workflowDefinitonSwatch;
+            break;
+        // TODO make this nice
+        case "CREATE":
+            baseSwatch = Swatches.workflowDefinitonSwatch;
+            break;
+        // TODO make this nice
+        case "VERSION":
             baseSwatch = Swatches.workflowDefinitonSwatch;
             break;
         default:
@@ -157,12 +162,16 @@ export const assignIcon = (
             return <ModelTrainingIcon className={specifiedClass} />;
         case "MODEL_RUN_WORKFLOW_TEMPLATE":
             return <AccountTreeIcon className={specifiedClass} />;
+
+        // TODO make these nice
+        case "CREATE":
+            return <AccountTreeIcon className={specifiedClass} />;
+        case "VERSION":
+            return <AccountTreeIcon className={specifiedClass} />;
         case "ORGANISATION":
             return <GroupsIcon className={specifiedClass} />;
         case "PERSON":
             return <PersonIcon className={specifiedClass} />;
-        case "QUALIFIED_ASSOCIATION":
-            return <SchoolIcon className={specifiedClass} />;
         case "SOFTWARE":
             return <TerminalIcon className={specifiedClass} />;
         case "WORKFLOW_TEMPLATE":

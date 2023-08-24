@@ -2,6 +2,7 @@
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from SharedInterfaces.AuthAPI import *
 from config import base_config
+from helpers.keycloak_helpers import setup_secret_cache
 
 # Setup auth -> test mode means no sig enforcement on validation
 kc_auth = build_keycloak_auth(
@@ -25,3 +26,5 @@ sys_admin_read_dependency = kc_auth.get_all_protected_role_dependency([
                                                                       sys_admin_read_role])
 sys_admin_admin_dependency = kc_auth.get_all_protected_role_dependency([
                                                                        sys_admin_admin_role])
+
+secret_cache = setup_secret_cache()

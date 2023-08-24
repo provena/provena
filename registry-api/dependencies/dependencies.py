@@ -31,4 +31,19 @@ secret_cache = setup_secret_cache()
 
 
 def user_is_admin(user: User) -> bool:
+    """
+    
+    Determines if the user is an admin based on inclusion of the admin usage
+    role, defined above
+
+    Parameters
+    ----------
+    user : User
+        The user with roles parsed
+
+    Returns
+    -------
+    bool
+        True iff is admin
+    """    
     return admin_usage_role in user.roles

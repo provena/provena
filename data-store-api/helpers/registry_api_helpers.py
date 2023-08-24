@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from SharedInterfaces.RegistryAPI import *
 from typing import Dict
 from dependencies.dependencies import User
+from helpers.util import py_to_dict
 
 
 def generate_service_token_for_registry_api(secret_cache: SecretCache, config: Config) -> str:
@@ -205,7 +206,38 @@ def seed_dataset_in_registry(proxy_username: str, secret_cache: SecretCache, con
     return seed_response.seeded_item.id
 
 
-def update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, reason: str, config: Config) -> None:
+def update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, reason: str, config: Config) -> UpdateResponse:
+    """
+
+    Runs a registry proxy update operation with the specified new domain info etc.
+
+    Note that if updating from seed -> complete item, the registry will respond incl. a session ID for the spinoff creation task - this is relayed.
+
+    Parameters
+    ----------
+    proxy_username : str
+        The username to proxy on behalf of
+    domain_info : DatasetDomainInfo
+        The new domain info
+    id : str
+        Item id
+    secret_cache : SecretCache
+        AWS secret cache
+    reason : str
+        Justification for update
+    config : Config
+        The config
+
+    Returns
+    -------
+    UpdateResponse
+        Response incl status and optionally the session id
+
+    Raises
+    ------
+    HTTPException
+        400/401/500 depending on reason
+    """
     # get service token - this includes special roles which the registry expects
     token = generate_service_token_for_registry_api(
         secret_cache=secret_cache,
@@ -215,7 +247,7 @@ def update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainIn
     # endpoint
     postfix = "/registry/entity/dataset/proxy/update"
     update_endpoint = config.REGISTRY_API_ENDPOINT + postfix
-    json_payload = json.loads(domain_info.json(exclude_none=True))
+    json_payload = py_to_dict(domain_info)
     params = {
         'id': id,
         'proxy_username': proxy_username,
@@ -263,7 +295,7 @@ def update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainIn
 
     # 200 response code - parse as the update response
     try:
-        update_response = StatusResponse.parse_obj(response.json())
+        update_response = UpdateResponse.parse_obj(response.json())
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -277,8 +309,30 @@ def update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainIn
             detail=f"The registry API responded with status success False during dataset update. Details: {update_response.status.details}."
         )
 
+    return update_response
+
 
 def revert_dataset_in_registry(proxy_username: str, revert_request: ItemRevertRequest, secret_cache: SecretCache, config: Config) -> None:
+    """
+
+    Reverts dataset using the registry proxy revert operation.
+
+    Parameters
+    ----------
+    proxy_username : str
+        The username to proxy
+    revert_request : ItemRevertRequest
+        The full request
+    secret_cache : SecretCache
+        AWS secret cache
+    config : Config
+        API config
+
+    Raises
+    ------
+    HTTPException
+        Correct error depending on type
+    """
     # get service token - this includes special roles which the registry expects
     token = generate_service_token_for_registry_api(
         secret_cache=secret_cache,
@@ -348,6 +402,20 @@ def revert_dataset_in_registry(proxy_username: str, revert_request: ItemRevertRe
 
 
 def proxied_request(user: User) -> Dict[str, str]:
+    """
+
+    Generates a header formatted with current user token. Pass through user auth.
+
+    Parameters
+    ----------
+    user : User
+        The user object
+
+    Returns
+    -------
+    Dict[str, str]
+        The headers
+    """
     # creates a header for use in requests
     return {
         'Authorization': 'Bearer ' + user.access_token
@@ -355,6 +423,31 @@ def proxied_request(user: User) -> Dict[str, str]:
 
 
 def user_fetch_dataset_from_registry(id: str, config: Config, user: User) -> DatasetFetchResponse:
+    """
+
+    Passes through the user's token to make a fetch on their behalf from the registry.
+
+    Not proxied.
+
+    Parameters
+    ----------
+    id : str
+        The item id
+    config : Config
+        API config
+    user : User
+        User
+
+    Returns
+    -------
+    DatasetFetchResponse
+        The registry response parsed
+
+    Raises
+    ------
+    HTTPException
+        400/401/500 depending on error
+    """
     # endpoint
     postfix = "/registry/entity/dataset/fetch"
     fetch_endpoint = config.REGISTRY_API_ENDPOINT + postfix
@@ -436,6 +529,31 @@ def user_fetch_dataset_from_registry(id: str, config: Config, user: User) -> Dat
 
 
 def user_list_datasets_from_registry(config: Config, user: User, list_request: NoFilterSubtypeListRequest) -> DatasetListResponse:
+    """
+
+    Makes a dataset list response on behalf of the user using their token.
+
+    Basically just a prefiltered list query for dataset subtype.
+
+    Parameters
+    ----------
+    config : Config
+        The API config
+    user : User
+        User info
+    list_request : NoFilterSubtypeListRequest
+        The list request
+
+    Returns
+    -------
+    DatasetListResponse
+        The dataset list response from reg API
+
+    Raises
+    ------
+    HTTPException
+        400/401/500 depending on registry
+    """
     # endpoint
     postfix = "/registry/entity/dataset/list"
     list_endpoint = config.REGISTRY_API_ENDPOINT + postfix
@@ -509,3 +627,97 @@ def user_list_datasets_from_registry(config: Config, user: User, list_request: N
         )
 
     return list_response
+
+
+def version_dataset_in_registry(proxy_username: str, version_request: VersionRequest, secret_cache: SecretCache, config: Config) -> VersionResponse:
+    """
+
+    Performs a versioning/version operation.
+
+    This is a proxy operation which always spins off an asynchronous job - this response is relayed straight from the registry API.
+
+    Parameters
+    ----------
+    proxy_username : str
+        The username to make request on - job and new item will be owned by this user.
+    version_request : VersionRequest
+        The version request
+    secret_cache : SecretCache
+        The AWS secret cache
+    config : Config
+        The API config
+
+    Returns
+    -------
+    VersionResponse
+        The response from the registry API incl. new item ID and session ID
+
+    Raises
+    ------
+    HTTPException
+        400/401/500 from registry API
+    """
+    # get service token - this includes special roles which the registry expects
+    token = generate_service_token_for_registry_api(
+        secret_cache=secret_cache,
+        config=config
+    )
+
+    proxy_request = py_to_dict(ProxyVersionRequest(
+        id=version_request.id,
+        reason=version_request.reason,
+        username=proxy_username
+    ))
+
+    # endpoint
+    postfix = "/registry/entity/dataset/proxy/version"
+    version_endpoint = config.REGISTRY_API_ENDPOINT + postfix
+
+    # make the seed request
+    headers = {
+        'Authorization': 'Bearer ' + token
+    }
+
+    try:
+        response = requests.post(
+            url=version_endpoint,
+            json=proxy_request,
+            headers=headers
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Versioning dataset failed, request error: {e}."
+        )
+
+    # check the response code
+    if response.status_code != 200:
+        # try to get more details
+        details = "Unknown"
+
+        try:
+            details = response.json()['detail']
+        except Exception:
+            None
+
+        if response.status_code == 401:
+            raise HTTPException(
+                status_code=401,
+                detail=f"Dataset version failed, not authorised 401. Details: {details}."
+            )
+
+        raise HTTPException(
+            status_code=response.status_code,
+            detail=f"Non 200 status code in dataset version process. Status code: {response.status_code}. Details: {details}."
+        )
+
+    # 200 response code - parse as the version response
+    try:
+        version_response = VersionResponse.parse_obj(response.json())
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to parse the response from registry API as expected type, error: {e}."
+        )
+
+    return version_response
