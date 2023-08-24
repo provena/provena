@@ -132,7 +132,7 @@ def generate_integration_secret_env_vars(config: IntegrationTestConfig) -> Dict[
     return vars
 
 
-def generate_integration_test_cfn_env_vars(data_store_api_endpoint: CfnOutput, registry_api_endpoint: CfnOutput, keycloak_endpoint: CfnOutput, prov_api_endpoint: CfnOutput, auth_api_endpoint: CfnOutput) -> Dict[str, CfnOutput]:
+def generate_integration_test_cfn_env_vars(data_store_api_endpoint: CfnOutput, job_api_endpoint: CfnOutput, registry_api_endpoint: CfnOutput, keycloak_endpoint: CfnOutput, prov_api_endpoint: CfnOutput, auth_api_endpoint: CfnOutput) -> Dict[str, CfnOutput]:
     # Pass through of required cfn outputs to env
     env: Dict[str, CfnOutput] = {
         "DATA_STORE_API_ENDPOINT": data_store_api_endpoint,
@@ -140,7 +140,7 @@ def generate_integration_test_cfn_env_vars(data_store_api_endpoint: CfnOutput, r
         "REGISTRY_API_ENDPOINT": registry_api_endpoint,
         "PROV_API_ENDPOINT": prov_api_endpoint,
         "AUTH_API_ENDPOINT": auth_api_endpoint,
-
+        "JOB_API_ENDPOINT" : job_api_endpoint,
     }
 
     return env

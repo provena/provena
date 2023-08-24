@@ -55,7 +55,7 @@ def retrieve_secret_value(secret_arn: str, secret_cache: SecretCache) -> str:
     return secret_cache.get_secret_string(secret_arn)
 
 
-def get_service_token(secret_cache: SecretCache, config : Config) -> str:
+def get_service_token(secret_cache: SecretCache, config: Config) -> str:
     """    get_service_token
         Given the secret cache object, will get the 
         secret ARN for the service account, expand it 
@@ -79,10 +79,10 @@ def get_service_token(secret_cache: SecretCache, config : Config) -> str:
         --------
     """
     # Get the secret details (potentially cached)
-    assert config.SERVICE_ACCOUNT_SECRET_ARN
+    assert config.service_account_secret_arn
     secret_json = json.loads(
         retrieve_secret_value(
-            secret_arn=config.SERVICE_ACCOUNT_SECRET_ARN,
+            secret_arn=config.service_account_secret_arn,
             secret_cache=secret_cache
         )
     )
@@ -92,7 +92,7 @@ def get_service_token(secret_cache: SecretCache, config : Config) -> str:
         client_id=secret_json['client_id'],
         client_secret=secret_json['client_secret'],
         grant_type=secret_json['grant_type'],
-        token_endpoint=config.KEYCLOAK_TOKEN_ENDPOINT
+        token_endpoint=config.keycloak_token_endpoint
     )
 
 

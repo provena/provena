@@ -33,3 +33,10 @@ export interface QueryResults {
 export interface StatusResponse {
   status: Status;
 }
+export interface VersionDetails {
+  commit_id?: string;
+  commit_url?: string;
+  tag_name?: string;
+  release_title?: string;
+  release_url?: string;
+}

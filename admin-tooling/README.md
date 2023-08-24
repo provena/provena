@@ -51,7 +51,7 @@ class ToolingEnvironment(BaseModel):
     name: str
     # What is the Provena application stage?
     stage: str
-    # What is the base domain e.g. your.domain.com
+    # What is the base domain e.g. dev.rrap-is.com
     domain: str
     # What is the auth realm name?
     realm_name: str
@@ -119,19 +119,19 @@ E.g. consider this feature branch workflow environment file
         {
             "name": "feature",
             "stage": "DEV",
-            "domain": "your.domain.com",
-            "realm_name": "example",
+            "domain": "dev.rrap-is.com",
+            "realm_name": "rrap",
             "replacements": [
                 {
                     "id": "feature_number",
                     "key": "${feature_number}"
                 }
             ],
-            "datastore_api_endpoint_override": "https://f${feature_number}-data-api.dev.example.com",
-            "auth_api_endpoint_override": "https://f${feature_number}-auth-api.dev.example.com",
-            "registry_api_endpoint_override": "https://f${feature_number}-registry-api.dev.example.com",
-            "prov_api_endpoint_override": "https://f${feature_number}-prov-api.dev.example.com",
-            "search_api_endpoint_override": "https://f${feature_number}-search.dev.example.com"
+            "datastore_api_endpoint_override": "https://f${feature_number}-data-api.dev.rrap-is.com",
+            "auth_api_endpoint_override": "https://f${feature_number}-auth-api.dev.rrap-is.com",
+            "registry_api_endpoint_override": "https://f${feature_number}-registry-api.dev.rrap-is.com",
+            "prov_api_endpoint_override": "https://f${feature_number}-prov-api.dev.rrap-is.com",
+            "search_api_endpoint_override": "https://f${feature_number}-search.dev.rrap-is.com"
         }
     ]
 }

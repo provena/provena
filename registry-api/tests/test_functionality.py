@@ -27,6 +27,7 @@ def global_config_provider() -> Config:
         enforce_user_auth=False,
         enforce_special_proxy_roles=False,
         auth_api_endpoint="",
+        job_api_endpoint="",
 
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
@@ -40,6 +41,7 @@ def global_config_provider() -> Config:
         perform_validation=False,
         # dont perform user link validation
         enforce_user_links=False,
+        test_mode=True
     )
 
 
@@ -55,6 +57,7 @@ def provide_perform_validation_config() -> Config:
         enforce_user_auth=False,
         enforce_special_proxy_roles=False,
         auth_api_endpoint="",
+        job_api_endpoint="",
 
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
@@ -67,6 +70,7 @@ def provide_perform_validation_config() -> Config:
         perform_validation=True,
         # dont perform user link validation
         enforce_user_links=False,
+        test_mode=True
     )
 
 
@@ -77,6 +81,7 @@ def provide_enforce_user_auth_config() -> Config:
         enforce_user_auth=True,  # Perform user auth!
         enforce_special_proxy_roles=False,
         auth_api_endpoint="",
+        job_api_endpoint="",
 
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
@@ -89,6 +94,7 @@ def provide_enforce_user_auth_config() -> Config:
         perform_validation=False,
         # dont perform user link validation
         enforce_user_links=False,
+        test_mode=True
     )
 
 # for each function, override settings and clear deps at end
@@ -278,6 +284,7 @@ def create_dynamodb_table_with_data(model_examples: ModelExamples, ddb_client: A
 def test_create(params: RouteParameters) -> None:
     # Add items to the registry for type and subtype based on file inputs and route params
 
+
     # Override the auth dependency
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
@@ -289,6 +296,7 @@ def test_create(params: RouteParameters) -> None:
     route = params.route
     input_items: List[DomainInfoBase] = params.model_examples.domain_info
     response_model = params.typing_information.create_response
+    assert response_model
     item_model = params.typing_information.item_model
 
     curr_route = get_route(action=RouteActions.CREATE, params=params)
@@ -301,7 +309,7 @@ def test_create(params: RouteParameters) -> None:
         # Try to post object to appropriate endpoint
         response = client.post(curr_route, json=safe_serialisation)
 
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Non 200 response code: {response.status_code}. Details: {response.json()}"
 
         # parse response using special response format typed as GenericCreateResponse
         create_response: GenericCreateResponse = response_model.parse_obj(
@@ -422,6 +430,7 @@ def test_fetch(params: RouteParameters) -> None:
     # create a new item
     input_items: List[DomainInfoBase] = params.model_examples.domain_info
     response_model = params.typing_information.create_response
+    assert response_model
     item_model = params.typing_information.item_model
 
     create_endpoint = get_route(action=RouteActions.CREATE, params=params)
@@ -593,6 +602,7 @@ def test_delete_seeded_item(params: RouteParameters) -> None:
     Albeit the other endpoints do have focussed tests enabling failure tracing.
     """
 
+
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
     # admin for deleting
@@ -602,6 +612,7 @@ def test_delete_seeded_item(params: RouteParameters) -> None:
 
     fetch_response_model = params.typing_information.fetch_response
     seed_response_model = params.typing_information.seed_response
+    assert seed_response_model
 
     # 1. Seed
     seed_route = get_route(action=RouteActions.SEED, params=params)
@@ -691,6 +702,7 @@ def test_delete_nonseed_item(params: RouteParameters) -> None:
     route = params.route
     input_items: List[DomainInfoBase] = params.model_examples.domain_info
     create_response_model = params.typing_information.create_response
+    assert create_response_model
     fetch_response_model = params.typing_information.fetch_response
     item_model = params.typing_information.item_model
 
@@ -783,6 +795,7 @@ def test_entity_list(params: RouteParameters) -> None:
     route = params.route
     input_items: List[DomainInfoBase] = params.model_examples.domain_info
     create_response_model = params.typing_information.create_response
+    assert create_response_model
     item_model = params.typing_information.item_model
 
     curr_route = get_route(action=RouteActions.CREATE, params=params)
@@ -873,7 +886,7 @@ def test_list_filtering(params: RouteParameters) -> None:
     route = params.route
     input_items: List[DomainInfoBase] = params.model_examples.domain_info
     create_response_model = params.typing_information.create_response
-
+    assert create_response_model
     curr_route = get_route(action=RouteActions.CREATE, params=params)
     # create items from parsed file
     for domain_info_object in input_items:
@@ -970,6 +983,7 @@ def test_update(params: RouteParameters) -> None:
     input_items: List[DomainInfoBase] = params.model_examples.domain_info
 
     create_response_model = params.typing_information.create_response
+    assert create_response_model
     item_model = params.typing_information.item_model
     fetch_response_model = params.typing_information.fetch_response
     original_domain_info = input_items[0]
@@ -981,7 +995,7 @@ def test_update(params: RouteParameters) -> None:
         json=json.loads(original_domain_info.json())
     )
 
-    assert original_resp.status_code == 200
+    assert original_resp.status_code == 200, f"Status code was {original_resp.status_code}. Details: {original_resp.json()}"
     original_resp: GenericCreateResponse = create_response_model.parse_obj(
         original_resp.json())
     assert original_resp.status.success
@@ -1033,6 +1047,7 @@ def test_update_seeded_item(params: RouteParameters) -> None:
     1. Seed an update
     2. Update the item with content (and hence complete item creation)
     """
+    
 
     # Override the auth dependency
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
@@ -1046,6 +1061,7 @@ def test_update_seeded_item(params: RouteParameters) -> None:
     domain_info_for_update: DomainInfoBase = params.model_examples.domain_info[0]
 
     seed_response_model = params.typing_information.seed_response
+    assert seed_response_model
     fetch_response_model = params.typing_information.fetch_response
 
     seed_route = get_route(action=RouteActions.SEED, params=params)
@@ -1115,6 +1131,7 @@ def test_invalid_update(params: RouteParameters) -> None:
     route = params.route
 
     seed_response_model = params.typing_information.seed_response
+    assert seed_response_model
     fetch_response_model = params.typing_information.fetch_response
     # 1.
     seed_route = get_route(action=RouteActions.SEED, params=params)
@@ -1230,7 +1247,7 @@ def test_create_dataset_validation(override_perform_validation_config_dependency
         ItemSubType.DATASET)
 
     response_model = params.typing_information.create_response
-
+    assert response_model
     # Validation for model run workflow defn's
 
     # 1. Ensure failure to create dataset with items that do not exist
@@ -1367,7 +1384,7 @@ def test_create_model_run_workflow_def_validation(override_perform_validation_co
         ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE)
 
     response_model = params.typing_information.create_response
-
+    assert response_model
     # Validation for model run workflow defn's
 
     # 1. Ensure failure to create model run def with items that do not exist
@@ -1672,7 +1689,7 @@ def test_model_validators(params: RouteParameters) -> None:
 
     item_model = params.typing_information.item_model
     response_model = params.typing_information.create_response
-
+    assert response_model
     # get an example object out from the examples in params.
     example_domain_info = params.model_examples.domain_info[0]
 
@@ -1877,7 +1894,7 @@ def test_resource_lock(params: RouteParameters) -> None:
 @mock_dynamodb
 @pytest.mark.parametrize("params", route_params, ids=make_specialised_list("Test Auth"))
 def test_auth(params: RouteParameters) -> None:
-
+    
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
 
@@ -1944,7 +1961,6 @@ def test_auth(params: RouteParameters) -> None:
 @pytest.mark.parametrize("params", route_params, ids=make_specialised_list("Test Auth Implicit General Access"))
 # @pytest.mark.depends(on=['test_auth'])  # depends on explicit tests
 def test_auth_implicit_general_access(params: RouteParameters, override_enforce_user_auth_dependency: Generator, monkeypatch: Any) -> None:
-
     user1 = TestingUser("Penny")
     user2 = TestingUser("Passie")
 
@@ -2000,7 +2016,6 @@ def test_auth_implicit_general_access(params: RouteParameters, override_enforce_
 @pytest.mark.parametrize("params", route_params, ids=make_specialised_list("Test auth implicit group access and owner"))
 # @pytest.mark.depends(on=['test_auth'])  # depends on explicit tests
 def test_auth_implicit_group_access_and_owner(params: RouteParameters, override_enforce_user_auth_dependency: Generator, monkeypatch: Any) -> None:
-
     user1 = TestingUser("Penny")
     user2 = TestingUser("Clooney")
 
@@ -2101,7 +2116,6 @@ def test_history(params: RouteParameters) -> None:
     5. Seed item then update item and check history is correct
     6. Create item with multiple updates and check export observes
     """
-
     # Override the auth dependency
     
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
@@ -2111,6 +2125,7 @@ def test_history(params: RouteParameters) -> None:
 
     # parse some models
     create_response_model = params.typing_information.create_response
+    assert create_response_model
     fetch_response_model = params.typing_information.fetch_response
     domain_info_model = params.typing_information.domain_info
     item_model = params.typing_information.item_model
@@ -2299,7 +2314,7 @@ def test_history(params: RouteParameters) -> None:
     # ===============================================================================
     seed_route = get_route(action=RouteActions.SEED, params=params)
     seed_response_model = params.typing_information.seed_response
-
+    assert seed_response_model
     # run the seed op
     response = client.post(seed_route)
     check_status_success_true(response)

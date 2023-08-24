@@ -308,7 +308,7 @@ async def validate_dataset_template_id(id: str, request_style: RequestStyle, con
     """
     # endpoint to target
     postfix = "/registry/entity/dataset_template"
-    endpoint = f"{config.REGISTRY_API_ENDPOINT}{postfix}"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
 
     error_or_value = await validate_by_id(
         id=id,
@@ -349,7 +349,7 @@ async def validate_model_id(id: str, request_style: RequestStyle, config: Config
     """
     # endpoint to target
     postfix = "/registry/entity/model"
-    endpoint = f"{config.REGISTRY_API_ENDPOINT}{postfix}"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
 
     error_or_value = await validate_by_id(
         id=id,
@@ -391,7 +391,7 @@ async def validate_model_run_workflow_template(id: str, request_style: RequestSt
     """
     # endpoint to target
     postfix = "/registry/entity/model_run_workflow"
-    endpoint = f"{config.REGISTRY_API_ENDPOINT}{postfix}"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
 
     error_or_value = await validate_by_id(
         id=id,
@@ -434,7 +434,7 @@ async def validate_person_id(id: str, request_style: RequestStyle, config: Confi
     """
     # endpoint to target
     postfix = "/registry/agent/person"
-    endpoint = f"{config.REGISTRY_API_ENDPOINT}{postfix}"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
 
     error_or_value = await validate_by_id(
         id=id,
@@ -477,7 +477,7 @@ async def validate_organisation_id(id: str, request_style: RequestStyle, config:
     """
     # endpoint to target
     postfix = "/registry/agent/organisation"
-    endpoint = f"{config.REGISTRY_API_ENDPOINT}{postfix}"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
 
     error_or_value = await validate_by_id(
         id=id,
@@ -533,7 +533,7 @@ async def validate_datastore_id(id: str, request_style: RequestStyle, config: Co
     """
     # endpoint to target
     postfix = "/registry/entity/dataset"
-    endpoint = f"{config.REGISTRY_API_ENDPOINT}{postfix}"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
 
     error_or_value = await validate_by_id(
         id=id,
@@ -555,7 +555,7 @@ async def validate_datastore_id(id: str, request_style: RequestStyle, config: Co
 async def validate_registry_generic_id(id: str, request_style: RequestStyle, config: Config) -> Union[Dict[str, Any], str]:
     # endpoint to target
     postfix = "/registry/general"
-    endpoint = f"{config.REGISTRY_API_ENDPOINT}{postfix}"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
 
     error_or_value = await untyped_validate_by_id(
         id=id,

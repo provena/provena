@@ -9,7 +9,7 @@ from helpers.auth_helpers import *
 from helpers.lock_helpers import *
 from helpers.util import py_to_dict
 import json
-from typing import TypeVar, Type, Callable
+from typing import TypeVar, Type, Callable, Any
 from jsonschema import validate  # type: ignore
 from helpers.id_fetch_helpers import parse_unknown_record_type, validate_item_type
 from helpers.type_validators import custom_type_validators, ValidatorFunc
@@ -131,8 +131,9 @@ async def seed_item_helper(
         category: ItemCategory,
         subtype: ItemSubType,
         default_roles: Roles,
+        versioning_enabled: bool,
         user: User,
-        config: Config
+        config: Config,
 ) -> GenericSeedResponse:
     """    seed_item_helper
         Generates a seed item with the specified category and sub
@@ -174,7 +175,13 @@ async def seed_item_helper(
         updated_timestamp=get_timestamp(),
         item_category=category,
         item_subtype=subtype,
-        record_type=RecordType.SEED_ITEM
+        record_type=RecordType.SEED_ITEM,
+        versioning_info=VersioningInfo(
+            previous_version=None,
+            version=1,
+            next_version=None
+            # No reason required as first version
+        ) if versioning_enabled else None
     )
 
     # write auth object first
@@ -491,7 +498,7 @@ def revert_item_helper(
     # we have a valid past entry to revert to - create new history entry
     history = [
         create_revert_history(
-            user=user, history_id=history_id, item_domain_info=revert_point.item, reason=reason, previous_history=existing_history)
+            username=user.username, history_id=history_id, item_domain_info=revert_point.item, reason=reason, previous_history=existing_history)
     ] + existing_history
 
     # Construct new complete object using record info
@@ -502,17 +509,21 @@ def revert_item_helper(
         # record info
         id=id,
         # the owner's username
-        owner_username=user.username,
+        owner_username=record.owner_username,
         created_timestamp=created_timestamp,
         updated_timestamp=get_timestamp(),
         record_type=RecordType.COMPLETE_ITEM,
+        # Retain workflow links
+        workflow_links=record.workflow_links,
+        # Don't change any versioning info, if present
+        versioning_info=record.versioning_info,
         history=history,
         # domain info - this is replaced
         **revert_point.item.dict()  # type: ignore
     )
 
     # The provided item is in the store, with a matching ID, let's update it
-    friendly_format = json.loads(new_item.json(exclude_none=True))
+    friendly_format = py_to_dict(new_item)
 
     try:
         write_registry_dynamo_db_entry_raw(
@@ -533,25 +544,292 @@ def revert_item_helper(
     )
 
 
-def update_item_helper(
+@dataclass
+class VersionHelperResponse():
+    new_handle_id: str
+    version_number: int
+    new_item: Any
+
+
+async def version_helper(
         id: str,
-        replacement_domain_info: DomainInfoBase,
-        reason: Optional[str],
+        reason: str,
+        item_model_type: Type[item_base_type],
+        domain_info_type: Type[item_domain_info_type],
+        correct_category: ItemCategory,
+        correct_subtype: ItemSubType,
+        available_roles: Roles,
+        default_roles: Roles,
+        user: User,
+        config: Config,
+        service_proxy: bool = False
+) -> VersionHelperResponse:
+    # Try to read the raw item with given key from registry
+    try:
+        raw_item: Dict[str, Any] = get_entry_raw(id=id, config=config)
+    # The item wasn't present
+    except KeyError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not find the given key ({id}) in the registry."
+        )
+    # Error occurred which was caught and handled in fastAPI format
+    except HTTPException as e:
+        raise e
+    # Unknown error occurred
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred while reading from the registry: {e}.")
+
+    # since the item exists, let's now check that the user should be able to update it
+    roles = describe_access_helper(
+        id=id,
+        config=config,
+        user=user,
+        available_roles=available_roles,
+        # don't look it up again - we already know it's present
+        already_checked_existence=True,
+        # user groups are looked up differently if we are in service proxy mode
+        service_proxy=service_proxy
+    ).roles
+
+    authorised = evaluate_user_access(
+        user_roles=roles,
+        # Must be admin of item to perform version
+        acceptable_roles=AUTH_ADMIN_ACCEPTED_ROLES
+    )
+
+    if not authorised:
+        raise HTTPException(
+            status_code=401,
+            detail=f"You are not authorised to revise the item ({id=})."
+        )
+
+    # status of item must be a complete item
+    try:
+        record_type, record = parse_unknown_record_type(
+            raw_item=raw_item,
+            item_model_type=item_model_type
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Item with id {id} is neither a seed item nor a valid entry. Not sure how to handle this item. Aborting.")
+
+    if record_type != RecordType.COMPLETE_ITEM:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Item with id {id} is a Seed Item. Cannot create version of seed items.")
+
+    # Check that the category/subtype matches
+    try:
+        validate_item_type(
+            item=record, category=correct_category, subtype=correct_subtype)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"The existing item is a valid item, but has a different subtype or category. These fields cannot be modified."
+        )
+
+    # Check status of existing item is okay
+    if record.versioning_info is None:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Versioning cannot proceed as versioning enabled item has no versioning info!"
+        )
+
+    if record.versioning_info.next_version is not None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot create a new version for an item ({id=}) which is not the latest version. Next version {record.versioning_info.next_version} already exists!"
+        )
+
+    # parse into domain info item
+    existing_domain_info = domain_info_type.parse_obj(py_to_dict(record))
+
+    # create initial history entry
+    history = [create_seed_history(
+        username=user.username, item_domain_info=existing_domain_info, from_ver=id)]
+
+    # Construct new complete object based on existing
+    new_item = item_model_type.parse_obj(py_to_dict(record))
+
+    # Update some fields which change
+    ts = get_timestamp()
+    new_item.created_timestamp = ts
+    new_item.updated_timestamp = ts
+
+    # Potentially update the owner
+    new_item.owner_username = user.username
+
+    # Reset workflow info
+    new_item.workflow_links = WorkflowLinks()
+
+    # Update the versioning parameters
+    assert new_item.versioning_info
+    if new_item.versioning_info is None:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Versioning cannot proceed as versioning enabled item has no versioning info!"
+        )
+    else:
+        # Pivot to using current record id as prev version, increment version
+        # number, disassociate forward version
+        new_info = VersioningInfo(
+            previous_version=record.id,
+            version=new_item.versioning_info.version + 1,
+            next_version=None,
+            # Reason must be provided for non V1 entries
+            reason=reason
+        )
+        new_item.versioning_info = new_info
+
+    # Update history of new item
+    new_item.history = history
+
+    # New item is ready to be created
+
+    # Create a handle which points to <registry URL>/item/<handle>
+    new_handle = await mint_self_describing_handle(config=config)
+
+    # Update the new item with the minted handle
+    new_item.id = new_handle
+
+    # Find existing auth configuration from previous object
+    existing_access_settings = get_item_from_auth_table(
+        id=id, config=config).access_settings
+
+    # write auth object first - this uses default roles
+    seed_auth_configuration(
+        id=new_handle,
+        username=user.username,
+        config=config,
+        default_roles=default_roles,
+        base_settings=existing_access_settings
+    )
+
+    # write lock object first
+    seed_lock_configuration(
+        id=new_handle,
+        config=config,
+    )
+
+    # write the new version object to the registry
+    friendly_format = py_to_dict(new_item)
+    try:
+        write_registry_dynamo_db_entry_raw(
+            registry_item=friendly_format,
+            config=config
+        )
+    # Raise 500 if something goes wrong
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to write revised item to registry. Aborting. Contact administrator. Error {e}."
+        )
+
+    # Now update the old item with the new forward version ID
+    assert record.versioning_info
+    record.versioning_info.next_version = new_handle
+
+    # write the new version object to the registry
+    friendly_format = py_to_dict(record)
+    try:
+        write_registry_dynamo_db_entry_raw(
+            registry_item=friendly_format,
+            config=config
+        )
+    # Raise 500 if something goes wrong
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update forward link to new version for existing item in the registry. Aborting. Contact administrator. Error {e}."
+        )
+
+    # Return the ID of the new handle
+    return VersionHelperResponse(
+        new_handle_id=new_handle,
+        version_number=new_item.versioning_info.version,
+        new_item=new_item
+    )
+
+
+@dataclass
+class RetrieveItemResponse():
+    status_response: Optional[StatusResponse] = None
+    record: Optional[Union[ItemBase, SeededItem]] = None
+    record_type: Optional[RecordType] = None
+
+
+def retrieve_and_type_item(
+        id: str,
         item_model_type: Type[item_base_type],
         correct_category: ItemCategory,
         correct_subtype: ItemSubType,
+        config: Config,
+) -> RetrieveItemResponse:
+    # Try to read the raw item with given key from registry
+    try:
+        raw_item: Dict[str, Any] = get_entry_raw(id=id, config=config)
+    # The item wasn't present
+    except KeyError as e:
+        return RetrieveItemResponse(
+            status_response=StatusResponse(
+                status=Status(
+                    success=False, details=f"Could not find the given key ({id}) in the registry.")
+            ))
+    # Error occurred which was caught and handled in fastAPI format
+    except HTTPException as e:
+        raise e
+    # Unknown error occurred
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred while reading from the registry: {e}.")
+
+    # status of item can be either a blank seed or a complete item
+    try:
+        record_type, record = parse_unknown_record_type(
+            raw_item=raw_item,
+            item_model_type=item_model_type
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Item with id {id} is neither a seed item nor a valid entry. Not sure how to handle this item. Aborting.")
+
+    # Check that the category matches
+    try:
+        validate_item_type(
+            item=record, category=correct_category, subtype=correct_subtype)
+    except Exception as e:
+        return RetrieveItemResponse(
+            status_response=StatusResponse(status=Status(
+                success=False,
+                details=f"The existing item is a valid item, but has a different subtype or category."
+            )))
+
+    return RetrieveItemResponse(
+        record_type=record_type,
+        record=record
+    )
+
+
+def update_item_helper(
+        id: str,
+        record: Union[ItemBase, SeededItem],
+        record_type: RecordType,
+        replacement_domain_info: DomainInfoBase,
+        reason: Optional[str],
+        item_model_type: Type[item_base_type],
         available_roles: Roles,
         user: User,
         config: Config,
         service_proxy: bool = False
-) -> StatusResponse:
+) -> ItemBase:
     """    update_item_helper
         Updates the given item using the domain specific information.
         The item model type is a class (not an instance) and represents
         the type of object that we are trying to upload/update.
-
-        The item that exists will be pulled down and should either parse
-        as a seed item of matching category or an item of that class.
 
         Arguments
         ----------
@@ -562,12 +840,10 @@ def update_item_helper(
             record.
         item_model_type : Type[item_base_type]
             The model type which is being uploaded.
-        correct_category: ItemCategory
-            What is the correct category for the current item type
-            we are dealing with.
-        correct_subtype: ItemSubType
-            What is the correct subtype for the current item type
-            we are dealing with.
+        record: ItemBase | SeededItem
+            The already fetched record of either type
+        record_type: RecordType
+            Which type of record?
 
         Returns
         -------
@@ -585,23 +861,6 @@ def update_item_helper(
         Examples (optional)
         --------
     """
-    # Try to read the raw item with given key from registry
-    try:
-        raw_item: Dict[str, Any] = get_entry_raw(id=id, config=config)
-    # The item wasn't present
-    except KeyError as e:
-        return StatusResponse(
-            status=Status(
-                success=False, details=f"Could not find the given key ({id}) in the registry.")
-        )
-    # Error occurred which was caught and handled in fastAPI format
-    except HTTPException as e:
-        raise e
-    # Unknown error occurred
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred while reading from the registry: {e}.")
-
     # since the item exists, let's now check that the user should be able to update it
     roles = describe_access_helper(
         id=id,
@@ -626,38 +885,15 @@ def update_item_helper(
             detail=f"You are not authorised to edit the item ({id=})."
         )
 
-    # status of item can be either a blank seed or a complete item
-    try:
-        record_type, record = parse_unknown_record_type(
-            raw_item=raw_item,
-            item_model_type=item_model_type
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Item with id {id} is neither a seed item nor a valid entry. Not sure how to handle this item. Aborting.")
-
     # Get creation date and categories
     created_timestamp = record.created_timestamp
-    existing_category = record.item_category
-    existing_subtype = record.item_subtype
-
-    # Check that the category matches
-    try:
-        validate_item_type(
-            item=record, category=correct_category, subtype=correct_subtype)
-    except Exception as e:
-        return StatusResponse(status=Status(
-            success=False,
-            details=f"The existing item is a valid item, but has a different subtype or category. These fields cannot be modified."
-        ))
 
     # determine appropriate history
     history: List[HistoryEntry] = []
     if record_type == RecordType.SEED_ITEM:
         # create initial history entry
         history = [create_seed_history(
-            user=user, item_domain_info=replacement_domain_info)]
+            username=user.username, item_domain_info=replacement_domain_info)]
     else:
         assert isinstance(record, ItemBase)
         if reason is None:
@@ -668,7 +904,7 @@ def update_item_helper(
         # prepend history due to update of existing complete item
         history = [
             create_update_history(
-                user=user, item_domain_info=replacement_domain_info, reason=reason, previous_history=record.history)
+                username=user.username, item_domain_info=replacement_domain_info, reason=reason, previous_history=record.history)
         ] + record.history
 
     # Construct new complete object using record info
@@ -682,6 +918,11 @@ def update_item_helper(
         created_timestamp=created_timestamp,
         updated_timestamp=get_timestamp(),
         record_type=RecordType.COMPLETE_ITEM,
+        # retain the workflow links
+        workflow_links=record.workflow_links,
+        # Don't change any versioning info
+        versioning_info=record.versioning_info,
+        # Updated hisotry
         history=history,
         # domain info
         **replacement_domain_info.dict()
@@ -689,7 +930,6 @@ def update_item_helper(
 
     # The provided item is in the store, with a matching ID, let's update it
     friendly_format = json.loads(new_item.json(exclude_none=True))
-    table = get_registry_table(config=config)
 
     try:
         write_registry_dynamo_db_entry_raw(
@@ -702,35 +942,25 @@ def update_item_helper(
             detail=f"Something went wrong when trying to write the updated item. Details: {e}"
         )
 
-    # Customised response postfix
-    if record_type == RecordType.SEED_ITEM:
-        postfix = "Seeded item was updated to a complete item."
-    if record_type == RecordType.COMPLETE_ITEM:
-        postfix = "Complete item had it's contents updated."
-
-    return StatusResponse(
-        status=Status(
-            success=True,
-            details="Successfully applied update. " + postfix
-        )
-    )
+    return new_item
 
 
 def create_seed_history(
-    user: User,
-    item_domain_info: DomainInfoBase
+    username: str,
+    item_domain_info: DomainInfoBase,
+    from_ver: Optional[str] = None
 ) -> HistoryEntry:
     return HistoryEntry(
         id=0,
         timestamp=get_timestamp(),
-        reason="Initial record creation",
-        username=user.username,
+        reason="Initial record creation" if from_ver is None else f"New version of existing item (id={from_ver}).",
+        username=username,
         item=item_domain_info
     )
 
 
 def create_update_history(
-    user: User,
+    username: str,
     item_domain_info: DomainInfoBase,
     reason: str,
     previous_history: List[HistoryEntry]
@@ -740,13 +970,13 @@ def create_update_history(
         id=previous_id + 1,
         timestamp=get_timestamp(),
         reason=reason,
-        username=user.username,
+        username=username,
         item=item_domain_info
     )
 
 
 def create_revert_history(
-    user: User,
+    username: str,
     history_id: int,
     item_domain_info: DomainInfoBase,
     reason: str,
@@ -757,7 +987,7 @@ def create_revert_history(
         id=previous_id + 1,
         timestamp=get_timestamp(),
         reason=f"(Restoring to v{history_id}) " + reason,
-        username=user.username,
+        username=username,
         item=item_domain_info
     )
 
@@ -767,6 +997,7 @@ async def create_item_helper(
     item_model_type: Type[item_base_type],
     category: ItemCategory,
     subtype: ItemSubType,
+    versioning_enabled: bool,
     default_roles: Roles,
     user: User,
     config: Config
@@ -839,10 +1070,18 @@ async def create_item_helper(
         updated_timestamp=get_timestamp(),
         history=[
             create_seed_history(
-                user=user,
+                username=user.username,
                 item_domain_info=item_domain_info
             )
         ],
+        # Let other functions handle instantiating this where required
+        workflow_links=None,
+        versioning_info=VersioningInfo(
+            previous_version=None,
+            version=1,
+            next_version=None
+            # No reason required for first entry
+        ) if versioning_enabled else None,
         ** item_domain_info.dict(),
         record_type=RecordType.COMPLETE_ITEM
     )
@@ -864,7 +1103,9 @@ async def create_item_helper(
     return GenericCreateResponse(
         status=Status(
             success=True, details="Successfully uploaded the complete item. Return item includes handle id."),
-        created_item=item
+        created_item=item,
+        # This is infilled later if required
+        register_create_activity_session_id=None
     )
 
 

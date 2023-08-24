@@ -48,7 +48,7 @@ async def list_model_run_records_from_registry(
     items: List[ItemModelRun] = []
     while more_items:
         # list endpoint - get complete records only
-        endpoint = config.REGISTRY_API_ENDPOINT + "/registry/activity/model_run/list"
+        endpoint = config.registry_api_endpoint + "/registry/activity/model_run/list"
         payload = json.loads(SubtypeListRequest(
             pagination_key=pagination_key,
             filter_by=SubtypeFilterOptions(
@@ -220,12 +220,12 @@ async def store_existing_record(
 
     # Errors are handled in here
     document_id = upload_prov_document(
-        model_run_item=registry_record,
+        id=registry_record.id,
         prov_document=prov_document,
         config=config
     )
 
     return StatusResponse(
         status=Status(
-            success=True, details=f"Successfully re-lodged item.{' WARNING: Used mocked database backend.' if config.MOCK_GRAPH_DB else ''}"),
+            success=True, details=f"Successfully re-lodged item.{' WARNING: Used mocked database backend.' if config.mock_graph_db else ''}"),
     )

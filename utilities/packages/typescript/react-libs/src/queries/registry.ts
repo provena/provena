@@ -6,6 +6,8 @@ import {
     ItemRevertRequest,
     ItemRevertResponse,
     PaginatedListResponse,
+    VersionRequest,
+    VersionResponse,
     SchemaResponse,
     StatusResponse,
     UiSchemaResponse,
@@ -64,10 +66,15 @@ export const generalFetch = (handle: string) => {
         });
 };
 
-export const fetchBySubtype = (handle: string, subtype: ItemSubType) => {
+export const fetchBySubtype = (
+    handle: string,
+    subtype: ItemSubType,
+    seedAllowed: boolean = true
+) => {
     const endpoint = subtypeActionToEndpoint("FETCH", subtype);
     const params = {
         id: handle,
+        seed_allowed: seedAllowed,
     };
     return requests
         .get(endpoint, params)
@@ -268,6 +275,27 @@ export const fetchAvailableRoles = (itemSubtype: ItemSubType) => {
         .get(endpoint, {})
         .then((res) => {
             return res as AuthRolesResponse;
+        })
+        .catch((err) => {
+            return Promise.reject(requestErrToMsg(err));
+        });
+};
+
+export const createNewVersion = (inputs: {
+    data: VersionRequest;
+    subtype: ItemSubType;
+}) => {
+    // endpoint for datastore is different.
+    var endpoint = "/";
+    if (inputs.subtype !== "DATASET") {
+        endpoint = subtypeActionToEndpoint("VERSION", inputs.subtype);
+    } else {
+        endpoint = DATA_STORE_API_ENDPOINTS.VERSION_DATASET;
+    }
+    return requests
+        .post(endpoint, inputs.data, {})
+        .then((res) => {
+            return res as VersionResponse;
         })
         .catch((err) => {
             return Promise.reject(requestErrToMsg(err));

@@ -6,7 +6,7 @@ from main import app
 from config import Config, get_settings
 from datetime import datetime
 from typing import List, Tuple, Generator
-from SharedInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck
+from SharedInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck, UpdateResponse
 from SharedInterfaces.DataStoreAPI import *
 from itertools import product
 from tests.config import test_bucket_name, test_registry_name, NUM_FAKE_ENTRIES, test_email
@@ -291,9 +291,9 @@ def end_to_end_mint(
     )
 
     # update dataset in registry
-    def mocked_update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, config: Config, reason: str) -> None:
+    def mocked_update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, config: Config, reason: str) -> UpdateResponse:
         # no action required
-        return None
+        return UpdateResponse(status=Status(success=True, details=""), register_create_activity_session_id="1234")
 
     monkeypatch.setattr(
         register,

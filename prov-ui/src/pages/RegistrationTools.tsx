@@ -21,7 +21,6 @@ import { useKeycloak } from "@react-keycloak/web";
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
 import accessStore from "../stores/accessStore";
-import BatchHistory from "../subpages/BatchHistory";
 import GenerateTemplate from "../subpages/GenerateTemplate";
 import LodgeTemplate from "../subpages/LodgeTemplate";
 
@@ -174,7 +173,7 @@ const RegistrationTools = observer(() => {
     }
 
     return (
-        <BoundedContainer breakpointKey={"lg"}>
+        <BoundedContainer breakpointKey={"xl"}>
             <Grid container xs={12} className={classes.root}>
                 <Grid xs={12}>
                     <Typography variant="h3" align="center">
@@ -237,19 +236,6 @@ const RegistrationTools = observer(() => {
                                             }
                                             key="lodgecsvtemplate"
                                         />
-
-                                        <Tab
-                                            label={
-                                                <Typography
-                                                    variant="subtitle1"
-                                                    align="right"
-                                                    width="100%"
-                                                >
-                                                    Job History
-                                                </Typography>
-                                            }
-                                            key="batchjobhistory"
-                                        />
                                     </Tabs>
                                 </Box>
                             </Grid>
@@ -265,9 +251,6 @@ const RegistrationTools = observer(() => {
                         </TabPanel>
                         <TabPanel index={1} currentIndex={currentTab}>
                             <LodgeTemplate />
-                        </TabPanel>
-                        <TabPanel index={2} currentIndex={currentTab}>
-                            <BatchHistory />
                         </TabPanel>
                     </Grid>
                 </Grid>

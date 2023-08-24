@@ -19,6 +19,10 @@
     h4 {
         color: $color_light_gray;
     }
+    display: flex;
+    left: 0;
+    bottom: 0;
+    width: 100%;
 
     .footer-container {
         display: flex;
@@ -44,6 +48,7 @@
             }
         }
     }
+    
     .footer-acknowledge {
         display: flex;
         position: relative;

@@ -18,7 +18,8 @@ export interface ModelRunRecord {
   annotations?: {
     [k: string]: string;
   };
-  description?: string;
+  display_name: string;
+  description: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;

@@ -30,7 +30,7 @@ async def explore_upstream(
         starting_id : str
             The handle ID to start at.
         depth : int, optional
-            The maximum depth to traverse in this direction, by default DEPTH_UPPER_LIMIT
+            The maximum depth to traverse in this direction, by default depth_upper_limit
 
         Returns
         -------
@@ -44,12 +44,12 @@ async def explore_upstream(
         --------
     """
     if not depth:
-        depth = config.DEPTH_DEFAULT_LIMIT
+        depth = config.depth_default_limit
 
-    if depth > config.DEPTH_UPPER_LIMIT:
+    if depth > config.depth_upper_limit:
         raise HTTPException(
             status_code=400,
-            detail=f"Depth provided is in excess of depth maximum: {config.DEPTH_UPPER_LIMIT}."
+            detail=f"Depth provided is in excess of depth maximum: {config.depth_upper_limit}."
         )
 
     # we want to make a proxied request directly using the service account
@@ -97,7 +97,7 @@ async def explore_downstream(
         starting_id : str
             The handle ID to start at.
         depth : int, optional
-            The maximum depth to traverse in this direction, by default DEPTH_UPPER_LIMIT
+            The maximum depth to traverse in this direction, by default depth_upper_limit
 
         Returns
         -------
@@ -111,12 +111,12 @@ async def explore_downstream(
         --------
     """
     if not depth:
-        depth = config.DEPTH_DEFAULT_LIMIT
+        depth = config.depth_default_limit
 
-    if depth > config.DEPTH_UPPER_LIMIT:
+    if depth > config.depth_upper_limit:
         raise HTTPException(
             status_code=400,
-            detail=f"Depth provided is in excess of depth maximum: {config.DEPTH_UPPER_LIMIT}."
+            detail=f"Depth provided is in excess of depth maximum: {config.depth_upper_limit}."
         )
 
     # we want to make a proxied request directly using the service account
@@ -140,6 +140,178 @@ async def explore_downstream(
         status=Status(
             success=True,
             details=f"Made downstream query (with depth {depth}) to neo4j backend."
+        ),
+        record_count=node_count,
+        graph=json_serialisation
+    )
+
+
+@router.get("/special/contributing_datasets", response_model=LineageResponse, operation_id="special_contributing_datasets")
+async def contributing_datasets(
+    starting_id: str,
+    depth: Optional[int] = None,
+    config: Config = Depends(get_settings),
+    _: User = Depends(read_user_protected_role_dependency)
+) -> LineageResponse:
+    if not depth:
+        depth = config.depth_specialised_default_limit
+
+    if depth > config.depth_upper_limit:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Depth provided is in excess of depth maximum: {config.depth_upper_limit}."
+        )
+
+    # we want to make a proxied request directly using the service account
+    request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
+        direct_service=True, on_behalf_username=None))
+
+    # validate starting point
+    await unknown_validator(id=starting_id, config=config, request_style=request_style)
+
+    # make lineage query
+    json_serialisation: Dict[str, Any] = neo4j_helpers.special_contributing_dataset_query(
+        starting_id=starting_id,
+        depth=depth,
+        config=config
+    )
+
+    # record count := length of the nodes list in response
+    node_count = len(json_serialisation['nodes'])
+
+    return LineageResponse(
+        status=Status(
+            success=True,
+            details=f"Made upstream contribution query (with depth {depth}) to neo4j backend."
+        ),
+        record_count=node_count,
+        graph=json_serialisation
+    )
+
+
+@router.get("/special/effected_datasets", response_model=LineageResponse, operation_id="special_effected_datasets")
+async def effected_datasets(
+    starting_id: str,
+    depth: Optional[int] = None,
+    config: Config = Depends(get_settings),
+    _: User = Depends(read_user_protected_role_dependency)
+) -> LineageResponse:
+    if not depth:
+        depth = config.depth_specialised_default_limit
+
+    if depth > config.depth_upper_limit:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Depth provided is in excess of depth maximum: {config.depth_upper_limit}."
+        )
+
+    # we want to make a proxied request directly using the service account
+    request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
+        direct_service=True, on_behalf_username=None))
+
+    # validate starting point
+    await unknown_validator(id=starting_id, config=config, request_style=request_style)
+
+    # make lineage query
+    json_serialisation: Dict[str, Any] = neo4j_helpers.special_effected_dataset_query(
+        starting_id=starting_id,
+        depth=depth,
+        config=config
+    )
+
+    # record count := length of the nodes list in response
+    node_count = len(json_serialisation['nodes'])
+
+    return LineageResponse(
+        status=Status(
+            success=True,
+            details=f"Made downstream effect query (with depth {depth}) to neo4j backend."
+        ),
+        record_count=node_count,
+        graph=json_serialisation
+    )
+
+
+@router.get("/special/contributing_agents", response_model=LineageResponse, operation_id="special_contributing_agents")
+async def contributing_agents(
+    starting_id: str,
+    depth: Optional[int] = None,
+    config: Config = Depends(get_settings),
+    _: User = Depends(read_user_protected_role_dependency)
+) -> LineageResponse:
+    if not depth:
+        depth = config.depth_specialised_default_limit
+
+    if depth > config.depth_upper_limit:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Depth provided is in excess of depth maximum: {config.depth_upper_limit}."
+        )
+
+    # we want to make a proxied request directly using the service account
+    request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
+        direct_service=True, on_behalf_username=None))
+
+    # validate starting point
+    await unknown_validator(id=starting_id, config=config, request_style=request_style)
+
+    # make lineage query
+    json_serialisation: Dict[str, Any] = neo4j_helpers.special_contributing_agent_query(
+        starting_id=starting_id,
+        depth=depth,
+        config=config
+    )
+
+    # record count := length of the nodes list in response
+    node_count = len(json_serialisation['nodes'])
+
+    return LineageResponse(
+        status=Status(
+            success=True,
+            details=f"Made upstream contribution query (with depth {depth}) to neo4j backend."
+        ),
+        record_count=node_count,
+        graph=json_serialisation
+    )
+
+
+@router.get("/special/effected_agents", response_model=LineageResponse, operation_id="special_effected_agents")
+async def effected_agents(
+    starting_id: str,
+    depth: Optional[int] = None,
+    config: Config = Depends(get_settings),
+    _: User = Depends(read_user_protected_role_dependency)
+) -> LineageResponse:
+    if not depth:
+        depth = config.depth_specialised_default_limit
+
+    if depth > config.depth_upper_limit:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Depth provided is in excess of depth maximum: {config.depth_upper_limit}."
+        )
+
+    # we want to make a proxied request directly using the service account
+    request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
+        direct_service=True, on_behalf_username=None))
+
+    # validate starting point
+    await unknown_validator(id=starting_id, config=config, request_style=request_style)
+
+    # make lineage query
+    json_serialisation: Dict[str, Any] = neo4j_helpers.special_effected_agent_query(
+        starting_id=starting_id,
+        depth=depth,
+        config=config
+    )
+
+    # record count := length of the nodes list in response
+    node_count = len(json_serialisation['nodes'])
+
+    return LineageResponse(
+        status=Status(
+            success=True,
+            details=f"Made downstream effect query (with depth {depth}) to neo4j backend."
         ),
         record_count=node_count,
         graph=json_serialisation

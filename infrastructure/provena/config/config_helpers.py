@@ -35,14 +35,19 @@ DEPENDENCY_LINKS: Dict[ProvenaComponent, List[ProvenaComponent]] = {
     ],
     ProvenaComponent.ENTITY_REGISTRY: [
         # Has no dependencies other than front end auth API
-        ProvenaComponent.AUTH_API
+        ProvenaComponent.AUTH_API,
+        # Depends on async job service
+        ProvenaComponent.ASYNC_JOBS
     ],
     ProvenaComponent.PROV_STORE: [
         ProvenaComponent.AUTH_API,
         # uses the entity registry and data store intensively
         ProvenaComponent.ENTITY_REGISTRY,
-        ProvenaComponent.DATA_STORE
+        ProvenaComponent.DATA_STORE,
     ],
+    ProvenaComponent.ASYNC_JOBS: [
+
+    ]
 }
 
 
@@ -92,7 +97,8 @@ def validate_dependencies(component_config: ComponentConfig) -> None:
         component_config.search,
         component_config.entity_registry,
         component_config.prov_store,
-        component_config.warmer
+        component_config.warmer,
+        component_config.async_jobs
     ]
     for c in components:
         if c:
@@ -172,6 +178,8 @@ def resolve_endpoints(config: ProvenaConfig) -> ResolvedDomainNames:
             config.components.auth_api.api_domain) if config.components.auth_api else "",
         warmer_api=subdomain_to_full(
             config.components.warmer.domain) if config.components.warmer else "",
+        async_jobs_api=subdomain_to_full(
+            config.components.async_jobs.job_api_domain) if config.components.async_jobs else "",
 
         # uis
         data_store_ui=subdomain_to_full(

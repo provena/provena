@@ -56,6 +56,9 @@ class RouteActions(str, Enum):
     AUTH_ROLES = "AUTH_ROLES"
     DELETE = "DELETE"
 
+    # Versioning only
+    VERSION = "VERSION"
+
     # Lock management
     LOCK = "LOCK"
     UNLOCK = "UNLOCK"
@@ -69,6 +72,8 @@ class RouteActions(str, Enum):
     PROXY_CREATE = "PROXY_CREATE"
     PROXY_UPDATE = "PROXY_UPDATE"
     PROXY_REVERT = "PROXY_REVERT"
+    # Versioning only
+    PROXY_VERSION = "PROXY_VERSION"
 
     # Proxy fetch is only accessible via either prov/data store service accounts
     # and accepts a username to use for checking authorisation
@@ -92,6 +97,43 @@ STANDARD_ROUTE_ACTIONS: List[RouteActions] = [
     RouteActions.AUTH_CONFIGURATION_GET,
     RouteActions.AUTH_CONFIGURATION_PUT,
     RouteActions.AUTH_ROLES,
+    RouteActions.LOCK,
+    RouteActions.UNLOCK,
+    RouteActions.LOCK_HISTORY,
+    RouteActions.LOCKED,
+]
+
+STANDARD_PROVENANCE_VERSIONING_ROUTE_ACTIONS: List[RouteActions] = [
+    RouteActions.VERSION
+]
+
+PROXY_PROVENANCE_VERSIONING_ROUTE_ACTIONS: List[RouteActions] = [
+    RouteActions.PROXY_VERSION
+]
+
+READ_ONLY_ROUTE_ACTIONS: List[RouteActions] = [
+    # Remove all create/update actions
+    # RouteActions.SEED,
+    # RouteActions.UPDATE,
+    # RouteActions.CREATE,
+    # RouteActions.REVERT,
+
+    # ADMIN only delete still used
+    RouteActions.DELETE,
+
+    # All fetch list etc still usable
+    RouteActions.FETCH,
+    RouteActions.PROXY_FETCH,
+    RouteActions.LIST,
+    RouteActions.SCHEMA,
+    RouteActions.UI_SCHEMA,
+    RouteActions.VALIDATE,
+    RouteActions.AUTH_EVALUATE,
+    RouteActions.AUTH_CONFIGURATION_GET,
+    RouteActions.AUTH_CONFIGURATION_PUT,
+    RouteActions.AUTH_ROLES,
+
+    # Lock actions still okay
     RouteActions.LOCK,
     RouteActions.UNLOCK,
     RouteActions.LOCK_HISTORY,
@@ -122,7 +164,9 @@ SERVICE_PROXY_ROUTE_ACTIONS: List[RouteActions] = [
     RouteActions.LOCKED,
 ]
 
-DATASET_ROUTE_ACTIONS = SERVICE_PROXY_ROUTE_ACTIONS
+# Datasets have proxy actions + provenance versioning enabled through proxy
+DATASET_ROUTE_ACTIONS = SERVICE_PROXY_ROUTE_ACTIONS + \
+    PROXY_PROVENANCE_VERSIONING_ROUTE_ACTIONS
 MODEL_RUN_ROUTE_ACTIONS = SERVICE_PROXY_ROUTE_ACTIONS
 
 EDIT_ROUTE_ACTIONS: List[RouteActions] = [
@@ -138,6 +182,7 @@ PROXY_EDIT_ROUTE_ACTIONS: List[RouteActions] = [
     # these are modifying actions on the item
     RouteActions.PROXY_SEED,
     RouteActions.PROXY_CREATE,
+    RouteActions.PROXY_VERSION,
     RouteActions.PROXY_UPDATE,
     RouteActions.PROXY_REVERT
 ]
@@ -153,14 +198,6 @@ ROUTE_ACTION_CONFIG_MAP: Dict[RouteActions, RouteActionConfig] = {
         access_level=RouteAccessLevel.READ,
         path="/fetch",
         op_id="fetch_"
-    ),
-    RouteActions.PROXY_FETCH: RouteActionConfig(
-        method=RouteMethod.GET,
-        access_level=RouteAccessLevel.READ,
-        path="/proxy/fetch",
-        op_id="proxy_fetch_",
-        hide=True,
-        limited_access_roles=PROXY_FETCH_LIMITED_ACCESS_ROLES
     ),
     RouteActions.LIST: RouteActionConfig(
         # this method is a post for request library compat with complex payload
@@ -195,6 +232,14 @@ ROUTE_ACTION_CONFIG_MAP: Dict[RouteActions, RouteActionConfig] = {
         access_level=RouteAccessLevel.WRITE,
         path="/create",
         op_id="create_",
+        enforce_linked_owner=True
+    ),
+    RouteActions.VERSION: RouteActionConfig(
+        method=RouteMethod.POST,
+        # Need to be write generally, but admin on item to revise an item
+        access_level=RouteAccessLevel.WRITE,
+        path="/version",
+        op_id="version_",
         enforce_linked_owner=True
     ),
     RouteActions.SCHEMA: RouteActionConfig(
@@ -267,6 +312,14 @@ ROUTE_ACTION_CONFIG_MAP: Dict[RouteActions, RouteActionConfig] = {
         hide=True,
         enforce_linked_owner=True
     ),
+    RouteActions.PROXY_VERSION: RouteActionConfig(
+        method=RouteMethod.POST,
+        access_level=RouteAccessLevel.WRITE,
+        path="/proxy/version",
+        op_id="proxy_version_",
+        hide=True,
+        enforce_linked_owner=True
+    ),
     RouteActions.PROXY_UPDATE: RouteActionConfig(
         method=RouteMethod.PUT,
         access_level=RouteAccessLevel.WRITE,
@@ -282,6 +335,14 @@ ROUTE_ACTION_CONFIG_MAP: Dict[RouteActions, RouteActionConfig] = {
         op_id="proxy_revert_",
         hide=True,
         enforce_linked_owner=True
+    ),
+    RouteActions.PROXY_FETCH: RouteActionConfig(
+        method=RouteMethod.GET,
+        access_level=RouteAccessLevel.READ,
+        path="/proxy/fetch",
+        op_id="proxy_fetch_",
+        hide=True,
+        limited_access_roles=PROXY_FETCH_LIMITED_ACCESS_ROLES
     ),
 
     # Lock actions

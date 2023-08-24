@@ -1,5 +1,0 @@
--r requirements.txt
-mypy
-autopep8
-types-requests
-types-cachetools

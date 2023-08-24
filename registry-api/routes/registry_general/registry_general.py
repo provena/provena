@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import ProtectedRole
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency 
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from SharedInterfaces.RegistryAPI import *
+from SharedInterfaces.SharedTypes import VersionDetails
 from RegistrySharedFunctionality.RegistryRouteActions import PROV_SERVICE_ROLE_NAME, DATA_STORE_SERVICE_ROLE_NAME
 from helpers.action_helpers import *
 from helpers.action_helpers import list_items_paginated
@@ -276,3 +277,36 @@ async def delete_item(
         id=id,
         config=config
     )
+
+
+@router.get("/about/version", response_model=VersionDetails, operation_id="version")
+async def get_provena_version(
+    config: Config = Depends(get_settings),
+    protected_roles: ProtectedRole = Depends(
+        read_user_protected_role_dependency)
+) -> VersionDetails:
+    """    get_provena_version
+        Returns the version of the registry
+
+        Arguments
+        ----------
+        None
+
+        Returns
+        -------
+         : VersionResponse
+            The version response of the registry containing a status response and version details
+        See Also (optional)
+        --------
+
+        Examples (optional)
+        --------
+    """
+
+    try:
+        return config.version_details
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve registry version details. Error: {e}"
+        )

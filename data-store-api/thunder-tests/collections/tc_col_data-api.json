@@ -1,0 +1,254 @@
+{
+    "_id": "dc243d27-58ac-4e80-9316-da52251790e8",
+    "colName": "data-api",
+    "created": "2022-04-27T03:34:22.014Z",
+    "sortNum": 10000,
+    "folders": [
+        {
+            "_id": "a7729147-3e4b-4d0e-946f-9f538ecbedee",
+            "name": "register",
+            "containerId": "",
+            "created": "2022-04-27T03:35:21.052Z",
+            "sortNum": 10000
+        },
+        {
+            "_id": "951bb4c4-1c2c-439d-8241-067a399f3d26",
+            "name": "registry",
+            "containerId": "",
+            "created": "2022-04-27T03:47:47.183Z",
+            "sortNum": 30000
+        },
+        {
+            "_id": "ef1e8003-d1f7-4313-bb34-36b566306f3f",
+            "name": "items",
+            "containerId": "951bb4c4-1c2c-439d-8241-067a399f3d26",
+            "created": "2022-04-27T03:52:00.927Z",
+            "sortNum": 40000
+        },
+        {
+            "_id": "6fc0fc15-2771-460e-a794-90c9208d559e",
+            "name": "credentials",
+            "containerId": "951bb4c4-1c2c-439d-8241-067a399f3d26",
+            "created": "2022-04-27T03:52:17.498Z",
+            "sortNum": 50000
+        },
+        {
+            "_id": "d85f998b-1377-4ae0-9b16-e9f6dfcefbcf",
+            "name": "metadata",
+            "containerId": "",
+            "created": "2022-04-27T03:52:47.565Z",
+            "sortNum": 60000
+        },
+        {
+            "_id": "93e13525-e94e-4024-a716-762543dd775e",
+            "name": "admin",
+            "containerId": "",
+            "created": "2022-09-26T01:35:30.855Z",
+            "sortNum": 70000
+        }
+    ],
+    "settings": {
+        "headers": [],
+        "auth": {
+            "type": "bearer",
+            "bearer": "{{token}}"
+        },
+        "tests": []
+    },
+    "requests": [
+        {
+            "_id": "6eeff5f1-257d-425c-bc6f-ec2f9b160b1c",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "a7729147-3e4b-4d0e-946f-9f538ecbedee",
+            "name": "mint-dataset",
+            "url": "{{endpoint}}/register/mint-dataset",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2022-04-27T03:35:28.349Z",
+            "modified": "2023-08-03T03:19:42.327Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n    \"associations\": {\n        \"organisation_id\" : \"10378.1/1723781\"\n    },\n    \"approvals\": {\n        \"ethics_registration\": {\n            \"relevant\": false\n        },\n        \"ethics_access\": {\n            \"relevant\": false\n        },\n        \"indigenous_knowledge\": {\n            \"relevant\": false\n        },\n        \"export_controls\": {\n            \"relevant\": false\n        }\n    },\n    \"dataset_info\": {\n        \"name\": \"Coral results 2021-02-30\",\n        \"description\": \"Results of counterfactual model run\",\n        \"access_info\": {\n            \"reposited\": true\n        },\n        \"publisher_id\": \"10378.1/1723781\",\n        \"created_date\": \"2021-12-25\",\n        \"published_date\": \"2021-12-25\",\n        \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n        \"keywords\": [\n            \"keyword1\",\n            \"keyword2\"\n        ]\n    }\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "e3a089b1-7342-431b-a152-a989493ce199",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "ef1e8003-d1f7-4313-bb34-36b566306f3f",
+            "name": "list-all-datasets",
+            "url": "{{endpoint}}/registry/items/list",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2022-04-27T03:47:58.538Z",
+            "modified": "2023-08-03T02:08:24.508Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "force_fresh",
+                    "value": "true",
+                    "isDisabled": true,
+                    "isPath": false
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "11f573d6-4c1c-44b1-87de-5b3031204574",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "ef1e8003-d1f7-4313-bb34-36b566306f3f",
+            "name": "fetch-dataset",
+            "url": "{{endpoint}}/registry/items/fetch-dataset?handle_id=10378.1/1724466",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2022-04-27T03:55:04.874Z",
+            "modified": "2023-08-03T02:10:01.225Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "handle_id",
+                    "value": "10378.1/1724466",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "bd558acb-b110-4fea-85d8-495933214a54",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "a7729147-3e4b-4d0e-946f-9f538ecbedee",
+            "name": "update-metadata",
+            "url": "{{endpoint}}/register/update-metadata?handle_id=10378.1/1703302",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2022-05-04T23:04:16.181Z",
+            "modified": "2023-06-19T00:42:07.798Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "handle_id",
+                    "value": "10378.1/1703302",
+                    "isPath": false
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"author\": {\n    \"name\": \"John Smitty\",\n    \"email\": \"jsmitty@gmail.com\",\n    \"orcid\": \"http://example.com\",\n    \"organisation\": {\n      \"name\": \"CSIRO\",\n      \"ror\": \"http://example.com\"\n    }\n  },\n  \"dataset_info\": {\n    \"name\": \"Test\",\n    \"description\": \"Test desc\",\n    \"access_info\": {\n      \"reposited\": true,\n      \"uri\": \"http://example.com\",\n      \"description\": \"Test\"\n    },\n    \"publisher\": {\n      \"name\": \"CSIRO\",\n      \"ror\": \"http://example.com\"\n    },\n    \"created_date\": \"2019-08-24\",\n    \"published_date\": \"2019-08-25\",\n    \"license\": \"http://example.com\",\n    \"ethics_approved\": true,\n    \"indigenous_knowledge\": {\n        \"contains_indigenous_knowledge\": true,\n        \"consent_obtained\": true\n    },\n    \"export_controls\": {\n        \"subject_to_export_permits\": false\n    },\n    \"preferred_citation\": \"This is my preferred citation\",\n    \"keywords\": [\n      \"string\"\n    ]\n  }\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "10f4baf1-0143-4c73-9ecc-29f374d4bbf7",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "d85f998b-1377-4ae0-9b16-e9f6dfcefbcf",
+            "name": "validate-metadata",
+            "url": "{{endpoint}}/metadata/validate-metadata",
+            "method": "POST",
+            "sortNum": 60000,
+            "created": "2022-05-16T06:36:02.748Z",
+            "modified": "2023-06-19T00:44:50.855Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"author\": {\n    \"name\": \"John Smitty\",\n    \"email\": \"JSmittty@fake.com\",\n    \"orcid\": \"https://orcid.org/0000-0000-0000-0000\",\n    \"organisation\" : {\n      \"name\" : \"FakeOrg\",\n      \"ror\" : \"http://example.com\"\n    }\n  },\n  \n  \"dataset_info\": {\n    \"published_date\": \"2021-12-25\",\n    \"created_date\" : \"2021-12-25\",\n    \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n    \"version\": \"1.2.4\",\n    \"name\": \"Coral results 2021-02-30\",\n    \"description\": \"Results of counterfactual model run\",\n    \"keywords\": [\"keyword1\", \"keyword2\"],\n    \"publisher\": {\n    \"ror\": \"https://ror.org/00rqy9422\",\n    \"name\": \"University of Canberra\"\n  }\n  }\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "880dd987-697a-4be3-aab3-0eb4bf449370",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "6fc0fc15-2771-460e-a794-90c9208d559e",
+            "name": "read-only",
+            "url": "{{endpoint}}/registry/credentials/generate-read-access-credentials",
+            "method": "POST",
+            "sortNum": 70000,
+            "created": "2022-07-03T23:32:20.249Z",
+            "modified": "2023-06-19T00:43:50.307Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "bucket_name",
+                    "value": "my_s3_bucket_name",
+                    "isDisabled": true,
+                    "isPath": false
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"s3_location\": {\n    \"bucket_name\": \"my_s3_bucket_name\",\n    \"path\": \"datasets/123456-1-123456/\",\n    \"s3_uri\": \"s3://my_s3_bucket_name/datasets/123456-1-123456/\"\n  },\n  \"console_session_required\": true\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "449f5124-fb9a-4eec-b9d4-6f2e3d0e7868",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "6fc0fc15-2771-460e-a794-90c9208d559e",
+            "name": "read-write",
+            "url": "{{endpoint}}/registry/credentials/generate-write-access-credentials",
+            "method": "POST",
+            "sortNum": 80000,
+            "created": "2022-07-03T23:45:56.958Z",
+            "modified": "2023-06-19T00:44:17.960Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"s3_location\": {\n    \"bucket_name\": \"my_s3_bucket_name\",\n    \"path\": \"datasets/10378-1-1685249/\",\n    \"s3_uri\": \"s3://my_s3_bucket_name/datasets/123456-1-1234567/\"\n  },\n  \"console_session_required\": true\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "a4073c73-73b8-4d82-b920-6b69c4eec01b",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "93e13525-e94e-4024-a716-762543dd775e",
+            "name": "config",
+            "url": "{{endpoint}}/admin/config",
+            "method": "GET",
+            "sortNum": 90000,
+            "created": "2022-09-26T01:35:34.129Z",
+            "modified": "2022-09-26T01:36:17.785Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "4257cd3b-0a2f-4ecf-998b-6459ed76b4e2",
+            "colId": "dc243d27-58ac-4e80-9316-da52251790e8",
+            "containerId": "a7729147-3e4b-4d0e-946f-9f538ecbedee",
+            "name": "version",
+            "url": "{{endpoint}}/register/version",
+            "method": "POST",
+            "sortNum": 60000,
+            "created": "2023-08-03T02:05:17.266Z",
+            "modified": "2023-08-04T02:54:44.009Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "handle_id",
+                    "value": "10378.1/1724373",
+                    "isDisabled": true,
+                    "isPath": false
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"id\": \"10378.1/1724950\",\n  \"reason\": \"Test version reason\"\n}",
+                "form": []
+            },
+            "tests": []
+        }
+    ]
+}

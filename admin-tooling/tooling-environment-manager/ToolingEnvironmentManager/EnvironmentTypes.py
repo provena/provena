@@ -4,11 +4,11 @@ from typing import Optional, List, Dict
 
 def optional_override_prefixor(domain: str, prefix: str, override: Optional[str]) -> str:
     """
-    
+
     Helper function which performs the API prefixing while being override aware. 
-    
+
     If override supplied - uses it directly. 
-    
+
     If not, prefixes with protocol and prefix suitably.
 
     Args:
@@ -18,7 +18,7 @@ def optional_override_prefixor(domain: str, prefix: str, override: Optional[str]
 
     Returns:
         str: The URL
-    """    
+    """
     if override is not None:
         return override
     else:
@@ -66,6 +66,7 @@ class ToolingEnvironment(BaseModel):
     search_api_endpoint_override: Optional[str]
     search_service_endpoint_override: Optional[str]
     handle_service_api_endpoint_override: Optional[str]
+    jobs_service_api_endpoint_override: Optional[str]
 
     # Keycloak
     keycloak_endpoint_override: Optional[str]
@@ -80,13 +81,13 @@ class PopulatedToolingEnvironment(ToolingEnvironment):
 
     def validate_parameters(self) -> None:
         """
-        
+
         Validates the replacements vs parameters. 
-        
+
         Raises:
             ValueError: Parameters missing/undefined
             ValueError: Missing particular parameter id
-        """        
+        """
         if len(self.replacements) > 0:
             if self.parameters is None:
                 raise ValueError(
@@ -101,11 +102,10 @@ class PopulatedToolingEnvironment(ToolingEnvironment):
             if len(missing) > 0:
                 raise ValueError(
                     f"Insufficient number of parameter replacements for ToolingEnvironment. Expected {len(required)} got {len(missing)}. Missing the following: {missing}.")
-                
-                
+
     def perform_replacement(self, target: str) -> str:
         """
-        
+
         Replaces any parameters in place in the current populated parameter
         context for this endpoint.
 
@@ -117,7 +117,7 @@ class PopulatedToolingEnvironment(ToolingEnvironment):
 
         Returns:
             str: The resulting string (mutated)
-        """        
+        """
         self.validate_parameters()
         for replacement in self.replacements:
             target = target.replace(
@@ -131,6 +131,14 @@ class PopulatedToolingEnvironment(ToolingEnvironment):
             domain=self.domain,
             prefix="search",
             override=self.search_api_endpoint_override
+        ))
+
+    @property
+    def jobs_service_api_endpoint(self) -> str:
+        return self.perform_replacement(optional_override_prefixor(
+            domain=self.domain,
+            prefix="job-api",
+            override=self.jobs_service_api_endpoint_override
         ))
 
     @property
@@ -189,7 +197,6 @@ class PopulatedToolingEnvironment(ToolingEnvironment):
         else:
             endpoint = f"https://auth.{self.domain}/auth/realms/{self.realm_name}"
         return self.perform_replacement(endpoint)
-
 
     def get_endpoint_map(self) -> Dict[str, str]:
         # Helper function for the integration test wrapper

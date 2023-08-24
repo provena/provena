@@ -10,38 +10,45 @@ import {
     Toolbar,
     Typography,
 } from "@mui/material";
+import { DefaultTheme } from "@mui/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
 import { useKeycloak } from "@react-keycloak/web";
 import { observer } from "mobx-react-lite";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import {
+    CONTACT_US_BUTTON_LINK,
     DATA_STORE_LINK,
+    DOCUMENTATION_BASE_URL,
+    JOB_LIST_ROUTE,
+    JOB_ROUTE_PREFIX,
+    JobSubRouteComponent,
+    LANDING_PAGE_LINK,
     PROV_STORE_LINK,
+    ProfileIcon,
     ProtectedRoute,
     SideNavBox,
 } from "react-libs";
-import { ProfileIcon } from "react-libs";
 import { Footer } from "react-libs/components/Footer";
-import { Route, Link as RouterLink, Switch } from "react-router-dom";
-import {
-    CONTACT_US_BUTTON_LINK,
-    DOCUMENTATION_BASE_URL,
-    LANDING_PAGE_LINK,
-} from "react-libs";
+import { Link, Route, Link as RouterLink, Switch } from "react-router-dom";
 import "../css/Parent.css";
+import { ThemeConfigContext } from "../index";
 import Frontmatter from "../pages/Frontmatter";
 import Item from "../pages/Item";
 import Profile from "../pages/Profile";
 import Records from "../pages/Records";
 import RegisterEntity from "../pages/RegisterEntity";
-import { ThemeConfigContext } from "../index";
-import { DefaultTheme } from "@mui/styles";
 
 const useStyles = makeStyles((theme: DefaultTheme) =>
     createStyles({
+        page: {
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+        },
         root: {
             display: "flex",
+            flexGrow: 1,
             backgroundImage: `url(${theme.backgroundImgURL})`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
@@ -102,7 +109,7 @@ function RoutesAndLayout() {
     // Pull current theme config
     const themeConfig = useContext(ThemeConfigContext);
 
-    const { keycloak, initialized } = useKeycloak();
+    const { keycloak } = useKeycloak();
 
     const [open, setOpen] = useState(false);
 
@@ -111,7 +118,7 @@ function RoutesAndLayout() {
     };
 
     return (
-        <div>
+        <div className={classes.page}>
             <Drawer open={open} anchor="left" onClose={toggleSlider}>
                 <SideNavBox
                     navListItems={[
@@ -182,6 +189,13 @@ function RoutesAndLayout() {
                                     Explore Registry
                                 </Button>
                                 <Button
+                                    component={Link}
+                                    to={JOB_LIST_ROUTE}
+                                    className={classes.routerButtonDefault}
+                                >
+                                    Jobs
+                                </Button>
+                                <Button
                                     href={CONTACT_US_BUTTON_LINK}
                                     target="_blank"
                                     className={classes.routerButtonDefault}
@@ -222,6 +236,12 @@ function RoutesAndLayout() {
                         </ProtectedRoute>
                         <ProtectedRoute path="/profile">
                             <Profile />
+                        </ProtectedRoute>
+                        {
+                            // Generic shared job routes
+                        }
+                        <ProtectedRoute path={JOB_ROUTE_PREFIX}>
+                            <JobSubRouteComponent></JobSubRouteComponent>
                         </ProtectedRoute>
                     </Switch>
                 </Container>

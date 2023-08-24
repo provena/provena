@@ -4,6 +4,7 @@ from SharedInterfaces.DataStoreAPI import *
 from SharedInterfaces.RegistryAPI import DatasetDomainInfo, ItemRevertRequest, ItemRevertResponse
 from SharedInterfaces.RegistryModels import METADATA_WRITE_ROLE, ADMIN_ROLE, DATASET_WRITE_ROLE
 from config import get_settings, Config
+from typing import cast
 from dependencies.dependencies import read_write_user_protected_role_dependency, secret_cache
 from helpers.metadata_helpers import validate_against_schema, validate_fields
 from helpers.aws_helpers import construct_s3_path, update_metadata_at_s3, seed_s3_location_with_metadata
@@ -155,7 +156,7 @@ async def mint_dataset(
 
     # now we can update the seeded item to a complete item with the appropriate
     # details
-    update_dataset_in_registry(
+    update_response = update_dataset_in_registry(
         domain_info=domain_info,
         # use the actual users username - this ensures that resource level auth
         # is enforced
@@ -168,6 +169,18 @@ async def mint_dataset(
         config=config
     )
 
+    if update_response.register_create_activity_session_id is None:
+        return MintResponse(
+            status=Status(
+                success=False,
+                details="Successfully updated dataset, but no creation job was spun off. This is unexpected. Please contact an administrator. Your dataset may still function properly."
+            ),
+            handle=handle,
+            s3_location=s3_location,
+        )
+
+    # Update the original item with the workflow link
+
     # Return information and status
     return MintResponse(
         status=Status(
@@ -175,7 +188,8 @@ async def mint_dataset(
             details="Successfully seeded location - see location details."
         ),
         handle=handle,
-        s3_location=s3_location
+        s3_location=s3_location,
+        register_create_activity_session_id=update_response.register_create_activity_session_id
     )
 
 
@@ -427,14 +441,29 @@ async def revert_metadata(
                 detail=f"Registry API responded with an error during validation of the target revert point, error: {possible_error}."
             )
 
-    # this uses the service role - need to be sure we have access at this point
-    revert_dataset_in_registry(
-        revert_request=revert_request,
-        # use the actual username - this ensures user auth is enforced at
-        # resource level
+    # don't perform revert operation, instead perform update operation - this
+    # guarantees we don't modify any protected fields
+
+    # Produce a new domain info which is the result of replacing the collection format in the existing domain info
+
+    # Extract domain info from full existing item
+    revised_domain_info = DatasetDomainInfo.parse_obj(
+        py_to_dict(registry_item_metadata))
+
+    # update the display name to match the dataset name since user's can't
+    # control this field directly
+    revised_domain_info.display_name = collection_format.dataset_info.name
+
+    # Update the collection format
+    revised_domain_info.collection_format = collection_format
+
+    update_dataset_in_registry(
         proxy_username=protected_roles.user.username,
+        domain_info=revised_domain_info,
+        id=revert_request.id,
         secret_cache=secret_cache,
-        config=config,
+        reason=f"Reverting dataset to history id {revert_request.history_id}.",
+        config=config
     )
 
     file_metadata = py_to_dict(collection_format)
@@ -450,4 +479,135 @@ async def revert_metadata(
             success=True,
             details="Successfully reverted metadata in Registry and S3 bucket - see location details."
         )
+    )
+
+
+@router.post("/version", response_model=VersionResponse, operation_id="version_dataset")
+async def version_dataset(
+    version_request: VersionRequest,
+    protected_roles: ProtectedRole = Depends(
+        read_write_user_protected_role_dependency),
+    config: Config = Depends(get_settings)
+) -> VersionResponse:
+    """
+
+    Versioning operation which creates a new version from the specified ID.
+
+    This requires write access to the registry, and ADMIN access for the
+    specified item.
+
+    This will always generate an asynchronous job which creates the
+    Version activity and lodges the associated provenance.
+
+    Importantly - this also performs the generation of the new S3 location from
+    the revised item ID, and updates the S3Location field of the new item to
+    refer to this new storage location.
+
+    Parameters
+    ----------
+    version_request : VersionRequest
+        The request which includes the item ID and reason for versioning
+
+    Returns
+    -------
+    VersionResponse
+        The response which is more or less relayed from the proxy version
+        endpoint of the registry API
+
+    Raises
+    ------
+    HTTPException
+        400/401/500 from either internal or registry API error
+    """
+    # We have write metadata permission - just pass on username and let registry
+    # manage auth on item level This also checks that the item is the correct
+    # subtype - so we don't need to manage that
+    version_response = version_dataset_in_registry(
+        version_request=version_request,
+        proxy_username=protected_roles.user.username,
+        secret_cache=secret_cache,
+        config=config,
+    )
+
+    # Pull out the new item information
+    new_item_id = version_response.new_version_id
+
+    # Get the current entry from the registry - if 401 then not authorised
+    new_item_response = user_fetch_dataset_from_registry(
+        id=new_item_id,
+        config=config,
+        user=protected_roles.user
+    )
+
+    # Can't be seed item - versioning not enabled for seed items
+    new_item: ItemDataset = cast(ItemDataset, new_item_response.item)
+
+    collection_format = new_item.collection_format
+
+    # Validate the new metadata
+    new_metadata = py_to_dict(collection_format)
+
+    valid_schema, failure_exception = validate_against_schema(
+        new_metadata, config=config)
+
+    # If invalid, then return with exception
+    # TODO more informative response - error message is very long if exception is printed.
+    if not valid_schema:
+        raise HTTPException(
+            status_code=500,
+            detail=f"New item ID {new_item_id}. Version succeeded, but resulting item had invalid metadata. S3 storage location is not provisioned and dataset may not function correctly. Please contact an administrator."
+        )
+
+    try:
+        validate_fields(collection_format)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"New item ID {new_item_id}. Version succeeded, but resulting item had invalid metadata. S3 storage location is not provisioned and dataset may not function correctly. Please contact an administrator. Error: {e}."
+        )
+
+    # Work out S3 location
+    try:
+        s3_location: S3Location = construct_s3_path(
+            collection_format=collection_format,
+            handle=new_item.id,
+            use_handle_as_name=True,
+            config=config
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500,
+                            detail=f"Version succeeded, however failed to find a unique S3 path. No storage location provisioned, dataset may not function properly. Error: {e}")
+
+    # Seed S3 location with metadata file
+    seed_s3_location_with_metadata(
+        s3_location=s3_location,
+        metadata=new_metadata,
+        config=config
+    )
+
+    # We need to update the associated storage location of the versioned
+    # dataset
+    domain_info = DatasetDomainInfo(
+        display_name=new_item.display_name,
+        collection_format=collection_format,
+        s3=s3_location,
+    )
+
+    # now we can update the seeded item to a complete item with the appropriate
+    # details
+    update_dataset_in_registry(
+        domain_info=domain_info,
+        # use the actual users username - this ensures that resource level auth
+        # is enforced
+        proxy_username=protected_roles.user.username,
+        id=new_item.id,
+        reason="(System) Dataset S3 path updated to new version's storage location",
+        secret_cache=secret_cache,
+        config=config
+    )
+
+    # Return information and status
+    return VersionResponse(
+        new_version_id=new_item.id,
+        version_job_session_id=version_response.version_job_session_id
     )

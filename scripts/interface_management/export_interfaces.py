@@ -24,11 +24,12 @@ class SOURCE(str, Enum):
     DataStoreAPI = "DataStoreAPI" 
     HandleAPI = "HandleAPI" 
     HandleModels = "HandleModels" 
-    JobModels = "JobModels" 
     ProvenanceAPI = "ProvenanceAPI" 
     ProvenanceModels = "ProvenanceModels" 
     RegistryAPI = "RegistryAPI" 
     RegistryModels = "RegistryModels" 
+    AsyncJobModels = "AsyncJobModels"
+    AsyncJobAPI = "AsyncJobAPI"
     SearchAPI = "SearchAPI" 
     SharedTypes = "SharedTypes" 
     
@@ -90,9 +91,10 @@ ALL_SOURCES : List[SOURCE] = [
     SOURCE.DataStoreAPI, 
     SOURCE.HandleAPI, 
     SOURCE.HandleModels, 
-    SOURCE.JobModels, 
     SOURCE.ProvenanceAPI, 
     SOURCE.ProvenanceModels, 
+    SOURCE.AsyncJobAPI, 
+    SOURCE.AsyncJobModels, 
     SOURCE.RegistryAPI, 
     SOURCE.RegistryModels, 
     SOURCE.SearchAPI, 

@@ -50,6 +50,8 @@ const Dataset = (props: DatasetPropsType) => {
                 <Link to={`/dataset/${dataset.id}`}>
                     {" "}
                     {dataset.collection_format.dataset_info.name}
+                    {!!dataset.versioning_info?.version &&
+                        ` (V${dataset.versioning_info?.version})`}
                 </Link>
             </div>
             <div>

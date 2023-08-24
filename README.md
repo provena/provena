@@ -1,4 +1,4 @@
-# Provena
+# RRAP IS (Provena)
 
 Provena is an information system built to capture, manage, and analyse [Provenance](https://ardc.edu.au/resource/data-provenance) records, and their artefacts. Provena additionally implements a robust data storage solution for seamless interaction with and inspection of the data referenced in provenance records.
 

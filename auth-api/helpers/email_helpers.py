@@ -3,11 +3,8 @@ from KeycloakFastAPI.Dependencies import *
 from config import Config
 from helpers.request_table_helpers import generate_status_change_email_text
 from SharedInterfaces.AuthAPI import *
-from models.email import *
-import boto3  # type: ignore
-import json
-import smtplib
-import ssl
+from SharedInterfaces.AsyncJobModels import EmailSendEmailPayload
+from helpers.job_api_helpers import submit_send_email_job
 import re
 
 from helpers.access_report_helpers import *
@@ -41,62 +38,13 @@ def validate_email(email: str) -> bool:
     return (re.fullmatch(email_regex, email) != None)
 
 
-def get_email_connection_profile(config: Config) -> EmailConnectionProfile:
-    """    get_email_connection_profile
-        Uses the email connection secret ARN from aws sm to 
-        pull the username, password, port etc for sending 
-        emails.
-
-        Returns
-        -------
-         : EmailConnectionProfile
-            The connection profile
-
-        Raises
-        ------
-        Exception
-            Connection error/secret pull failure raises an exception
-        Exception
-            Parsing failure from secret -> connection profile raises error
-
-        See Also (optional)
-        --------
-
-        Examples (optional)
-        --------
-    """
-    # TODO cache this
-    # https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_cache-python.html
-    # For now just retrieving each time as required
-    client = boto3.client('secretsmanager')
-
-    # Get secret value
-    try:
-        response = client.get_secret_value(
-            SecretId=config.email_secret_arn
-        )
-    except Exception as e:
-        raise Exception(
-            f"Failed to pull email connection profile secret from AWS SM with error: {e}")
-
-    # Parse connection profile
-    try:
-        connection_profile = EmailConnectionProfile.parse_obj(
-            json.loads(response['SecretString']))
-    except Exception as e:
-        raise Exception(
-            f"Failed to parse the email connection profile from the AWS secret.")
-
-    # Everything goes as planned, return the connection profile
-    return connection_profile
-
-
-def send_access_diff_email(
+async def send_access_diff_email(
+    email_to: str,
     difference_report: AccessReport,
     user: User,
     request_entry: RequestAccessTableItem,
     config: Config
-) -> None:
+) -> str:
     """    send_access_diff_email
         Given the difference report and user information, will send an email 
         to the configured from/to email address which describes the required 
@@ -128,48 +76,38 @@ def send_access_diff_email(
         --------
     """
     # Generate the email text
-    email_text = generate_email_text_from_diff(
+    email_content = generate_email_text_from_diff(
         difference_report=difference_report,
         user=user,
         request_entry=request_entry,
         config=config
     )
-
-    # Get the email creds
-    connection_profile = get_email_connection_profile(
-        config=config
-    )
-
-    # Setup connection
-    context = ssl.create_default_context()
-
-    # Send email
     try:
-        server = smtplib.SMTP(
-            connection_profile.smtp_server, connection_profile.port)
-        server.starttls(context=context)
-        server.login(connection_profile.email_from,
-                     connection_profile.password.get_secret_value())
-        server.sendmail(connection_profile.email_from,
-                        connection_profile.email_to, email_text)
+        session_id = await submit_send_email_job(
+            # Use service account username here
+            username=None,
+            config=config,
+            payload=EmailSendEmailPayload(
+                email_to=email_to,
+                subject=email_content.subject,
+                body=email_content.body,
+                reason="Alerting sys admins of access request."
+            )
+        )
+        return session_id
     except Exception as e:
-        raise Exception(
-            f"Failed to send email with SSL connection, port: {connection_profile.port},\
-            server: {connection_profile.smtp_server},\
-            username: {connection_profile.email_from}.\
-            Error {e}.")
-    finally:
-        server.close()
+        raise HTTPException(status_code=500,
+                            detail=f"Failed to dispatch email job. Error: {e}.")
 
 
-def send_status_change_email(
+async def send_status_change_email(
     email_address: str,
     username: str,
     original_status: RequestStatus,
     new_status: RequestStatus,
     request_entry: RequestAccessTableItem,
     config: Config
-) -> None:
+) -> str:
     """    send_status_change_email
         Sends an email address containing status and role request information to the 
         user that has requested changes.
@@ -199,34 +137,26 @@ def send_status_change_email(
         --------
     """
     # Generate the email text
-    email_text = generate_status_change_email_text(
+    email_content = generate_status_change_email_text(
         username=username,
         original_status=original_status,
         new_status=new_status,
         request_entry=request_entry
     )
 
-    # Get the email creds
-    connection_profile = get_email_connection_profile(
-        config=config
-    )
-
-    # Setup connection
-    context = ssl.create_default_context()
-
     try:
-        server = smtplib.SMTP(
-            connection_profile.smtp_server, connection_profile.port)
-        server.starttls(context=context)
-        server.login(connection_profile.email_from,
-                     connection_profile.password.get_secret_value())
-        server.sendmail(connection_profile.email_from,
-                        email_address, email_text)
+        session_id = await submit_send_email_job(
+            # Use the user's username here - they can see their address/contents
+            username=username,
+            config=config,
+            payload=EmailSendEmailPayload(
+                email_to=email_address,
+                subject=email_content.subject,
+                body=email_content.body,
+                reason="Updating user of change in access request status."
+            )
+        )
+        return session_id
     except Exception as e:
-        raise Exception(
-            f"Failed to send email with SSL connection, port: {connection_profile.port},\
-            server: {connection_profile.smtp_server},\
-            username: {connection_profile.email_from}.\
-            Error {e}.")
-    finally:
-        server.close()
+        raise HTTPException(status_code=500,
+                            detail=f"Failed to dispatch email job. Error: {e}.")

@@ -20,7 +20,6 @@ def provide_global_config() -> Config:
     return Config(
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
-        email_secret_arn="",
         access_request_table_name=test_access_request_table_name,
         user_groups_table_name=test_user_group_table_name,
 
@@ -28,7 +27,11 @@ def provide_global_config() -> Config:
         link_update_registry_connection=False,
         registry_api_endpoint="",
         username_person_link_table_name="",
-        username_person_link_table_person_index_name=""
+        username_person_link_table_person_index_name="",
+        service_account_secret_arn="",
+        job_api_endpoint="",
+        access_request_email_address="",
+
     )
 
 # for each function, override settings and clear deps at end
@@ -199,7 +202,7 @@ def test_access_denied_misformed_token() -> None:
 
 
 # Deprecated
-#def test_access_denied_expired_token() -> None:
+# def test_access_denied_expired_token() -> None:
 #    # Checks that providing expired valid denies access
 #    forms = ['Bearer 12345', 'Bearer ', 'Bearer', '12345', '']
 #    token = str(open('tests/resources/expired_token.txt', 'r').read())

@@ -1,0 +1,12 @@
+moto[dynamodb]
+
+# pytest
+pytest
+
+# pytest plugins
+pytest-dotenv
+pytest-depends
+pytest-mock
+pytest-asyncio
+
+mypy

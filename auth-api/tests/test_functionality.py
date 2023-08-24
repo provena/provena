@@ -27,15 +27,18 @@ def provide_global_config() -> Config:
     return Config(
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
-        email_secret_arn="",
         access_request_table_name=test_access_request_table_name,
         user_groups_table_name=test_user_group_table_name,
-        
+
         # disable registry lookups and set null values
         link_update_registry_connection=False,
         registry_api_endpoint="",
         username_person_link_table_name="",
-        username_person_link_table_person_index_name=""
+        username_person_link_table_person_index_name="",
+
+        service_account_secret_arn="",
+        job_api_endpoint="",
+        access_request_email_address="",
     )
 
 # for each function, override settings and clear deps at end
@@ -725,7 +728,7 @@ def test_admin_controls(aws_credentials: Any) -> None:
     # And should have updated state
     assert item_list[0].status == RequestStatus.DENIED_PENDING_DELETION
     assert item_list[0].ui_friendly_status == REQUEST_STATUS_TO_USER_EXPLANATION[RequestStatus.DENIED_PENDING_DELETION]
-    
+
     # And new note
     assert item_list[0].notes.split(',')[-1] == note_contents
 

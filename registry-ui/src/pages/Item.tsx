@@ -1,3 +1,4 @@
+import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import LaunchIcon from "@mui/icons-material/Launch";
 import LockIcon from "@mui/icons-material/Lock";
 import {
@@ -7,6 +8,8 @@ import {
     CircularProgress,
     Divider,
     Grid,
+    Icon,
+    IconButton,
     Stack,
     Tab,
     Tabs,
@@ -16,35 +19,40 @@ import {
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
+import ItemView from "components/ItemView";
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
 import {
     DATA_STORE_LINK,
     DOCUMENTATION_BASE_URL,
+    LANDING_PAGE_LINK_PROFILE,
     PROV_STORE_LINK,
     ResourceAccess,
     TabPanel,
-    VersionStatusDisplay,
+    VersioningView,
+    WorkflowVisualiserComponent,
     combineLoadStates,
     deriveResourceAccess,
     mapSubTypeToPrettyName,
+    subtypeHasVersioning,
     useAccessCheck,
     useHistoricalDrivenItem,
+    useMetadataHistorySelector,
     useQueryStringVariable,
     useRevertDialog,
     useTypedLoadedItem,
     useUntypedLoadedItem,
     useUserLinkServiceLookup,
-    useVersionSelector,
-    LANDING_PAGE_LINK_PROFILE,
+    MetadataHistory,
+    useWorkflowHelper,
 } from "react-libs";
 import { Link as RouteLink, useParams } from "react-router-dom";
+import { registryVersionIdLinkResolver } from "util/helper";
 import { nonEditEntityTypes } from "../entityLists";
 import { ItemRevertResponse } from "../shared-interfaces/RegistryAPI";
 import { ItemBase, ItemSubType } from "../shared-interfaces/RegistryModels";
 import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
-import ItemView from "components/ItemView";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -117,6 +125,17 @@ const useStyles = makeStyles((theme: Theme) =>
             marginTop: theme.spacing(2),
         },
         actionButton: {},
+        workflowView: {
+            width: "100%",
+            boxShadow: "0 0 2px 0 rgba( 31, 38, 135, 0.37 )",
+            marginLeft: theme.spacing(2),
+            paddingTop: theme.spacing(0),
+            paddingRight: theme.spacing(2),
+        },
+        itemView: {
+            flex: 1,
+            paddingTop: theme.spacing(0),
+        },
     })
 );
 
@@ -150,9 +169,10 @@ export const lockedResourceContent = (
     </Tooltip>
 );
 
-type Views = "overview" | "settings";
+type Views = "overview" | "settings" | "versioning";
 const overviewView = "overview" as Views;
 const settingsView = "settings" as Views;
+const versioningView = "versioning" as Views;
 
 const RecordView = observer((props: {}) => {
     // Use auth
@@ -268,7 +288,7 @@ const RecordView = observer((props: {}) => {
     // We can then use the driven historical item to manage this
 
     // use version selector to manage state and controls over version
-    const versionControls = useVersionSelector({
+    const versionControls = useMetadataHistorySelector({
         item: typedItem,
     });
 
@@ -298,6 +318,16 @@ const RecordView = observer((props: {}) => {
         onSuccess: onRevertFinished,
     });
 
+    // Workflow
+    // --------
+
+    // Handle expand and collapse for workflow visualiser, default to show
+    const [workflowViewExpanded, setWorkflowViewExpanded] =
+        useState<boolean>(true);
+
+    // Manage parsing and determining access for workflow visualiser
+    const workflowConfiguration = useWorkflowHelper({ item: item });
+
     // Derive write access statea
     const writeAccessGranted = !!resourceAccess?.writeMetadata;
 
@@ -321,8 +351,9 @@ const RecordView = observer((props: {}) => {
         // Must be editable type
         nonEditEntityTypes.indexOf(subtype) === -1;
 
-    const seeSettings = !!resourceAccess?.admin;
+    const seeVersioning = !!subtype && subtypeHasVersioning(subtype);
 
+    const seeSettingsAdminRequiredContent = !!resourceAccess?.admin;
     const headerName = subtype ? mapSubTypeToPrettyName(subtype) : "Entity";
 
     const isDataset = subtype === "DATASET";
@@ -435,43 +466,6 @@ const RecordView = observer((props: {}) => {
                             <Typography variant="h5">
                                 Viewing {headerName} Record
                             </Typography>
-                            <VersionStatusDisplay
-                                // Should be hidden if there is a history error or if there is no history
-                                hide={
-                                    historyError || item?.history.length === 1
-                                }
-                                locked={locked}
-                                writePermission={writeAccessGranted}
-                                historyId={versionControls.state?.historyId}
-                                isLatest={isLatest ?? true}
-                                onRequestCheckout={() => {
-                                    if (
-                                        versionControls.controls
-                                            ?.startSelection !== undefined
-                                    ) {
-                                        versionControls.controls.startSelection();
-                                    }
-                                }}
-                                onRequestRevert={() => {
-                                    if (
-                                        revertControls.startRevert !== undefined
-                                    ) {
-                                        revertControls.startRevert();
-                                    }
-                                }}
-                                onRequestReturnToLatest={() => {
-                                    if (
-                                        versionControls.controls
-                                            ?.manuallySetId !== undefined
-                                    ) {
-                                        if (latestId !== undefined) {
-                                            versionControls.controls.manuallySetId(
-                                                latestId
-                                            );
-                                        }
-                                    }
-                                }}
-                            />
                         </Stack>
                     </div>
                     <div>
@@ -610,17 +604,22 @@ const RecordView = observer((props: {}) => {
                             to={`/item/${handleId}?view=${overviewView}`}
                         ></Tab>
                         {
-                            // conditionally show tabs based on dataset and
-                            // general access permission
+                            // Versioning tab
                         }
-                        {seeSettings && (
+                        {seeVersioning && (
                             <Tab
-                                label={"Settings"}
-                                value={settingsView}
+                                label={"Versioning"}
+                                value={versioningView}
                                 component={RouteLink}
-                                to={`/item/${handleId}?view=${settingsView}`}
+                                to={`/item/${handleId}?view=${versioningView}`}
                             ></Tab>
                         )}
+                        <Tab
+                            label={"Settings"}
+                            value={settingsView}
+                            component={RouteLink}
+                            to={`/item/${handleId}?view=${settingsView}`}
+                        ></Tab>
                     </Tabs>
                 </Box>
                 <TabPanel index={overviewView} currentIndex={desiredView!}>
@@ -636,50 +635,183 @@ const RecordView = observer((props: {}) => {
                         accessErrorContent
                     ) : (
                         item && (
-                            <ItemView
-                                item={item!}
-                                isUser={isUser}
-                                locked={locked}
-                                key={
-                                    // This makes sure that the component
-                                    // REMOUNTS if the history id is changed -
-                                    // otherwise we have essentially conditional
-                                    // hooks based on item contents
-                                    item!.id +
-                                    (
-                                        versionControls.state?.historyId ??
-                                        "noversion"
-                                    ).toString()
-                                }
-                            ></ItemView>
+                            <Grid container xs={12} spacing={2}>
+                                <Grid item className={classes.itemView}>
+                                    <ItemView
+                                        item={item!}
+                                        isUser={isUser}
+                                        locked={locked}
+                                        key={
+                                            // This makes sure that the component
+                                            // REMOUNTS if the history id is changed -
+                                            // otherwise we have essentially conditional
+                                            // hooks based on item contents
+                                            item!.id +
+                                            (
+                                                versionControls.state
+                                                    ?.historyId ?? "noversion"
+                                            ).toString()
+                                        }
+                                    ></ItemView>
+                                </Grid>
+                                {workflowConfiguration.visible ? (
+                                    workflowViewExpanded ? (
+                                        <Grid
+                                            item
+                                            xs={4}
+                                            className={classes.workflowView}
+                                        >
+                                            <Box
+                                                display="flex"
+                                                alignItems="start"
+                                            >
+                                                <IconButton
+                                                    aria-label="expand overflow view"
+                                                    size="small"
+                                                    onClick={() => {
+                                                        setWorkflowViewExpanded(
+                                                            false
+                                                        );
+                                                    }}
+                                                >
+                                                    <React.Fragment>
+                                                        <KeyboardArrowRight />
+                                                        <Typography variant="body1">
+                                                            Collapse Workflow
+                                                        </Typography>
+                                                    </React.Fragment>
+                                                </IconButton>
+                                            </Box>
+                                            <WorkflowVisualiserComponent
+                                                startingSessionID={
+                                                    // Always defined as long as visible
+                                                    workflowConfiguration.startingSessionId!
+                                                }
+                                                workflowDefinition={
+                                                    // Always defined as long as visible
+                                                    workflowConfiguration.workflowDefinition!
+                                                }
+                                                adminMode={
+                                                    workflowConfiguration.adminMode
+                                                }
+                                                key={
+                                                    workflowConfiguration.startingSessionId ??
+                                                    "wfnokeyprovided"
+                                                }
+                                                direction="column"
+                                                enableExpand={false}
+                                            />
+                                        </Grid>
+                                    ) : (
+                                        <Box
+                                            display="flex"
+                                            alignItems="start"
+                                            paddingTop={2}
+                                            paddingLeft={2}
+                                        >
+                                            <IconButton
+                                                aria-label="expand overflow view"
+                                                size="small"
+                                                onClick={() => {
+                                                    setWorkflowViewExpanded(
+                                                        true
+                                                    );
+                                                }}
+                                            >
+                                                <Icon
+                                                    sx={{
+                                                        alignSelf: "start",
+                                                    }}
+                                                >
+                                                    <KeyboardArrowLeft />
+                                                </Icon>
+
+                                                <Typography variant="body1">
+                                                    <span>Expand</span>
+                                                    <span>
+                                                        <br />
+                                                        Workflow
+                                                    </span>
+                                                </Typography>
+                                            </IconButton>
+                                        </Box>
+                                    )
+                                ) : (
+                                    false
+                                )}
+                            </Grid>
                         )
                     )}
                 </TabPanel>
-                {seeSettings && (
-                    <TabPanel index={settingsView} currentIndex={desiredView!}>
+                {seeVersioning && (
+                    <TabPanel
+                        index={versioningView}
+                        currentIndex={desiredView!}
+                    >
                         {loadingItem ? (
                             <CircularProgress />
+                        ) : readAccessDeniedGlobal ? (
+                            accessDeniedGlobalContent
                         ) : fetchErrorOccurred ? (
                             fetchErrorContent
+                        ) : historyError ? (
+                            historyErrorContent
                         ) : accessErrorOccurred ? (
                             accessErrorContent
                         ) : (
-                            item &&
-                            subtype && (
-                                <Stack
-                                    spacing={2}
-                                    alignItems={"stretch"}
-                                    divider={
-                                        <Divider
-                                            orientation="horizontal"
-                                            flexItem
-                                        />
+                            item && (
+                                <VersioningView
+                                    item={item!}
+                                    isAdmin={!!resourceAccess?.admin}
+                                    showSubtypeHeaderComponent={true}
+                                    isUser={isUser}
+                                    locked={locked}
+                                    lockedContent={lockedResourceContent}
+                                    versionIdLinkResolver={
+                                        registryVersionIdLinkResolver
                                     }
-                                >
+                                />
+                            )
+                        )}
+                    </TabPanel>
+                )}
+                <TabPanel index={settingsView} currentIndex={desiredView!}>
+                    {loadingItem ? (
+                        <CircularProgress />
+                    ) : fetchErrorOccurred ? (
+                        fetchErrorContent
+                    ) : accessErrorOccurred ? (
+                        accessErrorContent
+                    ) : (
+                        item &&
+                        subtype && (
+                            <Stack
+                                spacing={2}
+                                alignItems={"stretch"}
+                                divider={
+                                    <Divider
+                                        orientation="horizontal"
+                                        flexItem
+                                    />
+                                }
+                            >
+                                <MetadataHistory
+                                    hide={historyError}
+                                    locked={locked}
+                                    writeAccessGranted={writeAccessGranted}
+                                    isLatest={isLatest ?? true}
+                                    latestId={latestId}
+                                    versionControls={versionControls}
+                                    revertControls={revertControls}
+                                />
+                                {/* For Admin only */}
+                                {seeSettingsAdminRequiredContent && (
                                     <AccessControl
                                         id={item.id}
                                         itemSubtype={subtype}
                                     />
+                                )}
+                                {seeSettingsAdminRequiredContent && (
                                     <LockSettings
                                         id={item.id}
                                         subtype={subtype}
@@ -688,11 +820,11 @@ const RecordView = observer((props: {}) => {
                                             setLocked(locked);
                                         }}
                                     />
-                                </Stack>
-                            )
-                        )}
-                    </TabPanel>
-                )}
+                                )}
+                            </Stack>
+                        )
+                    )}
+                </TabPanel>
             </div>
         </Grid>
     );

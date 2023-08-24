@@ -6,28 +6,20 @@
 */
 
 export type DatasetType = "DATA_STORE";
-export type JobType = "LODGE_MODEL_RUN_RECORD";
-export type JobStatus = "PENDING" | "IN_PROGRESS" | "SUCCEEDED" | "FAILED";
 
 export interface AssociationInfo {
   modeller_id: string;
   requesting_organisation_id?: string;
 }
-export interface BatchHistoryResponse {
+export interface ConvertModelRunsResponse {
   status: Status;
-  batch_jobs?: BatchJob[];
+  new_records?: ModelRunRecord[];
+  existing_records?: string[];
+  warnings?: string[];
 }
 export interface Status {
   success: boolean;
   details: string;
-}
-export interface BatchJob {
-  batch_id: string;
-  created_time: number;
-  jobs: string[];
-}
-export interface BulkSubmission {
-  jobs: ModelRunRecord[];
 }
 export interface ModelRunRecord {
   workflow_template_id: string;
@@ -36,7 +28,8 @@ export interface ModelRunRecord {
   annotations?: {
     [k: string]: string;
   };
-  description?: string;
+  display_name: string;
+  description: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;
@@ -48,45 +41,6 @@ export interface TemplatedDataset {
   resources?: {
     [k: string]: string;
   };
-}
-export interface BulkSubmissionResponse {
-  status: Status;
-  jobs?: LodgeModelRunJobRequest[];
-  batch_id?: string;
-}
-export interface LodgeModelRunJobRequest {
-  id: string;
-  username: string;
-  job_type?: JobType & string;
-  submitted_time: number;
-  model_run_record: ModelRunRecord;
-}
-export interface ConvertModelRunsResponse {
-  status: Status;
-  new_records?: ModelRunRecord[];
-  existing_records?: string[];
-  warnings?: string[];
-}
-export interface DescribeBatchResponse {
-  status: Status;
-  job_info?: LodgeModelRunJob[];
-  missing?: string[];
-  all_successful: boolean;
-}
-export interface LodgeModelRunJob {
-  id: string;
-  job_status: JobStatus;
-  error_info?: string;
-  job_type?: JobType & string;
-  created_time: number;
-  updated_time: number;
-  model_run_record_id?: string;
-  model_run_record: ModelRunRecord;
-  username: string;
-}
-export interface DescribeJobResponse {
-  status: Status;
-  job_info?: LodgeModelRunJob;
 }
 export interface LineageResponse {
   status: Status;
@@ -100,30 +54,28 @@ export interface ProvenanceRecordInfo {
   prov_json: string;
   record: ModelRunRecord;
 }
+export interface RegisterBatchModelRunRequest {
+  records: ModelRunRecord[];
+}
+export interface RegisterBatchModelRunResponse {
+  status: Status;
+  session_id?: string;
+}
 export interface RegisterModelRunResponse {
   status: Status;
-  record_info?: ProvenanceRecordInfo;
+  session_id?: string;
 }
 export interface StatusResponse {
   status: Status;
 }
-export interface BatchRecord {
-  username: string;
-  batch_jobs: {
-    [k: string]: BatchJob;
-  };
+export interface SyncRegisterModelRunResponse {
+  status: Status;
+  record_info: ProvenanceRecordInfo;
 }
-export interface JobLogBase {
-  id: string;
-  job_status: JobStatus;
-  error_info?: string;
-  job_type: JobType;
-  created_time: number;
-  updated_time: number;
-}
-export interface JobRequestBase {
-  id: string;
-  username: string;
-  job_type: JobType;
-  submitted_time: number;
+export interface VersionDetails {
+  commit_id?: string;
+  commit_url?: string;
+  tag_name?: string;
+  release_title?: string;
+  release_url?: string;
 }

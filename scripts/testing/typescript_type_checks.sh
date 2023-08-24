@@ -15,13 +15,13 @@ export NVM_DIR="$HOME/.nvm"
 echo "NVM version"
 nvm --version
 
-# install node 16
-echo "Installing node 16"
-nvm install 16
+# install node 20
+echo "Installing node 20"
+nvm install 20
 
 # use 16
-echo "Using node 16"
-nvm use 16
+echo "Using node 20"
+nvm use 20
 
 # Displaying npm and node version
 echo "npm version"

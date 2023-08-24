@@ -15,6 +15,7 @@ import {
     UpdateMetadataResponse,
 } from "../shared-interfaces/DataStoreAPI";
 import lodashSet from "lodash.set";
+import lodashGet from "lodash.get";
 import { LabelPathAndValue } from "pages/UpdateMetadata";
 
 // Clean up function from
@@ -495,6 +496,17 @@ export class RegisterOrModifyStore {
                     labelValuePair.value
                 );
             });
+        }
+    }
+
+    getLabelValue(labelPath: string): { status: boolean; value?: unknown } {
+        if (this.currentValue === undefined) {
+            // currentValue is undefined, return status is false.
+            return { status: false, value: undefined };
+        } else {
+            // currentValue is not undefined, get label value
+            const valueRes = lodashGet(this.currentValue, labelPath);
+            return { status: true, value: valueRes };
         }
     }
 }

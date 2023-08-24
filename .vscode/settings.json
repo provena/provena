@@ -6,7 +6,7 @@
     "editor.autoIndent": "keep",
     "editor.tabSize": 4,
     "autoDocstring.docstringFormat": "numpy",
-    "autoDocstring.customTemplatePath": "templates/docstrings/rrap_docstring.mustache",
+    //"autoDocstring.customTemplatePath": "templates/docstrings/rrap_docstring.mustache",
     // Disable linting for top level workspace
     "python.linting.enabled": false,
 }

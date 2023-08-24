@@ -189,6 +189,10 @@ def perform_link_cleanup(link_usernames: List[str], token: str) -> None:
                     error_msg=str(e)
                 ))
 
+    # removed all items - clear - don't want to remove the same elements
+    # multiple times
+    link_usernames.clear()
+    
     if len(failed_cleanups) > 0:
         display_failed_cleanups(failed_cleanups)
         assert False, "Failed to clean up all links"

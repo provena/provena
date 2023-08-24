@@ -1,6 +1,6 @@
 from prov.model import ProvDocument # type: ignore
 
-def produce_display_name(model_run_id: str) -> str:
+def produce_display_name(display_name: str) -> str:
     """    produce_display_name
         Given a model run id will produce a display name
         for use in the registry API model run item display 
@@ -8,8 +8,8 @@ def produce_display_name(model_run_id: str) -> str:
 
         Arguments
         ----------
-        model_run_id : str
-            The model run handle ID
+        display_name : str
+            Desired display name for the model run
 
         Returns
         -------
@@ -23,8 +23,8 @@ def produce_display_name(model_run_id: str) -> str:
         Examples (optional)
         --------
     """
-    # TODO improve display name generation
-    return f"Model run id: {model_run_id}"
+    
+    return display_name
 
 def produce_serialisation(document : ProvDocument) -> str:
     """    produce_serialisation

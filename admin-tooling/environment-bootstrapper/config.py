@@ -9,6 +9,7 @@ class API_NAME(str, Enum):
     registry_api = "registry-api"
     search_api = "search-api"
     identity_api = "identity-api"
+    job_api = "job-api"
 
 
 API_NAME_MAP: Dict[str, API_NAME] = {
@@ -17,7 +18,8 @@ API_NAME_MAP: Dict[str, API_NAME] = {
     "prov-api": API_NAME.prov_api,
     "registry-api": API_NAME.registry_api,
     "search-api": API_NAME.search_api,
-    "identity-api": API_NAME.identity_api
+    "identity-api": API_NAME.identity_api,
+    "job-api": API_NAME.job_api,
 }
 
 API_LOCATIONS_MAP: Dict[str, str] = {
@@ -27,6 +29,7 @@ API_LOCATIONS_MAP: Dict[str, str] = {
     "registry-api": "registry-api",
     "search-api": "search-api",
     "identity-api": "identity-service",
+    "job-api": "job-api"
 }
 
 CONFIG_ENDPOINT_POSTFIX = "/admin/config"

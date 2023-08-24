@@ -228,7 +228,11 @@ export function requestErrToMsg(err: any): string {
             } catch {}
 
             try {
-                message = err.data.detail ? err.data.detail : "";
+                message = err.data.detail[0].msg
+                    ? err.data.detail[0].msg
+                    : err.data.detail
+                    ? err.data.detail
+                    : "";
             } catch {}
         }
 
@@ -258,3 +262,16 @@ export function deriveTitleDescription<T>(
         description,
     };
 }
+
+export const createSubtypeAcronym = (subtype: string) => {
+    return subtype
+        .split("_")
+        .map((word) => word.toLowerCase()[0].toUpperCase())
+        .join(" ");
+};
+
+// Check if input string is empty
+export const isBlank = (str: string): boolean => {
+    const blankReg = new RegExp(/^\s*$/);
+    return !str || blankReg.test(str);
+};
