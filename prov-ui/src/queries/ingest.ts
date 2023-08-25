@@ -1,46 +1,26 @@
 import FileDownload from "js-file-download";
-import { PROV_API_ENDPOINTS, subtypeActionToEndpoint } from "react-libs";
-import { requests } from "react-libs";
-// import FormData from "form-data";
 import {
-    BatchHistoryResponse,
-    BulkSubmissionResponse,
+    JOB_API_ENDPOINTS,
+    PROV_API_ENDPOINTS,
+    requestErrToMsg,
+    requests,
+    subtypeActionToEndpoint,
+} from "react-libs";
+// import FormData from "form-data";
+import { PaginationKey } from "react-libs";
+import {
+    ListByBatchRequest,
+    ListByBatchResponse,
+} from "react-libs/shared-interfaces/AsyncJobAPI";
+import { RegisterBatchModelRunResponse } from "react-libs/shared-interfaces/ProvenanceAPI";
+import {
     ConvertModelRunsResponse,
-    DescribeBatchResponse,
     ModelRunRecord,
-    StatusResponse,
 } from "../shared-interfaces/ProvenanceAPI";
 import {
     ModelRunWorkflowTemplateListResponse,
     SubtypeListRequest,
 } from "../shared-interfaces/RegistryAPI";
-
-function requestErrToMsg(err: any): string {
-    console.log("Decoding " + err);
-    try {
-        let jsonStatus = err as StatusResponse;
-        let details = jsonStatus.status.details;
-        if (!!details) {
-            return details;
-        } else {
-            throw new Error("Failed to parse repsonse as StatusResponse.");
-        }
-    } catch {
-        var statusCode = "Unknown";
-        var message = "Unknown - contact admin and check console";
-        try {
-            statusCode = err.status;
-        } catch {}
-
-        try {
-            message = err.data.detail ? err.data.detail : "";
-        } catch {}
-
-        const msg = `Status code ${statusCode}. Error message: ${message}`;
-        console.log("Error message: " + msg);
-        return msg;
-    }
-}
 
 export const getCSVTemplate = (workflow_template_id: string) => {
     return requests
@@ -89,9 +69,14 @@ export const uploadCSVTemplate = (csvFile: File) => {
 
 export const submitModelRunRecords = (records: Array<ModelRunRecord>) => {
     return requests
-        .post(PROV_API_ENDPOINTS.SUBMIT_MODEL_RUNS, { jobs: records }, {}, true)
+        .post(
+            PROV_API_ENDPOINTS.SUBMIT_MODEL_RUNS,
+            { records: records },
+            {},
+            true
+        )
         .then((res) => {
-            const resJson = res as BulkSubmissionResponse;
+            const resJson = res as RegisterBatchModelRunResponse;
             if (!resJson.status.success) {
                 return Promise.reject(res);
             } else {
@@ -103,37 +88,6 @@ export const submitModelRunRecords = (records: Array<ModelRunRecord>) => {
         });
 };
 
-export const describeBatch = (batchId: string) => {
-    return requests
-        .get(PROV_API_ENDPOINTS.DESCRIBE_BATCH, { batch_id: batchId })
-        .then((res) => {
-            const resJson = res as DescribeBatchResponse;
-            if (!resJson.status.success) {
-                return Promise.reject(res);
-            } else {
-                return resJson;
-            }
-        })
-        .catch((err) => {
-            return Promise.reject(requestErrToMsg(err));
-        });
-};
-
-export const getBatchJobHistory = () => {
-    return requests
-        .get(PROV_API_ENDPOINTS.BATCH_HISTORY, {})
-        .then((res) => {
-            const resJson = res as BatchHistoryResponse;
-            if (!resJson.status.success) {
-                return Promise.reject(res);
-            } else {
-                return resJson;
-            }
-        })
-        .catch((err) => {
-            return Promise.reject(requestErrToMsg(err));
-        });
-};
 
 export const getWorkflowTemplateList = () => {
     const payload: SubtypeListRequest = {};

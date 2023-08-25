@@ -1,9 +1,11 @@
+import React from "react";
 import { observer } from "mobx-react-lite";
 import { ChangeEvent, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
 import {
+    Alert,
     Button,
     CircularProgress,
     Divider,
@@ -17,12 +19,13 @@ import makeStyles from "@mui/styles/makeStyles";
 import { submitModelRunRecords, uploadCSVTemplate } from "../queries/ingest";
 
 import {
-    BulkSubmissionResponse,
     ConvertModelRunsResponse,
-    LodgeModelRunJobRequest,
     ModelRunRecord,
 } from "../shared-interfaces/ProvenanceAPI";
 import {
+    BatchDetailedView,
+    JOB_LIST_ROUTE,
+    SingleJobDetailsComponent,
     useUserLinkEnforcer,
     userLinkEnforcerDocumentationLink,
     userLinkEnforcerProfileLink,
@@ -30,9 +33,12 @@ import {
 
 import RegenerateCSV from "../components/RegenerateCSV";
 
-import BatchDetailedView from "../components/BatchDetailedView";
-
-const useStyles = makeStyles((theme: Theme) => createStyles({}));
+import { RegisterBatchModelRunResponse } from "react-libs/shared-interfaces/ProvenanceAPI";
+import {
+    JobStatusTable,
+    ProvLodgeBatchSubmitResult,
+} from "react-libs/shared-interfaces/AsyncJobAPI";
+import { Link } from "react-router-dom";
 
 const overrideMissingLinkMessage = (
     <p>
@@ -100,6 +106,11 @@ const UploadTemplateFile = observer((props: SelectTemplateFileProps) => {
             <Typography variant="h6">
                 Begin by uploading a CSV template file
             </Typography>
+            <Alert style={{ width: "100%" }} severity="info">
+                If you have already registered your model runs, you can review
+                the status of your submission tasks by clicking{" "}
+                <Link to={JOB_LIST_ROUTE}>here</Link>.
+            </Alert>
             <Stack
                 direction="row"
                 spacing={2}
@@ -183,7 +194,7 @@ const SubmitTemplateFile = observer((props: SubmitTemplateFileProps) => {
     }
 
     if (isError) {
-        return <p>An error occured, error: {error}.</p>;
+        return <p>An error occurred, error: {error}.</p>;
     }
 
     // Awaiting upload
@@ -219,15 +230,44 @@ const SubmitTemplateFile = observer((props: SubmitTemplateFileProps) => {
     );
 });
 
+interface MonitorBatchSubmissionComponentProps {
+    setBatchId: (id: string) => void;
+    batchJobSessionId: string;
+}
+const MonitorBatchSubmissionComponent = (
+    props: MonitorBatchSubmissionComponentProps
+) => {
+    /**
+    Component: MonitorBatchSubmissionComponent
+
+    Renders a non compact status display of a job. 
+
+    Monitors for a successful job to pull the batch id from the job result.    
+    */
+    const onJobSuccess = (data: JobStatusTable) => {
+        const result = data.result as unknown as ProvLodgeBatchSubmitResult;
+        props.setBatchId(result.batch_id);
+    };
+
+    return (
+        <SingleJobDetailsComponent
+            refetchOnError={true}
+            sessionId={props.batchJobSessionId}
+            showIO={false}
+            key={props.batchJobSessionId}
+            onJobSuccess={onJobSuccess}
+            adminMode={false}
+        ></SingleJobDetailsComponent>
+    );
+};
+
 interface LodgeJobsProps {
     submitted: boolean;
     queryId: string;
     setSubmitted: (submitted: boolean) => void;
     records: Array<ModelRunRecord>;
-    jobRequests?: Array<LodgeModelRunJobRequest>;
-    setJobRequests: (requests?: Array<LodgeModelRunJobRequest>) => void;
-    batchId?: string;
-    setBatchId: (id: string) => void;
+    batchJobSessionId?: string;
+    setBatchJobSessionId: (id: string) => void;
 }
 const LodgeJobs = observer((props: LodgeJobsProps) => {
     /**
@@ -241,9 +281,8 @@ const LodgeJobs = observer((props: LodgeJobsProps) => {
         enabled: props.submitted,
         onSuccess(data) {
             // When the data is received, set the prop
-            const response = data as BulkSubmissionResponse;
-            props.setJobRequests(response.jobs!);
-            props.setBatchId(response.batch_id!);
+            const response = data as RegisterBatchModelRunResponse;
+            props.setBatchJobSessionId(response.session_id!);
         },
     });
 
@@ -261,8 +300,8 @@ const LodgeJobs = observer((props: LodgeJobsProps) => {
     if (isSuccess) {
         return (
             <Typography variant="subtitle1">
-                Successfully lodged model run records! Batch id:{" "}
-                <b>{props.batchId}</b>.
+                Successfully initiated batch task. You can monitor the task
+                below.
             </Typography>
         );
     }
@@ -270,8 +309,8 @@ const LodgeJobs = observer((props: LodgeJobsProps) => {
     if (isError) {
         return (
             <p>
-                An error occured while lodging model run records, error: {error}
-                .
+                An error occurred while lodging model run records, error:{" "}
+                {error}.
             </p>
         );
     }
@@ -326,6 +365,37 @@ const LodgeJobs = observer((props: LodgeJobsProps) => {
     );
 });
 
+export interface SingleJobFocusComponentProps {
+    sessionId: string;
+    onExit: () => void;
+    backMessage?: string;
+}
+export const SingleJobFocusComponent = (
+    props: SingleJobFocusComponentProps
+) => {
+    /**
+    Component: SingleJobFocusComponent
+
+    Controls and focussed on single standalone session 
+    */
+    return (
+        <Stack spacing={2}>
+            <Stack direction="row" justifyContent={"flex-start"}>
+                <Button variant="contained" onClick={props.onExit}>
+                    {props.backMessage ?? "Back"}
+                </Button>
+            </Stack>
+            <SingleJobDetailsComponent
+                refetchOnError={false}
+                sessionId={props.sessionId}
+                showIO={true}
+                key={props.sessionId}
+                adminMode={false}
+            ></SingleJobDetailsComponent>
+        </Stack>
+    );
+};
+
 interface MonitorJobsProps {
     batchId: string;
 }
@@ -336,17 +406,41 @@ const MonitorJobs = observer((props: MonitorJobsProps) => {
      *
      */
 
+    const [focusedSessionId, setFocusedSessionId] = useState<
+        string | undefined
+    >(undefined);
+
+    // Reset this control state
+    const reset = () => {
+        setFocusedSessionId(undefined);
+    };
+
     // Render a data grid with the jobs and status
     return (
         <Stack spacing={2}>
             <Typography variant="h6">
                 Your jobs were lodged successfully, you can explore them below.
             </Typography>
-            <Typography variant="subtitle2">
-                It may take some time for the records to appear below. Try using
-                the refresh button after a few seconds.
-            </Typography>
-            <BatchDetailedView batchId={props.batchId}></BatchDetailedView>
+            {focusedSessionId === undefined ? (
+                <React.Fragment>
+                    <Typography variant="subtitle2">
+                        It may take some time for the records to appear below.
+                        Try using the refresh button after a few seconds.
+                    </Typography>
+                    <BatchDetailedView
+                        batchId={props.batchId}
+                        onJobSelected={(id) => {
+                            setFocusedSessionId(id);
+                        }}
+                        adminMode={false}
+                    ></BatchDetailedView>
+                </React.Fragment>
+            ) : (
+                <SingleJobFocusComponent
+                    onExit={reset}
+                    sessionId={focusedSessionId}
+                />
+            )}
         </Stack>
     );
 });
@@ -365,12 +459,12 @@ const LodgeTemplate = observer((props: LodgeTemplateProps) => {
     const [modelRunRecords, setModelRunRecords] = useState<
         Array<ModelRunRecord> | undefined
     >(undefined);
-    const [jobRequests, setJobRequests] = useState<
-        Array<LodgeModelRunJobRequest> | undefined
-    >(undefined);
     const [uploaded, setUploaded] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [batchId, setBatchId] = useState<string | undefined>(undefined);
+    const [batchJobSessionId, setBatchJobSessionId] = useState<
+        string | undefined
+    >(undefined);
     const [generateDownloaded, setGenerateDownloaded] =
         useState<boolean>(false);
 
@@ -379,7 +473,7 @@ const LodgeTemplate = observer((props: LodgeTemplateProps) => {
         setUploadedFile(undefined);
         setQueryId(undefined);
         setModelRunRecords(undefined);
-        setJobRequests(undefined);
+        setBatchJobSessionId(undefined);
         setUploaded(false);
         setSubmitted(false);
         setBatchId(undefined);
@@ -401,6 +495,9 @@ const LodgeTemplate = observer((props: LodgeTemplateProps) => {
     }
     return (
         <Stack spacing={2} divider={<Divider flexItem />}>
+            {
+                // Upload file
+            }
             <UploadTemplateFile
                 file={uploadedFile}
                 setFileId={setQueryId}
@@ -412,6 +509,9 @@ const LodgeTemplate = observer((props: LodgeTemplateProps) => {
                 }}
                 onReset={clearAll}
             />
+            {
+                // Submit file
+            }
             {uploadedFile !== undefined && (
                 <SubmitTemplateFile
                     file={uploadedFile}
@@ -422,18 +522,33 @@ const LodgeTemplate = observer((props: LodgeTemplateProps) => {
                     setNewRecords={setModelRunRecords}
                 />
             )}
+            {
+                // Lodge records
+            }
             {modelRunRecords !== undefined && (
                 <LodgeJobs
                     records={modelRunRecords}
-                    jobRequests={jobRequests}
-                    setJobRequests={setJobRequests}
                     setSubmitted={setSubmitted}
                     submitted={submitted}
                     queryId={queryId ?? "NA"}
-                    batchId={batchId}
-                    setBatchId={setBatchId}
+                    // These are the actual controlled state in this step
+                    batchJobSessionId={batchJobSessionId}
+                    setBatchJobSessionId={setBatchJobSessionId}
                 />
             )}
+            {
+                // Monitor the batch submission job
+            }
+            {batchJobSessionId !== undefined && (
+                <MonitorBatchSubmissionComponent
+                    setBatchId={setBatchId}
+                    // These are the actual controlled state in this step
+                    batchJobSessionId={batchJobSessionId!}
+                />
+            )}
+            {
+                // Monitor the collection of jobs
+            }
             {batchId !== undefined && <MonitorJobs batchId={batchId} />}
             {batchId !== undefined && (
                 <RegenerateCSV

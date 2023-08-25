@@ -1,0 +1,20 @@
+fastapi==0.88.0
+uvicorn
+requests
+python-jose
+python-multipart
+setuptools
+boto3
+jsonschema
+httpx
+mangum
+aws-secretsmanager-caching
+pydantic==1.*
+cachetools
+aiocache
+types-cachetools
+python-dotenv
+
+# prov-db-connector (can't use original due to bug - this is forked version)
+git+https://github.com/gbrrestoration/prov-db-connector#egg=prov-db-connector
+

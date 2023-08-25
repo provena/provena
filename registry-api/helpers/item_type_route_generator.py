@@ -5,9 +5,10 @@ from SharedInterfaces.RegistryAPI import *
 from SharedInterfaces.RegistryModels import *
 from helpers.action_helpers import *
 from helpers.lock_helpers import *
-from typing import TypeVar, Type, Optional
+from typing import TypeVar, Type, Optional, cast
 from config import Config, get_settings
 from RegistrySharedFunctionality.RegistryRouteActions import *
+from helpers.workflow_helpers import *
 
 
 SeedResponseTypeVar = TypeVar('SeedResponseTypeVar', bound=GenericSeedResponse)
@@ -38,9 +39,9 @@ def generate_router(
         desired_subtype: ItemSubType,
         item_model_type: Type[ItemModelTypeVar],
         item_domain_info_type: Type[ItemDomainInfoTypeVar],
-        seed_response_type: Type[SeedResponseTypeVar],
+        seed_response_type: Optional[Type[SeedResponseTypeVar]],
         fetch_response_type: Type[FetchResponseTypeVar],
-        create_response_type: Type[CreateResponseTypeVar],
+        create_response_type: Optional[Type[CreateResponseTypeVar]],
         list_response_type: Type[ListResponseTypeVar],
         ui_schema: Optional[Dict[str, Any]],
         json_schema_override: Optional[Dict[str, Any]],
@@ -48,6 +49,7 @@ def generate_router(
         available_roles: Roles,
         default_roles: Roles,
         enforce_username_person_link: bool,
+        provenance_enabled_versioning: bool,
         # if this entity type should only be usable via specific keycloak roles,
         # they can be added here - this is an ANY constraint
         limited_access_roles: Optional[Dict[RouteActions, Roles]] = None,
@@ -87,7 +89,7 @@ def generate_router(
                     detail=f"You are not authorised to take this action."
                 )
 
-    def enforce_user_link_check(user: User, config: Config) -> None:
+    def enforce_user_link_check(action_enforcement: bool, type_enforcement: bool, user: User, config: Config, force_required: bool = False) -> Optional[str]:
         """
 
         Queries auth API link service for the username.
@@ -103,14 +105,28 @@ def generate_router(
         Raises:
             HTTPException: Various exceptions, 400 if missing link, 500 for comms errors
         """
-        possible_link = get_user_link(user=user, config=config)
 
-        # abort if no link
-        if possible_link is None:
-            raise HTTPException(
-                status_code=400,
-                detail=f"In order to perform this operation you must link your User account to a Person in the registry."
-            )
+        # route and subtype level enforcement (or forced bypass)
+        if (action_enforcement and type_enforcement) or force_required:
+            if config.enforce_user_links:
+                possible_link = get_user_link(user=user, config=config)
+
+                # abort if no link
+                if possible_link is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"In order to perform this operation you must link your User account to a Person in the registry."
+                    )
+                return possible_link
+            else:
+                if not config.test_mode:
+                    raise Exception(
+                        f"Not sure how to handle required username link while link service lookup is disabled. Need to be in test mode.")
+
+                # mocked linked person id
+                return "1234"
+        else:
+            return None
 
     def locked_check(
         id: str,
@@ -199,11 +215,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.FETCH].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.FETCH].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # this method ensures that the user has an appropriate fetch role
             response: GenericFetchResponse = fetch_helper(
@@ -268,11 +286,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.LIST].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LIST].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # fixed subtype filter - pass in other parameters
             filter_by = FilterOptions(
@@ -314,6 +334,8 @@ def generate_router(
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
 
     if action in desired_actions:
+        assert seed_response_type, f"Seed response type must be supplied for action {action}. Item category {desired_category} and subtype {desired_subtype}."
+
         @router.api_route(methods=[route_config.method],
                           path=route_config.path,
                           response_model=seed_response_type,
@@ -352,11 +374,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.SEED].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.SEED].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return seed_response_type(
                 ** (await seed_item_helper(
@@ -364,17 +388,113 @@ def generate_router(
                     subtype=desired_subtype,
                     default_roles=default_roles,
                     config=config,
-                    user=protected_roles.user
+                    user=protected_roles.user,
+                    versioning_enabled=provenance_enabled_versioning
                 )).dict()
+            )
+
+    action = RouteActions.VERSION
+    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+
+    if action in desired_actions:
+        @router.api_route(methods=[route_config.method],
+                          path=route_config.path,
+                          response_model=VersionResponse,
+                          operation_id=route_config.op_id + library_postfix,
+                          include_in_schema=not route_config.hide
+                          )
+        async def version(
+            version_request: VersionRequest,
+            config: Config = Depends(get_settings),
+            protected_roles: ProtectedRole = Depends(
+                get_correct_dependency(route_config.access_level))
+        ) -> VersionResponse:
+            """
+            Runs a version versioning operation.
+
+            This is only enabled on items in the ENTITY category.
+
+            Versioning an item creates a new item, with a new ID, sharing the same domain info as the specified item.
+
+            The version number is incremented, 
+            """
+
+            # Ensure prov versioning is enabled!
+            if not provenance_enabled_versioning:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Version endpoint active without provenance versioning enabled. Error."
+                )
+
+            version_spinoff = not config.test_mode
+
+            # permission check
+            limited_access_role_check(
+                protected_roles=protected_roles,
+                route_action=RouteActions.VERSION,
+                config=config
+            )
+
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.VERSION].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                force_required=version_spinoff,
+                user=protected_roles.user,
+                config=config
+            )
+
+            if version_spinoff and linked_person_id is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"You cannot perform version without having a linked person in the registry."
+                )
+
+            version_info = await version_helper(
+                id=version_request.id,
+                reason=version_request.reason,
+                item_model_type=item_model_type,
+                domain_info_type=item_domain_info_type,
+                correct_category=desired_category,
+                correct_subtype=desired_subtype,
+                user=protected_roles.user,
+                available_roles=available_roles,
+                default_roles=default_roles,
+                service_proxy=False,
+                config=config
+            )
+
+            session_id = "1234"
+            if version_spinoff:
+                assert linked_person_id
+                assert version_info.new_item
+
+                session_id = await spinoff_version_job(
+                    username=protected_roles.user.username,
+                    new_item=cast(ItemBase, version_info.new_item),
+                    version_request=version_request,
+                    version_number=version_info.version_number,
+                    from_id=version_request.id,
+                    to_id=version_info.new_handle_id,
+                    linked_person_id=linked_person_id,
+                    item_subtype=desired_subtype,
+                    config=config
+                )
+
+            return VersionResponse(
+                new_version_id=version_info.new_handle_id,
+                version_job_session_id=session_id
             )
 
     action = RouteActions.UPDATE
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
 
     if action in desired_actions:
+        assert create_response_type, f"Create response type must be supplied for action {action}. Item category {desired_category} and subtype {desired_subtype}."
+
         @router.api_route(methods=[route_config.method],
                           path=route_config.path,
-                          response_model=StatusResponse,
+                          response_model=UpdateResponse,
                           operation_id=route_config.op_id + library_postfix,
                           include_in_schema=not route_config.hide
                           )
@@ -385,7 +505,7 @@ def generate_router(
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
                 get_correct_dependency(route_config.access_level))
-        ) -> StatusResponse:
+        ) -> UpdateResponse:
             """    update_item
                 PUT method to apply an update to an existing item. The existing
                 item can either be a complete object/item or a seed item of
@@ -426,11 +546,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.UPDATE].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.UPDATE].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # no specific access checks at an item role level are required for
             # creating new things
@@ -444,9 +566,7 @@ def generate_router(
                 )
 
                 if not validate_resp.status.success:
-                    return create_response_type(
-                        status=validate_resp.status
-                    )
+                    return UpdateResponse(status=validate_resp.status)
 
             # check locked
             locked_check(
@@ -454,17 +574,75 @@ def generate_router(
                 config=config
             )
 
-            return update_item_helper(
+            # fetch the item
+            fetch_response = retrieve_and_type_item(
                 id=id,
-                reason=reason,
-                replacement_domain_info=replacement_domain_info,
                 item_model_type=item_model_type,
                 correct_category=desired_category,
                 correct_subtype=desired_subtype,
-                user=protected_roles.user,
-                available_roles=available_roles,
                 config=config
             )
+
+            # Something went wrong
+            if fetch_response.status_response is not None:
+                return UpdateResponse(status=fetch_response.status_response.status)
+
+            record = fetch_response.record
+            record_type = fetch_response.record_type
+            assert record
+            assert record_type
+
+            # This is a check for if we want the creation spinoff workflow
+            creation_spinoff = provenance_enabled_versioning and\
+                record_type == RecordType.SEED_ITEM and\
+                not config.test_mode
+
+            if creation_spinoff and linked_person_id is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"You cannot update a seed item to a complete item without having a linked person."
+                )
+
+            new_item = update_item_helper(
+                id=id,
+                record=record,
+                record_type=record_type,
+                reason=reason,
+                replacement_domain_info=replacement_domain_info,
+                item_model_type=item_model_type,
+                user=protected_roles.user,
+                available_roles=available_roles,
+                config=config,
+                service_proxy=False
+            )
+
+            # Customised response postfix
+            if record_type == RecordType.SEED_ITEM:
+                postfix = "Seeded item was updated to a complete item."
+            if record_type == RecordType.COMPLETE_ITEM:
+                postfix = "Complete item had it's contents updated."
+
+            response = UpdateResponse(
+                status=Status(
+                    success=True,
+                    details="Successfully applied update. " + postfix
+                )
+            )
+
+            # Under the right conditions, spin off the creation job
+            if creation_spinoff:
+                assert linked_person_id
+                session_id = await spinoff_creation_job(
+                    linked_person_id=linked_person_id,
+                    created_item=new_item,
+                    username=protected_roles.user.username,
+                    config=config
+                )
+
+                # update session ID in response
+                response.register_create_activity_session_id = session_id
+
+            return response
 
     action = RouteActions.REVERT
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
@@ -504,11 +682,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.REVERT].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.REVERT].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # check locked
             locked_check(
@@ -533,6 +713,8 @@ def generate_router(
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
 
     if action in desired_actions:
+        assert create_response_type, f"Create response type must be supplied for action {action}. Item category {desired_category} and subtype {desired_subtype}."
+
         @router.api_route(methods=[route_config.method],
                           path=route_config.path,
                           response_model=create_response_type,
@@ -572,6 +754,8 @@ def generate_router(
                 Examples (optional)
                 --------
             """
+            # This is a check for if we want the creation spinoff workflow
+            creation_spinoff = provenance_enabled_versioning and not config.test_mode
 
             # permission check
             limited_access_role_check(
@@ -580,15 +764,20 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.CREATE].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.CREATE].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                # Will throw an error if unlinked and versioning enabled
+                force_required=creation_spinoff,
+                user=protected_roles.user,
+                config=config
+            )
 
             # no specific access checks at an item role level are required for
             # creating new things
 
+            # Validation
             if config.perform_validation:
                 validate_resp = validate_item_helper(
                     item=item_domain_info,
@@ -603,6 +792,7 @@ def generate_router(
                         status=validate_resp.status
                     )
 
+            # creation
             obj = await create_item_helper(
                 item_domain_info=item_domain_info,
                 item_model_type=item_model_type,
@@ -611,9 +801,24 @@ def generate_router(
                 default_roles=default_roles,
                 user=protected_roles.user,
                 config=config,
+                versioning_enabled=provenance_enabled_versioning
             )
             dict_ver = obj.dict()
             response = create_response_type.parse_obj(dict_ver)
+
+            # Under the right conditions, spin off the creation job
+            if creation_spinoff:
+                assert linked_person_id
+                assert response.created_item
+                session_id = await spinoff_creation_job(
+                    linked_person_id=linked_person_id,
+                    created_item=cast(ItemBase, response.created_item),
+                    username=protected_roles.user.username,
+                    config=config
+                )
+                # update session ID in response
+                response.register_create_activity_session_id = session_id
+
             return response
 
     action = RouteActions.SCHEMA
@@ -666,11 +871,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.SCHEMA].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.SCHEMA].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             if json_schema_override:
                 return JsonSchemaResponse(
@@ -734,11 +941,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.UI_SCHEMA].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.UI_SCHEMA].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return UiSchemaResponse(
                 status=Status(
@@ -792,11 +1001,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.VALIDATE].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.VALIDATE].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return validate_item_helper(
                 item=item,
@@ -830,11 +1041,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_EVALUATE].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_EVALUATE].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # anyone can evaluate their access against a resource - even if limited
             # access roles apply
@@ -871,11 +1084,14 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_CONFIGURATION_GET].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[
+                    RouteActions.AUTH_CONFIGURATION_GET].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # anyone can seek the authorisation configuration for a resource
             # regardless of limited access roles
@@ -916,11 +1132,14 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_CONFIGURATION_PUT].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[
+                    RouteActions.AUTH_CONFIGURATION_PUT].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # anyone can seek the authorisation configuration for a resource
             # regardless of limited access roles
@@ -963,11 +1182,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_ROLES].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_ROLES].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return AuthRolesResponse(
                 roles=list(
@@ -1021,11 +1242,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCK].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCK].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # fetches lock config, checks perms, updates, pushes
             lock_resource_route_helper(
@@ -1092,11 +1315,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.UNLOCK].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.UNLOCK].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # fetches lock config, checks perms, updates, pushes
             unlock_resource_route_helper(
@@ -1164,11 +1389,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCK_HISTORY].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCK_HISTORY].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return lock_history_route_helper(
                 id=id,
@@ -1219,11 +1446,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCKED].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCKED].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return lock_status_route_helper(
                 id=id,
@@ -1281,11 +1510,13 @@ def generate_router(
                 config=config
             )
 
-            # possible link enforcement
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.DELETE].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.DELETE].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # locked check
             locked_check(
@@ -1386,11 +1617,13 @@ def generate_router(
             user = protected_roles.user
             user.username = username
 
-            # possible link enforcement (post proxy username update)
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_FETCH].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_FETCH].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             # this method ensures that the user has an appropriate fetch role
             response: GenericFetchResponse = fetch_helper(
@@ -1412,6 +1645,8 @@ def generate_router(
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
 
     if action in desired_actions:
+        assert seed_response_type, f"Seed response type must be supplied for {action} route. Item category is {desired_category} and subtype is {desired_subtype}"
+
         @router.api_route(methods=[route_config.method],
                           path=route_config.path,
                           response_model=seed_response_type,
@@ -1455,11 +1690,13 @@ def generate_router(
             if proxy_username is not None:
                 protected_roles.user.username = proxy_username
 
-            # possible link enforcement (post proxy username update)
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_SEED].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_SEED].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return seed_response_type(
                 ** (await seed_item_helper(
@@ -1467,7 +1704,8 @@ def generate_router(
                     subtype=desired_subtype,
                     default_roles=default_roles,
                     config=config,
-                    user=protected_roles.user
+                    user=protected_roles.user,
+                    versioning_enabled=provenance_enabled_versioning
                 )).dict()
             )
 
@@ -1475,9 +1713,11 @@ def generate_router(
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
 
     if action in desired_actions:
+        assert create_response_type, f"Create response type must be supplied for {action} route. Item category is {desired_category} and subtype is {desired_subtype}"
+
         @router.api_route(methods=[route_config.method],
                           path=route_config.path,
-                          response_model=StatusResponse,
+                          response_model=UpdateResponse,
                           operation_id=route_config.op_id + library_postfix,
                           include_in_schema=not route_config.hide
                           )
@@ -1486,18 +1726,21 @@ def generate_router(
             replacement_domain_info: item_domain_info_type,  # type: ignore
             reason: Optional[str] = None,
             proxy_username: Optional[str] = None,
+            bypass_item_lock: bool = False,
+            exclude_history_update: bool = False,
+            manual_grant: bool = False,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
                 get_correct_dependency(route_config.access_level))
-        ) -> StatusResponse:
+        ) -> UpdateResponse:
             """    update_item
-                PUT method to apply an update to an existing item. The 
-                existing item can either be a complete object/item or
-                a seed item of matching category and subtype.
+                PUT method to apply an update to an existing item. The existing
+                item can either be a complete object/item or a seed item of
+                matching category and subtype.
 
-                To replace an item, you provide the id of the item as
-                a query string alongside the domain information object
-                that you want to update on that item. 
+                To replace an item, you provide the id of the item as a query
+                string alongside the domain information object that you want to
+                update on that item. 
 
                 Arguments
                 ----------
@@ -1505,6 +1748,24 @@ def generate_router(
                     The id of the object in the registry. (Handle)
                 replacement_domain_info : item_domain_info_type
                     The new domain specific information for that record.
+                exclude_history_update: bool , optional
+                    For excluding the history update. This should be true iff
+                    informaiton being updated is not user editable information
+                    and therefore should not constitue a new (loose) "version"
+                    for the user to view. This is set to true if release
+                    information is updating during a release process.
+                bypass_item_lock: bool
+                    bypass item lock field is to enable bypass for actions
+                    performed by other APIs. Specifically, to enable the
+                    updating of release information in the domain info on a
+                    resource which is locked. This is because users should be
+                    able to request a dataset for release when it is locked.
+                manual_grant: bool
+                    If the authorised client (i.e. the data store API / prov
+                    store API) has additional info about the user/context which
+                    means the normal auth checks should be bypassed, this flag
+                    can be used
+
 
                 Returns
                 -------
@@ -1525,6 +1786,19 @@ def generate_router(
                 config=config
             )
 
+            # overwrite the username if provided - this ensures that the proxied
+            # user permissions are checked
+            if proxy_username is not None:
+                protected_roles.user.username = proxy_username
+
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_UPDATE].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
+
             # no specific access checks at an item role level are required for
             # creating new things
             if config.perform_validation:
@@ -1537,39 +1811,86 @@ def generate_router(
                 )
 
                 if not validate_resp.status.success:
-                    return create_response_type(
-                        status=validate_resp.status
-                    )
+                    return UpdateResponse(status=validate_resp.status)
 
             # locked check
-            locked_check(
+            if not bypass_item_lock:
+                locked_check(
+                    id=id,
+                    config=config
+                )
+
+            # fetch the item
+            fetch_response = retrieve_and_type_item(
                 id=id,
-                config=config
-            )
-
-            # overwrite the username if provided - this ensures that the proxied
-            # user permissions are checked
-            if proxy_username is not None:
-                protected_roles.user.username = proxy_username
-
-            # possible link enforcement (post proxy username update)
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_UPDATE].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
-
-            return update_item_helper(
-                id=id,
-                replacement_domain_info=replacement_domain_info,
-                reason=reason,
                 item_model_type=item_model_type,
                 correct_category=desired_category,
                 correct_subtype=desired_subtype,
+                config=config
+            )
+
+            # Something went wrong
+            if fetch_response.status_response is not None:
+                return UpdateResponse(status=fetch_response.status_response.status)
+
+            record = fetch_response.record
+            record_type = fetch_response.record_type
+            assert record
+            assert record_type
+
+            # This is a check for if we want the creation spinoff workflow
+            creation_spinoff = provenance_enabled_versioning and\
+                record_type == RecordType.SEED_ITEM and\
+                not config.test_mode
+
+            if creation_spinoff and linked_person_id is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"You cannot update a seed item to a complete item without having a linked person."
+                )
+
+            new_item = update_item_helper(
+                id=id,
+                record=record,
+                record_type=record_type,
+                reason=reason,
+                replacement_domain_info=replacement_domain_info,
+                item_model_type=item_model_type,
                 user=protected_roles.user,
                 available_roles=available_roles,
                 config=config,
-                service_proxy=True
+                service_proxy=True,
+                exclude_history_update=exclude_history_update,
+                manual_grant=manual_grant
             )
+
+            # Customised response postfix
+            if record_type == RecordType.SEED_ITEM:
+                postfix = "Seeded item was updated to a complete item."
+            if record_type == RecordType.COMPLETE_ITEM:
+                postfix = "Complete item had it's contents updated."
+
+            response = UpdateResponse(
+                status=Status(
+                    success=True,
+                    details="Successfully applied update. " + postfix
+                )
+            )
+
+            # Under the right conditions, spin off the creation job
+            if creation_spinoff:
+                assert linked_person_id
+                session_id = await spinoff_creation_job(
+                    linked_person_id=linked_person_id,
+                    created_item=new_item,
+                    username=protected_roles.user.username,
+                    config=config
+                )
+
+                # update session ID in response
+                response.register_create_activity_session_id = session_id
+
+            return response
 
     action = RouteActions.PROXY_REVERT
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
@@ -1628,11 +1949,13 @@ def generate_router(
             if proxy_username is not None:
                 protected_roles.user.username = proxy_username
 
-            # possible link enforcement (post proxy username update)
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_REVERT].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_REVERT].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
 
             return revert_item_helper(
                 id=revert_request.id,
@@ -1648,10 +1971,106 @@ def generate_router(
                 service_proxy=True
             )
 
+    action = RouteActions.PROXY_VERSION
+    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+
+    if action in desired_actions:
+        @router.api_route(methods=[route_config.method],
+                          path=route_config.path,
+                          response_model=VersionResponse,
+                          operation_id=route_config.op_id + library_postfix,
+                          include_in_schema=not route_config.hide
+                          )
+        async def proxy_version(
+            version_request: ProxyVersionRequest,
+            config: Config = Depends(get_settings),
+            protected_roles: ProtectedRole = Depends(
+                get_correct_dependency(route_config.access_level))
+        ) -> VersionResponse:
+            """
+            Runs a version versioning operation in proxy mode. 
+
+            This can only be accessed by the special set of service accounts, and it makes user access requests on behalf of the specified username.
+
+            All subsequent jobs are owned by the specified proxy username.
+            """
+
+            # Ensure prov versioning is enabled!
+            if not provenance_enabled_versioning:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Version endpoint active without provenance versioning enabled. Error."
+                )
+
+            version_spinoff = not config.test_mode
+
+            # permission check
+            limited_access_role_check(
+                protected_roles=protected_roles,
+                route_action=RouteActions.PROXY_VERSION,
+                config=config
+            )
+
+            # Overwrite proxy username in User class
+            protected_roles.user.username = version_request.username
+
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_VERSION].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                force_required=version_spinoff,
+                user=protected_roles.user,
+                config=config
+            )
+
+            if version_spinoff and linked_person_id is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"You cannot perform version without having a linked person in the registry."
+                )
+
+            version_info = await version_helper(
+                id=version_request.id,
+                reason=version_request.reason,
+                item_model_type=item_model_type,
+                domain_info_type=item_domain_info_type,
+                correct_category=desired_category,
+                correct_subtype=desired_subtype,
+                user=protected_roles.user,
+                available_roles=available_roles,
+                default_roles=default_roles,
+                service_proxy=True,
+                config=config
+            )
+
+            session_id = "1234"
+            if version_spinoff:
+                assert linked_person_id
+                assert version_info.new_item
+
+                session_id = await spinoff_version_job(
+                    username=protected_roles.user.username,
+                    new_item=cast(ItemBase, version_info.new_item),
+                    version_request=version_request,
+                    version_number=version_info.version_number,
+                    from_id=version_request.id,
+                    to_id=version_info.new_handle_id,
+                    linked_person_id=linked_person_id,
+                    item_subtype=desired_subtype,
+                    config=config
+                )
+
+            return VersionResponse(
+                new_version_id=version_info.new_handle_id,
+                version_job_session_id=session_id
+            )
+
     action = RouteActions.PROXY_CREATE
     route_config = ROUTE_ACTION_CONFIG_MAP[action]
 
     if action in desired_actions:
+        assert create_response_type, f"Create response type must be supplied for {action} route. Item category is {desired_category} and subtype is {desired_subtype}"
+
         @router.api_route(methods=[route_config.method],
                           path=route_config.path,
                           response_model=create_response_type,
@@ -1693,6 +2112,9 @@ def generate_router(
                 --------
             """
 
+            # This is a check for if we want the creation spinoff workflow
+            creation_spinoff = provenance_enabled_versioning and not config.test_mode
+
             # permission check
             limited_access_role_check(
                 protected_roles=protected_roles,
@@ -1705,11 +2127,15 @@ def generate_router(
             if proxy_username is not None:
                 protected_roles.user.username = proxy_username
 
-            # possible link enforcement (post proxy username update)
-            enforce = ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_CREATE].enforce_linked_owner
-            if config.enforce_user_links and enforce and enforce_username_person_link:
-                enforce_user_link_check(
-                    user=protected_roles.user, config=config)
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_CREATE].enforce_linked_owner,
+                type_enforcement=enforce_username_person_link,
+                # Will throw an error if unlinked and versioning enabled
+                force_required=creation_spinoff,
+                user=protected_roles.user,
+                config=config
+            )
 
             # no specific access checks at an item role level are required for
             # creating new things
@@ -1727,7 +2153,7 @@ def generate_router(
                         status=validate_resp.status
                     )
 
-            return create_response_type(
+            response = create_response_type(
                 ** (await create_item_helper(
                     item_domain_info=item_domain_info,
                     item_model_type=item_model_type,
@@ -1736,9 +2162,24 @@ def generate_router(
                     default_roles=default_roles,
                     user=protected_roles.user,
                     config=config,
+                    versioning_enabled=provenance_enabled_versioning
                 )).dict()
-
             )
+
+            # Under the right conditions, spin off the creation job
+            if creation_spinoff:
+                assert linked_person_id
+                assert response.created_item
+                session_id = await spinoff_creation_job(
+                    linked_person_id=linked_person_id,
+                    created_item=cast(ItemBase, response.created_item),
+                    username=protected_roles.user.username,
+                    config=config
+                )
+                # update session ID in response
+                response.register_create_activity_session_id = session_id
+
+            return response
 
     # Return the generated router object
     return router

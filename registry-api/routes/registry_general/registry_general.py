@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import ProtectedRole
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency 
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from SharedInterfaces.RegistryAPI import *
+from SharedInterfaces.SharedTypes import VersionDetails
 from RegistrySharedFunctionality.RegistryRouteActions import PROV_SERVICE_ROLE_NAME, DATA_STORE_SERVICE_ROLE_NAME
 from helpers.action_helpers import *
 from helpers.action_helpers import list_items_paginated
@@ -27,57 +28,14 @@ async def list_registry_items(
     pagination_key = general_list_request.pagination_key
     page_size = general_list_request.page_size
 
-    # get the paginated item list using a ddb query
-    items, returned_pagination_key = list_items_paginated(
-        table=get_registry_table(config=config),
+    items, returned_pagination_key = list_items_paginated_and_filter(
+        config=config,
         sort_by=sort_by,
         filter_by=filter_by,
         pagination_key=pagination_key,
         page_size=page_size,
+        protected_roles=protected_roles
     )
-
-    if config.enforce_user_auth:
-        # filter items based on access
-        user = protected_roles.user
-
-        # get user groups once
-        user_group_id_set = get_user_group_id_set(
-            user=user,
-            config=config
-        )
-
-        def item_permission_filter(item: Dict[str, Any]) -> bool:
-            # check that the item at least has an ID
-            if 'id' not in item:
-                # we can't evaluate access if no id is present
-                return False
-
-            # pull out the item ID
-            id = item['id']
-
-            # return true if access OK false otherwise this returns a list of roles
-            # the user is allowed to take against this resource
-            role_list = describe_access_helper(
-                id=id,
-                config=config,
-                user=user,
-                # use the fetch action roles as this is all we need
-                available_roles=FETCH_ACTION_ACCEPTED_ROLES,
-                already_checked_existence=True,
-                user_group_ids=user_group_id_set
-            ).roles
-
-            # requires one of the acceptable fetch roles - filter based on this
-            # response
-            return evaluate_user_access(
-                user_roles=role_list,
-                acceptable_roles=FETCH_ACTION_ACCEPTED_ROLES
-            )
-
-        # filter items to only return visible items based on access roles and count
-        # how many removed
-        items = list(
-            filter(lambda item: item_permission_filter(item), items))
 
     # return unparsed items
     return PaginatedListResponse(
@@ -276,3 +234,36 @@ async def delete_item(
         id=id,
         config=config
     )
+
+
+@router.get("/about/version", response_model=VersionDetails, operation_id="version")
+async def get_provena_version(
+    config: Config = Depends(get_settings),
+    protected_roles: ProtectedRole = Depends(
+        read_user_protected_role_dependency)
+) -> VersionDetails:
+    """    get_provena_version
+        Returns the version of the registry
+
+        Arguments
+        ----------
+        None
+
+        Returns
+        -------
+         : VersionResponse
+            The version response of the registry containing a status response and version details
+        See Also (optional)
+        --------
+
+        Examples (optional)
+        --------
+    """
+
+    try:
+        return config.version_details
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve registry version details. Error: {e}"
+        )

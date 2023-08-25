@@ -4,6 +4,7 @@ from SharedInterfaces.RegistryModels import *
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, user_is_admin
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from helpers.sts_helpers import call_sts_oidc_service, create_console_session
+from helpers.release_helpers import validate_release_for_edit
 from config import Config, get_settings
 from helpers.registry_api_helpers import *
 
@@ -27,7 +28,7 @@ DATA_WRITE_ROLES = [
 def allows_credential_generation(dataset: ItemDataset) -> bool:
     """
     allows_credential_generation 
-    
+
     Ensures that the dataset is reposited before enabling credential generation.
 
     Parameters
@@ -277,6 +278,15 @@ async def generate_write_access_credentials(
     except Exception:
         raise HTTPException(status_code=400,
                             detail=f'The item with id {id} is a SeededItem and cannot have credentials generated.')
+
+    # validate data set is not already in review and not released (Pending State)
+    edit_enabled = validate_release_for_edit(dataset_item=item)
+    if not edit_enabled:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"Dataset {id} is pending review or is released. Cannot modify dataset files while a review is ongoing.")
+        )
 
     # we know the item is a ItemDataset - perform checks to ensure it is reposited
     allowed = allows_credential_generation(dataset=item)

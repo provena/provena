@@ -3,6 +3,7 @@ from random import choice
 from typing import Any
 from tests.config import *
 from dataclasses import dataclass
+import pytest
 from fastapi.testclient import TestClient
 from KeycloakFastAPI.Dependencies import ProtectedRole, User
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency
@@ -15,18 +16,25 @@ import boto3  # type:ignore
 from RegistrySharedFunctionality.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
 from RegistrySharedFunctionality.TestConfig import route_params, RouteParameters
 
+# Which subtypes are excluded from regular comprehensive testing
+route_config_exclusions: List[ItemSubType] = [
+    ItemSubType.CREATE,
+    ItemSubType.VERSION
+]
+
 # Setup pytest paramterisation for per route functions
 for r_config in route_configs:
-    # Get the prefix
-    prefix = f"/{ITEM_CATEGORY_ROUTE_MAP[r_config.desired_category]}/{ITEM_SUB_TYPE_ROUTE_MAP[r_config.desired_subtype]}"
+    if (r_config.desired_subtype not in route_config_exclusions):
+        # Get the prefix
+        prefix = f"/{ITEM_CATEGORY_ROUTE_MAP[r_config.desired_category]}/{ITEM_SUB_TYPE_ROUTE_MAP[r_config.desired_subtype]}"
 
-    found = False
-    for rp in route_params:
-        if rp.route == prefix:
-            found = True
-            break
+        found = False
+        for rp in route_params:
+            if rp.route == prefix:
+                found = True
+                break
 
-    assert found, f"Couldn't find the route {prefix} in the test route params!"
+        assert found, f"Couldn't find the route {prefix} in the test route params!"
 
 id_base_list = [params.name for params in route_params]
 
@@ -287,7 +295,9 @@ def seed_example_item(app_client: TestClient, route_param: RouteParameters) -> S
 
     # check success
     assert response.status_code == 200
-    seed_response: GenericSeedResponse = route_param.typing_information.seed_response.parse_obj(
+    seed_resp_model = route_param.typing_information.seed_response
+    assert seed_resp_model, f"Seed response model not defined for {route_param.route}"
+    seed_response: GenericSeedResponse = seed_resp_model.parse_obj(
         response.json())
     assert seed_response.status.success
 
@@ -340,7 +350,9 @@ def standard_post_item(app_client: TestClient, route_param: RouteParameters) -> 
 
     # check success
     assert response.status_code == 200
-    create_response = route_param.typing_information.create_response.parse_obj(
+    create_resp_model = route_param.typing_information.create_response
+    assert create_resp_model, f"Create response model not defined for {route_param.route}"
+    create_response = create_resp_model.parse_obj(
         response.json())
     assert create_response.status.success
 
@@ -363,7 +375,9 @@ def proxy_post_item(app_client: TestClient, route_param: RouteParameters) -> Ite
 
     # check success
     assert response.status_code == 200
-    create_response = route_param.typing_information.create_response.parse_obj(
+    create_resp_model = route_param.typing_information.create_response
+    assert create_resp_model, f"Create response model not defined for {route_param.route}"
+    create_response = create_resp_model.parse_obj(
         response.json())
     assert create_response.status.success
 
@@ -660,7 +674,7 @@ def default_table_setup() -> None:
         client=ddb_client,
         table_name=test_auth_table_name
     )
-    
+
 
 def create_dynamo_tables(table_names: List[str]) -> None:
     """
@@ -675,11 +689,13 @@ def create_dynamo_tables(table_names: List[str]) -> None:
     for name in table_names:
         names = table_names_from_base(name)
         create_table_set(names)
-        
+
+
 def empty_table_setup(name: str) -> None:
     ddb_client = boto3.client('dynamodb')
     create_dynamo_tables(table_names=[name])
-    
+
+
 @dataclass
 class TestTableNames():
     resource_table_name: str
@@ -1119,9 +1135,11 @@ def create_one_item_successfully(client: TestClient, params: RouteParameters) ->
 
     # get an example object out from the examples in params.
     example_domain_info = params.model_examples.domain_info[0]
-    create_resp = create_item_from_domain_info(client=client, domain_info=example_domain_info, params=params)
-    assert create_resp.status_code == 200
+    create_resp = create_item_from_domain_info(
+        client=client, domain_info=example_domain_info, params=params)
+    assert create_resp.status_code == 200, f"create_resp.status_code: {create_resp.status_code}. Details: {create_resp.json()}"
     response_model = params.typing_information.create_response
+    assert response_model, f"create_response not defined for {params.subtype}"
     create_resp: GenericCreateResponse = response_model.parse_obj(
         create_resp.json())
     assert create_resp.status.success
@@ -1129,16 +1147,20 @@ def create_one_item_successfully(client: TestClient, params: RouteParameters) ->
     assert created_item
     return created_item
 
+
 def create_item_from_domain_info(client: TestClient, domain_info: DomainInfoBase, params: RouteParameters) -> Response:
     curr_route = get_route(RouteActions.CREATE, params=params)
     create_resp = client.post(
         curr_route, json=json.loads(domain_info.json()))
     return create_resp
 
+
 def create_item_from_domain_info_successfully(client: TestClient, domain_info: DomainInfoBase, params: RouteParameters) -> ItemBase:
-    create_resp = create_item_from_domain_info(client=client, domain_info=domain_info, params=params)
+    create_resp = create_item_from_domain_info(
+        client=client, domain_info=domain_info, params=params)
     assert create_resp.status_code == 200, "Create response was not 200. Details: " + create_resp.text
     response_model = params.typing_information.create_response
+    assert response_model, f"Typing information for {params.subtype} does not have a create response model."
     create_resp: GenericCreateResponse = response_model.parse_obj(
         create_resp.json())
     assert create_resp.status.success
@@ -1474,3 +1496,21 @@ def check_current_with_buffer(ts: int, buffer: int = 5) -> None:
     """
     current = get_timestamp()
     assert ts > current - buffer and ts < current + buffer
+
+# TODO think further about this approach - for now excluding subtypes which don't have full suite
+# def check_for_skip(params: RouteParameters, actions: List[RouteActions]) -> bool:
+#    """Called inside parametrised tests to check if they should be executed or skipped.
+#    Not every combination of parameters and actions is implemented. For example,
+#    the "registry create" activity entitiy does not have a /create endpoint implemeneted.
+#
+#    Parameters
+#    ----------
+#    params : RouteParameters
+#        The params of the test (params are what are parametrised)
+#    actions : List[RouteActions]
+#        The actions that a used in this test. E.g. create, delete, fetch, etc.
+#    """
+#    for action in actions:
+#        if (params.subtype, action) in to_skip:
+#            return True
+#    return False

@@ -282,7 +282,7 @@ async def change_request_state(
             # We have an email and it appears valid - send
             try:
                 # Only send email if prod
-                send_status_change_email(
+                await send_status_change_email(
                     username=username,
                     email_address=email_address,
                     original_status=original_status,
@@ -291,7 +291,7 @@ async def change_request_state(
                     config=config
                 )
                 email_alert = Status(
-                    success=True, details=f"Update email sent successfully to {email_address}.")
+                    success=True, details=f"Update email dispatched successfully to {email_address}.")
             except Exception as e:
                 traceback.print_exc()
                 email_alert = Status(

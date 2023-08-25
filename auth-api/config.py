@@ -53,12 +53,18 @@ class Config(BaseConfig):
     instantiated through a direct constructor, env variables, 
     or with a .env file.
     """
+    
+    # Auth API service account
+    service_account_secret_arn: str
+    
+    # Job API endpoint
+    job_api_endpoint: str
+    
+    # Recipient email address for access requests
+    access_request_email_address: str
 
     # Registry API endpoint (used for link service id validation)
     registry_api_endpoint: str
-
-    # Where are the email server creds?
-    email_secret_arn: str
 
     # Dynamo db table name for access requests
     access_request_table_name: str
@@ -86,6 +92,14 @@ class Config(BaseConfig):
 
     # for use in writing temp files
     TEMP_FILE_LOCATION: str = "/tmp"
+    
+    # Postfix to add to keycloak endpoint to reach token endpoint
+    keycloak_token_postfix: str = "/protocol/openid-connect/token"
+    
+    # Derived property of token endpoint
+    @property
+    def keycloak_token_endpoint(self) -> str:
+        return self.keycloak_endpoint + self.keycloak_token_postfix
 
     # use .env file
     class Config:

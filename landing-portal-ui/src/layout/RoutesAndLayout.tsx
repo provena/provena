@@ -8,7 +8,7 @@ import {
     IconButton,
     Stack,
     Toolbar,
-    Typography
+    Typography,
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
@@ -20,6 +20,9 @@ import {
     CONTACT_US_BUTTON_LINK,
     DATA_STORE_LINK,
     DOCUMENTATION_BASE_URL,
+    JOB_LIST_ROUTE,
+    JOB_ROUTE_PREFIX,
+    JobSubRouteComponent,
     NavListItem,
     PROV_STORE_LINK,
     ProfileIcon,
@@ -57,8 +60,14 @@ export const SIDE_NAV_LIST_ITEMS: NavListItem[] = [
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
+        page: {
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+        },
         root: {
             display: "flex",
+            flexGrow: 1,
             backgroundColor: "white",
         },
         appBar: {
@@ -76,6 +85,11 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         menuBtn: {
             color: "white",
+        },
+        container: {
+            marginTop: 100,
+            marginBottom: 20,
+            minHeight: "60vh",
         },
         appHeader: {
             color: "white",
@@ -117,12 +131,7 @@ function RoutesAndLayout() {
     const classes = useStyles();
     // Pull current theme config
     const themeConfig = useContext(ThemeConfigContext);
-    const { keycloak, initialized } = useKeycloak();
-    const [value, setValue] = React.useState(0);
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-        setValue(newValue);
-    };
-
+    const { keycloak } = useKeycloak();
     const [open, setOpen] = useState(false);
 
     const toggleSlider = () => {
@@ -154,7 +163,7 @@ function RoutesAndLayout() {
     }
 
     return (
-        <div>
+        <div className={classes.page}>
             <Drawer open={open} anchor="left" onClose={toggleSlider}>
                 <SideNavBox navListItems={SIDE_NAV_LIST_ITEMS} />
             </Drawer>
@@ -210,6 +219,13 @@ function RoutesAndLayout() {
                                 </Button>
                                 {adminTab}
                                 <Button
+                                    component={Link}
+                                    to={JOB_LIST_ROUTE}
+                                    className={classes.routerButtonDefault}
+                                >
+                                    Jobs
+                                </Button>
+                                <Button
                                     href={CONTACT_US_BUTTON_LINK}
                                     target="_blank"
                                     className={classes.routerButtonDefault}
@@ -230,7 +246,7 @@ function RoutesAndLayout() {
                 </Container>
             </AppBar>
             <div className={classes.root}>
-                <Container>
+                <Container className={classes.container}>
                     <Switch>
                         <Route exact path="/" component={Introduction} />
                         <Route
@@ -245,6 +261,12 @@ function RoutesAndLayout() {
                             <Admin />
                         </ProtectedRoute>
                         <ProtectedRoute path="/admin" component={Admin} />
+                        {
+                            // Generic shared job routes
+                        }
+                        <ProtectedRoute path={JOB_ROUTE_PREFIX}>
+                            <JobSubRouteComponent></JobSubRouteComponent>
+                        </ProtectedRoute>
                     </Switch>
                 </Container>
             </div>

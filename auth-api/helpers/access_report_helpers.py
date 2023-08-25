@@ -1,9 +1,14 @@
 from config import Config
 from SharedInterfaces.AuthAPI import *
 from KeycloakFastAPI.Dependencies import *
+from dataclasses import dataclass 
 
+@dataclass
+class EmailContent():
+    subject: str
+    body: str
 
-def generate_email_text_from_diff(difference_report: AccessReport, user: User, request_entry: RequestAccessTableItem, config: Config) -> str:
+def generate_email_text_from_diff(difference_report: AccessReport, user: User, request_entry: RequestAccessTableItem, config: Config) -> EmailContent:
     """    generate_email_text_from_diff
         Given the difference access report will generate a formatted email string
         which describes the changes in access required to the sys admin
@@ -31,7 +36,7 @@ def generate_email_text_from_diff(difference_report: AccessReport, user: User, r
         Examples (optional)
         --------
     """
-    header = f"Subject: Access request username: {user.username} id: {request_entry.request_id}"
+    header = f"Access request username: {user.username} id: {request_entry.request_id}"
     body = f"""Request for access change for username: {user.username} request_id: {request_entry.request_id}.
     Request made on auth server: {config.keycloak_endpoint} (stage: {config.stage})
     Admin console: {config.admin_console_endpoint}
@@ -47,9 +52,12 @@ def generate_email_text_from_diff(difference_report: AccessReport, user: User, r
         component_list.append(
             f"Component: {component.component_name}\n" + '\n'.join(component_string_rows))
     component_body = '\n'.join(component_list)
-
-    return header + "\n\n" + body + "\n" + component_body
-
+    full_body = body + "\n" + component_body
+    
+    return EmailContent(
+        subject=header,
+        body=full_body
+    )
 
 def generate_report_from_user(user: User) -> AccessReport:
     """    generate_report_from_user

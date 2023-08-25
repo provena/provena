@@ -11,6 +11,7 @@ router = APIRouter(
     prefix="/user"
 )
 
+
 @router.post("/request-change", response_model=AccessRequestResponse, operation_id="request_access_change")
 async def request_access_change(
     access_report: AccessReport,
@@ -103,11 +104,13 @@ async def request_access_change(
             )
 
         # Create request email with differences
-        if config.stage in ["OPSPROD", "PROD", "STAGE"] and send_email:
+        #if config.stage in ["OPSPROD", "PROD", "STAGE"] and send_email:
+        # TODO revert!
+        if config.stage in ["OPSPROD", "DEV", "PROD", "STAGE"] and send_email:
             try:
                 # Only send email if prod
-                send_access_diff_email(
-                    difference_report=diff, user=user, request_entry=entry, config=config)
+                await send_access_diff_email(
+                    email_to=config.access_request_email_address, difference_report=diff, user=user, request_entry=entry, config=config)
             except Exception as e:
                 raise HTTPException(
                     status_code=500, detail=f"Failed to send request email, error: {e}.")
@@ -116,7 +119,7 @@ async def request_access_change(
             return AccessRequestResponse(
                 status=Status(
                     success=True,
-                    details="Successfully requested an update to access and sent email."
+                    details="Successfully requested an update to access and dispatched email."
                 )
             )
         else:
@@ -166,6 +169,7 @@ async def get_full_user_request_history(
     # package and return
     return AccessRequestList(items=items)
 
+
 @router.get("/pending-request-history", response_model=AccessRequestList, operation_id="get_pending_requests")
 async def get_pending_access_requests(
     config: Config = Depends(get_settings),
@@ -199,6 +203,7 @@ async def get_pending_access_requests(
 
     # package and return
     return AccessRequestList(items=pending_items)
+
 
 @router.get("/generate-access-report", response_model=AccessReportResponse, operation_id="generate_access_report")
 async def generate_access_report(

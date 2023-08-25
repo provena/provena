@@ -1,7 +1,12 @@
 import { Box, Divider, Grid, Theme, Typography } from "@mui/material";
 import { createStyles, makeStyles } from "@mui/styles";
 import { ItemBase } from "../shared-interfaces/RegistryModels";
-import { assignIcon, getSwatchForSubtype, mapSubTypeToPrettyName } from "../util/subtypeStyling";
+import {
+    assignIcon,
+    getSwatchForSubtype,
+    mapSubTypeToPrettyName,
+} from "../util/subtypeStyling";
+import { subtypeHasVersioning } from "../config";
 
 interface StyleParams {
     color: string;
@@ -89,6 +94,11 @@ export const SubtypeHeaderComponent = (props: SubtypeHeaderComponentProps) => {
                                     props.item.item_subtype
                                 )}
                                 {(props.isUser ?? false) && " (You)"}
+                                {!!props.item.versioning_info?.version &&
+                                    subtypeHasVersioning(
+                                        props.item.item_subtype
+                                    ) &&
+                                    ` (V${props.item.versioning_info?.version})`}
                             </Typography>
                         </Grid>
                         {(props.locked ?? false) && (

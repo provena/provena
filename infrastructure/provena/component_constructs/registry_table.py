@@ -19,10 +19,13 @@ global_secondary_indexes: List[Tuple[str, str]] = [
     ("item_subtype", "updated_timestamp"),
     ("item_subtype", "created_timestamp"),
     ("item_subtype", "display_name"),
-    
+
     ("universal_partition_key", "updated_timestamp"),
     ("universal_partition_key", "created_timestamp"),
     ("universal_partition_key", "display_name"),
+
+    ("release_approver", "release_timestamp"),
+    # maybe another, release_approver and release_status?
 
 ]
 
@@ -89,7 +92,6 @@ class RegistryTable(Construct):
             stream=dynamodb.StreamViewType.NEW_IMAGE if STREAMS_ENABLED else None,
         )
 
-        
         # add global secondary indexes
         for partition_key, sort_key in global_secondary_indexes:
 
@@ -116,6 +118,7 @@ class RegistryTable(Construct):
 
         # Expose the table name
         self.table_name = self.table.table_name
+
 
 class IdIndexTable(Construct):
     def __init__(

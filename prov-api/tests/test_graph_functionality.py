@@ -9,7 +9,7 @@ import pytest
 from typing import Tuple, Generator, Any
 from fastapi.testclient import TestClient
 from main import app
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 import json
 from helpers.entity_validators import RequestStyle
 from SharedInterfaces.RegistryModels import *
@@ -19,6 +19,7 @@ from SharedInterfaces.DataStoreAPI import *
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from config import Config, get_settings, base_config
 from tests.test_config import *
+
 
 def is_responsive(url: str) -> bool:
     """    is_responsive
@@ -164,19 +165,17 @@ def service_config(
     config = Config(
         stage=stage,
         keycloak_endpoint=base_config.keycloak_endpoint,
-        SERVICE_ACCOUNT_SECRET_ARN="",
-        REGISTRY_API_ENDPOINT="",
-        MOCK_GRAPH_DB=False,
-        NEO4J_HOST=bolt_service_host,
-        NEO4J_PORT=bolt_service_port,
-        NEO4J_TEST_USERNAME=neo4j_username,
-        NEO4J_TEST_PASSWORD=neo4j_password,
-        DEPTH_DEFAULT_LIMIT=30,
-        DEPTH_UPPER_LIMIT=100,
-        # Sort these out
-        PROV_JOB_TOPIC_ARN="",
-        PROV_JOB_TABLE_NAME="",
-        BATCH_TABLE_NAME=""
+        # This should not be used
+        job_api_endpoint="",
+        service_account_secret_arn="",
+        registry_api_endpoint="",
+        mock_graph_db=False,
+        neo4j_host=bolt_service_host,
+        neo4j_port=bolt_service_port,
+        neo4j_test_username=neo4j_username,
+        neo4j_test_password=neo4j_password,
+        depth_default_limit=30,
+        depth_upper_limit=100
     )
     app.dependency_overrides[get_settings] = lambda: config
     return config
@@ -206,19 +205,17 @@ def general_config() -> Config:
     config = Config(
         stage=stage,
         keycloak_endpoint=base_config.keycloak_endpoint,
-        SERVICE_ACCOUNT_SECRET_ARN="",
-        REGISTRY_API_ENDPOINT="",
-        MOCK_GRAPH_DB=True,
-        NEO4J_HOST="",
-        NEO4J_PORT=0,
-        NEO4J_TEST_USERNAME="",
-        NEO4J_TEST_PASSWORD="",
-        DEPTH_DEFAULT_LIMIT=30,
-        DEPTH_UPPER_LIMIT=100,
-        # Sort these out
-        PROV_JOB_TOPIC_ARN="",
-        PROV_JOB_TABLE_NAME="",
-        BATCH_TABLE_NAME=""
+        # This should not be used
+        job_api_endpoint="",
+        service_account_secret_arn="",
+        registry_api_endpoint="",
+        mock_graph_db=True,
+        neo4j_host="",
+        neo4j_port=0,
+        neo4j_test_username="",
+        neo4j_test_password="",
+        depth_default_limit=30,
+        depth_upper_limit=100,
     )
     app.dependency_overrides[get_settings] = lambda: config
     return config
@@ -423,6 +420,8 @@ def generate_model_run_record(postfix: str, input_override: Optional[str] = None
             modeller_id=modeller_id_base + postfix,
             requesting_organisation_id=organisation_id_base + postfix
         ),
+        display_name=display_name_id_base + postfix,
+        description=description_id_base + postfix,
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp())
     )
@@ -441,12 +440,13 @@ def test_upload_model_run(client: TestClient, service_config: Config, monkeypatc
         return (True, None)
 
     import helpers.workflows as workflow_register
+    import routes.model_run.model_run as model_run_route
     import helpers.registry_helpers as registry_helpers
     import helpers.entity_validators as entity_validators
     import routes.explore.explore as explore
 
     monkeypatch.setattr(
-        workflow_register,
+        model_run_route,
         'validate_model_run_record',
         mocked_validate
     )
@@ -493,18 +493,19 @@ def test_upload_model_run(client: TestClient, service_config: Config, monkeypatc
     # Override the auth dependency
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
+    app.dependency_overrides[admin_user_protected_role_dependency] = user_protected_dependency_override
 
     input_record: ModelRunRecord = generate_model_run_record(postfix='')
 
     # upload the fake model run record
     safe_serialisation = json.loads(input_record.json())
-    response = client.post('/model_run/register_complete',
+    response = client.post('/model_run/register_sync',
                            json=safe_serialisation)
     check_status_code(response)
 
     # parse the response
     json_content = response.json()
-    response_model: RegisterModelRunResponse = RegisterModelRunResponse.parse_obj(
+    response_model: SyncRegisterModelRunResponse = SyncRegisterModelRunResponse.parse_obj(
         json_content)
 
     # check successful
@@ -712,12 +713,13 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
         return (True, None)
 
     import helpers.workflows as register_workflow
+    import routes.model_run.model_run as model_run_route
     import helpers.registry_helpers as registry_helpers
     import helpers.entity_validators as entity_validators
     import routes.explore.explore as explore
 
     monkeypatch.setattr(
-        register_workflow,
+        model_run_route,
         'validate_model_run_record',
         mocked_validate
     )
@@ -751,6 +753,7 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
     # Override the auth dependency
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
+    app.dependency_overrides[admin_user_protected_role_dependency] = user_protected_dependency_override
 
     created_models: List[ModelRunRecord] = []
 
@@ -772,7 +775,7 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
 
     # upload the fake model run record
     safe_serialisation = json.loads(created_models[0].json())
-    response = client.post('/model_run/register_complete',
+    response = client.post('/model_run/register_sync',
                            json=safe_serialisation)
     check_status_code(response)
 
@@ -835,10 +838,10 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
 
         # upload the fake model run record
         safe_serialisation = json.loads(new_record.json())
-        response = client.post('/model_run/register_complete',
+        response = client.post('/model_run/register_sync',
                                json=safe_serialisation)
         check_status_code(response)
-        parsed_response: RegisterModelRunResponse = RegisterModelRunResponse.parse_obj(
+        parsed_response: SyncRegisterModelRunResponse = SyncRegisterModelRunResponse.parse_obj(
             response.json())
         assert parsed_response.status.success
         assert parsed_response.record_info
@@ -909,11 +912,12 @@ def test_lineage_downstream(client: TestClient, service_config: Config, monkeypa
 
     import helpers.workflows as register_workflow
     import helpers.registry_helpers as registry_helpers
+    import routes.model_run.model_run as model_run_route
     import helpers.entity_validators as entity_validators
     import routes.explore.explore as explore
 
     monkeypatch.setattr(
-        register_workflow,
+        model_run_route,
         'validate_model_run_record',
         mocked_validate
     )
@@ -947,6 +951,7 @@ def test_lineage_downstream(client: TestClient, service_config: Config, monkeypa
     # Override the auth dependency
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
+    app.dependency_overrides[admin_user_protected_role_dependency] = user_protected_dependency_override
 
     created_models: List[ModelRunRecord] = []
 
@@ -968,7 +973,7 @@ def test_lineage_downstream(client: TestClient, service_config: Config, monkeypa
 
     # upload the fake model run record
     safe_serialisation = json.loads(created_models[0].json())
-    response = client.post('/model_run/register_complete',
+    response = client.post('/model_run/register_sync',
                            json=safe_serialisation)
     check_status_code(response)
 
@@ -1021,10 +1026,10 @@ def test_lineage_downstream(client: TestClient, service_config: Config, monkeypa
 
         # upload the fake model run record
         safe_serialisation = json.loads(new_record.json())
-        response = client.post('/model_run/register_complete',
+        response = client.post('/model_run/register_sync',
                                json=safe_serialisation)
         check_status_code(response)
-        parsed_response: RegisterModelRunResponse = RegisterModelRunResponse.parse_obj(
+        parsed_response: SyncRegisterModelRunResponse = SyncRegisterModelRunResponse.parse_obj(
             response.json())
         assert parsed_response.status.success
         assert parsed_response.record_info

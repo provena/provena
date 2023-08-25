@@ -12,6 +12,7 @@ from routes.registry import items
 from routes.register import register
 from routes.admin import admin
 from routes.check_access import checks
+from routes.release import release
 
 
 # Setup app
@@ -55,6 +56,7 @@ app.include_router(credentials.router,
                    prefix="/registry/credentials", tags=["Registry credentials"])
 app.include_router(admin.router, prefix="/admin", tags=["Administration"])
 
+app.include_router(release.router, prefix="/release", tags=["Release"])
 
 @app.get("/", operation_id="root")
 async def root() -> Dict[str, str]:

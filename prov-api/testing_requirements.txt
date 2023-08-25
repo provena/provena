@@ -1,4 +1,5 @@
 -r requirements.txt
+-r job_requirements/dev.txt
 
 docker-compose
 moto[s3, dynamodb]
@@ -9,7 +10,7 @@ pytest
 # pytest plugins
 pytest-dotenv
 pytest-depends
-pytest-docker==1.*
+pytest-docker==1.0.1
 pytest-mock
 pytest-asyncio
 

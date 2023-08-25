@@ -6,6 +6,7 @@ pytest-dotenv
 mypy
 types-requests
 pydantic[email]==1.*
+networkx==3.*
 
 
 # from utilities packages.

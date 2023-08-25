@@ -1,0 +1,3 @@
+-r base_requirements.txt
+-r relative_requirements.txt
+-r testing_requirements.txt

@@ -34,8 +34,14 @@ migrate_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Performs an example migration (which does not modify anything)\n" "example-migration"
-  printf "  %s   CAUTION: Clears all items from the registry and graph store for a given stage. This does not allow PROD by default. You will need to manually clear PROD. This is a migration used when other forms of migration are too time intensive for test items (usually when manual intervention required).\n" "clear-app-stage  "
+  printf "  %s   Peforms the RRAPIS-1247 migration - updating registry items to include the starting history entry.\n" "history-migration                    "
+  printf "  %s   Performs model run display name migration\n" "f1339-modelrun-display-name-migration"
+  printf "  %s   Migrations required for f1249 feature (dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics\n" "f1249-migration                      "
+  printf "  %s   Migrations required for f1249 + f1247 features (history + dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics\n" "f1249-f1247-migration                "
+  printf "  %s   Migrations required for f1176 feature - adds owner_username, renames author -> associations, changes publisher/org to IDs, removes rocrate_metadata field - only runs on PROD - no migration defined for other stages - just clear them.\n" "f1176-migration                      "
+  printf "  %s   Migrations required for f1442 feature - adds the versioning info version = 1 for Entity category items\n" "f1442-migration                      "
+  printf "  %s   Migrations required for f1458 feature - adds the versioning info version = 1 for Entity category items\n" "f1458-migration                      "
+  printf "  %s   CAUTION: Clears all items from the registry and graph store for a given stage. This does not allow PROD by default. You will need to manually clear PROD. This is a migration used when other forms of migration are too time intensive for test items (usually when manual intervention required).\n" "clear-app-stage                      "
   echo
 
   # :command.long_usage
@@ -54,20 +60,305 @@ migrate_usage() {
 }
 
 # :command.usage
-migrate_example_migration_usage() {
+migrate_history_migration_usage() {
   if [[ -n $long_usage ]]; then
-    printf "migrate example-migration - Performs an example migration (which does not modify anything)\n"
+    printf "migrate history-migration - Peforms the RRAPIS-1247 migration - updating registry items to include the starting history entry.\n"
     echo
 
   else
-    printf "migrate example-migration - Performs an example migration (which does not modify anything)\n"
+    printf "migrate history-migration - Peforms the RRAPIS-1247 migration - updating registry items to include the starting history entry.\n"
     echo
 
   fi
 
   printf "%s\n" "Usage:"
-  printf "  migrate example-migration STAGE [OPTIONS]\n"
-  printf "  migrate example-migration --help | -h\n"
+  printf "  migrate history-migration STAGE [OPTIONS]\n"
+  printf "  migrate history-migration --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--apply"
+    printf "    Apply the changes - do not run in dry run mode.\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--reuse_venv"
+    printf "    Don't rebuild the python virtual environments\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "STAGE"
+    printf "    The application stage to target\n"
+    printf "    Allowed: TEST, DEV, STAGE, PROD\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+migrate_f1339_modelrun_display_name_migration_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "migrate f1339-modelrun-display-name-migration - Performs model run display name migration\n"
+    echo
+
+  else
+    printf "migrate f1339-modelrun-display-name-migration - Performs model run display name migration\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  migrate f1339-modelrun-display-name-migration STAGE [OPTIONS]\n"
+  printf "  migrate f1339-modelrun-display-name-migration --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--apply"
+    printf "    Apply the changes - do not run in dry run mode.\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--reuse_venv"
+    printf "    Don't rebuild the python virtual environments\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "STAGE"
+    printf "    The application stage to target\n"
+    printf "    Allowed: TEST, DEV, STAGE, PROD\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+migrate_f1249_migration_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "migrate f1249-migration - Migrations required for f1249 feature (dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics\n"
+    echo
+
+  else
+    printf "migrate f1249-migration - Migrations required for f1249 feature (dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  migrate f1249-migration STAGE [OPTIONS]\n"
+  printf "  migrate f1249-migration --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--apply"
+    printf "    Apply the changes - do not run in dry run mode.\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--reuse_venv"
+    printf "    Don't rebuild the python virtual environments\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "STAGE"
+    printf "    The application stage to target\n"
+    printf "    Allowed: TEST, DEV, STAGE, PROD\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+migrate_f1249_f1247_migration_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "migrate f1249-f1247-migration - Migrations required for f1249 + f1247 features (history + dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics\n"
+    echo
+
+  else
+    printf "migrate f1249-f1247-migration - Migrations required for f1249 + f1247 features (history + dataset ethics/export/indigenous + person ethics) - defaults to unapproved ethics\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  migrate f1249-f1247-migration STAGE [OPTIONS]\n"
+  printf "  migrate f1249-f1247-migration --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--apply"
+    printf "    Apply the changes - do not run in dry run mode.\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--reuse_venv"
+    printf "    Don't rebuild the python virtual environments\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "STAGE"
+    printf "    The application stage to target\n"
+    printf "    Allowed: TEST, DEV, STAGE, PROD\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+migrate_f1176_migration_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "migrate f1176-migration - Migrations required for f1176 feature - adds owner_username, renames author -> associations, changes publisher/org to IDs, removes rocrate_metadata field - only runs on PROD - no migration defined for other stages - just clear them.\n"
+    echo
+
+  else
+    printf "migrate f1176-migration - Migrations required for f1176 feature - adds owner_username, renames author -> associations, changes publisher/org to IDs, removes rocrate_metadata field - only runs on PROD - no migration defined for other stages - just clear them.\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  migrate f1176-migration [OPTIONS]\n"
+  printf "  migrate f1176-migration --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--apply"
+    printf "    Apply the changes - do not run in dry run mode.\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--reuse_venv"
+    printf "    Don't rebuild the python virtual environments\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+migrate_f1442_migration_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "migrate f1442-migration - Migrations required for f1442 feature - adds the versioning info version = 1 for Entity category items\n"
+    echo
+
+  else
+    printf "migrate f1442-migration - Migrations required for f1442 feature - adds the versioning info version = 1 for Entity category items\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  migrate f1442-migration STAGE [OPTIONS]\n"
+  printf "  migrate f1442-migration --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--apply"
+    printf "    Apply the changes - do not run in dry run mode.\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--reuse_venv"
+    printf "    Don't rebuild the python virtual environments\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "STAGE"
+    printf "    The application stage to target\n"
+    printf "    Allowed: TEST, DEV, STAGE, PROD\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+migrate_f1458_migration_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "migrate f1458-migration - Migrations required for f1458 feature - adds the versioning info version = 1 for Entity category items\n"
+    echo
+
+  else
+    printf "migrate f1458-migration - Migrations required for f1458 feature - adds the versioning info version = 1 for Entity category items\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  migrate f1458-migration STAGE [OPTIONS]\n"
+  printf "  migrate f1458-migration --help | -h\n"
   echo
 
   # :command.long_usage
@@ -192,8 +483,8 @@ inspect_args() {
 
 # :command.command_functions
 # :command.function
-migrate_example_migration_command() {
-  # src/example_migration_command.sh
+migrate_history_migration_command() {
+  # src/history_migration_command.sh
   function venv() {
       # function to setup python venv
       if [[ ! $reuse_venv ]]; then
@@ -214,8 +505,8 @@ migrate_example_migration_command() {
   }
 
   # Constants
-  pre_migration_prefix="example_pre"
-  post_migration_prefix="example_post"
+  pre_migration_prefix="history_pre"
+  post_migration_prefix="history_post"
 
   apply=${args[--apply]}
   stage=${args[stage]}
@@ -257,7 +548,517 @@ migrate_example_migration_command() {
   echo "Venv already setup here"
 
   echo "Running migration"
-  python import_export.py modifiers example-migration ${export_output_name} ${migration_output_name}
+  python import_export.py modifiers history-migration ${export_output_name} ${migration_output_name}
+
+  echo "Migration completed locally - running import to registry"
+
+  # Step three - import the items
+  cd ${current_dir}
+
+  echo "Moving to import tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running import"
+  python import_export.py import-items ${stage} ${migration_output_name} SYNC_ADD_OR_OVERWRITE ${apply_arg}
+
+  echo "Process completed"
+
+}
+
+# :command.function
+migrate_f1339_modelrun_display_name_migration_command() {
+  # src/f1339_modelrun_display_name_migration_command.sh
+  function venv() {
+      # function to setup python venv
+      if [[ ! $reuse_venv ]]; then
+          echo "Setting up venv"
+
+          # clear any existing venv
+          rm -rf .venv
+
+          # create new and install requirements
+          python3.10 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      else
+          echo "Reusing existing virtual environment"
+          source .venv/bin/activate
+      fi
+
+  }
+
+  # Constants
+  pre_migration_prefix="disp_name_pre"
+  post_migration_prefix="disp_name_post"
+
+  apply=${args[--apply]}
+  stage=${args[stage]}
+  reuse_venv=${args[--reuse_venv]}
+
+  # generate the apply part of argument if supplied
+  apply_arg=""
+  if [[ $apply ]]; then
+      echo "Changes will be applied since --apply flag was specified"
+      apply_arg="--apply"
+  fi
+
+  # save starting point
+  current_dir=$(pwd)
+
+  # Step one  - export registry
+
+  echo "Moving to export tooling"
+  cd admin-tooling/registry
+
+  # setup venv
+  venv
+
+  echo "Running export, you may need to sign in"
+
+  export_output_name="dumps/${pre_migration_prefix}_${stage}.json"
+  migration_output_name="dumps/${post_migration_prefix}_${stage}.json"
+
+  python import_export.py export-items ${stage} --output ${export_output_name}
+
+  echo "Export completed"
+
+  # Step two - migrate the items (uses migrations script in admin tooling)
+  cd ${current_dir}
+
+  echo "Moving to migration tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running migration"
+  python import_export.py modifiers f1339-migration-display-name ${export_output_name} ${migration_output_name}
+
+  echo "Migration completed locally - running import to registry"
+
+  # Step three - import the items
+  cd ${current_dir}
+
+  echo "Moving to import tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running import"
+  python import_export.py import-items ${stage} ${migration_output_name} SYNC_ADD_OR_OVERWRITE ${apply_arg}
+
+  echo "Process completed"
+
+}
+
+# :command.function
+migrate_f1249_migration_command() {
+  # src/f1249_migration_command.sh
+  function venv() {
+      # function to setup python venv
+      if [[ ! $reuse_venv ]]; then
+          echo "Setting up venv"
+
+          # clear any existing venv
+          rm -rf .venv
+
+          # create new and install requirements
+          python3.10 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      else
+          echo "Reusing existing virtual environment"
+          source .venv/bin/activate
+      fi
+
+  }
+
+  # Constants
+  pre_migration_prefix="f1249_pre"
+  post_migration_prefix="f1249_post"
+
+  apply=${args[--apply]}
+  stage=${args[stage]}
+  reuse_venv=${args[--reuse_venv]}
+
+  # generate the apply part of argument if supplied
+  apply_arg=""
+  if [[ $apply ]]; then
+      echo "Changes will be applied since --apply flag was specified"
+      apply_arg="--apply"
+  fi
+
+  # save starting point
+  current_dir=$(pwd)
+
+  # Step one  - export registry
+
+  echo "Moving to export tooling"
+  cd admin-tooling/registry
+
+  # setup venv
+  venv
+
+  echo "Running export, you may need to sign in"
+
+  export_output_name="dumps/${pre_migration_prefix}_${stage}.json"
+  migration_output_name="dumps/${post_migration_prefix}_${stage}.json"
+
+  python import_export.py export-items ${stage} --output ${export_output_name}
+
+  echo "Export completed"
+
+  # Step two - migrate the items (uses migrations script in admin tooling)
+  cd ${current_dir}
+
+  echo "Moving to migration tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running migration"
+  python import_export.py modifiers f1249-migration ${export_output_name} ${migration_output_name}
+
+  echo "Migration completed locally - running import to registry"
+
+  # Step three - import the items
+  cd ${current_dir}
+
+  echo "Moving to import tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running import"
+  python import_export.py import-items ${stage} ${migration_output_name} SYNC_ADD_OR_OVERWRITE ${apply_arg}
+
+  echo "Process completed"
+
+}
+
+# :command.function
+migrate_f1249_f1247_migration_command() {
+  # src/f1249_f1247_migration_command.sh
+  function venv() {
+      # function to setup python venv
+      if [[ ! $reuse_venv ]]; then
+          echo "Setting up venv"
+
+          # clear any existing venv
+          rm -rf .venv
+
+          # create new and install requirements
+          python3.10 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      else
+          echo "Reusing existing virtual environment"
+          source .venv/bin/activate
+      fi
+
+  }
+
+  # Constants
+  pre_migration_prefix="f1249_1247_pre"
+  post_migration_prefix="f1249_1247_post"
+
+  apply=${args[--apply]}
+  stage=${args[stage]}
+  reuse_venv=${args[--reuse_venv]}
+
+  # generate the apply part of argument if supplied
+  apply_arg=""
+  if [[ $apply ]]; then
+      echo "Changes will be applied since --apply flag was specified"
+      apply_arg="--apply"
+  fi
+
+  # save starting point
+  current_dir=$(pwd)
+
+  # Step one  - export registry
+
+  echo "Moving to export tooling"
+  cd admin-tooling/registry
+
+  # setup venv
+  venv
+
+  echo "Running export, you may need to sign in"
+
+  export_output_name="dumps/${pre_migration_prefix}_${stage}.json"
+  migration_output_name="dumps/${post_migration_prefix}_${stage}.json"
+
+  python import_export.py export-items ${stage} --output ${export_output_name}
+
+  echo "Export completed"
+
+  # Step two - migrate the items (uses migrations script in admin tooling)
+  cd ${current_dir}
+
+  echo "Moving to migration tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running migration"
+  python import_export.py modifiers f1249-f1247-migration ${export_output_name} ${migration_output_name}
+
+  echo "Migration completed locally - running import to registry"
+
+  # Step three - import the items
+  cd ${current_dir}
+
+  echo "Moving to import tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running import"
+  python import_export.py import-items ${stage} ${migration_output_name} SYNC_ADD_OR_OVERWRITE ${apply_arg}
+
+  echo "Process completed"
+
+}
+
+# :command.function
+migrate_f1176_migration_command() {
+  # src/f1176_migration_command.sh
+  function venv() {
+      # function to setup python venv
+      if [[ ! $reuse_venv ]]; then
+          echo "Setting up venv"
+
+          # clear any existing venv
+          rm -rf .venv
+
+          # create new and install requirements
+          python3.10 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      else
+          echo "Reusing existing virtual environment"
+          source .venv/bin/activate
+      fi
+
+  }
+
+  # Constants
+  pre_migration_prefix="f1176_pre"
+  post_migration_prefix="f1176_post"
+
+  apply=${args[--apply]}
+  stage="PROD"
+  reuse_venv=${args[--reuse_venv]}
+
+  # generate the apply part of argument if supplied
+  apply_arg=""
+  if [[ $apply ]]; then
+      echo "Changes will be applied since --apply flag was specified"
+      apply_arg="--apply"
+  fi
+
+  # save starting point
+  current_dir=$(pwd)
+
+  # Step one  - export registry
+
+  echo "Moving to export tooling"
+  cd admin-tooling/registry
+
+  # setup venv
+  venv
+
+  echo "Running export, you may need to sign in"
+
+  export_output_name="dumps/${pre_migration_prefix}_${stage}.json"
+  migration_output_name="dumps/${post_migration_prefix}_${stage}.json"
+
+  python import_export.py export-items ${stage} --output ${export_output_name}
+
+  echo "Export completed"
+
+  # Step two - migrate the items (uses migrations script in admin tooling)
+  cd ${current_dir}
+
+  echo "Moving to migration tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running migration"
+  python import_export.py modifiers f1176-migration ${stage} ${export_output_name} ${migration_output_name}
+
+  echo "Migration completed locally - running import to registry"
+
+  # Step three - import the items
+  cd ${current_dir}
+
+  echo "Moving to import tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running import"
+  python import_export.py import-items ${stage} ${migration_output_name} SYNC_ADD_OR_OVERWRITE ${apply_arg}
+
+  echo "Process completed"
+
+}
+
+# :command.function
+migrate_f1442_migration_command() {
+  # src/f1442_migration_command.sh
+  function venv() {
+      # function to setup python venv
+      if [[ ! $reuse_venv ]]; then
+          echo "Setting up venv"
+
+          # clear any existing venv
+          rm -rf .venv
+
+          # create new and install requirements
+          python3.10 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      else
+          echo "Reusing existing virtual environment"
+          source .venv/bin/activate
+      fi
+
+  }
+
+  # Constants
+  pre_migration_prefix="f1442_pre"
+  post_migration_prefix="f1442_post"
+
+  apply=${args[--apply]}
+  stage=${args[stage]}
+  reuse_venv=${args[--reuse_venv]}
+
+  # generate the apply part of argument if supplied
+  apply_arg=""
+  if [[ $apply ]]; then
+      echo "Changes will be applied since --apply flag was specified"
+      apply_arg="--apply"
+  fi
+
+  # save starting point
+  current_dir=$(pwd)
+
+  # Step one  - export registry
+
+  echo "Moving to export tooling"
+  cd admin-tooling/registry
+
+  # setup venv
+  venv
+
+  echo "Running export, you may need to sign in"
+
+  export_output_name="dumps/${pre_migration_prefix}_${stage}.json"
+  migration_output_name="dumps/${post_migration_prefix}_${stage}.json"
+
+  python import_export.py export-items ${stage} --output ${export_output_name}
+
+  echo "Export completed"
+
+  # Step two - migrate the items (uses migrations script in admin tooling)
+  cd ${current_dir}
+
+  echo "Moving to migration tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running migration"
+  python import_export.py modifiers f1442-migration ${stage} ${export_output_name} ${migration_output_name}
+
+  echo "Migration completed locally - running import to registry"
+
+  # Step three - import the items
+  cd ${current_dir}
+
+  echo "Moving to import tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running import"
+  python import_export.py import-items ${stage} ${migration_output_name} SYNC_ADD_OR_OVERWRITE ${apply_arg}
+
+  echo "Process completed"
+
+}
+
+# :command.function
+migrate_f1458_migration_command() {
+  # src/f1458_migration_command.sh
+  function venv() {
+      # function to setup python venv
+      if [[ ! $reuse_venv ]]; then
+          echo "Setting up venv"
+
+          # clear any existing venv
+          rm -rf .venv
+
+          # create new and install requirements
+          python3.10 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      else
+          echo "Reusing existing virtual environment"
+          source .venv/bin/activate
+      fi
+
+  }
+
+  # Constants
+  pre_migration_prefix="f1458_pre"
+  post_migration_prefix="f1458_post"
+
+  apply=${args[--apply]}
+  stage=${args[stage]}
+  reuse_venv=${args[--reuse_venv]}
+
+  # generate the apply part of argument if supplied
+  apply_arg=""
+  if [[ $apply ]]; then
+      echo "Changes will be applied since --apply flag was specified"
+      apply_arg="--apply"
+  fi
+
+  # save starting point
+  current_dir=$(pwd)
+
+  # Step one  - export registry
+
+  echo "Moving to export tooling"
+  cd admin-tooling/registry
+
+  # setup venv
+  venv
+
+  echo "Running export, you may need to sign in"
+
+  export_output_name="dumps/${pre_migration_prefix}_${stage}.json"
+  migration_output_name="dumps/${post_migration_prefix}_${stage}.json"
+
+  python import_export.py export-items ${stage} --output ${export_output_name}
+
+  echo "Export completed"
+
+  # Step two - migrate the items (uses migrations script in admin tooling)
+  cd ${current_dir}
+
+  echo "Moving to migration tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running migration"
+  python import_export.py modifiers f1458-migration ${stage} ${export_output_name} ${migration_output_name}
 
   echo "Migration completed locally - running import to registry"
 
@@ -394,10 +1195,52 @@ parse_requirements() {
   case $action in
     -*) ;;
 
-    example-migration)
-      action="example-migration"
+    history-migration)
+      action="history-migration"
       shift
-      migrate_example_migration_parse_requirements "$@"
+      migrate_history_migration_parse_requirements "$@"
+      shift $#
+      ;;
+
+    f1339-modelrun-display-name-migration)
+      action="f1339-modelrun-display-name-migration"
+      shift
+      migrate_f1339_modelrun_display_name_migration_parse_requirements "$@"
+      shift $#
+      ;;
+
+    f1249-migration)
+      action="f1249-migration"
+      shift
+      migrate_f1249_migration_parse_requirements "$@"
+      shift $#
+      ;;
+
+    f1249-f1247-migration)
+      action="f1249-f1247-migration"
+      shift
+      migrate_f1249_f1247_migration_parse_requirements "$@"
+      shift $#
+      ;;
+
+    f1176-migration)
+      action="f1176-migration"
+      shift
+      migrate_f1176_migration_parse_requirements "$@"
+      shift $#
+      ;;
+
+    f1442-migration)
+      action="f1442-migration"
+      shift
+      migrate_f1442_migration_parse_requirements "$@"
+      shift $#
+      ;;
+
+    f1458-migration)
+      action="f1458-migration"
+      shift
+      migrate_f1458_migration_parse_requirements "$@"
       shift $#
       ;;
 
@@ -445,13 +1288,13 @@ parse_requirements() {
 }
 
 # :command.parse_requirements
-migrate_example_migration_parse_requirements() {
+migrate_history_migration_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     case "${1:-}" in
       --help | -h)
         long_usage=yes
-        migrate_example_migration_usage
+        migrate_history_migration_usage
         exit
         ;;
 
@@ -463,7 +1306,7 @@ migrate_example_migration_parse_requirements() {
   done
 
   # :command.command_filter
-  action="example-migration"
+  action="history-migration"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -509,7 +1352,451 @@ migrate_example_migration_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['stage']+x} ]]; then
-    printf "missing required argument: STAGE\nusage: migrate example-migration STAGE [OPTIONS]\n" >&2
+    printf "missing required argument: STAGE\nusage: migrate history-migration STAGE [OPTIONS]\n" >&2
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ ! ${args['stage']} =~ ^(TEST|DEV|STAGE|PROD)$ ]]; then
+    printf "%s\n" "stage must be one of: TEST, DEV, STAGE, PROD" >&2
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+migrate_f1339_modelrun_display_name_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1339_modelrun_display_name_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1339-modelrun-display-name-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['stage']+x} ]]; then
+
+          args['stage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['stage']+x} ]]; then
+    printf "missing required argument: STAGE\nusage: migrate f1339-modelrun-display-name-migration STAGE [OPTIONS]\n" >&2
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ ! ${args['stage']} =~ ^(TEST|DEV|STAGE|PROD)$ ]]; then
+    printf "%s\n" "stage must be one of: TEST, DEV, STAGE, PROD" >&2
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+migrate_f1249_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1249_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1249-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['stage']+x} ]]; then
+
+          args['stage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['stage']+x} ]]; then
+    printf "missing required argument: STAGE\nusage: migrate f1249-migration STAGE [OPTIONS]\n" >&2
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ ! ${args['stage']} =~ ^(TEST|DEV|STAGE|PROD)$ ]]; then
+    printf "%s\n" "stage must be one of: TEST, DEV, STAGE, PROD" >&2
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+migrate_f1249_f1247_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1249_f1247_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1249-f1247-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['stage']+x} ]]; then
+
+          args['stage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['stage']+x} ]]; then
+    printf "missing required argument: STAGE\nusage: migrate f1249-f1247-migration STAGE [OPTIONS]\n" >&2
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ ! ${args['stage']} =~ ^(TEST|DEV|STAGE|PROD)$ ]]; then
+    printf "%s\n" "stage must be one of: TEST, DEV, STAGE, PROD" >&2
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+migrate_f1176_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1176_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1176-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+}
+
+# :command.parse_requirements
+migrate_f1442_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1442_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1442-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['stage']+x} ]]; then
+
+          args['stage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['stage']+x} ]]; then
+    printf "missing required argument: STAGE\nusage: migrate f1442-migration STAGE [OPTIONS]\n" >&2
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ ! ${args['stage']} =~ ^(TEST|DEV|STAGE|PROD)$ ]]; then
+    printf "%s\n" "stage must be one of: TEST, DEV, STAGE, PROD" >&2
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+migrate_f1458_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1458_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1458-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['stage']+x} ]]; then
+
+          args['stage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['stage']+x} ]]; then
+    printf "missing required argument: STAGE\nusage: migrate f1458-migration STAGE [OPTIONS]\n" >&2
     exit 1
   fi
 
@@ -609,12 +1896,66 @@ run() {
   parse_requirements "${input[@]}"
 
   case "$action" in
-    "example-migration")
+    "history-migration")
       if [[ ${args['--help']:-} ]]; then
         long_usage=yes
-        migrate_example_migration_usage
+        migrate_history_migration_usage
       else
-        migrate_example_migration_command
+        migrate_history_migration_command
+      fi
+      ;;
+
+    "f1339-modelrun-display-name-migration")
+      if [[ ${args['--help']:-} ]]; then
+        long_usage=yes
+        migrate_f1339_modelrun_display_name_migration_usage
+      else
+        migrate_f1339_modelrun_display_name_migration_command
+      fi
+      ;;
+
+    "f1249-migration")
+      if [[ ${args['--help']:-} ]]; then
+        long_usage=yes
+        migrate_f1249_migration_usage
+      else
+        migrate_f1249_migration_command
+      fi
+      ;;
+
+    "f1249-f1247-migration")
+      if [[ ${args['--help']:-} ]]; then
+        long_usage=yes
+        migrate_f1249_f1247_migration_usage
+      else
+        migrate_f1249_f1247_migration_command
+      fi
+      ;;
+
+    "f1176-migration")
+      if [[ ${args['--help']:-} ]]; then
+        long_usage=yes
+        migrate_f1176_migration_usage
+      else
+        migrate_f1176_migration_command
+      fi
+      ;;
+
+    "f1442-migration")
+      if [[ ${args['--help']:-} ]]; then
+        long_usage=yes
+        migrate_f1442_migration_usage
+      else
+        migrate_f1442_migration_command
+      fi
+      ;;
+
+    "f1458-migration")
+      if [[ ${args['--help']:-} ]]; then
+        long_usage=yes
+        migrate_f1458_migration_usage
+      else
+        migrate_f1458_migration_command
       fi
       ;;
 

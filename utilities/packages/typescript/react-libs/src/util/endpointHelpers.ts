@@ -7,6 +7,7 @@ type Action =
     | "CREATE"
     | "LIST"
     | "SEED"
+    | "VERSION"
     | "SCHEMA"
     | "UI_SCHEMA"
     | "VALIDATE"
@@ -25,6 +26,7 @@ const actionPostfixes: Map<Action, string> = new Map([
     ["CREATE", "/create"],
     ["LIST", "/list"],
     ["SEED", "/seed"],
+    ["VERSION", "/version"],
     ["SCHEMA", "/schema"],
     ["UI_SCHEMA", "/ui_schema"],
     ["VALIDATE", "/validate"],
@@ -44,6 +46,8 @@ const subtypeRoutePrefixes: Map<ItemSubType, string> = new Map([
     ["MODEL_RUN_WORKFLOW_TEMPLATE", "/registry/entity/model_run_workflow"],
     ["DATASET_TEMPLATE", "/registry/entity/dataset_template"],
     ["DATASET", "/registry/entity/dataset"],
+    ["CREATE", "/registry/activity/create"],
+    ["VERSION", "/registry/activity/version"],
 ]);
 
 export const subtypeActionToEndpoint = (

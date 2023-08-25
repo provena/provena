@@ -228,7 +228,8 @@ def produce_organisation(
             id=record_id
         )
     )
-    
+
+
 def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_id: str, workflow_template: ItemModelRunWorkflowTemplate) -> prov.ProvDocument:
     """    produce_prov_document
         Given the model record inputted by user and the handle ID for the
@@ -246,7 +247,7 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
             The handle ID for the model run
         workflow_template: ItemModelRunWorkflowTemplate
             The resolved workflow definition
-            
+
         Returns
         -------
          : prov.ProvDocument
@@ -326,7 +327,7 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
 
             # pull dataset id
             dataset_id = templated_dataset.dataset_id
-            
+
             if dataset_id in universal_entity_map:
                 prov_entity = universal_entity_map[dataset_id]
             else:
@@ -339,9 +340,10 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
 
             # add to universal map (may already be there)
             universal_entity_map[dataset_id] = prov_entity
-            
+
             # link the template ID -> prov entity
-            datasets_match_list = input_dataset_template_object_map.get(template_id, [])
+            datasets_match_list = input_dataset_template_object_map.get(
+                template_id, [])
             datasets_match_list.append(prov_entity)
             input_dataset_template_object_map[template_id] = datasets_match_list
 
@@ -357,7 +359,7 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
 
             # pull dataset id
             dataset_id = templated_dataset.dataset_id
-            
+
             if dataset_id in universal_entity_map:
                 prov_entity = universal_entity_map[dataset_id]
             else:
@@ -367,12 +369,13 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
                     dataset_id=dataset_id,
                     record_id=record_id
                 )
-                
+
             # add to universal map (may already be there)
             universal_entity_map[dataset_id] = prov_entity
-        
+
             # link the template ID -> prov entity
-            datasets_match_list = output_dataset_template_object_map.get(template_id, [])
+            datasets_match_list = output_dataset_template_object_map.get(
+                template_id, [])
             datasets_match_list.append(prov_entity)
             output_dataset_template_object_map[template_id] = datasets_match_list
 
@@ -427,7 +430,7 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
 
     # Add organisation if present
     requesting_organisation: Optional[prov.ProvAgent] = None
-    organisation_id : Optional[str] = model_record.associations.requesting_organisation_id
+    organisation_id: Optional[str] = model_record.associations.requesting_organisation_id
     if organisation_id is not None:
         requesting_organisation = produce_organisation(
             prov_document=document,
@@ -552,3 +555,169 @@ def produce_prov_document(model_record: ModelRunRecord, seed_item: SeededItem, w
     """
     return produce_prov_document_existing_handle(model_record=model_record, record_id=seed_item.id, workflow_template=workflow_template)
 
+
+def produce_create_prov_document(created_item_id: str, created_item_subtype: ItemSubType, create_activity_id: str, agent_id: str) -> prov.ProvDocument:
+    """
+    Generates a prov document representation of a creation activity.
+
+    Ready to be lodged into graph DB
+
+    Args:
+        created_item_id (str): The ID of the created item
+
+        created_item_subtype (ItemSubType): The subtype of the created item
+        (currently assumed to be Entity category)
+
+        create_activity_id (str): The creation activity ID
+
+        agent_id (str): The agent to link to
+
+    Returns:
+        prov.ProvDocument: The realised prov document
+    """
+    document = prov.ProvDocument()
+
+    # add default Provena namespace
+    # if no namespace provided, this will be used
+    # TODO consider namespace for identities
+    document.set_default_namespace('http://hdl.handle.net/')
+
+    """
+    ==============
+    CREATE OBJECTS
+    ==============
+    """
+    # Create model run activity
+    create_activity: prov.ProvActivity = document.activity(
+        identifier=create_activity_id,
+        other_attributes=produce_attribute_set(
+            item_category=ItemCategory.ACTIVITY,
+            item_subtype=ItemSubType.CREATE,
+            id=create_activity_id
+        )
+    )
+
+    # Add Agent
+    person: prov.ProvAgent = produce_modeller(
+        prov_document=document,
+        modeller_resource=agent_id,
+        record_id=create_activity_id
+    )
+
+    # Create the correct item created
+    # TODO validate that the item is an entity
+    created: prov.ProvEntity = document.entity(
+        identifier=created_item_id,
+        other_attributes=produce_attribute_set(
+            item_category=ItemCategory.ENTITY,
+            item_subtype=created_item_subtype,
+            id=create_activity_id
+        )
+    )
+
+    """
+    ================
+    CREATE RELATIONS
+    ================
+    """
+
+    # mark that the created item was generated by the create activity
+    created.wasGeneratedBy(
+        activity=create_activity
+    )
+
+    # activity was associated with agent
+    create_activity.wasAssociatedWith(
+        agent=person
+    )
+
+    # created was attributed to agent
+    created.wasAttributedTo(
+        agent=person
+    )
+
+    return document
+
+
+def produce_version_prov_document(
+    from_version_id: str,
+    to_version_id: str,
+    version_activity_id: str,
+    item_subtype: ItemSubType,
+    agent_id: str
+) -> prov.ProvDocument:
+    document = prov.ProvDocument()
+
+    # add default Provena namespace
+    # if no namespace provided, this will be used
+    document.set_default_namespace('http://hdl.handle.net/')
+
+    """
+    ==============
+    CREATE OBJECTS
+    ==============
+    """
+    # Create model run activity
+    create_activity: prov.ProvActivity = document.activity(
+        identifier=version_activity_id,
+        other_attributes=produce_attribute_set(
+            item_category=ItemCategory.ACTIVITY,
+            item_subtype=ItemSubType.VERSION,
+            id=version_activity_id
+        )
+    )
+
+    # Add Agent
+    person: prov.ProvAgent = produce_modeller(
+        prov_document=document,
+        modeller_resource=agent_id,
+        record_id=version_activity_id
+    )
+
+    # From Entity
+    from_entity: prov.ProvEntity = document.entity(
+        identifier=from_version_id,
+        other_attributes=produce_attribute_set(
+            item_category=ItemCategory.ENTITY,
+            item_subtype=item_subtype,
+            id=version_activity_id
+        )
+    )
+
+    # To Entity
+    to_entity: prov.ProvEntity = document.entity(
+        identifier=to_version_id,
+        other_attributes=produce_attribute_set(
+            item_category=ItemCategory.ENTITY,
+            item_subtype=item_subtype,
+            id=version_activity_id
+        )
+    )
+
+    """
+    ================
+    CREATE RELATIONS
+    ================
+    """
+
+    # mark that the created item was generated by the create activity
+    to_entity.wasGeneratedBy(
+        activity=create_activity
+    )
+
+    # activity was associated with agent
+    create_activity.wasAssociatedWith(
+        agent=person
+    )
+
+    # created was attributed to agent
+    to_entity.wasAttributedTo(
+        agent=person
+    )
+
+    # create activity used from
+    create_activity.used(
+        entity=from_entity
+    )
+
+    return document

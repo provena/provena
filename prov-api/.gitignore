@@ -136,6 +136,7 @@ local_testing
 
 # hiding thunder environment
 thunder-tests/thunderEnvironment.json
+thunder-tests/environments
 
 prof
 temp

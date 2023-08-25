@@ -9,6 +9,7 @@ jsonschema
 mangum
 pydantic==1.*
 python-dotenv
+aws_secretsmanager_caching
 
 # Keycloak auth test package
 # requires GITHUB_TOKEN as environment variable 

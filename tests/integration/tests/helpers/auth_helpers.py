@@ -26,7 +26,7 @@ def add_group_successfully(group_metadata: Dict[str, str], token: str) -> AddGro
         json=group_metadata,
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for add group: {resp}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for add group: {resp}. Response: {resp.text}."
     resp = AddGroupResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully create group. Details: {resp.status.details}."
 
@@ -50,7 +50,7 @@ def remove_member_successfully(username: str, group_id: str, token: str) -> Remo
         params={"group_id": group_id, "username": username},
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for remove member from group: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for remove member from group: {resp.status_code}. Response: {resp.text}."
     resp = RemoveMemberResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully remove member from group. Details: {resp.status.details}."
 
@@ -63,7 +63,7 @@ def remove_group_successfully(id: str, token: str) -> RemoveGroupResponse:
         auth=BearerAuth(token),
         params={"id": id},
     )
-    assert resp.status_code == 200, f"Non 200 status code recieved for remove group: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for remove group: {resp.status_code}. Response: {resp.text}."
     resp = RemoveGroupResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully create group. Details: {resp.status.details}."
 
@@ -80,7 +80,7 @@ def add_member_to_group_successfully(user: GroupUser, group_id: str, token: str)
         json=py_to_dict(user),
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for add member to group: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for add member to group: {resp.status_code}. Response: {resp.text}."
     resp = AddMemberResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully create group. Details: {resp.status.details}."
 
@@ -98,7 +98,7 @@ def check_member(username: str, group_id: str, token: str) -> CheckMembershipRes
         },
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for check membership: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for check membership: {resp.status_code}. Response: {resp.text}."
     resp = CheckMembershipResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully check membership. Details: {resp.status.details}."
 
@@ -124,7 +124,7 @@ def get_group_membership_list(group_id: str, token: str) -> ListMembersResponse:
         },
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for members list: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for members list: {resp.status_code}.. Response: {resp.text}."
     resp = ListMembersResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully list members. Details: {resp.status.details}."
 
@@ -140,7 +140,7 @@ def get_user_groups(username: str, token: str) -> ListUserMembershipResponse:
         },
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for list user memberships: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for list user memberships: {resp.status_code}. Response: {resp.text}."
     resp = ListUserMembershipResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully list user membeships. Details: {resp.status.details}."
 
@@ -170,6 +170,9 @@ def perform_group_cleanup(cleanup_group_ids: List[str], token: str) -> None:
                 group_id=group_id,
                 error_msg=str(e)
             ))
+
+    # removed all items - clear - don't want to remove the same elements multiple times
+    cleanup_group_ids.clear()
     if failed_group_removals:
         display_failed_cleanups(failed_group_removals)
         assert False, "Failed to cleanup groups."
@@ -183,7 +186,7 @@ def update_group_successfully(group_metadata: Dict[str, Any], token: str) -> Upd
         json=group_metadata
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for update group: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for update group: {resp.status_code}. Response: {resp.text}."
     resp = UpdateGroupResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully update group. Details: {resp.status.details}."
 
@@ -199,7 +202,7 @@ def describe_group(group_id: str, token: str) -> DescribeGroupResponse:
         },
     )
 
-    assert resp.status_code == 200, f"Non 200 status code recieved for describe group: {resp.status_code}."
+    assert resp.status_code == 200, f"Non 200 status code recieved for describe group: {resp.status_code}. Response: {resp.text}."
     resp = DescribeGroupResponse.parse_obj(resp.json())
     assert resp.status.success, f"Failed to successfully describe group. Details: {resp.status.details}."
 

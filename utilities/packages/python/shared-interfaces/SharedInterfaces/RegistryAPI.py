@@ -64,7 +64,6 @@ class AuthRolesResponse(BaseModel):
 
 # Shared models
 
-
 class QueryRecordTypes(str, Enum):
     # All types are returned - no filters
     ALL = "ALL"
@@ -73,6 +72,11 @@ class QueryRecordTypes(str, Enum):
     # Only complete items are returned (DEFAULT)
     COMPLETE_ONLY = "COMPLETE_ONLY"
 
+class QueryDatasetReleaseStatusType(str, Enum):
+    # should mirror ReleaseStatus in RegistryModels.py
+    NOT_RELEASED = "NOT_RELEASED"
+    PENDING = "PENDING"
+    RELEASED = "RELEASED"
 
 class QueryFilter(BaseModel):
     item_category: Optional[ItemCategory]
@@ -85,6 +89,8 @@ class SortType(str, Enum):
     CREATED_TIME = "CREATED_TIME"
     UPDATED_TIME = "UPDATED_TIME"
     DISPLAY_NAME = "DISPLAY_NAME"
+    RELEASE_TIMESTAMP = "RELEASE_TIMESTAMP"
+    
 
 
 # newest first (assuming timestamp)
@@ -99,15 +105,28 @@ class SortOptions(BaseModel):
 class SubtypeFilterOptions(BaseModel):
     # all filters that are not subtype specific
     record_type: QueryRecordTypes = QueryRecordTypes.COMPLETE_ONLY
-
+    
 
 class FilterOptions(SubtypeFilterOptions):
     item_subtype: Optional[ItemSubType]
+    #release_status: Optional[ReleasedStatus] # changing this to be a post filter
+    release_reviewer: Optional[IdentifiedResource]
+    release_status: Optional[QueryDatasetReleaseStatusType]
+
+    #validate not having both values present
+    @root_validator
+    def validate_filter_options(cls: Any, values: Dict[str,Any])->Dict[str,Any]:
+        if values.get("item_subtype") and values.get("release_status"):
+            raise ValueError("Cannot filter by both item_subtype and release_status")
+        return values
+
+    
 
 
 class FilterType(str, Enum):
     ITEM_SUBTYPE = "ITEM_SUBTYPE"
-
+    RELEASE_REVIEWER = "RELEASE_REVIEWER"
+    #RELEASE_STATUS = "RELEASE_STATUS"
 
 PaginationKey = Dict[str, Any]
 
@@ -132,6 +151,14 @@ class GeneralListRequest(BaseModel):
     sort_by: Optional[SortOptions]
     pagination_key: Optional[PaginationKey]
     page_size: int = DEFAULT_PAGE_SIZE
+
+
+class ListUserReviewingDatasetsRequest(BaseModel):
+    pagination_key: Optional[PaginationKey]
+    page_size: int = DEFAULT_PAGE_SIZE
+    sort_by: Optional[SortOptions] 
+    filter_by: FilterOptions # must provide reviewer user id. 
+
 
 
 class SchemaResponse(BaseModel):
@@ -175,12 +202,57 @@ class PaginatedListResponse(StatusResponse):
     pagination_key: Optional[PaginationKey]
 
 
+class PaginatedDatasetListResponse(StatusResponse):
+    # items
+    dataset_items: Optional[List[ItemDataset]]
+    # counts
+    total_dataset_count: Optional[int]
+    # Returned by previous paginations and used to indicate start of next query
+    pagination_key: Optional[PaginationKey]
+
+class UpdateResponse(StatusResponse):
+    # if this item has provenance enabled versioning AND the update was from
+    # seed -> complete
+    register_create_activity_session_id: Optional[str]
+
+
 class GenericSeedResponse(StatusResponse):
     seeded_item: Optional[SeededItem]
 
 
 class GenericCreateResponse(StatusResponse):
     created_item: Optional[ItemBase]
+
+    # if this item has provenance enabled versioning, this job spins off from
+    # creation to create and then lodge the CreateActivity
+    register_create_activity_session_id: Optional[str]
+
+
+class VersionResponse(BaseModel):
+    new_version_id: str
+
+    # Whenever versioning occurs, there is a job spun off to create the
+    # associated Version activity, update various models, and lodge the
+    # Version activity provenance
+    version_job_session_id: str
+
+class FetchItemRequest(BaseModel):
+    item_id: IdentifiedResource
+
+class ProxyItemFetchRequest(FetchItemRequest):
+    username: str
+
+
+class VersionRequest(BaseModel):
+    # Which item to create version of
+    id: str
+
+    # Reason for the version being required
+    reason: str
+
+
+class ProxyVersionRequest(VersionRequest):
+    username: str
 
 
 class UiSchemaResponse(StatusResponse):
@@ -260,6 +332,31 @@ class ModelCreateResponse(GenericCreateResponse):
 
 class ModelListResponse(GenericListResponse):
     items: Optional[List[ItemModel]]
+
+# ============================================
+# Registry Version (Activity - Registry Version)
+# ============================================
+
+
+class VersionFetchResponse(GenericFetchResponse):
+    item: Optional[Union[ItemVersion, SeededItem]]
+
+
+class VersionListResponse(GenericListResponse):
+    items: Optional[List[ItemVersion]]
+
+# ============================================
+# Registry Create (Activity - Registry Create)
+# ============================================
+
+
+class CreateFetchResponse(GenericFetchResponse):
+    item: Optional[Union[ItemCreate, SeededItem]]
+
+
+class CreateListResponse(GenericListResponse):
+    items: Optional[List[ItemCreate]]
+
 
 # ================================================================
 # Workflow Template (Entity - Workflow Template) (NO ENDPOINT)

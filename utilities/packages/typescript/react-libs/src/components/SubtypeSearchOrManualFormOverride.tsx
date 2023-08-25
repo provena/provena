@@ -67,6 +67,7 @@ const useStyles = makeStyles((theme: Theme) =>
 interface OptionsType {
     id: string;
     display_name: string;
+    version?: number;
     error: boolean;
     errorMessage?: string;
     loading: boolean;
@@ -126,6 +127,7 @@ export const SearchSelectorComponent = (
             {
                 id: "error",
                 display_name: "",
+                version: undefined,
                 error: error,
                 errorMessage: errorMessage,
                 loading: false,
@@ -138,6 +140,7 @@ export const SearchSelectorComponent = (
                 // NOTE ID is always present even when item is not loaded
                 id: loadedResult.id,
                 display_name: loadedResult.item?.display_name ?? "",
+                version: loadedResult.item?.versioning_info?.version,
                 error: loadedResult.isError,
                 errorMessage: loadedResult.errorMessage,
                 loading: loadedResult.loading,
@@ -159,7 +162,12 @@ export const SearchSelectorComponent = (
             return `Details loading...(${option.id})`;
         }
         // else, render properly as got some results.
-        return `${option.display_name} - ${option.id}`;
+
+        // Check if item has version
+        const versionNum =
+            option.version !== undefined ? ` (V${option.version})` : "";
+            
+        return `${option.display_name}${versionNum} - ${option.id}`;
     };
 
     // Pretty name for subtype

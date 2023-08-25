@@ -30,8 +30,6 @@ const useStyles = makeStyles((theme: Theme) =>
         root: {
             padding: theme.spacing(4),
             display: "flex",
-            marginTop: 100,
-            marginBottom: 100,
             minHeight: "60vh",
             flexDirection: "row",
             alignContent: "start",
@@ -39,13 +37,6 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         tabPanel: {
             paddingLeft: theme.spacing(4),
-        },
-        button: {
-            marginRight: theme.spacing(1),
-        },
-        instructions: {
-            marginTop: theme.spacing(1),
-            marginBottom: theme.spacing(1),
         },
         refreshTokenMsg: {
             color: "green",

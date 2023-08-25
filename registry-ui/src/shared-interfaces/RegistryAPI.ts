@@ -9,6 +9,8 @@ export type ItemCategory = "ACTIVITY" | "AGENT" | "ENTITY";
 export type ItemSubType =
   | "WORKFLOW_RUN"
   | "MODEL_RUN"
+  | "CREATE"
+  | "VERSION"
   | "PERSON"
   | "ORGANISATION"
   | "SOFTWARE"
@@ -16,12 +18,14 @@ export type ItemSubType =
   | "WORKFLOW_TEMPLATE"
   | "MODEL_RUN_WORKFLOW_TEMPLATE"
   | "DATASET"
-  | "DATASET_TEMPLATE"
-  | "QUALIFIED_ASSOCIATION";
+  | "DATASET_TEMPLATE";
 export type RecordType = "SEED_ITEM" | "COMPLETE_ITEM";
+export type ReleaseAction = "REQUEST" | "APPROVE" | "REJECT";
+export type ReleasedStatus = "NOT_RELEASED" | "PENDING" | "RELEASED";
 export type ResourceUsageType = "PARAMETER_FILE" | "CONFIG_FILE" | "FORCING_DATA" | "GENERAL_DATA";
 export type QueryRecordTypes = "ALL" | "SEED_ONLY" | "COMPLETE_ONLY";
-export type SortType = "CREATED_TIME" | "UPDATED_TIME" | "DISPLAY_NAME";
+export type QueryDatasetReleaseStatusType = "NOT_RELEASED" | "PENDING" | "RELEASED";
+export type SortType = "CREATED_TIME" | "UPDATED_TIME" | "DISPLAY_NAME" | "RELEASE_TIMESTAMP";
 export type WorkflowRunCompletionStatus = "INCOMPLETE" | "COMPLETE" | "LODGED";
 export type DatasetType = "DATA_STORE";
 export type LockActionType = "LOCK" | "UNLOCK";
@@ -54,6 +58,8 @@ export interface ActivityBase {
   item_category?: ItemCategory & string;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryDomainInfoBase {
   id: number;
@@ -65,6 +71,16 @@ export interface HistoryEntryDomainInfoBase {
 export interface DomainInfoBase {
   display_name: string;
 }
+export interface WorkflowLinks {
+  create_activity_workflow_id?: string;
+  version_activity_workflow_id?: string;
+}
+export interface VersioningInfo {
+  previous_version?: string;
+  version: number;
+  reason?: string;
+  next_version?: string;
+}
 export interface AgentBase {
   history: HistoryEntryDomainInfoBase[];
   display_name: string;
@@ -75,6 +91,8 @@ export interface AgentBase {
   item_category?: ItemCategory & string;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface AuthRolesResponse {
   roles: DescribedRole[];
@@ -148,18 +166,82 @@ export interface CollectionFormatOrganisation {
   name: string;
   ror?: string;
 }
-export interface DatasetCreateResponse {
+export interface CreateDomainInfo {
+  display_name: string;
+  created_item_id: string;
+}
+export interface CreateFetchResponse {
   status: Status;
-  created_item?: ItemDataset;
+  item?: ItemCreate | SeededItem;
+  roles?: string[];
+  locked?: boolean;
+  item_is_seed?: boolean;
 }
 export interface Status {
   success: boolean;
   details: string;
 }
+export interface ItemCreate {
+  display_name: string;
+  created_item_id: string;
+  history: HistoryEntryCreateDomainInfo[];
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category?: ItemCategory & string;
+  item_subtype?: ItemSubType & string;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface HistoryEntryCreateDomainInfo {
+  id: number;
+  timestamp: number;
+  reason: string;
+  username: string;
+  item: CreateDomainInfo;
+}
+export interface SeededItem {
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category: ItemCategory;
+  item_subtype: ItemSubType;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface CreateListResponse {
+  status: Status;
+  items?: ItemCreate[];
+  seed_items?: SeededItem[];
+  unparsable_items?: {
+    [k: string]: unknown;
+  }[];
+  total_item_count?: number;
+  complete_item_count?: number;
+  seed_item_count?: number;
+  unparsable_item_count?: number;
+  not_authorised_count?: number;
+  pagination_key?: {
+    [k: string]: unknown;
+  };
+}
+export interface DatasetCreateResponse {
+  status: Status;
+  created_item?: ItemDataset;
+  register_create_activity_session_id?: string;
+}
 export interface ItemDataset {
   display_name: string;
   collection_format: CollectionFormat;
   s3: S3Location;
+  release_history?: ReleaseHistoryEntry[];
+  release_status: ReleasedStatus;
+  release_approver?: string;
+  release_timestamp?: number;
   history: HistoryEntryDatasetDomainInfo[];
   id: string;
   owner_username: string;
@@ -168,11 +250,20 @@ export interface ItemDataset {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface S3Location {
   bucket_name: string;
   path: string;
   s3_uri: string;
+}
+export interface ReleaseHistoryEntry {
+  action: ReleaseAction;
+  timestamp: number;
+  approver: string;
+  requester?: string;
+  notes: string;
 }
 export interface HistoryEntryDatasetDomainInfo {
   id: number;
@@ -185,6 +276,10 @@ export interface DatasetDomainInfo {
   display_name: string;
   collection_format: CollectionFormat;
   s3: S3Location;
+  release_history?: ReleaseHistoryEntry[];
+  release_status: ReleasedStatus;
+  release_approver?: string;
+  release_timestamp?: number;
 }
 export interface DatasetFetchResponse {
   status: Status;
@@ -192,15 +287,6 @@ export interface DatasetFetchResponse {
   roles?: string[];
   locked?: boolean;
   item_is_seed?: boolean;
-}
-export interface SeededItem {
-  id: string;
-  owner_username: string;
-  created_timestamp: number;
-  updated_timestamp: number;
-  item_category: ItemCategory;
-  item_subtype: ItemSubType;
-  record_type: RecordType;
 }
 export interface DatasetListResponse {
   status: Status;
@@ -232,6 +318,7 @@ export interface DatasetSeedResponse {
 export interface DatasetTemplateCreateResponse {
   status: Status;
   created_item?: ItemDatasetTemplate;
+  register_create_activity_session_id?: string;
 }
 export interface ItemDatasetTemplate {
   display_name: string;
@@ -246,6 +333,8 @@ export interface ItemDatasetTemplate {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface DefinedResource {
   path: string;
@@ -320,10 +409,17 @@ export interface EntityBase {
   item_category?: ItemCategory & string;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface FetchItemRequest {
+  item_id: string;
 }
 export interface FilterOptions {
   record_type?: QueryRecordTypes & string;
   item_subtype?: ItemSubType;
+  release_reviewer?: string;
+  release_status?: QueryDatasetReleaseStatusType;
 }
 export interface GeneralListRequest {
   filter_by?: FilterOptions;
@@ -340,6 +436,7 @@ export interface SortOptions {
 export interface GenericCreateResponse {
   status: Status;
   created_item?: ItemBase;
+  register_create_activity_session_id?: string;
 }
 export interface ItemBase {
   history: HistoryEntryDomainInfoBase[];
@@ -351,6 +448,8 @@ export interface ItemBase {
   item_category: ItemCategory;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface GenericFetchResponse {
   status: Status;
@@ -403,6 +502,8 @@ export interface ItemModel {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryModelDomainInfo {
   id: number;
@@ -431,6 +532,8 @@ export interface ItemModelRun {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface ModelRunRecord {
   workflow_template_id: string;
@@ -439,7 +542,8 @@ export interface ModelRunRecord {
   annotations?: {
     [k: string]: string;
   };
-  description?: string;
+  display_name: string;
+  description: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;
@@ -484,6 +588,8 @@ export interface ItemModelRunWorkflowTemplate {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface TemplateResource {
   template_id: string;
@@ -520,6 +626,8 @@ export interface ItemOrganisation {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryOrganisationDomainInfo {
   id: number;
@@ -548,6 +656,8 @@ export interface ItemPerson {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryPersonDomainInfo {
   id: number;
@@ -586,6 +696,8 @@ export interface ItemSoftware {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntrySoftwareDomainInfo {
   id: number;
@@ -601,6 +713,37 @@ export interface SoftwareDomainInfo {
   documentation_url: string;
   source_url: string;
 }
+export interface ItemVersion {
+  display_name: string;
+  reason: string;
+  from_item_id: string;
+  to_item_id: string;
+  new_version_number: number;
+  history: HistoryEntryVersionDomainInfo[];
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category?: ItemCategory & string;
+  item_subtype?: ItemSubType & string;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface HistoryEntryVersionDomainInfo {
+  id: number;
+  timestamp: number;
+  reason: string;
+  username: string;
+  item: VersionDomainInfo;
+}
+export interface VersionDomainInfo {
+  display_name: string;
+  reason: string;
+  from_item_id: string;
+  to_item_id: string;
+  new_version_number: number;
+}
 export interface ItemWorkflowRun {
   display_name: string;
   record_status: WorkflowRunCompletionStatus;
@@ -612,6 +755,8 @@ export interface ItemWorkflowRun {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryWorkflowRunDomainInfo {
   id: number;
@@ -639,6 +784,8 @@ export interface ItemWorkflowTemplate {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryWorkflowTemplateDomainInfo {
   id: number;
@@ -660,6 +807,14 @@ export interface JsonSchemaResponse {
   json_schema?: {
     [k: string]: unknown;
   };
+}
+export interface ListUserReviewingDatasetsRequest {
+  pagination_key?: {
+    [k: string]: unknown;
+  };
+  page_size?: number;
+  sort_by?: SortOptions;
+  filter_by: FilterOptions;
 }
 export interface LockChangeRequest {
   id: string;
@@ -690,6 +845,7 @@ export interface LockTableEntry {
 export interface ModelCreateResponse {
   status: Status;
   created_item?: ItemModel;
+  register_create_activity_session_id?: string;
 }
 export interface ModelFetchResponse {
   status: Status;
@@ -717,6 +873,7 @@ export interface ModelListResponse {
 export interface ModelRunCreateResponse {
   status: Status;
   created_item?: ItemModelRun;
+  register_create_activity_session_id?: string;
 }
 export interface ModelRunFetchResponse {
   status: Status;
@@ -748,6 +905,7 @@ export interface ModelRunSeedResponse {
 export interface ModelRunWorkflowTemplateCreateResponse {
   status: Status;
   created_item?: ItemModelRunWorkflowTemplate;
+  register_create_activity_session_id?: string;
 }
 export interface ModelRunWorkflowTemplateFetchResponse {
   status: Status;
@@ -794,6 +952,7 @@ export interface OptionallyRequiredCheck {
 export interface OrganisationCreateResponse {
   status: Status;
   created_item?: ItemOrganisation;
+  register_create_activity_session_id?: string;
 }
 export interface OrganisationFetchResponse {
   status: Status;
@@ -822,6 +981,14 @@ export interface OrganisationSeedResponse {
   status: Status;
   seeded_item?: SeededItem;
 }
+export interface PaginatedDatasetListResponse {
+  status: Status;
+  dataset_items?: ItemDataset[];
+  total_dataset_count?: number;
+  pagination_key?: {
+    [k: string]: unknown;
+  };
+}
 export interface PaginatedListResponse {
   status: Status;
   items?: unknown[];
@@ -833,6 +1000,7 @@ export interface PaginatedListResponse {
 export interface PersonCreateResponse {
   status: Status;
   created_item?: ItemPerson;
+  register_create_activity_session_id?: string;
 }
 export interface PersonFetchResponse {
   status: Status;
@@ -861,6 +1029,15 @@ export interface PersonSeedResponse {
   status: Status;
   seeded_item?: SeededItem;
 }
+export interface ProxyItemFetchRequest {
+  item_id: string;
+  username: string;
+}
+export interface ProxyVersionRequest {
+  id: string;
+  reason: string;
+  username: string;
+}
 export interface QueryFilter {
   item_category?: ItemCategory;
   item_subtype?: ItemSubType;
@@ -874,6 +1051,8 @@ export interface RecordInfo {
   item_category: ItemCategory;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface RegistryExportResponse {
   status: Status;
@@ -957,4 +1136,46 @@ export interface UntypedFetchResponse {
   item?: {
     [k: string]: unknown;
   };
+}
+export interface UpdateResponse {
+  status: Status;
+  register_create_activity_session_id?: string;
+}
+export interface VersionFetchResponse {
+  status: Status;
+  item?: ItemVersion | SeededItem;
+  roles?: string[];
+  locked?: boolean;
+  item_is_seed?: boolean;
+}
+export interface VersionListResponse {
+  status: Status;
+  items?: ItemVersion[];
+  seed_items?: SeededItem[];
+  unparsable_items?: {
+    [k: string]: unknown;
+  }[];
+  total_item_count?: number;
+  complete_item_count?: number;
+  seed_item_count?: number;
+  unparsable_item_count?: number;
+  not_authorised_count?: number;
+  pagination_key?: {
+    [k: string]: unknown;
+  };
+}
+export interface VersionRequest {
+  id: string;
+  reason: string;
+}
+export interface VersionResponse {
+  new_version_id: string;
+  version_job_session_id: string;
+}
+export interface VersionDetails {
+  commit_id?: string;
+  commit_url?: string;
+  tag_name?: string;
+  release_title?: string;
+  release_url?: string;
 }

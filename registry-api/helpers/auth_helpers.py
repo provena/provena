@@ -11,6 +11,29 @@ from dependencies.dependencies import secret_cache
 
 
 def get_item_from_auth_table(id: str, config: Config) -> AuthTableEntry:
+    """
+
+    Fetches the specified item from the auth table.
+
+    Parses into the AuthTableEntry model.
+
+    Parameters
+    ----------
+    id : str
+        The id of the record
+    config : Config
+        The API config
+
+    Returns
+    -------
+    AuthTableEntry
+        The parsed entry
+
+    Raises
+    ------
+    HTTPException
+        Managed HTTP exception for known errors
+    """
     # get the entry
     try:
         entry_raw = get_auth_entry(id=id, config=config)
@@ -40,6 +63,20 @@ def get_item_from_auth_table(id: str, config: Config) -> AuthTableEntry:
 
 
 def proxied_request(user: User) -> Dict[str, str]:
+    """
+
+    Formats a header dict using the user's Bearer token
+
+    Parameters
+    ----------
+    user : User
+        The user object
+
+    Returns
+    -------
+    Dict[str, str]
+        headers
+    """
     # creates a header for use in requests
     return {
         'Authorization': 'Bearer ' + user.access_token
@@ -47,6 +84,29 @@ def proxied_request(user: User) -> Dict[str, str]:
 
 
 def get_proxy_user_groups(user: User, config: Config) -> List[UserGroupMetadata]:
+    """
+
+    Uses the registry API service account to make an admin request fetching the users groups from the Auth API.
+
+    This is required because we may not have an active token for the user in proxy context so need to get the relevant group info as service account instead.
+
+    Parameters
+    ----------
+    user : User
+        The user which includes the proxy username
+    config : Config
+        API Config
+
+    Returns
+    -------
+    List[UserGroupMetadata]
+        List of groups the user is a part of 
+
+    Raises
+    ------
+    HTTPException
+        managed http exception
+    """
     # get the service account token to make
     # request on behalf of user
     token = get_service_token(secret_cache, config=config)
@@ -101,6 +161,27 @@ def get_proxy_user_groups(user: User, config: Config) -> List[UserGroupMetadata]
 
 
 def get_user_groups(user: User, config: Config) -> List[UserGroupMetadata]:
+    """
+
+    Uses the users token to make an auth api request listing the user group's.
+
+    Parameters
+    ----------
+    user : User
+        The user incl token
+    config : Config
+        The API config
+
+    Returns
+    -------
+    List[UserGroupMetadata]
+        List of user's groups
+
+    Raises
+    ------
+    HTTPException
+        Managed http exception 
+    """
     # get the auth headers using the users token
     auth_headers = proxied_request(user)
 
@@ -143,6 +224,22 @@ def get_user_groups(user: User, config: Config) -> List[UserGroupMetadata]:
 
 
 def default_access_settings(username: str, default_roles: Roles) -> AccessSettings:
+    """
+
+    Generates default access settings for owner based on default roles provided.
+
+    Parameters
+    ----------
+    username : str
+        The username
+    default_roles : Roles
+        List of default roles
+
+    Returns
+    -------
+    AccessSettings
+        The complete access settings
+    """
     return AccessSettings(
         owner=username,
         general=default_roles,
@@ -151,6 +248,24 @@ def default_access_settings(username: str, default_roles: Roles) -> AccessSettin
 
 
 def evaluate_user_access(user_roles: Roles, acceptable_roles: Roles) -> bool:
+    """
+
+    Determines if a user has access to some operation by checking if ANY of the
+    acceptable roles is present in the user's roles
+
+    Parameters
+    ----------
+    user_roles : Roles
+        The user roles
+
+    acceptable_roles : Roles
+        The list of acceptable roles
+
+    Returns
+    -------
+    bool
+        True iff access granted
+    """
     for acceptable in acceptable_roles:
         if acceptable in user_roles:
             return True
@@ -159,6 +274,24 @@ def evaluate_user_access(user_roles: Roles, acceptable_roles: Roles) -> bool:
 
 
 def determine_user_access(access_settings: AccessSettings, user_group_ids: Set[str]) -> Roles:
+    """
+
+    Combines the general access provided in the resource access settings +
+    merges any groups the user is in with the associated group permissions to
+    create a set of roles the user can take against the resource.
+
+    Parameters
+    ----------
+    access_settings : AccessSettings
+        The access settings for the resource
+    user_group_ids : Set[str]
+        List of groups the user is in
+
+    Returns
+    -------
+    Roles
+        The list of roles the user can take
+    """
     user_roles: Set[str] = set([])
 
     # grant all general roles
@@ -174,12 +307,51 @@ def determine_user_access(access_settings: AccessSettings, user_group_ids: Set[s
     return list(user_roles)
 
 
-def seed_auth_configuration(id: str, username: str, config: Config, default_roles: Roles) -> None:
+def seed_auth_configuration(id: str, username: str, config: Config, default_roles: Roles, base_settings: Optional[AccessSettings] = None) -> None:
+    """
+
+    Creates a default auth configuration table entry, then places it into the
+    auth table.
+
+    Can also use an existing settings object (potentially from a different
+    resource/owner), and update it to fit this item. This is used in the
+    version workflow to generate the revised item based on access of the
+    previous.
+
+    Parameters
+    ----------
+    id : str
+        The id of the item to seed
+
+    username : str
+        Owner username
+
+    config : Config
+        API config
+
+    default_roles : Roles
+        Default set of roles
+
+    base_settings : Optional[AccessSettings], optional
+        The existing settings, by default None
+
+    Raises
+    ------
+    HTTPException
+        Managed HTTP exception
+    """
     # generate the default access settings - starting point
-    settings = default_access_settings(
-        username=username,
-        default_roles=default_roles
-    )
+    settings: AccessSettings
+
+    if base_settings is not None:
+        settings = base_settings
+        # overwrite the owner - versioning can change this!
+        settings.owner = username
+    else:
+        settings = default_access_settings(
+            username=username,
+            default_roles=default_roles
+        )
 
     # double check there isn't a record already
     entry_exists = True
@@ -216,6 +388,25 @@ def seed_auth_configuration(id: str, username: str, config: Config, default_role
 
 
 def special_permission_check(user: User, special_roles: Roles) -> bool:
+    """
+
+    Checks if the user contains any of a set of special roles. 
+
+    Also enables access if the user is an admin - as determined by user_is_admin
+    function.
+
+    Parameters
+    ----------
+    user : User
+        The user object - includes token with roles parsed
+    special_roles : Roles
+        The list of acceptable roles
+
+    Returns
+    -------
+    bool
+        True iff access granted
+    """
     # only grants access if the user has ANY of the special roles OR is an admin
     user_roles = user.roles
 
@@ -223,14 +414,33 @@ def special_permission_check(user: User, special_roles: Roles) -> bool:
     if user_is_admin(user):
         return True
 
-    # check special roles
-    for possible_special_role in special_roles:
-        if possible_special_role in user_roles:
-            return True
-    return False
+    return evaluate_user_access(user_roles=user_roles, acceptable_roles=special_roles)
 
 
 def get_user_link(user: User, config: Config) -> Optional[str]:
+    """
+
+    Fetches the user linked person using the link service.
+
+    Returns optional string based on response.
+
+    Parameters
+    ----------
+    user : User
+        The user to fetch for
+    config : Config
+        The API config
+
+    Returns
+    -------
+    Optional[str]
+        The person ID if linked
+
+    Raises
+    ------
+    HTTPException
+        Managed http exception
+    """
     # pass through user token
     headers = proxied_request(user=user)
 

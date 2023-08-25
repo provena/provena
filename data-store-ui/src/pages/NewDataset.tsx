@@ -81,7 +81,7 @@ const NewDataset = observer((props: NewDatasetProps) => {
         newDatasetStore.loadSchemaFirstTime();
     }, []);
 
-    // user id link enforcer
+    // user id link enforcer (enabled for Datasets)
     const linkEnforcer = useUserLinkEnforcer({
         blockEnabled: true,
         blockOnError: true,

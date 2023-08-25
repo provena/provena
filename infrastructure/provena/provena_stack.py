@@ -3,7 +3,10 @@ from aws_cdk import (
     CfnOutput,
     aws_backup as backup,
     aws_kms as kms,
+    aws_ecs as ecs,
+    aws_secretsmanager as aws_sm,
     Aspects,
+    Duration,
     Tags
 )
 from constructs import Construct
@@ -14,8 +17,8 @@ from provena.component_constructs.auth_lambda_api import LambdaAuthApi
 from provena.component_constructs.keycloak_infrastructure import KeycloakConstruct
 from provena.component_constructs.network_construct import NetworkConstruct
 from provena.component_constructs.identity_service import IdentityService
-from provena.component_constructs.prov_job_infrastructure import ProvJobQueue
 from provena.component_constructs.registry_api import RegistryAPI
+from provena.component_constructs.jobs.AsyncJobInfra import AsyncJobInfra, JobType, JobConfig
 from provena.component_constructs.prov_api import ProvAPI
 from provena.component_constructs.registry_table import RegistryTable, IdIndexTable
 from provena.component_constructs.static_cloudfront_distribution import StaticCloudfrontDistribution
@@ -26,6 +29,8 @@ from provena.component_constructs.neo4j_ecs import Neo4jECS
 from provena.component_constructs.backups import BackupService
 from provena.component_constructs.search_infra import OpenSearchCluster
 from provena.component_constructs.search_streamers import SearchStreamers, StreamerConfiguration, SearchableObject
+from provena.utility.direct_secret_import import direct_import
+from provena.utility.hash_dir import hash_dir_list
 from provena.config.config_class import *
 from provena.config.config_helpers import resolve_endpoints
 from typing import Optional, Any, List
@@ -234,10 +239,11 @@ class ProvenaStack(Stack):
                 github_build_token_arn=build_token_arn,
                 domain=auth_config.api_domain,
                 keycloak_endpoint=keycloak_auth_endpoint_full,
-                email_connection_secret_arn=config.general.email_connection_secret_arn,
+                api_service_account_secret_arn=auth_config.api_service_account_secret_arn,
                 allocator=dns_allocator,
                 cert_arn=cert_arn,
                 request_table_pitr=auth_config.pitr_request_table,
+                access_alerts_email_address=auth_config.access_alerts_email_address,
                 user_groups_table_pitr=auth_config.pitr_groups_table,
                 request_table_removal_policy=auth_config.request_table_removal_policy,
                 groups_table_removal_policy=auth_config.groups_table_removal_policy,
@@ -393,7 +399,12 @@ class ProvenaStack(Stack):
                 auth_table=auth_table,
                 lock_table=lock_table,
                 cert_arn=cert_arn,
-                auth_api_endpoint=auth_api.endpoint
+                auth_api_endpoint=auth_api.endpoint,
+                git_commit_id=config.deployment.git_commit_id,
+                git_commit_url=config.deployment.git_commit_url,
+                git_tag_name=config.deployment.git_tag_name,
+                git_release_title=config.deployment.git_release_title,
+                git_release_url=config.deployment.git_release_url,
             )
 
             self.registry_api_endpoint = CfnOutput(
@@ -451,6 +462,17 @@ class ProvenaStack(Stack):
                 id="data_store_ui_bucket_name",
                 value=ds_ui.bucket_name)
 
+            # System's Dataset Reviewers Table
+            reviewers_table = IdIndexTable(
+                scope=self,
+                construct_id='data-store-reviewers',
+                pitr_enabled=reg_config.pitr_enabled,
+                readers=[],
+                writers=[],
+                # same removal policy as registry tables
+                removal_policy=reg_config.tables_removal_policy
+            )
+
             data_api = LambdaDataStoreAPI(
                 self,
                 construct_id='data-api',
@@ -471,6 +493,7 @@ class ProvenaStack(Stack):
                 oidc_service_role_arn=oidc_service_role_arn,
                 storage_bucket_arn=config.general.storage_bucket_arn,
                 allocator=dns_allocator,
+                reviewers_table=reviewers_table,
                 # Include registry for permissions and
                 # env variable injection
                 cert_arn=cert_arn,
@@ -517,7 +540,7 @@ class ProvenaStack(Stack):
             )
 
             # Create lambda prov api
-            prov_api = ProvAPI(
+            prov_api: ProvAPI = ProvAPI(
                 scope=self,
                 construct_id='prov-api',
                 stage=stage,
@@ -542,40 +565,6 @@ class ProvenaStack(Stack):
                 self, 'prov-api-endpoint-output',
                 value=prov_api.endpoint
             )
-
-            # prov job infra
-            prov_job = ProvJobQueue(
-                scope=self,
-                id='prov-job',
-                topic_display_name=stage + "prov-job-topic",
-                build_github_token_arn=build_token_arn,
-                keycloak_endpoint=keycloak_auth_endpoint_full,
-                prov_api_endpoint=prov_api.endpoint,
-                branch_name=branch_name,
-                repo_string=config.deployment.git_repo_string,
-                dispatcher_service_role_secret_arn=prov_config.prov_job_dispatcher_service_role_secret_arn,
-                table_removal_policy=prov_config.job_tables_removal_policy,
-                extra_hash_dirs=prov_config.prov_job_extra_hash_dirs
-            )
-
-            # grant some permissions to the prov API
-            prov_job.lodge_job_topic.grant_publish(prov_api.function)
-            prov_job.job_status_table.grant_read_write_data(prov_api.function)
-
-            # reference the table name and topic arn
-            prov_api.function.add_environment(
-                "PROV_JOB_TABLE_NAME", prov_job.job_status_table.table_name
-            )
-            prov_api.function.add_environment(
-                "PROV_JOB_TOPIC_ARN", prov_job.lodge_job_topic.topic_arn
-            )
-
-            # Allow the prov-api to read write the batch table
-            prov_job.batch_table.grant_read_write_data(prov_api.function)
-
-            # And reference the name in environment
-            prov_api.function.add_environment(
-                "BATCH_TABLE_NAME", prov_job.batch_table.table_name)
 
             # Create the prov static UI website
             prov_ui = StaticCloudfrontDistribution(scope=self,
@@ -655,6 +644,164 @@ class ProvenaStack(Stack):
                 self, 'warmer-api-endpoint-output',
                 value=warmer.endpoint
             )
+
+        # Job Infrastructure
+        assert prov_api
+        github_token = direct_import(
+            config.deployment.github_token_arn, Stack.of(self).region)
+
+        # TODO Clean this up
+        prov_lodge_environment = prov_api.prov_api_environment.copy()
+        assert registry_api
+        # This can be optional - so filter for non None only
+        registry_job_environment: Dict[str, str] = {
+            k: v for k, v in registry_api.registry_api_environment.items() if v is not None}
+
+        # Email connection secret
+
+        email_secret = aws_sm.Secret.from_secret_complete_arn(
+            scope=self, id='email-secret', secret_complete_arn=config.general.email_connection_secret_arn
+        )
+
+        assert network
+        async_config = config.components.async_jobs
+        assert async_config
+        jobs: List[JobConfig] = [
+            JobConfig(type=JobType.PROV_LODGE,
+                      image=ecs.ContainerImage.from_asset(
+                          directory="../prov-api",
+                          file="JobDockerfile",
+                          build_args={
+                              "github_token": github_token,
+                              "repo_string": config.deployment.git_repo_string,
+                              "branch_name": config.deployment.git_branch_name,
+                              "CACHE_BUSTER": hash_dir_list(async_config.prov_job_extra_hash_dirs)
+                          },
+                      ),
+                      visibility_timeout=Duration.minutes(5),
+                      # All tasks get the queue url, status table name, job type and sns
+                      # topic by default - these are added in
+                      environment=prov_lodge_environment,
+                      secrets={}
+                      ),
+            JobConfig(type=JobType.REGISTRY,
+                      image=ecs.ContainerImage.from_asset(
+                          directory="../registry-api",
+                          file="JobDockerfile",
+                          build_args={
+                              "github_token": github_token,
+                              "repo_string": config.deployment.git_repo_string,
+                              "branch_name": config.deployment.git_branch_name,
+                              "CACHE_BUSTER": hash_dir_list(async_config.registry_job_extra_hash_dirs)
+                          },
+                      ),
+                      visibility_timeout=Duration.minutes(5),
+                      # All tasks get the queue url, status table name, job type and sns
+                      # topic by default - these are added in
+                      environment=registry_job_environment,
+                      secrets={}
+                      ),
+            JobConfig(type=JobType.EMAIL,
+                      image=ecs.ContainerImage.from_asset(
+                          directory="../services/email-service",
+                          file="Dockerfile",
+                          build_args={
+                              "github_token": github_token,
+                              "repo_string": config.deployment.git_repo_string,
+                              "branch_name": config.deployment.git_branch_name,
+                              "CACHE_BUSTER": hash_dir_list(async_config.email_job_extra_hash_dirs)
+                          },
+                      ),
+                      visibility_timeout=Duration.minutes(5),
+                      # All tasks get the queue url, status table name, job type and sns
+                      # topic by default - these are added in
+                      environment={},
+                      secrets={
+                          # Connection information
+                          'port': ecs.Secret.from_secrets_manager(
+                              secret=email_secret,
+                              field="port"
+                          ),
+                          # smtp_server: str
+                          'smtp_server': ecs.Secret.from_secrets_manager(
+                              secret=email_secret,
+                              field="smtp_server"
+                          ),
+                          # Username/password
+                          # username: str
+                          'username': ecs.Secret.from_secrets_manager(
+                              secret=email_secret,
+                              field="username"
+                          ),
+                          # password: SecretStr
+                          'password': ecs.Secret.from_secrets_manager(
+                              secret=email_secret,
+                              field="password"
+                          ),
+                          # Email from address
+                          # email_from: str
+                          'email_from': ecs.Secret.from_secrets_manager(
+                              secret=email_secret,
+                              field="email_from"
+                          )
+                      }
+                      )
+        ]
+
+        async_infra: AsyncJobInfra = AsyncJobInfra(
+            scope=self,
+            construct_id='async',
+            stage=stage,
+            jobs=jobs,
+            idle_timeout=async_config.async_idle_timeout,
+            max_task_scaling=async_config.max_task_scaling,
+            cert_arn=config.dns.domain_certificate_arn,
+            allocator=dns_allocator,
+            keycloak_endpoint=keycloak_auth_endpoint_full,
+            domain=async_config.job_api_domain,
+            domain_base=config.general.application_root_domain,
+            github_build_token_arn=config.deployment.github_token_arn,
+            repo_string=config.deployment.git_repo_string,
+            branch_name=config.deployment.git_branch_name,
+            vpc=network.vpc,
+            job_api_extra_hash_dirs=async_config.job_api_extra_hash_dirs,
+            invoker_extra_hash_dirs=async_config.invoker_extra_hash_dirs,
+            connector_extra_hash_dirs=async_config.connector_extra_hash_dirs
+        )
+
+        # Expose the endpoint
+        self.job_api_endpoint = CfnOutput(
+            self, 'job-api-endpoint-output',
+            value=async_infra.job_api_endpoint
+        )
+
+        # Update data store API with job api endpoint
+        assert data_api
+        data_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
+
+        # Update auth API with job api endpoint
+        assert auth_api
+        auth_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
+
+        # Update the registry API with the job API endpoint
+        registry_api.add_to_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
+        # This sets up the prov job ECS task dfn to have equivalent
+        # permissions/rights as the prov API
+        registry_api.grant_api_equivalent_permissions(
+            async_infra.task_roles[JobType.REGISTRY])
+
+        # Update the prov API with the job API endpoint
+        prov_api.add_to_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
+        # This sets up the prov job ECS task dfn to have equivalent
+        # permissions/rights as the prov API
+        prov_api.grant_equivalent_permissions(
+            async_infra.task_roles[JobType.PROV_LODGE])
+
+        # Add permissions to job
 
         # Configure AWS backup if required
         backup_config = config.backup

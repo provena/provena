@@ -27,8 +27,7 @@ async def test_title():
 
     # Pull out title property
     title = await page.title()
-    # TODO Fix this - title changes as per UI theme
-    assert title == 'TODO'
+    assert title == 'RRAP M&DS Information System'
     await browser.close()
 
 

@@ -1,7 +1,0 @@
-# normal requirements
-pydantic[email]==1.*
-requests
-aws_secretsmanager_caching
-boto3
-botocore
-cachetools

@@ -8,6 +8,7 @@ from aws_cdk import (
 )
 from typing import Any, List
 from enum import Enum, auto
+from provena.config.config_global_defaults import *
 
 """
     This class holds config information about deployment.
@@ -67,6 +68,7 @@ class ProvenaComponent(str, Enum):
     LANDING_PAGE = "LANDING_PAGE"
     AUTH_API = "AUTH_API"
     SEARCH = "SEARCH"
+    ASYNC_JOBS = "ASYNC_JOBS"
     ENTITY_REGISTRY = "ENTITY_REGISTRY"
     PROV_STORE = "PROV_STORE"
     WARMER = "WARMER"
@@ -88,6 +90,31 @@ STAGES
 @dataclass
 class NetworkingComponent():
     component: ProvenaComponent = ProvenaComponent.NETWORKING
+
+
+@dataclass
+class AsyncJobsComponent():
+    job_api_domain: str
+
+    job_api_extra_hash_dirs: List[str]
+    invoker_extra_hash_dirs: List[str]
+    connector_extra_hash_dirs: List[str]
+
+    # how long does the job poll before exiting (seconds)
+    async_idle_timeout: int = 120
+
+    # maximum number of concurrent tasks
+    max_task_scaling: int = 3
+
+    # Job config extra hash dirs (defaults provided)
+    registry_job_extra_hash_dirs: List[str] = field(
+        default_factory=lambda: REGISTRY_JOB_EXTRA_HASH_DIRS)
+    prov_job_extra_hash_dirs: List[str] = field(
+        default_factory=lambda: PROV_JOB_EXTRA_HASH_DIRS)
+    email_job_extra_hash_dirs: List[str] = field(
+        default_factory=lambda: EMAIL_JOB_EXTRA_HASH_DIRS)
+
+    component: ProvenaComponent = ProvenaComponent.ASYNC_JOBS
 
 
 class BackupType(str, Enum):
@@ -196,6 +223,9 @@ class AuthApiComponent():
 
     pitr_request_table: bool
     pitr_groups_table: bool
+
+    api_service_account_secret_arn: str
+    access_alerts_email_address: str
 
     backup_request_table: BackupType
     backup_groups_table: BackupType
@@ -319,6 +349,7 @@ class ComponentConfig():
     entity_registry: Optional[EntityRegistryComponent]
     prov_store: Optional[ProvStoreComponent]
     warmer: Optional[LambdaWarmerComponent]
+    async_jobs: Optional[AsyncJobsComponent]
 
 
 """
@@ -378,8 +409,15 @@ class DeploymentConfig():
     git_repo_name: str
     # Which git branch should the code be deployed from
     git_branch_name: str
+    # git commit deploying from
+    git_commit_id: Optional[str]
+    git_commit_url: Optional[str]
+    git_tag_name: Optional[str]
+    git_release_title: Optional[str]
+    git_release_url: Optional[str]
 
     # git repo string = owner_org/repo_name
+
     @property
     def git_repo_string(self) -> str:
         return f"{self.git_owner_org}/{self.git_repo_name}"
@@ -406,6 +444,8 @@ class DeploymentConfig():
 
     # Should an interface export pipeline be deployed
     interface_pipeline: bool = True
+    # Should a quick deploy pipeline be deployed
+    quick_deploy_pipeline: bool = True
     # How should the pipeline be triggered?
     interface_pipeline_trigger_settings: Optional[aws_codepipeline_actions.GitHubTrigger] = None
     # build badge?
@@ -463,6 +503,8 @@ class KeycloakEndpoints():
 @dataclass
 class GeneralConfig():
     email_connection_secret_arn: str
+    
+    # used for authenticating docker pulls  
     dockerhub_creds_arn: str
 
     # storage bucket arn and backup
@@ -475,7 +517,7 @@ class GeneralConfig():
 
     # What theme ID is used for the UIs?
     ui_theme_id: str
-    
+
     # Links for deployment specific documentation/contact us links
     documentation_base_link: str
     contact_us_link: str
@@ -589,6 +631,7 @@ class ResolvedDomainNames():
     search_api: str
     auth_api: str
     warmer_api: str
+    async_jobs_api: str
 
     # UIs (full e.g. https://...com)
     data_store_ui: str
@@ -617,6 +660,7 @@ class UiOnlyDomainNames():
     auth_api_endpoint: str
     registry_api_endpoint: str
     warmer_api_endpoint: str
+    async_jobs_api_endpoint: str
 
     documentation_base_link: str
     contact_us_link: str
@@ -635,6 +679,9 @@ class ProvenaUIOnlyConfig():
     deployment_stack_id: str
 
     github_token_arn: str
+    
+    # used for authenticating docker pulls  
+    dockerhub_creds_arn: str
 
     git_repo_name: str
     git_owner_org: str
@@ -649,10 +696,10 @@ class ProvenaUIOnlyConfig():
     target_stage: Stage
     domains: UiOnlyDomainNames
     dns: DNSConfig
-    
+
     # What theme ID is used for the UIs?
     ui_theme_id: str
-    
+
     cdk_out_path: str
     cdk_app_name: str
     ticket_no: int

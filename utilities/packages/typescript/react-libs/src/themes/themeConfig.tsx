@@ -1,6 +1,10 @@
 // File for importing custom configs
 import { ThemeConfigMapType } from "../util/themeValidation";
 
+// Custom themes
+import rrapScssTheme from "./rrap/scssConfig.module.scss";
+import { rrapThemeConfig } from "./rrap/themeConfig";
+
 import exampleScssTheme from "./example/scssConfig.module.scss";
 import { exampleThemeConfig } from "./example/themeConfig";
 
@@ -22,6 +26,10 @@ we can directly use "default" in UI's index.tsx
 */
 
 export const themeConfigMap: ThemeConfigMapType = {
+    rrap: {
+        scssConfig: rrapScssTheme,
+        themeConfig: rrapThemeConfig,
+    },
     example: {
         scssConfig: exampleScssTheme,
         themeConfig: exampleThemeConfig,

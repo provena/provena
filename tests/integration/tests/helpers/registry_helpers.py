@@ -2,7 +2,7 @@ import os
 from requests import Response
 from tests.helpers.general_helpers import display_failed_cleanups
 from RegistrySharedFunctionality.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
-from RegistrySharedFunctionality.TestConfig import RouteParameters, route_params
+from RegistrySharedFunctionality.TestConfig import RouteParameters, route_params, non_test_route_params
 from SharedInterfaces.RegistryModels import *
 from SharedInterfaces.RegistryAPI import *
 import requests
@@ -43,6 +43,10 @@ def get_item_subtype_route_params(item_subtype: ItemSubType) -> RouteParameters:
         the routeparametrs for the desired item subtype
     """
     for item_route_params in route_params:
+        if item_route_params.subtype == item_subtype:
+            return item_route_params
+
+    for item_route_params in non_test_route_params:
         if item_route_params.subtype == item_subtype:
             return item_route_params
 
@@ -93,7 +97,7 @@ def create_item_from_domain_info_successfully(item_subtype: ItemSubType, token: 
         item_subtype=item_subtype, token=token, domain_info=domain_info)
 
     # ensure success before returning
-    assert create_resp.status_code == 200, f"Non 200 code: {create_resp}"
+    assert create_resp.status_code == 200, f"Non 200 code: {create_resp}, Response: {create_resp.json()}"
     create_resp = GenericCreateResponse.parse_obj(create_resp.json())
     assert create_resp.status.success, f"Unsuccessful create item. {create_resp.status}"
     assert create_resp.created_item, f"Created item not returned. {create_resp}"
@@ -213,8 +217,18 @@ def fetch_item_successfully(item_subtype: ItemSubType, id: str, token: str) -> G
 
     return fetch_resp
 
+
+def fetch_item_successfully_parse(item_subtype: ItemSubType, id: str, token: str, model: Type[GenericFetchResponse]) -> BaseModel:
+    fetch_resp = fetch_item(item_subtype=item_subtype, id=id, token=token)
+    assert fetch_resp.status_code == 200, f"Non 200 status code. {fetch_resp.status_code}"
+    fetch_resp = model.parse_obj(fetch_resp.json())
+    assert fetch_resp.status.success, f"Unsuccessful fetch. {fetch_resp.status}"
+    return fetch_resp
+
+
 def fetch_complete_person_item_successfully(id: str, token: str) -> ItemPerson:
-    fetch_resp = fetch_item(item_subtype=ItemSubType.PERSON, id=id, token=token)
+    fetch_resp = fetch_item(
+        item_subtype=ItemSubType.PERSON, id=id, token=token)
 
     assert fetch_resp.status_code == 200, f"Non 200 status code. {fetch_resp.status_code}"
     fetch_resp = PersonFetchResponse.parse_obj(fetch_resp.json())
@@ -222,9 +236,10 @@ def fetch_complete_person_item_successfully(id: str, token: str) -> ItemPerson:
     person_item = fetch_resp.item
     assert person_item, f"Person item not returned. {fetch_resp}"
     assert person_item.record_type == RecordType.COMPLETE_ITEM, f"Person item not complete but is {person_item.record_type}"
-    assert isinstance(person_item, ItemPerson), f"Person item not of type ItemPerson. {type(person_item)}"
+    assert isinstance(
+        person_item, ItemPerson), f"Person item not of type ItemPerson. {type(person_item)}"
     return person_item
-    
+
 
 class FailedEntityDelete:
     item_subtype: ItemSubType
@@ -256,6 +271,9 @@ def perform_entity_cleanup(to_clean: List[Tuple[ItemSubType, IdentifiedResource]
                     error_msg=str(e)
                 ))
 
+    # removed all items - clear - don't want to remove the same elements
+    # multiple times
+    to_clean.clear()
     if len(failed_cleanups) != 0:
         display_failed_cleanups(failed_cleanups)
         assert False, "Failed to clean up all items"
@@ -661,6 +679,21 @@ def update_item(id: str, updated_domain_info: Any, item_subtype: ItemSubType, to
     return update_item_resp
 
 
+def parsed_successful_update_item(id: str, updated_domain_info: Any, item_subtype: ItemSubType, token: str, reason: str = "Integration testing") -> UpdateResponse:
+    resp = update_item(
+        id=id,
+        updated_domain_info=updated_domain_info,
+        item_subtype=item_subtype,
+        token=token,
+        reason=reason
+    )
+    assert resp.status_code == 200, f"Non 200 status code {resp.status_code}. Info {resp.text}."
+    parsed = UpdateResponse.parse_obj(resp.json())
+
+    assert parsed.status.success, f"Non success from update, details: {parsed.status.details}"
+    return parsed
+
+
 def get_lock_status(id: str, item_subtype: ItemSubType, token: str) -> LockStatusResponse:
     request_params = {"id": id}
     curr_route = get_route_from_item_subtype_and_action(
@@ -707,3 +740,63 @@ def check_item_created_timestamp_sorting_and_type(items: List[ItemBase], ascendi
     if subtype:
         for item in items:
             assert item.item_subtype == subtype, f"item.item_subtype ({item.item_subtype}) should be {subtype}"
+
+
+def version_item(id: str, token: str, item_subtype: ItemSubType, reason: str = "Integration testing") -> Response:
+    version_route = get_route_from_item_subtype_and_action(
+        action=RouteActions.VERSION, item_subtype=item_subtype)
+    req = py_to_dict(VersionRequest(id=id, reason=reason))
+    version_resp = requests.post(
+        url=config.REGISTRY_API_ENDPOINT + version_route,
+        json=req,
+        auth=BearerAuth(token)
+    )
+    return version_resp
+
+
+def parsed_version_item(id: str, token: str, item_subtype: ItemSubType, reason: str = "Integration testing") -> VersionResponse:
+    raw = version_item(id=id, token=token,
+                       item_subtype=item_subtype, reason=reason)
+    assert raw.status_code == 200, f"Non 200 status code {raw.status_code}. Res: {raw.text}."
+    return VersionResponse.parse_obj(raw.json())
+
+
+def fail_version_item(id: str, token: str, item_subtype: ItemSubType, reason: str = "Integration testing", expected_code: Optional[int] = 400) -> Response:
+    raw = version_item(id=id, token=token,
+                       item_subtype=item_subtype, reason=reason)
+
+    if expected_code is not None:
+        assert raw.status_code == expected_code, f"Non {expected_code} status code {raw.status_code}. Res: {raw.text}."
+    else:
+        assert raw.status_code != 200, f"200 status code. Expected failure. Res: {raw.text}."
+
+    return raw
+
+
+def seed_item(token: str, item_subtype: ItemSubType) -> Response:
+    seed_route = get_route_from_item_subtype_and_action(
+        action=RouteActions.SEED, item_subtype=item_subtype)
+    seed_resp = requests.post(
+        url=config.REGISTRY_API_ENDPOINT + seed_route,
+        auth=BearerAuth(token)
+    )
+    return seed_resp
+
+
+def parsed_seed_item(token: str, item_subtype: ItemSubType, model: Type[GenericSeedResponse]) -> GenericSeedResponse:
+    raw = seed_item(token=token,
+                    item_subtype=item_subtype)
+    assert raw.status_code == 200, f"Non 200 status code {raw.status_code}. Res: {raw.text}."
+    return model.parse_obj(raw.json())
+
+
+def fail_seed_item(token: str, item_subtype: ItemSubType,  expected_code: Optional[int] = 400) -> Response:
+    raw = seed_item(token=token,
+                    item_subtype=item_subtype)
+
+    if expected_code is not None:
+        assert raw.status_code == expected_code, f"Non {expected_code} status code {raw.status_code}. Res: {raw.text}."
+    else:
+        assert raw.status_code != 200, f"200 status code. Expected failure. Res: {raw.text}."
+
+    return raw

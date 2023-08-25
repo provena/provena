@@ -15,9 +15,11 @@ import {
 import {
     BOOLEAN_AUTO_DETECTORS,
     NUMBER_AUTO_DETECTORS,
+    OBJECT_AUTO_DETECTORS,
     STRING_AUTO_DETECTORS,
 } from "./JsonOverrideDetectors";
 import {
+    ARRAY_RENDER_OVERRIDES,
     BOOLEAN_RENDER_OVERRIDES,
     NUMBER_RENDER_OVERRIDES,
     STRING_RENDER_OVERRIDES,
@@ -146,7 +148,13 @@ export function generateStandardGrid(
             <Grid item xs={widths.heading} style={{ width: "100%" }}>
                 {inputs.lhContent}
             </Grid>
-            <Grid container item xs={widths.value} style={{ width: "100%" }}>
+            <Grid
+                container
+                item
+                xs={widths.value}
+                style={{ width: "100%" }}
+                sx={{ color: inputs.style.color ?? "inherit" }}
+            >
                 {inputs.rhContent}
             </Grid>
         </Grid>
@@ -387,6 +395,21 @@ export const arrayRenderer = (
     const val = props.json.value as Array<JsonTypes>;
     const emptyString = "No entries";
 
+    // override
+    // Check for a direct or auto renderer override
+    if (props.json.name !== undefined) {
+        const override =
+            ARRAY_RENDER_OVERRIDES.get(props.json.name) ??
+            checkForAutoDetectors<object>(
+                OBJECT_AUTO_DETECTORS,
+                props.json.name,
+                val
+            );
+
+        if (override !== undefined) {
+            return override(props.json.name, val, props);
+        }
+    }
     // Start by removing any null or defined entries
     const filtered = val.filter((e) => {
         return !(e === undefined || e === null);

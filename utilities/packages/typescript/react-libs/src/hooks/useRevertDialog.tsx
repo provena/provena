@@ -34,7 +34,7 @@ const nonRevertableEntityTypesDisplayMap: Map<
             }`;
             return (
                 <p>
-                    You cannot revert to a previous version of a dataset from
+                    You cannot revert to a previous metadata history of a dataset from
                     the registry. Instead, visit the item in the{" "}
                     <a href={link} target="_blank" rel="noreferrer">
                         Data Store
@@ -49,7 +49,7 @@ const nonRevertableEntityTypesDisplayMap: Map<
         (id: string) => {
             return (
                 <p>
-                    You cannot revert to a previous version of a model run. If
+                    You cannot revert to a previous metadata history of a model run. If
                     you would like to discuss options to help manage changes to
                     existing model runs, please contact us.
                 </p>
@@ -151,7 +151,7 @@ export const useRevertDialog = (
         if (props.subtype && props.id && props.subtype !== "DATASET") {
             nonRevertableContent = (
                 <p>
-                    You cannot revert to a previous version of a non dataset
+                    You cannot revert to a previous metadata history of a non dataset
                     from the data store. Instead, visit the item in the{" "}
                     <a href={REGISTRY_LINK} target="_blank" rel="noreferrer">
                         Registry
@@ -176,7 +176,7 @@ export const useRevertDialog = (
                     fullWidth={true}
                     maxWidth={"md"}
                 >
-                    <DialogTitle>Revert to previous version</DialogTitle>
+                    <DialogTitle>Revert to previous metadata version</DialogTitle>
                     <DialogContent>
                         {nonRevertableContent !== undefined ? (
                             nonRevertableContent
@@ -184,8 +184,7 @@ export const useRevertDialog = (
                             <Stack spacing={2} direction="column">
                                 <DialogContentText>
                                     Please provide a reason to revert to this
-                                    previous version (v{props.historyId ?? "?"}
-                                    ).
+                                    previous metadata version.
                                 </DialogContentText>
                                 <TextField
                                     value={reason}

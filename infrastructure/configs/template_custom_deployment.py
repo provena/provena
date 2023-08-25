@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_codepipeline_actions as cp_actions,
     Environment
 )
+from configs.version_helpers import *
 from provena.config.config_class import *
 from provena.config.config_global_defaults import *
 
@@ -127,6 +128,17 @@ register_checker("ui_theme_id", ui_theme_id)
 # TODO Are pipeline alerts activated? And if so, what email address?
 pipeline_alerts_activated: bool = False
 pipeline_alerts_email_address: Optional[str] = None
+
+# TODO What email address to send access alerts to?
+access_alerts_email_address="TODO"
+register_checker("access_alerts_email_address", access_alerts_email_address)
+
+# ==================
+# OPTIONAL PIPELINES
+# ==================
+
+# TODO Include additional quick deploy pipeline that by passes tests for faster development?
+quick_deploy_pipeline_activated: bool = False
 
 # ==================================
 # DOCUMENTATION AND CONTACT US LINKS
@@ -261,6 +273,7 @@ data_store_oidc_service_account_arn = "TODO"
 registry_api_service_account_arn = "TODO"
 prov_api_service_account_arn = "TODO"
 prov_dispatcher_service_account_arn = "TODO"
+auth_api_service_account_arn = "TODO"
 
 register_checker(name="data_store_api_service_account_arn",
                  var=data_store_api_service_account_arn)
@@ -272,6 +285,8 @@ register_checker(name="prov_api_service_account_arn",
                  var=prov_api_service_account_arn)
 register_checker(name="prov_dispatcher_service_account_arn",
                  var=prov_dispatcher_service_account_arn)
+register_checker(name="auth_api_service_account_arn",
+                 var=auth_api_service_account_arn)
 
 # =================
 # GIT CONFIGURATION
@@ -333,12 +348,18 @@ static_config = ProvenaConfig(
         git_owner_org=git_owner_org,
         git_repo_name=git_repo_name,
         git_branch_name=branch_name,
+        git_commit_id=get_commit_id_from_env(),
+        git_commit_url=get_commit_url_from_env(),
+        git_tag_name=get_tag_name_from_env(),
+        git_release_title=get_release_title_from_env(),
+        git_release_url=get_release_url_from_env(),
         main_pipeline_trigger=aws_codepipeline_actions.GitHubTrigger.NONE,
         deployment_environment=account_env,
         pipeline_environment=account_env,
         github_token_arn=github_token_arn,
         cdk_app_name="provena_app.py",
         cdk_out_path=f"{app_stage.value.lower()}_cdk.out",
+        quick_deploy_pipeline=quick_deploy_pipeline_activated,
         interface_pipeline=True,
         interface_pipeline_trigger_settings=cp_actions.GitHubTrigger.NONE,
         build_badge=BuildBadgeConfig(
@@ -355,6 +376,12 @@ static_config = ProvenaConfig(
         feature_deployment=False,
     ),
     components=ComponentConfig(
+        async_jobs=AsyncJobsComponent(
+            job_api_domain=postfix_domain(ASYNC_JOBS_API_DEFAULT_DOMAIN),
+            job_api_extra_hash_dirs=ASYNC_JOB_API_EXTRA_HASH_DIRS,
+            invoker_extra_hash_dirs=ASYNC_INVOKER_EXTRA_HASH_DIRS,
+            connector_extra_hash_dirs=ASYNC_CONNECTOR_EXTRA_HASH_DIRS,
+        ),
         warmer=LambdaWarmerComponent(
             domain=postfix_domain(WARMER_DEFAULT_DOMAIN)
         ),
@@ -386,6 +413,8 @@ static_config = ProvenaConfig(
             ui_domain=postfix_domain("")
         ),
         auth_api=AuthApiComponent(
+            access_alerts_email_address=access_alerts_email_address,
+            api_service_account_secret_arn=auth_api_service_account_arn,
             extra_hash_dirs=DEFAULT_EXTRA_HASH_DIRS,
             pitr_request_table=True,
             pitr_groups_table=True,
@@ -414,7 +443,7 @@ static_config = ProvenaConfig(
             tables_backup_policy=BackupType.CRITICAL,
         ),
         prov_store=ProvStoreComponent(
-            extra_hash_dirs=DEFAULT_EXTRA_HASH_DIRS,
+            extra_hash_dirs=JOB_ENABLED_API_EXTRA_HASH_DIRS,
             prov_job_extra_hash_dirs=DEFAULT_EXTRA_HASH_DIRS,
             api_domain=postfix_domain(PROV_API_DEFAULT_DOMAIN),
             ui_domain=postfix_domain(PROV_UI_DEFAULT_DOMAIN),

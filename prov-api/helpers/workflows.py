@@ -2,7 +2,6 @@ from SharedInterfaces.ProvenanceAPI import *
 from SharedInterfaces.ProvenanceModels import *
 from SharedInterfaces.SharedTypes import Status
 from helpers.entity_validators import *
-from helpers.validate_model_run_record import validate_model_run_record
 from helpers.registry_helpers import *
 from helpers.prov_helpers import produce_prov_document
 from helpers.model_run_helpers import *
@@ -10,20 +9,7 @@ from helpers.graph_db_helpers import *
 from config import Config
 
 
-async def register_provenance(record: ModelRunRecord, config: Config, request_style: RequestStyle) -> RegisterModelRunResponse:
-    # ======================
-    # Validate existing IDs
-    # ======================
-
-    # TODO model IDs fix validation with new payloads
-    valid, error_message = await validate_model_run_record(record=record, request_style=request_style, config=config)
-    if not valid:
-        assert error_message
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to validate an entity's ID in the record, error: {error_message}."
-        )
-
+async def lodge_provenance(record: ModelRunRecord, config: Config, request_style: RequestStyle) -> ProvenanceRecordInfo:
     # ==========================
     # Seed identity in registry
     # ==========================
@@ -95,7 +81,7 @@ async def register_provenance(record: ModelRunRecord, config: Config, request_st
     model_run_record = ModelRunDomainInfo(
         # produce display name
         display_name=produce_display_name(
-            model_run_id=handle_id
+            display_name=record.display_name
         ),
         # set status to complete
         # mark as lodged once stored
@@ -107,6 +93,9 @@ async def register_provenance(record: ModelRunRecord, config: Config, request_st
     )
 
     # update record (from seed -> complete, no reason required)
+    
+    # NOTE model run records do not have prov versioning enabled so this is
+    # fully synchronous op
     model_run_item: ItemModelRun = await update_model_run_in_registry(
         proxy_username=username,
         model_run_id=handle_id,
@@ -118,7 +107,7 @@ async def register_provenance(record: ModelRunRecord, config: Config, request_st
     # Upload provenance record into graph store
     # ==========================================
     document_id = upload_prov_document(
-        model_run_item=model_run_item,
+        id=model_run_item.id,
         prov_document=prov_document,
         config=config
     )
@@ -140,12 +129,8 @@ async def register_provenance(record: ModelRunRecord, config: Config, request_st
     # Return prov serialisation, fully identified input format, and
     # model run handle ID
     # ==============================================================
-    return RegisterModelRunResponse(
-        status=Status(
-            success=True, details=f"All successful.{' WARNING: Used mocked database backend.' if config.MOCK_GRAPH_DB else ''}"),
-        record_info=ProvenanceRecordInfo(
-            id=handle_id,
-            prov_json=serialisation,
-            record=record
-        )
+    return ProvenanceRecordInfo(
+        id=handle_id,
+        prov_json=serialisation,
+        record=record
     )

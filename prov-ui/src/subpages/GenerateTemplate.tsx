@@ -21,7 +21,7 @@ import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
 import {
     renderHandleIdLink,
     searchOnlyDataToolbar,
-} from "../components/DataGridHelpers";
+} from "../react-libs/util/DataGridHelpers";
 
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
@@ -39,6 +39,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface WorkflowTemplateListGridRow {
     id: string;
+    versionNumber: string;
     displayName: string;
 }
 
@@ -107,7 +108,7 @@ const WorkflowTemplateList = observer((props: WorkflowTemplateListProps) => {
     if (searchResults.error) {
         gridSection = (
             <p>
-                An error occured, error:{" "}
+                An error occurred, error:{" "}
                 {searchResults.errorMessage ?? "Unknown error."}.
             </p>
         );
@@ -127,6 +128,7 @@ const WorkflowTemplateList = observer((props: WorkflowTemplateListProps) => {
                 width: 150,
                 renderCell: renderHandleIdLink,
             },
+            { field: "versionNumber", headerName: "Version" },
             { field: "displayName", headerName: "Name", flex: 1 },
         ];
         const rows: GridRowsProp = items
@@ -136,6 +138,8 @@ const WorkflowTemplateList = observer((props: WorkflowTemplateListProps) => {
                 return {
                     // create unique string id combination
                     id: modelWorkflowTemplate.id,
+                    versionNumber:
+                        modelWorkflowTemplate.versioning_info?.version ?? "",
                     displayName: modelWorkflowTemplate.display_name,
                 } as WorkflowTemplateListGridRow;
             });
@@ -172,6 +176,17 @@ const WorkflowTemplateList = observer((props: WorkflowTemplateListProps) => {
                             }}
                             columns={columns}
                             rows={rows}
+                            sx={{
+                                // From https://stackoverflow.com/questions/74624999/how-to-make-material-ui-datagrid-row-cliccable-and-with-pointer-cursor-withou
+                                // disable cell selection style
+                                ".MuiDataGrid-cell:focus": {
+                                    outline: "none",
+                                },
+                                // pointer cursor on ALL rows
+                                "& .MuiDataGrid-row:hover": {
+                                    cursor: "pointer",
+                                },
+                            }}
                         ></DataGrid>
                     </div>
                 </Grid>

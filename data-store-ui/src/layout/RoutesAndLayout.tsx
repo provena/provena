@@ -19,6 +19,9 @@ import { useContext, useEffect, useState } from "react";
 import {
     CONTACT_US_BUTTON_LINK,
     DOCUMENTATION_BASE_URL,
+    JOB_LIST_ROUTE,
+    JOB_ROUTE_PREFIX,
+    JobSubRouteComponent,
     LANDING_PAGE_LINK,
     NavListItem,
     PROV_STORE_LINK,
@@ -27,7 +30,7 @@ import {
     REGISTRY_LINK,
     SideNavBox,
 } from "react-libs";
-import { Route, Link as RouterLink, Switch } from "react-router-dom";
+import { Link, Route, Link as RouterLink, Switch } from "react-router-dom";
 import { Footer } from "react-libs/components/Footer";
 import "../css/Parent.css";
 import { ThemeConfigContext } from "../index";
@@ -37,6 +40,9 @@ import Frontmatter from "../pages/Frontmatter";
 import NewDataset from "../pages/NewDataset";
 import Profile from "../pages/Profile";
 import UpdateMetadata from "../pages/UpdateMetadata";
+import { ApprovalSubmission } from "pages/ApprovalSubmission";
+import { ApprovalAction } from "pages/ApprovalAction";
+import { Approvals } from "pages/Approvals";
 
 export const SIDE_NAV_LIST_ITEMS: NavListItem[] = [
     {
@@ -59,8 +65,14 @@ export const SIDE_NAV_LIST_ITEMS: NavListItem[] = [
 
 const useStyles = makeStyles((theme: DefaultTheme) =>
     createStyles({
+        page: {
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+        },
         root: {
             display: "flex",
+            flexGrow: 1,
             backgroundImage: `url(${theme.backgroundImgURL})`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
@@ -121,7 +133,7 @@ function RoutesAndLayout() {
     // Pull current theme config
     const themeConfig = useContext(ThemeConfigContext);
 
-    const { keycloak, initialized } = useKeycloak();
+    const { keycloak } = useKeycloak();
 
     const [open, setOpen] = useState(false);
 
@@ -130,7 +142,7 @@ function RoutesAndLayout() {
     };
 
     return (
-        <div>
+        <div className={classes.page}>
             <Drawer open={open} anchor="left" onClose={toggleSlider}>
                 <SideNavBox navListItems={SIDE_NAV_LIST_ITEMS} />
             </Drawer>
@@ -184,13 +196,27 @@ function RoutesAndLayout() {
                                     Datasets
                                 </Button>
                                 <Button
+                                    id="approvals-button"
+                                    component={RouterLink}
+                                    to="/approvals"
+                                    className={classes.routerButtonDefault}
+                                >
+                                    Approvals
+                                </Button>
+                                <Button
+                                    component={Link}
+                                    to={JOB_LIST_ROUTE}
+                                    className={classes.routerButtonDefault}
+                                >
+                                    Jobs
+                                </Button>
+                                <Button
                                     href={CONTACT_US_BUTTON_LINK}
                                     target="_blank"
                                     className={classes.routerButtonDefault}
                                 >
                                     Contact us
                                 </Button>
-
                                 <ProfileIcon
                                     isLoggedIn={keycloak.authenticated ?? false}
                                     username={
@@ -225,6 +251,21 @@ function RoutesAndLayout() {
                         </ProtectedRoute>
                         <ProtectedRoute path="/profile">
                             <Profile />
+                        </ProtectedRoute>
+                        <ProtectedRoute path="/approval-submission/:id+">
+                            <ApprovalSubmission />
+                        </ProtectedRoute>
+                        <ProtectedRoute path="/approval-action/:id+">
+                            <ApprovalAction />
+                        </ProtectedRoute>
+                        <ProtectedRoute path="/approvals">
+                            <Approvals />
+                        </ProtectedRoute>
+                        {
+                            // Generic shared job routes
+                        }
+                        <ProtectedRoute path={JOB_ROUTE_PREFIX}>
+                            <JobSubRouteComponent></JobSubRouteComponent>
                         </ProtectedRoute>
                     </Switch>
                 </Container>

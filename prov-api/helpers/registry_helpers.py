@@ -37,9 +37,9 @@ async def seed_model_run(proxy_username: str, config: Config) -> SeededItem:
         --------
     """
     # Setup request
-    assert config.REGISTRY_API_ENDPOINT
+    assert config.registry_api_endpoint
     # ! Uses proxy endpoint so needs to pass through username of user
-    endpoint = config.REGISTRY_API_ENDPOINT + \
+    endpoint = config.registry_api_endpoint + \
         '/registry/activity/model_run/proxy/seed'
     params: Dict[str, str] = {
         "proxy_username": proxy_username
@@ -129,9 +129,9 @@ async def update_model_run_in_registry(
         --------
     """
     # Setup request
-    assert config.REGISTRY_API_ENDPOINT
+    assert config.registry_api_endpoint
     # use proxy update endpoint
-    endpoint = config.REGISTRY_API_ENDPOINT + \
+    endpoint = config.registry_api_endpoint + \
         '/registry/activity/model_run/proxy/update'
     params: Dict[str, str] = {
         'id': model_run_id,
@@ -157,7 +157,7 @@ async def update_model_run_in_registry(
     if response.status_code != 200:
         raise HTTPException(
             status_code=500,
-            detail=f"Got status code {response.status_code} when trying to update model run with completed document!"
+            detail=f"Got status code {response.status_code} when trying to update model run with completed document! Details: {response.text}"
         )
 
     # get JSON content
@@ -180,7 +180,7 @@ async def update_model_run_in_registry(
         )
 
     # update was successful - provide the object back
-    endpoint = config.REGISTRY_API_ENDPOINT + '/registry/activity/model_run/fetch'
+    endpoint = config.registry_api_endpoint + '/registry/activity/model_run/fetch'
     params: Dict[str, str] = {
         'id': model_run_id,
     }
