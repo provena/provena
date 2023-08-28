@@ -1,4 +1,4 @@
-# React shared libraries Provena
+# React shared libraries RRAP IS
 
 Set of shared functionality which is reused between multiple UI components.
 

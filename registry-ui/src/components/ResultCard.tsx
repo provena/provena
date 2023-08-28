@@ -7,6 +7,7 @@ import {
     assignIcon,
     getSwatchForSubtype,
     mapSubTypeToPrettyName,
+    subtypeHasVersioning,
     timestampToLocalTime,
 } from "react-libs";
 import { useHistory } from "react-router-dom";
@@ -22,6 +23,8 @@ const useStyles = (props: any) =>
         createStyles({
             resultCardContainer: {
                 padding: theme.spacing(1),
+                width: "100%",
+                maxWidth: "380px",
             },
             resultCard: {
                 display: "flex",
@@ -36,8 +39,7 @@ const useStyles = (props: any) =>
                     backgroundColor: theme.palette.grey[100],
                     cursor: "pointer",
                 },
-                minHeight: "350px",
-                maxHeight: "380px",
+                height: "380px",
             },
             cardContentContainer: {
                 width: "100%",
@@ -110,7 +112,7 @@ const ResultCard = (props: ResultCardProps) => {
         classes.cardIcon
     );
     return (
-        <Grid container item xs={3} className={classes.resultCardContainer}>
+        <Grid container item className={classes.resultCardContainer}>
             <Card
                 variant="outlined"
                 className={classes.resultCard}
@@ -153,6 +155,11 @@ const ResultCard = (props: ResultCardProps) => {
                                 >
                                     Name:
                                 </Typography>{" "}
+                                {!!props.cardDetails.versioning_info?.version &&
+                                    subtypeHasVersioning(
+                                        props.cardDetails.item_subtype
+                                    ) &&
+                                    `(V${props.cardDetails.versioning_info?.version}) `}
                                 <span style={{ overflowWrap: "break-word" }}>
                                     {truncate(props.cardDetails.display_name)}
                                 </span>

@@ -92,6 +92,12 @@ async def validate_model_run_record(record: ModelRunRecord, request_style: Reque
     if record.end_time < record.start_time:
         return False, f"The end time cannot be before the start time of a model run"
 
+    # ensure display name and description are not empty strings
+    if record.display_name == "":
+        return False, f"Display name cannot be empty string"
+    if record.description == "":
+        return False, f"Description cannot be empty string"
+
     # validate workflow definition
     # ----------------------------
 

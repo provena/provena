@@ -7,7 +7,8 @@ from datetime import datetime
 
 def display_failed_cleanups(failed_cleanups: Any) -> None:
     print("--- FAILED CLEANUPS ---")
-    print(x for x in failed_cleanups)
+    for x in failed_cleanups:
+        print(x)
 
 
 def py_to_dict(item: BaseModel) -> Dict[str, Any]:

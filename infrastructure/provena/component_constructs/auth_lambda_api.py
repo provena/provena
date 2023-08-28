@@ -23,9 +23,10 @@ class LambdaAuthApi(Construct):
                  repo_string: str,
                  domain: str,
                  domain_base: str,
+                 access_alerts_email_address: str,
                  registry_api_endpoint: str,
                  keycloak_endpoint: str,
-                 email_connection_secret_arn: str,
+                 api_service_account_secret_arn: str,
                  github_build_token_arn: str,
                  allocator: DNSAllocator,
                  cert_arn: str,
@@ -102,11 +103,12 @@ class LambdaAuthApi(Construct):
             "DOMAIN_BASE": domain_base,
             "STAGE": stage,
             "REGISTRY_API_ENDPOINT": registry_api_endpoint,
-            "EMAIL_SECRET_ARN": email_connection_secret_arn,
             "ACCESS_REQUEST_TABLE_NAME": access_request_table.table.table_name,
             "USER_GROUPS_TABLE_NAME": user_groups_table.table.table_name,
+            "SERVICE_ACCOUNT_SECRET_ARN": api_service_account_secret_arn,
             "USERNAME_PERSON_LINK_TABLE_NAME": username_person_link_table.table.table_name,
             "USERNAME_PERSON_LINK_TABLE_PERSON_INDEX_NAME": username_person_link_table.person_gsi_index_name,
+            "ACCESS_REQUEST_EMAIL_ADDRESS": access_alerts_email_address
         }
 
         for key, val in api_environment.items():
@@ -145,10 +147,11 @@ class LambdaAuthApi(Construct):
         # Add rule to listener to hit this target group
         target_host = domain + "." + allocator.zone_domain_name
 
-        # enable the API to read the email connection secret
-        email_secret = sm.Secret.from_secret_complete_arn(
-            self, 'email-secret', email_connection_secret_arn)
-        email_secret.grant_read(api_func.function.role)
+        # enable the API to read the service account secret
+        auth_service_secret = sm.Secret.from_secret_complete_arn(
+            self, 'service-account', api_service_account_secret_arn
+        )
+        auth_service_secret.grant_read(api_func.function.role)
 
         # expose endpoint
         self.endpoint = f"https://{target_host}"
@@ -157,3 +160,4 @@ class LambdaAuthApi(Construct):
         self.access_request_table = access_request_table.table
         self.groups_table = user_groups_table.table
         self.username_person_link_table = username_person_link_table.table
+        self.add_api_environment = api_func.function.add_environment

@@ -1,0 +1,2 @@
+# ecs helper git style
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=ecs-sqs-python-tools&subdirectory=async-util/ecs-sqs-python-tools

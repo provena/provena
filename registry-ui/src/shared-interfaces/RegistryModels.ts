@@ -9,6 +9,8 @@ export type ItemCategory = "ACTIVITY" | "AGENT" | "ENTITY";
 export type ItemSubType =
   | "WORKFLOW_RUN"
   | "MODEL_RUN"
+  | "CREATE"
+  | "VERSION"
   | "PERSON"
   | "ORGANISATION"
   | "SOFTWARE"
@@ -16,9 +18,10 @@ export type ItemSubType =
   | "WORKFLOW_TEMPLATE"
   | "MODEL_RUN_WORKFLOW_TEMPLATE"
   | "DATASET"
-  | "DATASET_TEMPLATE"
-  | "QUALIFIED_ASSOCIATION";
+  | "DATASET_TEMPLATE";
 export type RecordType = "SEED_ITEM" | "COMPLETE_ITEM";
+export type ReleaseAction = "REQUEST" | "APPROVE" | "REJECT";
+export type ReleasedStatus = "NOT_RELEASED" | "PENDING" | "RELEASED";
 export type ResourceUsageType = "PARAMETER_FILE" | "CONFIG_FILE" | "FORCING_DATA" | "GENERAL_DATA";
 export type WorkflowRunCompletionStatus = "INCOMPLETE" | "COMPLETE" | "LODGED";
 export type DatasetType = "DATA_STORE";
@@ -46,6 +49,8 @@ export interface ActivityBase {
   item_category?: ItemCategory & string;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryDomainInfoBase {
   id: number;
@@ -57,6 +62,16 @@ export interface HistoryEntryDomainInfoBase {
 export interface DomainInfoBase {
   display_name: string;
 }
+export interface WorkflowLinks {
+  create_activity_workflow_id?: string;
+  version_activity_workflow_id?: string;
+}
+export interface VersioningInfo {
+  previous_version?: string;
+  version: number;
+  reason?: string;
+  next_version?: string;
+}
 export interface AgentBase {
   history: HistoryEntryDomainInfoBase[];
   display_name: string;
@@ -67,6 +82,8 @@ export interface AgentBase {
   item_category?: ItemCategory & string;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface AuthTableEntry {
   id: string;
@@ -119,15 +136,30 @@ export interface CollectionFormatOrganisation {
   name: string;
   ror?: string;
 }
+export interface CreateDomainInfo {
+  display_name: string;
+  created_item_id: string;
+}
 export interface DatasetDomainInfo {
   display_name: string;
   collection_format: CollectionFormat;
   s3: S3Location;
+  release_history?: ReleaseHistoryEntry[];
+  release_status: ReleasedStatus;
+  release_approver?: string;
+  release_timestamp?: number;
 }
 export interface S3Location {
   bucket_name: string;
   path: string;
   s3_uri: string;
+}
+export interface ReleaseHistoryEntry {
+  action: ReleaseAction;
+  timestamp: number;
+  approver: string;
+  requester?: string;
+  notes: string;
 }
 export interface DatasetParameter {
   parameter_name?: string;
@@ -178,6 +210,8 @@ export interface EntityBase {
   item_category?: ItemCategory & string;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryBaseDomainInfoBase {
   history: HistoryEntryDomainInfoBase[];
@@ -199,11 +233,38 @@ export interface ItemBase {
   item_category: ItemCategory;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface ItemCreate {
+  display_name: string;
+  created_item_id: string;
+  history: HistoryEntryCreateDomainInfo[];
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category?: ItemCategory & string;
+  item_subtype?: ItemSubType & string;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface HistoryEntryCreateDomainInfo {
+  id: number;
+  timestamp: number;
+  reason: string;
+  username: string;
+  item: CreateDomainInfo;
 }
 export interface ItemDataset {
   display_name: string;
   collection_format: CollectionFormat;
   s3: S3Location;
+  release_history?: ReleaseHistoryEntry[];
+  release_status: ReleasedStatus;
+  release_approver?: string;
+  release_timestamp?: number;
   history: HistoryEntryDatasetDomainInfo[];
   id: string;
   owner_username: string;
@@ -212,6 +273,8 @@ export interface ItemDataset {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryDatasetDomainInfo {
   id: number;
@@ -233,6 +296,8 @@ export interface ItemDatasetTemplate {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryDatasetTemplateDomainInfo {
   id: number;
@@ -255,6 +320,8 @@ export interface ItemModel {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryModelDomainInfo {
   id: number;
@@ -283,6 +350,8 @@ export interface ItemModelRun {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface ModelRunRecord {
   workflow_template_id: string;
@@ -291,7 +360,8 @@ export interface ModelRunRecord {
   annotations?: {
     [k: string]: string;
   };
-  description?: string;
+  display_name: string;
+  description: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;
@@ -336,6 +406,8 @@ export interface ItemModelRunWorkflowTemplate {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface TemplateResource {
   template_id: string;
@@ -372,6 +444,8 @@ export interface ItemOrganisation {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryOrganisationDomainInfo {
   id: number;
@@ -400,6 +474,8 @@ export interface ItemPerson {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryPersonDomainInfo {
   id: number;
@@ -430,6 +506,8 @@ export interface ItemSoftware {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntrySoftwareDomainInfo {
   id: number;
@@ -445,6 +523,37 @@ export interface SoftwareDomainInfo {
   documentation_url: string;
   source_url: string;
 }
+export interface ItemVersion {
+  display_name: string;
+  reason: string;
+  from_item_id: string;
+  to_item_id: string;
+  new_version_number: number;
+  history: HistoryEntryVersionDomainInfo[];
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category?: ItemCategory & string;
+  item_subtype?: ItemSubType & string;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface HistoryEntryVersionDomainInfo {
+  id: number;
+  timestamp: number;
+  reason: string;
+  username: string;
+  item: VersionDomainInfo;
+}
+export interface VersionDomainInfo {
+  display_name: string;
+  reason: string;
+  from_item_id: string;
+  to_item_id: string;
+  new_version_number: number;
+}
 export interface ItemWorkflowRun {
   display_name: string;
   record_status: WorkflowRunCompletionStatus;
@@ -456,6 +565,8 @@ export interface ItemWorkflowRun {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryWorkflowRunDomainInfo {
   id: number;
@@ -483,6 +594,8 @@ export interface ItemWorkflowTemplate {
   item_category?: ItemCategory & string;
   item_subtype?: ItemSubType & string;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface HistoryEntryWorkflowTemplateDomainInfo {
   id: number;
@@ -526,6 +639,8 @@ export interface RecordInfo {
   item_category: ItemCategory;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }
 export interface ResourceSpatialMetadata {}
 export interface ResourceTemporalMetadata {
@@ -540,4 +655,6 @@ export interface SeededItem {
   item_category: ItemCategory;
   item_subtype: ItemSubType;
   record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
 }

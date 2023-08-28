@@ -162,10 +162,3 @@ export const stripProperties = (item: any) => {
 export const prepareObject = (item: any) => {
     return reorderProperties(stripProperties(item));
 };
-
-export const createSubtypeAcronym = (subtype: string) => {
-    return subtype
-        .split("_")
-        .map((word) => word.toLowerCase()[0].toUpperCase())
-        .join(" ");
-};

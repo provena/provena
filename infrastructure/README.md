@@ -60,8 +60,8 @@ versions.
 Follow the above instructions to install nvm, then
 
 ```
-nvm install 16
-nvm use 16
+nvm install 20
+nvm use 20
 ```
 
 Check the requirements.txt file for the current CDK version of this project `aws-cdk-lib` - and install it below at the matching version e.g.
@@ -150,7 +150,7 @@ The Provena application has a mixture of
 
 For this reason, we provide a rich configuration interface into the application.
 
-Below, we will provide an overview of some of the key concepts for managing Provena configuration and interacting with your deployed application. 
+Below, we will provide an overview of some of the key concepts for managing Provena configuration and interacting with your deployed application.
 
 **We recommend that new users, who want to deploy Provena, visit the more thorough deployment guide available here: [Provena from Scratch](https://confluence.csiro.au/display/RRAPIS/HOW+TO+Deploy+Provena+from+SCRATCH).**
 

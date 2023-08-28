@@ -2,6 +2,7 @@ from functools import lru_cache
 from pydantic import BaseSettings
 from typing import List, Union, Callable, Dict
 
+HDL_PREFIX = "https://hdl.handle.net/"
 
 class BaseConfig(BaseSettings):
     """BaseConfig defines a set of minimum required 
@@ -41,6 +42,9 @@ class Config(BaseConfig):
     S3_STORAGE_BUCKET_NAME: str
     HANDLE_API_ENDPOINT: str
     REGISTRY_API_ENDPOINT: str
+    job_api_endpoint: str
+    AUTH_API_ENDPOINT: str
+    REVIEWERS_TABLE_NAME: str
 
     SERVICE_ACCOUNT_SECRET_ARN: str
     KEYCLOAK_ISSUER: str

@@ -16,18 +16,19 @@ import json
 
 client = TestClient(app)
 
-
+# Setup pytest paramterisation for per route functions
 for r_config in route_configs:
-    # Get the prefix
-    prefix = f"/{ITEM_CATEGORY_ROUTE_MAP[r_config.desired_category]}/{ITEM_SUB_TYPE_ROUTE_MAP[r_config.desired_subtype]}"
+    if (r_config.desired_subtype not in route_config_exclusions):
+        # Get the prefix
+        prefix = f"/{ITEM_CATEGORY_ROUTE_MAP[r_config.desired_category]}/{ITEM_SUB_TYPE_ROUTE_MAP[r_config.desired_subtype]}"
 
-    found = False
-    for rp in route_params:
-        if rp.route == prefix:
-            found = True
-            break
+        found = False
+        for rp in route_params:
+            if rp.route == prefix:
+                found = True
+                break
 
-    assert found, f"Couldn't find the route {prefix} in the test route params!"
+        assert found, f"Couldn't find the route {prefix} in the test route params!"
 
 id_base_list = [params.name for params in route_params]
 
@@ -40,6 +41,7 @@ def global_config_provider() -> Config:
         enforce_user_auth=False,
         enforce_special_proxy_roles=False,
         auth_api_endpoint="",
+        job_api_endpoint="",
 
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
@@ -53,6 +55,7 @@ def global_config_provider() -> Config:
         perform_validation=False,
         # dont perform user link validation
         enforce_user_links=False,
+        test_mode=True
     )
 
 

@@ -24,6 +24,7 @@ const parseReport = (
 ): ParseResponse => {
     var desiredFound = false;
     var compFound = false;
+    console.log("Report", report);
     for (const component of report.components) {
         if (component.component_name === componentName) {
             // we found the component
@@ -32,7 +33,11 @@ const parseReport = (
             for (const accessRole of component.component_roles) {
                 // Loop through access roles looking for
                 // read or write level
-                if (accessRole.role_level === desiredAccessLevel) {
+                // Role must also be granted
+                if (
+                    accessRole.role_level === desiredAccessLevel &&
+                    accessRole.access_granted
+                ) {
                     desiredFound = true;
                     break;
                 }

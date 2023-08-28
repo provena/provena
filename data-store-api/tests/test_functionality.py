@@ -6,7 +6,8 @@ from main import app
 from config import Config, get_settings
 from datetime import datetime
 from typing import List, Tuple, Generator
-from SharedInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck
+from SharedInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck, UpdateResponse
+from SharedInterfaces.RegistryModels import ReleasedStatus
 from SharedInterfaces.DataStoreAPI import *
 from itertools import product
 from tests.config import test_bucket_name, test_registry_name, NUM_FAKE_ENTRIES, test_email
@@ -31,9 +32,12 @@ def test_config() -> Config:
         HANDLE_API_ENDPOINT="",
         # these calls need to be mocked
         REGISTRY_API_ENDPOINT="",
+        job_api_endpoint="",
         OIDC_SERVICE_ACCOUNT_SECRET_ARN="",
         OIDC_SERVICE_ROLE_ARN="",
         SERVICE_ACCOUNT_SECRET_ARN="",
+        AUTH_API_ENDPOINT="",
+        REVIEWERS_TABLE_NAME="",
         BUCKET_ROLE_ARN="",
         S3_STORAGE_BUCKET_NAME=test_bucket_name,
         KEYCLOAK_ISSUER="",
@@ -291,9 +295,9 @@ def end_to_end_mint(
     )
 
     # update dataset in registry
-    def mocked_update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, config: Config, reason: str) -> None:
+    def mocked_update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, config: Config, reason: str) -> UpdateResponse:
         # no action required
-        return None
+        return UpdateResponse(status=Status(success=True, details=""), register_create_activity_session_id="1234")
 
     monkeypatch.setattr(
         register,
@@ -376,7 +380,8 @@ def end_to_end_mint(
                 created_timestamp=datetime.now().timestamp(),
                 updated_timestamp=datetime.now().timestamp(),
                 record_type=RecordType.COMPLETE_ITEM,
-                history=[]
+                history=[],
+                release_status=ReleasedStatus.NOT_RELEASED
             ),
             roles=[],
             locked=False,

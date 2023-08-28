@@ -8,8 +8,11 @@ auth_test_config = Config(
     HANDLE_API_ENDPOINT="",
     # these calls need to be mocked
     REGISTRY_API_ENDPOINT="",
+    job_api_endpoint="",
     OIDC_SERVICE_ACCOUNT_SECRET_ARN="",
     OIDC_SERVICE_ROLE_ARN="",
+    AUTH_API_ENDPOINT="",
+    REVIEWERS_TABLE_NAME="",
     SERVICE_ACCOUNT_SECRET_ARN="",
     BUCKET_ROLE_ARN="",
     S3_STORAGE_BUCKET_NAME=test_bucket_name,

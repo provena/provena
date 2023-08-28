@@ -7,9 +7,10 @@ from fastapi.responses import FileResponse
 from config import get_settings, Config
 from helpers.template_helpers import *
 from SharedInterfaces.SharedTypes import Status
+from SharedInterfaces.AsyncJobModels import *
 from SharedInterfaces.ProvenanceAPI import ConvertModelRunsResponse
 from csv import DictReader
-from helpers.job_helpers import *
+from helpers.job_api_helpers import fetch_all_jobs_by_batch_id
 
 router = APIRouter()
 
@@ -34,7 +35,7 @@ async def generate_csv_template(
     headers = header_info.compile()
 
     dupes = duplicates(headers)
-    if len(dupes)>0:
+    if len(dupes) > 0:
         raise HTTPException(
             status_code=500, detail=f"Cannot generate CSV template with duplicate headers: {dupes}")
 
@@ -52,19 +53,20 @@ async def convert_model_runs_csv(
     try:
         # read file contents as string - utf-8 decoding
         file_contents = (await csv_file.read()).decode("utf-8")
-        
+
         # check for possible duplicates in file contents
         duplicates = duplicate_headers_in_file(file_contents=file_contents)
         if len(duplicates) != 0:
-            raise Exception(f"Duplicate headers are not allowed. Detected duplicates: {duplicates}.")
-        
-        # Read the rows using a dictionary reader 
+            raise Exception(
+                f"Duplicate headers are not allowed. Detected duplicates: {duplicates}.")
+
+        # Read the rows using a dictionary reader
         reader = DictReader(StringIO(file_contents))
         rows: List[Dict[str, str]] = list(reader)
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"An error occurred while parsing the uploaded csv file - are you sure it is valid? Exception: {e}.")
-    
+
     # now derive the workflow template ID from this CSV
     workflow_template_id = derive_template_id(csv_rows=rows, config=config)
 
@@ -115,18 +117,22 @@ async def convert_model_runs_csv(
     # construct model run records - strip whitespace from all entries before
     # running the generate func
     try:
-        record_or_job_id_and_exist = [await generate_model_run_record_from_template(
-            user=roles.user,
-            workflow_template_id=workflow_template_id,
-            header_info=template_header_info,
-            data=sanitize_row_data(row),
-            config=config
-        ) for row in rows]
+        record_or_job_id_and_exist = []
+        for row_num, row in enumerate(rows):
+            record_or_job_id_and_exist.append(
+                await generate_model_run_record_from_template(
+                    user=roles.user,
+                    workflow_template_id=workflow_template_id,
+                    header_info=template_header_info,
+                    data=sanitize_row_data(row),
+                    config=config
+                )
+            )
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=400,
-                            detail=f"There was an error while converting the CSV row into a model run record, exception: {e}.")
+                            detail=f"There was an error while converting the CSV row for model run #{row_num+1} into a model run record, exception: {e}.")
 
     # return the model run records
     new_records: List[ModelRunRecord] = []
@@ -155,51 +161,31 @@ async def regenerate_from_batch_csv(
     roles: ProtectedRole = Depends(read_user_protected_role_dependency),
     config: Config = Depends(get_settings)
 ) -> FileResponse:
-    # pull out username
-    username = roles.user.username
-
     # lookup the batch ID in batch table ID by user username
-    batch_record = get_batch_record(username=username, config=config)
+    batch_jobs = await fetch_all_jobs_by_batch_id(
+        batch_id=batch_id, token=roles.user.access_token, config=config)
 
-    if batch_record is None:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Could not find any batch records for user with username: {username}"
-        )
-
-    # batch record was found - get job IDs for the given batch id
-    batch_job: Optional[BatchJob] = batch_record.batch_jobs.get(batch_id)
-
-    if batch_job is None:
-        raise HTTPException(
-            status_code=400,
-            detail=f"User {username} does not have any batch jobs which match the specified batch_id {batch_id}."
-        )
-
-    # get the jobs from job IDs
-    job_ids = batch_job.jobs
-
-    if len(job_ids) == 0:
-        raise HTTPException(
-            status_code=400,
-            detail=f"The specified batch ID {batch_id} contained no jobs."
-        )
-
-    resolved_jobs: List[LodgeModelRunJob] = []
-
-    for job_id in job_ids:
-        item = get_model_run_log_item(id=job_id, config=config)
-        if item is None:
+    # check that the jobs are model run lodge type
+    for job in batch_jobs:
+        if job.job_sub_type != JobSubType.MODEL_RUN_PROV_LODGE:
             raise HTTPException(
                 status_code=400,
-                detail=f"The specified batch ID contained a job with an ID that could not be found! Job ID {job_id}."
+                detail=f"The specified batch ID {batch_id} contained jobs with non model run lodge job types."
             )
-        else:
-            resolved_jobs.append(item)
+
+    # parse the specific type
+    try:
+        parsed_payloads = [ProvLodgeModelRunPayload.parse_obj(
+            item.payload) for item in batch_jobs]
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"The specified batch ID {batch_id} contained jobs which could not be parsed as valid job payloads. Error: {e}."
+        )
 
     # check that all workflow templates are the same
     template_set = set(
-        [job.model_run_record.workflow_template_id for job in resolved_jobs])
+        [job.record.workflow_template_id for job in parsed_payloads])
     if len(template_set) > 1:
         raise HTTPException(
             status_code=400,
@@ -220,9 +206,9 @@ async def regenerate_from_batch_csv(
     rows = [
         generate_csv_entry_from_model_run_record_with_status(
             template_info=header_info,
-            model_run_record=job.model_run_record,
+            model_run_record=parsed.record,
             job=job
-        ) for job in resolved_jobs
+        ) for job, parsed in zip(batch_jobs, parsed_payloads)
     ]
 
     # now generate the required headers for each template

@@ -7,34 +7,35 @@ import {
     Drawer,
     IconButton,
     Stack,
-    Tab,
-    Tabs,
     Toolbar,
     Typography,
 } from "@mui/material";
 import { DefaultTheme, createStyles, makeStyles } from "@mui/styles";
 import { useKeycloak } from "@react-keycloak/web";
 import { observer } from "mobx-react-lite";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
-    ProtectedRoute,
+    CONTACT_US_BUTTON_LINK,
     DATA_STORE_LINK,
     DOCUMENTATION_BASE_URL,
+    JOB_LIST_ROUTE,
+    JOB_ROUTE_PREFIX,
+    JobSubRouteComponent,
     LANDING_PAGE_LINK,
     NavListItem,
     ProfileIcon,
+    ProtectedRoute,
     REGISTRY_LINK,
     SideNavBox,
-    CONTACT_US_BUTTON_LINK,
 } from "react-libs";
-import { Link, Route, Switch } from "react-router-dom";
 import { Footer } from "react-libs/components/Footer";
+import { Link, Route, Switch } from "react-router-dom";
 import "../css/Parent.css";
+import { ThemeConfigContext } from "../index";
 import Frontmatter from "../pages/Frontmatter";
 import Profile from "../pages/Profile";
 import RegistrationTools from "../pages/RegistrationTools";
 import View from "../pages/View";
-import { ThemeConfigContext } from "../index";
 
 export const SIDE_NAV_LIST_ITEMS: NavListItem[] = [
     {
@@ -57,8 +58,14 @@ export const SIDE_NAV_LIST_ITEMS: NavListItem[] = [
 
 const useStyles = makeStyles((theme: DefaultTheme) =>
     createStyles({
+        page: {
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+        },
         root: {
             display: "flex",
+            flexGrow: 1,
             backgroundImage: `url(${theme.backgroundImgURL})`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
@@ -120,12 +127,7 @@ function RoutesAndLayout() {
     const classes = useStyles();
     // Pull current theme config
     const themeConfig = useContext(ThemeConfigContext);
-    const { keycloak, initialized } = useKeycloak();
-    const [tabValue, setTabValue] = React.useState(0);
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-        setTabValue(newValue);
-    };
-
+    const { keycloak } = useKeycloak();
     const [open, setOpen] = useState(false);
 
     const toggleSlider = () => {
@@ -133,7 +135,7 @@ function RoutesAndLayout() {
     };
 
     return (
-        <div>
+        <div className={classes.page}>
             <Drawer open={open} anchor="left" onClose={toggleSlider}>
                 <SideNavBox navListItems={SIDE_NAV_LIST_ITEMS} />
             </Drawer>
@@ -186,6 +188,13 @@ function RoutesAndLayout() {
                                     Registration Tools
                                 </Button>
                                 <Button
+                                    component={Link}
+                                    to={JOB_LIST_ROUTE}
+                                    className={classes.routerButtonDefault}
+                                >
+                                    Jobs
+                                </Button>
+                                <Button
                                     href={CONTACT_US_BUTTON_LINK}
                                     target="_blank"
                                     className={classes.routerButtonDefault}
@@ -219,6 +228,12 @@ function RoutesAndLayout() {
                         </ProtectedRoute>
                         <ProtectedRoute path="/record/view">
                             <View />
+                        </ProtectedRoute>
+                        {
+                            // Generic shared job routes
+                        }
+                        <ProtectedRoute path={JOB_ROUTE_PREFIX}>
+                            <JobSubRouteComponent></JobSubRouteComponent>
                         </ProtectedRoute>
                     </Switch>
                 </Container>

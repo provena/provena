@@ -47,6 +47,33 @@
   "roles": {
     "realm": [
       {
+        "id": "c5a80fec-7a0b-42dd-bfed-670ad21d38a1",
+        "name": "job-service-admin",
+        "description": "Admin role which enables management of jobs including lodging.",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "${KC_REALM_NAME}",
+        "attributes": {}
+      },
+      {
+        "id": "aa60d72d-418a-4852-b505-c99fed0e77d8",
+        "name": "job-service-write",
+        "description": "Allows r/w and lodging of jobs",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "${KC_REALM_NAME}",
+        "attributes": {}
+      },
+      {
+        "id": "f5690fbd-3df1-423e-94ae-0768c5df52ec",
+        "name": "job-service-read",
+        "description": "Allows reading of all user's jobs",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "${KC_REALM_NAME}",
+        "attributes": {}
+      },
+      {
         "id": "0ade9068-7389-4ee9-959f-a53df626f0a5",
         "name": "default-roles-${KC_REALM_NAME}",
         "description": "${role_default-roles}",
@@ -135,15 +162,6 @@
         "id": "a76295d5-771f-4132-9ff0-e614920923ec",
         "name": "handle-write",
         "description": "Handle service write access (currently used as only access role in auth lambda).",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "${KC_REALM_NAME}",
-        "attributes": {}
-      },
-      {
-        "id": "ebdd2188-fec1-41ff-814f-658eba53bdc5",
-        "name": "prov-job-dispatcher",
-        "description": "prov-job-dispatcher is a SERVICE ROLE only to be used for proving to the prov-api that the requesting entity is the prov-dispatcher lambda function.",
         "composite": false,
         "clientRole": false,
         "containerId": "${KC_REALM_NAME}",
@@ -427,7 +445,6 @@
         }
       ],
       "data-store-ui": [],
-      "prov-job-dispatcher": [],
       "landing-portal-ui": [],
       "cli-client": [],
       "data-store-api": [],
@@ -526,6 +543,52 @@
       "realmRoles": [],
       "clientRoles": {},
       "subGroups": [
+        {
+          "id": "a60c79de-a1d1-4908-b250-89fc6807216e",
+          "name": "Job Service",
+          "path": "/Application Users/Job Service",
+          "attributes": {},
+          "realmRoles": [],
+          "clientRoles": {},
+          "subGroups": [
+            {
+              "id": "c587afa7-58b2-433b-acaa-650b64748edd",
+              "name": "Read",
+              "path": "/Application Users/Job Service/Read",
+              "attributes": {},
+              "realmRoles": [
+                "job-service-read"
+              ],
+              "clientRoles": {},
+              "subGroups": []
+            },
+            {
+              "id": "7ef5b0d6-70c8-4f3d-88b9-88b820ef4593",
+              "name": "Write",
+              "path": "/Application Users/Job Service/Write",
+              "attributes": {},
+              "realmRoles": [
+                "job-service-write",
+                "job-service-read"
+              ],
+              "clientRoles": {},
+              "subGroups": []
+            },
+            {
+              "id": "d13f357c-a1dd-4559-aeb2-49ac74b0cf23",
+              "name": "Admin",
+              "path": "/Application Users/Job Service/Admin",
+              "attributes": {},
+              "realmRoles": [
+                "job-service-admin",
+                "job-service-write",
+                "job-service-read"
+              ],
+              "clientRoles": {},
+              "subGroups": []
+            }
+          ]
+        },
         {
           "id": "0da016a9-297c-4180-9822-47562949815a",
           "name": "Sys admin",
@@ -755,6 +818,24 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids": [],
   "users": [
     {
+      "id": "c6a2f7d4-b93c-42ff-a5c6-0918d62c7f4f",
+      "createdTimestamp": 1691559765675,
+      "username": "service-account-auth-api",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": false,
+      "serviceAccountClientId": "auth-api",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-${KC_REALM_NAME}"
+      ],
+      "notBefore": 0,
+      "groups": [
+        "/Application Users/Job Service/Write"
+      ]
+    },
+    {
       "id": "3a071e25-d239-47d1-b30c-6b8aa61043c7",
       "createdTimestamp": 1649915262174,
       "username": "service-account-data-store-api",
@@ -771,8 +852,8 @@
       ],
       "notBefore": 0,
       "groups": [
-        "/Application Users/Handle/Admin",
-        "/Application Users/Entity-registry/Write"
+        "/Application Users/Entity-registry/Write",
+        "/Application Users/Sys admin/Read"
       ]
     },
     {
@@ -792,6 +873,7 @@
       ],
       "notBefore": 0,
       "groups": [
+        "/Application Users/Job Service/Admin",
         "/Application Users/Entity-registry/Admin"
       ]
     },
@@ -814,25 +896,6 @@
       ]
     },
     {
-      "id": "278e9ac0-bdc1-40e5-948c-a554849ed914",
-      "createdTimestamp": 1668064927622,
-      "username": "service-account-prov-job-dispatcher",
-      "enabled": true,
-      "totp": false,
-      "emailVerified": false,
-      "serviceAccountClientId": "prov-job-dispatcher",
-      "disableableCredentialTypes": [],
-      "requiredActions": [],
-      "realmRoles": [
-        "default-roles-${KC_REALM_NAME}",
-        "prov-job-dispatcher"
-      ],
-      "notBefore": 0,
-      "groups": [
-        "/Application Users/Entity-registry/Write"
-      ]
-    },
-    {
       "id": "81fa1e0c-2e78-4dbd-a21e-bdabc32af65d",
       "createdTimestamp": 1657760085304,
       "username": "service-account-registry-api",
@@ -849,7 +912,8 @@
       "notBefore": 0,
       "groups": [
         "/Application Users/Handle/Admin",
-        "/Application Users/Sys admin/Read"
+        "/Application Users/Sys admin/Read",
+        "/Application Users/Job Service/Write"
       ]
     },
     {
@@ -1270,6 +1334,109 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
+      "defaultClientScopes": [
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": []
+    },
+    {
+      "id": "21902724-b087-4281-a9ab-2496d3ffcf57",
+      "clientId": "auth-api",
+      "name": "Auth API Service Account",
+      "description": "Enables the Auth API to enact realm roles without a user token. This is used to send emails in the Job API.",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "**********",
+      "redirectUris": [],
+      "webOrigins": [],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "saml.assertion.signature": "false",
+        "id.token.as.detached.signature": "false",
+        "saml.multivalued.roles": "false",
+        "saml.force.post.binding": "false",
+        "saml.encrypt": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "saml.server.signature": "false",
+        "saml.server.signature.keyinfo.ext": "false",
+        "use.refresh.tokens": "true",
+        "exclude.session.state.from.auth.response": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "saml.artifact.binding": "false",
+        "backchannel.logout.session.required": "true",
+        "client_credentials.use_refresh_token": "false",
+        "saml_force_name_id_format": "false",
+        "saml.client.signature": "false",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "require.pushed.authorization.requests": "false",
+        "saml.authnstatement": "false",
+        "display.on.consent.screen": "false",
+        "saml.onetimeuse.condition": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "id": "a84f60d6-73b9-4177-b4d4-3836d176fcd1",
+          "name": "Client Host",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientHost",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientHost",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "134a5e06-926a-46ba-a4a7-af38694604f1",
+          "name": "Client IP Address",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientAddress",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientAddress",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "848432a4-f015-48d0-9374-436948b7f406",
+          "name": "Client ID",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientId",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientId",
+            "jsonType.label": "String"
+          }
+        }
+      ],
       "defaultClientScopes": [
         "profile",
         "roles",
@@ -1821,109 +1988,6 @@
         },
         {
           "id": "465d9a84-768c-43ef-b0ff-990bc25bfb32",
-          "name": "Client ID",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usersessionmodel-note-mapper",
-          "consentRequired": false,
-          "config": {
-            "user.session.note": "clientId",
-            "userinfo.token.claim": "true",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "clientId",
-            "jsonType.label": "String"
-          }
-        }
-      ],
-      "defaultClientScopes": [
-        "profile",
-        "roles",
-        "email"
-      ],
-      "optionalClientScopes": []
-    },
-    {
-      "id": "5373d6f2-32fc-4ed1-8568-6b8504aa91ca",
-      "clientId": "prov-job-dispatcher",
-      "name": "prov-job-dispatcher Service Account",
-      "description": "Enables the prov job dispatcher to lodge jobs on behalf of an authorised user",
-      "surrogateAuthRequired": false,
-      "enabled": true,
-      "alwaysDisplayInConsole": false,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
-      "redirectUris": [],
-      "webOrigins": [],
-      "notBefore": 0,
-      "bearerOnly": false,
-      "consentRequired": false,
-      "standardFlowEnabled": false,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": true,
-      "publicClient": false,
-      "frontchannelLogout": false,
-      "protocol": "openid-connect",
-      "attributes": {
-        "id.token.as.detached.signature": "false",
-        "saml.assertion.signature": "false",
-        "saml.force.post.binding": "false",
-        "saml.multivalued.roles": "false",
-        "saml.encrypt": "false",
-        "oauth2.device.authorization.grant.enabled": "false",
-        "backchannel.logout.revoke.offline.tokens": "false",
-        "saml.server.signature": "false",
-        "saml.server.signature.keyinfo.ext": "false",
-        "use.refresh.tokens": "true",
-        "exclude.session.state.from.auth.response": "false",
-        "oidc.ciba.grant.enabled": "false",
-        "saml.artifact.binding": "false",
-        "backchannel.logout.session.required": "true",
-        "client_credentials.use_refresh_token": "false",
-        "saml_force_name_id_format": "false",
-        "require.pushed.authorization.requests": "false",
-        "saml.client.signature": "false",
-        "tls.client.certificate.bound.access.tokens": "false",
-        "saml.authnstatement": "false",
-        "display.on.consent.screen": "false",
-        "saml.onetimeuse.condition": "false"
-      },
-      "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
-      "nodeReRegistrationTimeout": -1,
-      "protocolMappers": [
-        {
-          "id": "013e61d5-caaa-4939-92d9-61931030fe12",
-          "name": "Client Host",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usersessionmodel-note-mapper",
-          "consentRequired": false,
-          "config": {
-            "user.session.note": "clientHost",
-            "userinfo.token.claim": "true",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "clientHost",
-            "jsonType.label": "String"
-          }
-        },
-        {
-          "id": "48d2778f-9390-4e51-b562-981c124bb2a5",
-          "name": "Client IP Address",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usersessionmodel-note-mapper",
-          "consentRequired": false,
-          "config": {
-            "user.session.note": "clientAddress",
-            "userinfo.token.claim": "true",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "clientAddress",
-            "jsonType.label": "String"
-          }
-        },
-        {
-          "id": "ec138409-0c80-41e9-98a4-d448d7f4553c",
           "name": "Client ID",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usersessionmodel-note-mapper",

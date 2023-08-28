@@ -7,12 +7,13 @@ from fastapi import HTTPException
 from starlette.background import BackgroundTask
 from SharedInterfaces.RegistryModels import ItemModelRunWorkflowTemplate, ItemDatasetTemplate, SeededItem, ItemDataset
 from SharedInterfaces.ProvenanceModels import ModelRunRecord, TemplatedDataset, DatasetType, AssociationInfo
-from SharedInterfaces.JobModels import *
+# from SharedInterfaces.ProvenanceAPI import *
+from SharedInterfaces.AsyncJobModels import *
 from dataclasses import dataclass
 from dependencies.dependencies import User
 from helpers.entity_validators import validate_model_run_workflow_template, validate_dataset_template_id, validate_datastore_id, RequestStyle
-from helpers.job_helpers import get_log_item_raw
 from helpers.time_helpers import iso_to_epoch, epoch_to_iso
+from helpers.job_api_helpers import fetch_job_by_id_admin
 from typing import Any, Tuple, List, Dict, Optional, ClassVar, Union
 import random
 import os
@@ -146,16 +147,20 @@ def generate_headers_from_dataset_template(template: ItemDatasetTemplate, is_inp
     # general ID declaration header
     dec_header: str
     if is_input:
-        dec_header = f"{config.INPUT_DATASET_TEMPLATE_PREFIX}{name} [template {template.id}]"
+        dec_header = f"{config.INPUT_DATASET_TEMPLATE_PREFIX}{name} [template id: {template.id}]"
+        # for each deferred resource, allow reference to a file path
+        headers = list(
+            map(lambda deferred:  config.INPUT_TEMPLATE_RESOURCE_PREFIX + deferred.key, template.deferred_resources))
     else: # is output
-        dec_header = f"{config.OUTPUT_DATASET_TEMPLATE_PREFIX}{name} [template {template.id}]"
+        dec_header = f"{config.OUTPUT_DATASET_TEMPLATE_PREFIX}{name} [template id: {template.id}]"
+        # for each deferred resource, allow reference to a file path
+        headers = list(
+            map(lambda deferred:  config.OUTPUT_TEMPLATE_RESOURCE_PREFIX + deferred.key, template.deferred_resources))
     
     # for each deferred resource, allow reference to a file path
-    headers = list(
-        map(lambda deferred: config.TEMPLATE_RESOURCE_PREFIX + deferred.key, template.deferred_resources))
     keys = list(
         map(lambda deferred: deferred.key, template.deferred_resources))
-
+        
     return DatasetTemplateHeaderInfo(
         dataset_template_id=template.id,
         template_id_header=dec_header,
@@ -314,6 +319,7 @@ class DatasetTemplateHeaderInfo():
 
 @dataclass
 class GenericTemplateHeaderInfo():
+    display_name_header: str
     description_header: str
     agent_id_header: str
     # Removing requesting organisation for v1
@@ -326,15 +332,24 @@ class GenericTemplateHeaderInfo():
             assert header in headers, f"Expected header '{header}' not in headers!"
         
     def compile(self) -> List[str]:
-        return [self.description_header, self.agent_id_header,
+        return [self.display_name_header, 
+                self.description_header, 
+                self.agent_id_header,
                 # Removing requesting organisation for v1
                 # self.requesting_org_id_header,
                 self.start_time_header,
                 self.end_time_header]
 
+    def get_display_name(self, data: Dict[str, str]) -> str:
+        val = data[self.display_name_header]
+        assert val is not None
+        assert val is not "", f"Expected display name to be non-empty string."
+        return val
+
     def get_description(self, data: Dict[str, str]) -> str:
         val = data[self.description_header]
         assert val is not None
+        assert val is not "", f"Expected description to be non-empty string."
         return val
 
     def get_agent_id(self, data: Dict[str, str]) -> str:
@@ -483,21 +498,29 @@ class JobTemplateHeaderInfo():
         # compile outputs
         return ["" for _ in self.status_headers]
 
-    def fillout_status(self, job: LodgeModelRunJob) -> List[str]:
+    def fillout_status(self, job: JobStatusTable) -> List[str]:
         # compile outputs
         outputs: List[str] = []
+        
+        record_id = ""
+        error_info = (job.info or "") if job.status == JobStatus.FAILED else ""
+        # Parse the result type
+        if job.result is not None:
+            result = ProvLodgeModelRunResult.parse_obj(job.result)
+            record_id= result.record.id
+            
 
         # job id
-        outputs.append(job.id)
+        outputs.append(job.session_id)
 
         # job status
-        outputs.append(job.job_status.value)
-
+        outputs.append(job.status)
+        
         # model run record id
-        outputs.append(job.model_run_record_id or "")
+        outputs.append(record_id)
 
         # error
-        outputs.append(job.error_info or "")
+        outputs.append(error_info)
 
         return outputs
 
@@ -530,11 +553,16 @@ class JobTemplateHeaderInfo():
 
             # now check that the job exists
             try:
-                item = get_log_item_raw(id=job_id, config=config)
+                # TODO ASYNC
+                # Use the jobs infra instead
+                item = fetch_job_by_id_admin(
+                    session_id=job_id,
+                    config=config
+                )
                 if item is None:
                     raise HTTPException(
                         status_code=400,
-                        detail=f"The ({job_id = }) is a valid UUID4 identifier but does not exist in the job log database."
+                        detail=f"The ({job_id = }) is a valid UUID4 identifier but does not exist in the job status database."
                     )
                 else:
                     return True, job_id
@@ -601,7 +629,7 @@ class TemplateHeaderInfo():
             self.annotation_headers.fillout(model_run_record) + \
             self.job_headers.fillout(model_run_record)
 
-    def fillout_with_status(self, model_run_record: ModelRunRecord, job: LodgeModelRunJob) -> List[str]:
+    def fillout_with_status(self, model_run_record: ModelRunRecord, job: JobStatusTable) -> List[str]:
         return [""] + self.generic_headers.fillout(model_run_record) + \
             list(chain(*[o.fillout(model_run_record) for o in self.input_dataset_headers])) + \
             list(chain(*[o.fillout(model_run_record) for o in self.output_dataset_headers])) + \
@@ -676,6 +704,7 @@ async def generate_csv_template_header_info(workflow_template_id: str, request_s
 
     # generic headers
     generic = GenericTemplateHeaderInfo(
+        display_name_header=config.TEMPLATE_DISPLAY_NAME_HEADER,
         description_header=config.TEMPLATE_DESCRIPTION_HEADER,
         agent_id_header=config.TEMPLATE_AGENT_HEADER,
         # Removing requesting organisation for v1.
@@ -716,6 +745,7 @@ async def generate_model_run_record_from_template(user: User, workflow_template_
     annotations = header_info.annotation_headers.generate(data=data)
     start_time = header_info.generic_headers.get_start_time(data=data)
     end_time = header_info.generic_headers.get_end_time(data=data)
+    display_name = header_info.generic_headers.get_display_name(data=data)
     description = header_info.generic_headers.get_description(data=data)
     agent_id = header_info.generic_headers.get_agent_id(data=data)
     # Removing requesting organisation for v1
@@ -727,6 +757,7 @@ async def generate_model_run_record_from_template(user: User, workflow_template_
         inputs=inputs,
         outputs=outputs,
         annotations=annotations,
+        display_name=display_name,
         description=description,
         associations=AssociationInfo(
             modeller_id=agent_id,
@@ -742,7 +773,7 @@ async def generate_model_run_record_from_template(user: User, workflow_template_
 def generate_csv_entry_from_model_run_record_with_status(
     template_info: TemplateHeaderInfo,
     model_run_record: ModelRunRecord,
-    job: LodgeModelRunJob
+    job: JobStatusTable,
 ) -> List[str]:
     return template_info.fillout_with_status(
         model_run_record=model_run_record,

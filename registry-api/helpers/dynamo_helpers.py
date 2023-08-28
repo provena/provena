@@ -624,6 +624,15 @@ class QueryParams():
     filter_expression: Any
 
 
+subtype_key = "item_subtype"
+approver_key = "release_approver"
+universal_key = "universal_partition_key"
+updated_timestamp_key = "updated_timestamp"
+created_timestamp_key = "created_timestamp"
+display_name_key = "display_name"
+release_timestamp_key = "release_timestamp"
+
+
 def filter_to_key_condition(filter_options: Optional[FilterOptions]) -> Any:
 
     # TODO put strings into cdk config.
@@ -633,6 +642,8 @@ def filter_to_key_condition(filter_options: Optional[FilterOptions]) -> Any:
         # TODO add keys into config.
         if filter_options.item_subtype is not None:
             return Key('item_subtype').eq(filter_options.item_subtype)
+        if filter_options.release_reviewer is not None:
+            return Key('release_approver').eq(filter_options.release_reviewer)
     else:
         # no filter was provided. Use the index we made with primary key that includes all items
         return Key('universal_partition_key').eq("OK")
@@ -641,30 +652,77 @@ def filter_to_key_condition(filter_options: Optional[FilterOptions]) -> Any:
     return Key('universal_partition_key').eq("OK")
 
 
+def generate_index_name(partition_key: str, sort_key: str) -> str:
+    return f"{partition_key}-{sort_key}-index"
+
+
+SORT_TYPE_TO_KEY_MAP: Dict[Optional[SortType], str] = {
+    # Default = updated timestamp
+    None: updated_timestamp_key,
+    # other sort options
+    SortType.CREATED_TIME:  created_timestamp_key,
+    SortType.UPDATED_TIME:  updated_timestamp_key,
+    SortType.DISPLAY_NAME:  display_name_key,
+    SortType.RELEASE_TIMESTAMP: release_timestamp_key
+}
+FILTER_TYPE_TO_KEY_MAP: Dict[Optional[FilterType], str] = {
+    # Default = all included
+    None: universal_key,
+    # Other filters
+    FilterType.ITEM_SUBTYPE: subtype_key,
+    FilterType.RELEASE_REVIEWER: approver_key
+}
+
+FilterSort = Tuple[Optional[FilterType], Optional[SortType]]
+
+FILTER_SORT_COMBINATIONS: List[FilterSort] = [
+    # Default
+    (None, None),
+
+    # Filter by subtype
+    (FilterType.ITEM_SUBTYPE, None),
+
+    # Sort by updated/created/display
+    (None, SortType.UPDATED_TIME),
+    (None, SortType.CREATED_TIME),
+    (None, SortType.DISPLAY_NAME),
+
+    # Filter and sort subtype + combinations
+    (FilterType.ITEM_SUBTYPE, SortType.UPDATED_TIME),
+    (FilterType.ITEM_SUBTYPE, SortType.CREATED_TIME),
+    (FilterType.ITEM_SUBTYPE, SortType.DISPLAY_NAME),
+
+    # Release reviewer based index
+    (FilterType.RELEASE_REVIEWER, SortType.RELEASE_TIMESTAMP),
+    (FilterType.RELEASE_REVIEWER, None),
+]
+
+
+def filter_sort_to_index(filter_sort: FilterSort) -> str:
+    filter, sort = filter_sort
+    partition_key = FILTER_TYPE_TO_KEY_MAP[filter]
+    sort_key = SORT_TYPE_TO_KEY_MAP[sort]
+    return generate_index_name(
+        partition_key=partition_key,
+        sort_key=sort_key
+    )
+
+
 # TODO dont use hardcoded strings. get from cdk config.
-FILTER_TO_INDEX_MAP: Dict[Tuple[Optional[SortType], Optional[FilterType]], str] = {
-
-    (None, None): "universal_partition_key-updated_timestamp-index",
-
-    (None, FilterType.ITEM_SUBTYPE): "item_subtype-updated_timestamp-index",
-
-    (SortType.UPDATED_TIME, None): "universal_partition_key-updated_timestamp-index",
-    (SortType.CREATED_TIME, None): "universal_partition_key-created_timestamp-index",
-    (SortType.DISPLAY_NAME, None): "universal_partition_key-display_name-index",
-
-    (SortType.UPDATED_TIME, FilterType.ITEM_SUBTYPE): "item_subtype-updated_timestamp-index",
-    (SortType.CREATED_TIME, FilterType.ITEM_SUBTYPE): "item_subtype-created_timestamp-index",
-    (SortType.DISPLAY_NAME, FilterType.ITEM_SUBTYPE): "item_subtype-display_name-index",
-
+FILTER_SORT_TO_INDEX_MAP: Dict[FilterSort, str] = {
+    fs: filter_sort_to_index(fs) for fs in FILTER_SORT_COMBINATIONS
 }
 
 
 def filter_options_to_filter_type(filter_options: FilterOptions) -> Optional[FilterType]:
 
     # * expand method if more filter options are added.
-
+    # FitlerOptions currently allows just one filter.
     if filter_options.item_subtype:
         return FilterType.ITEM_SUBTYPE
+
+    if filter_options.release_reviewer:
+        return FilterType.RELEASE_REVIEWER
 
     return None
 
@@ -685,7 +743,7 @@ def sort_filter_to_index_name(
     if sort_by is not None:
         sort_type = sort_by.sort_type
 
-    return FILTER_TO_INDEX_MAP[(sort_type, filter_type)]
+    return FILTER_SORT_TO_INDEX_MAP[(filter_type, sort_type)]
 
 
 def get_query_params(
@@ -703,10 +761,14 @@ def get_query_params(
     )
 
 
-RECORD_TYPE_TO_FILTER_EXPRESSION_MAP: Dict[QueryRecordTypes, Optional[Key]] = {
+RECORD_TYPE_TO_FILTER_EXPRESSION_MAP: Dict[Union[QueryRecordTypes, QueryDatasetReleaseStatusType], Optional[Key]] = {
     QueryRecordTypes.ALL: None,
     QueryRecordTypes.COMPLETE_ONLY: Key('record_type').eq(RecordType.COMPLETE_ITEM),
     QueryRecordTypes.SEED_ONLY: Key('record_type').eq(RecordType.SEED_ITEM),
+
+    QueryDatasetReleaseStatusType.RELEASED: Key('release_status').eq(ReleasedStatus.RELEASED),
+    QueryDatasetReleaseStatusType.NOT_RELEASED: Key('release_status').eq(ReleasedStatus.NOT_RELEASED),
+    QueryDatasetReleaseStatusType.PENDING: Key('release_status').eq(ReleasedStatus.PENDING),
 }
 
 DEFAULT_FILTER_TYPE = QueryRecordTypes.COMPLETE_ONLY
@@ -714,9 +776,14 @@ DEFAULT_FILTER_TYPE = QueryRecordTypes.COMPLETE_ONLY
 
 def filter_to_filter_expression(filter_by: Optional[FilterOptions]) -> Any:
     # defaults to complete only
-    filter_value: QueryRecordTypes = DEFAULT_FILTER_TYPE
+    filter_value: Union[QueryRecordTypes,
+                        QueryDatasetReleaseStatusType] = DEFAULT_FILTER_TYPE
     if filter_by is not None and filter_by.record_type is not None:
         filter_value = filter_by.record_type
+
+    if filter_by is not None and filter_by.release_status is not None:
+        # override as this means recordtype is complete.
+        filter_value = filter_by.release_status
 
     # check it's present
     if filter_value not in RECORD_TYPE_TO_FILTER_EXPRESSION_MAP.keys():

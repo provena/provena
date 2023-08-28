@@ -32,7 +32,6 @@ import { LandingPortalThemeConfig } from "react-libs/util/themeValidation";
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
-            padding: theme.spacing(4),
             display: "flex",
             flexWrap: "wrap",
             flexFlow: "column",
@@ -275,7 +274,7 @@ const Introduction = observer(() => {
         <div className={classes.root}>
             <BoundedContainer breakpointKey={"lg"}>
                 {newUserDialog}
-                <Grid className={classes.paper} mt={4} spacing={2}>
+                <Grid className={classes.paper} spacing={2}>
                     {shouldLink && (
                         <Grid item xs={12} className={classes.introTopSection}>
                             <UserLinkCheckDisplayComponent />

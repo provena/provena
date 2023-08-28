@@ -7,6 +7,7 @@ import boto3  # type: ignore
 from boto3.dynamodb.conditions import Key  # type: ignore
 from typing import Optional, Tuple
 from datetime import datetime, timedelta
+from helpers.access_report_helpers import EmailContent
 
 
 def generate_status_change_email_text(
@@ -14,7 +15,7 @@ def generate_status_change_email_text(
     original_status: RequestStatus,
     new_status: RequestStatus,
     request_entry: RequestAccessTableItem
-) -> str:
+) -> EmailContent:
     """    generate_status_change_email_text
         Generates the body for the status change email sent to users
 
@@ -43,7 +44,7 @@ def generate_status_change_email_text(
     """
     original_friendly_format = REQUEST_STATUS_TO_USER_EXPLANATION[original_status]
     new_friendly_format = REQUEST_STATUS_TO_USER_EXPLANATION[new_status]
-    header = f"Subject: Status update for Provena access request {request_entry.request_id}"
+    subject = f"Status update for Provena access request {request_entry.request_id}"
     body = \
         f"""Request for access change for username: {username} request_id: {request_entry.request_id}.
         
@@ -67,7 +68,10 @@ You requested:
     notes = "Your request has the following notes:\n" + \
         '\n'.join(request_entry.notes.split(','))
 
-    return header + "\n\n" + body + "\n" + component_body + "\n\n" + notes
+    return EmailContent(
+        subject=subject,
+        body=body + "\n" + component_body + "\n\n" + notes
+    )
 
 
 def write_access_request_entry(

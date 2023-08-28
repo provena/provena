@@ -23,7 +23,7 @@ def update_s3_location(old_bucket_name: str, new_bucket_name: str, old_item: Dic
     if (current_bucket not in [old_bucket_name]):
         if (current_bucket == new_bucket_name):
             print(
-                f"Warning, item {data_store.handle} seems to be already be at the new location. Ignoring...")
+                f"Warning, item {data_store.id} seems to be already be at the new location. Ignoring...")
         else:
             print(f"Unexpected origin bucket: {current_bucket}")
             raise ValueError()

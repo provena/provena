@@ -1,4 +1,5 @@
 from SharedInterfaces.RegistryModels import *
+from SharedInterfaces.SharedTypes import VersionDetails
 from pydantic import BaseSettings
 from functools import lru_cache
 from typing import List, Union, Callable, Dict
@@ -61,6 +62,9 @@ class Config(BaseConfig):
     # Auth api endpoint
     auth_api_endpoint: str
 
+    # Job API endpoint
+    job_api_endpoint: str
+
     # The endpoint of the handle service API
     handle_api_endpoint: str
 
@@ -89,10 +93,30 @@ class Config(BaseConfig):
     # should user links be enforced (disable for testing only!)
     enforce_user_links: bool = True
 
+    # version private primitives
+    git_commit_id: Optional[str]
+    git_commit_url: Optional[str]
+    git_tag_name: Optional[str]
+    git_release_title: Optional[str]
+    git_release_url: Optional[str]
+
+
     # Derived property of token endpoint
     @property
     def keycloak_token_endpoint(self) -> str:
         return self.keycloak_endpoint + self.keycloak_token_postfix
+
+    # version details object
+    @property
+    def version_details(self) -> VersionDetails:
+        # these are the true value or N/A as provided by get_version_info repo-tool.
+        return VersionDetails(
+            commit_id=self.git_commit_id,
+            commit_url=self.git_commit_url,
+            tag_name=self.git_tag_name,
+            release_title=self.git_release_title,
+            release_url=self.git_release_url
+        )
 
     # Use a .env file
     class Config:

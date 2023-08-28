@@ -7,17 +7,8 @@ import {
     ChangeStateStatus,
 } from "../shared-interfaces/AuthAPI";
 import { AdminAccessManagement } from "../queries/accessManagement";
+import { requestErrToMsg } from "react-libs";
 
-function requestErrToMsg(err: any): string {
-    return (
-        "Status code " +
-        (err.status ? err.status : "Unknown") +
-        " with error details: " +
-        (err.data.detail
-            ? err.data.detail
-            : "Unknown - contact admin and check console.")
-    );
-}
 export class AdminStore {
     retrievingRequests: boolean = false;
     requests: Array<RequestAccessTableItem> | undefined;

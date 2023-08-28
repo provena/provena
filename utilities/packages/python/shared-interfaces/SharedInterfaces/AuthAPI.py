@@ -42,6 +42,7 @@ class ComponentName(str, Enum):
     HANDLE_SERVICE = "handle-service"
     SYS_ADMIN = "sys-admin"
     ENTITY_REGISTRY = "entity-registry"
+    JOB_SERVICE = "job-service"
 
 
 class ComponentRole(BaseModel):
@@ -151,6 +152,39 @@ class AuthorisationModel(BaseModel):
             'Unable to find a component with matching component name.')
 
 
+JOB_COMPONENT = AuthorisationComponent(
+    component_name=ComponentName.JOB_SERVICE,
+    component_roles=[
+        ComponentRole(
+            role_name="job-service-admin",
+            role_display_name="Job Service Admin",
+            role_level=AccessLevel.ADMIN,
+            description="Admin role which enables management of jobs including lodging.",
+            intended_users=[
+                IntendedUserType.ADMINISTRATOR
+            ]
+        ),
+        ComponentRole(
+            role_name="job-service-write",
+            role_display_name="Job Service Write",
+            role_level=AccessLevel.WRITE,
+            description="Allows r/w and lodging of jobs",
+            intended_users=[
+                IntendedUserType.ADMINISTRATOR
+            ]
+        ),
+        ComponentRole(
+            role_name="job-service-read",
+            role_display_name="Job Service Read",
+            role_level=AccessLevel.READ,
+            description="Allows reading of all user's jobs",
+            intended_users=[
+                IntendedUserType.ADMINISTRATOR
+            ]
+        )
+    ]
+)
+
 HANDLE_SERVICE_COMPONENT = AuthorisationComponent(
     component_name=ComponentName.HANDLE_SERVICE,
     component_roles=[
@@ -259,6 +293,7 @@ AUTHORISATION_MODEL = AuthorisationModel(
         HANDLE_SERVICE_COMPONENT,
         SYS_ADMIN_COMPONENT,
         ENTITY_REGISTRY_COMPONENT,
+        JOB_COMPONENT
         # Add more here as required
     ]
 )

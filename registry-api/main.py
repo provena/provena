@@ -9,6 +9,7 @@ from SharedInterfaces.RegistryModels import *
 from SharedInterfaces.RegistryAPI import *
 from helpers.item_type_route_generator import *
 from routes.check_access import checks
+from routes.dataset import dataset
 from routes.registry_general import registry_general
 from routes.admin import import_export_restore, general_admin
 from typing import Dict, Type, List, Generic
@@ -62,7 +63,12 @@ ITEM_SUB_TYPE_ROUTE_MAP: Dict[ItemSubType, str] = {
     ItemSubType.PERSON: "person",
     ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE: "model_run_workflow",
     ItemSubType.DATASET_TEMPLATE: "dataset_template",
-    ItemSubType.DATASET: "dataset"
+    ItemSubType.DATASET: "dataset",
+
+    # These are read only routes which are directly controlled by async
+    # jobs/side effects
+    ItemSubType.CREATE: "create",
+    ItemSubType.VERSION: "version"
 }
 
 
@@ -86,9 +92,9 @@ class RouteConfig(Generic[ItemModelTypeVar,
     # Generic<Action>Response etc.
     item_model_type: Type[ItemModelTypeVar]
     item_domain_info_type: Type[ItemDomainInfoTypeVar]
-    seed_response_type: Type[SeedResponseTypeVar]
+    seed_response_type: Optional[Type[SeedResponseTypeVar]]
     fetch_response_type: Type[FetchResponseTypeVar]
-    create_response_type: Type[CreateResponseTypeVar]
+    create_response_type: Optional[Type[CreateResponseTypeVar]]
     list_response_type: Type[ListResponseTypeVar]
 
     # Specify a ui schema override which lets the
@@ -110,6 +116,9 @@ class RouteConfig(Generic[ItemModelTypeVar,
     # Should this item type enforce the user having a linked Person?
     enforce_username_person_link: bool = False
 
+    # Should this subtype apply provenance enabled versioning?
+    provenance_enabled_versioning: bool = False
+
 
 # Can add more registry sub routes by adding to this config
 # list - might need to add more models in the SharedInterfaces
@@ -125,16 +134,50 @@ dataset_default_roles: Roles = [METADATA_READ_ROLE, DATASET_READ_ROLE]
 # dataset
 
 dataset_limited_access_roles = {ra: [DATA_STORE_SERVICE_ROLE_NAME]
-                                for ra in PROXY_EDIT_ROUTE_ACTIONS}
+                                for ra in PROXY_EDIT_ROUTE_ACTIONS +\
+                                # Datasets have versioning enabled only with
+                                # proxy route
+                                    [RouteActions.PROXY_VERSION]}
 
 model_run_limited_access_roles = {ra: [PROV_SERVICE_ROLE_NAME]
                                   for ra in PROXY_EDIT_ROUTE_ACTIONS}
+
+PROV_VERSIONING_ENABLED_SUBTYPES: List[ItemSubType] = [
+    # ItemSubType.WORKFLOW_RUN,
+    # ItemSubType.MODEL_RUN,
+    # ItemSubType.CREATE,
+    # ItemSubType.VERSION,
+    # ItemSubType.PERSON,
+    # ItemSubType.ORGANISATION,
+    # ItemSubType.SOFTWARE,
+
+    # Currently only instantiable Entities
+    ItemSubType.MODEL,
+    ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE,
+    ItemSubType.DATASET,
+    ItemSubType.DATASET_TEMPLATE,
+]
+
+
+def outfit_with_prov_versioning(base_actions: List[RouteActions], subtype: ItemSubType, proxy: bool) -> List[RouteActions]:
+    base = base_actions.copy()
+    if subtype in PROV_VERSIONING_ENABLED_SUBTYPES:
+        if proxy:
+            base.extend(PROXY_PROVENANCE_VERSIONING_ROUTE_ACTIONS)
+        else:
+            base.extend(STANDARD_PROVENANCE_VERSIONING_ROUTE_ACTIONS)
+    return base
+
 
 route_configs: List[RouteConfig] = [
     # AGENT
     # organisation
     RouteConfig(
-        desired_actions=STANDARD_ROUTE_ACTIONS,
+        desired_actions=outfit_with_prov_versioning(
+            base_actions=STANDARD_ROUTE_ACTIONS,
+            subtype=ItemSubType.ORGANISATION,
+            proxy=False
+        ),
         tags=['Organisation'],
         item_model_type=ItemOrganisation,
         item_domain_info_type=OrganisationDomainInfo,
@@ -148,11 +191,17 @@ route_configs: List[RouteConfig] = [
         json_schema_override=JSON_SCHEMA_OVERRIDES.get(ItemOrganisation),
         library_postfix="agent_organisation",
         available_roles=ENTITY_BASE_ROLE_LIST,
-        default_roles=normal_default_roles
+        default_roles=normal_default_roles,
+        enforce_username_person_link=False,
+        provenance_enabled_versioning=False
     ),
     # person
     RouteConfig(
-        desired_actions=STANDARD_ROUTE_ACTIONS,
+        desired_actions=outfit_with_prov_versioning(
+            base_actions=STANDARD_ROUTE_ACTIONS,
+            subtype=ItemSubType.PERSON,
+            proxy=False
+        ),
         tags=['Person'],
         item_model_type=ItemPerson,
         item_domain_info_type=PersonDomainInfo,
@@ -166,13 +215,19 @@ route_configs: List[RouteConfig] = [
         json_schema_override=JSON_SCHEMA_OVERRIDES.get(ItemPerson),
         library_postfix="agent_person",
         available_roles=ENTITY_BASE_ROLE_LIST,
-        default_roles=normal_default_roles
+        default_roles=normal_default_roles,
+        enforce_username_person_link=False,
+        provenance_enabled_versioning=False
 
     ),
     # ENTITY
     # model
     RouteConfig(
-        desired_actions=STANDARD_ROUTE_ACTIONS,
+        desired_actions=outfit_with_prov_versioning(
+            base_actions=STANDARD_ROUTE_ACTIONS,
+            subtype=ItemSubType.MODEL,
+            proxy=False
+        ),
         tags=['Model'],
         item_model_type=ItemModel,
         item_domain_info_type=ModelDomainInfo,
@@ -186,11 +241,17 @@ route_configs: List[RouteConfig] = [
         json_schema_override=JSON_SCHEMA_OVERRIDES.get(ItemModel),
         library_postfix="entity_model",
         available_roles=ENTITY_BASE_ROLE_LIST,
-        default_roles=normal_default_roles
+        default_roles=normal_default_roles,
+        enforce_username_person_link=True,
+        provenance_enabled_versioning=True
 
     ),
     RouteConfig(
-        desired_actions=STANDARD_ROUTE_ACTIONS,
+        desired_actions=outfit_with_prov_versioning(
+            base_actions=STANDARD_ROUTE_ACTIONS,
+            subtype=ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE,
+            proxy=False
+        ),
         tags=['Model Run Workflow Template'],
         item_model_type=ItemModelRunWorkflowTemplate,
         item_domain_info_type=ModelRunWorkflowTemplateDomainInfo,
@@ -205,10 +266,16 @@ route_configs: List[RouteConfig] = [
             ItemModelRunWorkflowTemplate),
         library_postfix="entity_model_run_workflow_template",
         available_roles=ENTITY_BASE_ROLE_LIST,
-        default_roles=normal_default_roles
+        default_roles=normal_default_roles,
+        enforce_username_person_link=True,
+        provenance_enabled_versioning=True
     ),
     RouteConfig(
-        desired_actions=STANDARD_ROUTE_ACTIONS,
+        desired_actions=outfit_with_prov_versioning(
+            base_actions=STANDARD_ROUTE_ACTIONS,
+            subtype=ItemSubType.DATASET_TEMPLATE,
+            proxy=False
+        ),
         tags=['Dataset Template'],
         item_model_type=ItemDatasetTemplate,
         item_domain_info_type=DatasetTemplateDomainInfo,
@@ -222,7 +289,9 @@ route_configs: List[RouteConfig] = [
         json_schema_override=JSON_SCHEMA_OVERRIDES.get(ItemDatasetTemplate),
         library_postfix="entity_dataset_template",
         available_roles=ENTITY_BASE_ROLE_LIST,
-        default_roles=normal_default_roles
+        default_roles=normal_default_roles,
+        enforce_username_person_link=True,
+        provenance_enabled_versioning=True
     ),
     RouteConfig(
         desired_actions=DATASET_ROUTE_ACTIONS,
@@ -246,9 +315,54 @@ route_configs: List[RouteConfig] = [
         limited_access_roles=dataset_limited_access_roles,
 
         # Datasets require linked Person before any modification actions
-        enforce_username_person_link=True
+        enforce_username_person_link=True,
+
+        # Special prov versioning for datasets
+        provenance_enabled_versioning=True
     ),
     # ACTIVITY
+    # Activity: Registry Create
+    RouteConfig(
+        desired_actions=READ_ONLY_ROUTE_ACTIONS,
+        tags=['Create Activity'],
+        item_model_type=ItemCreate,
+        item_domain_info_type=CreateDomainInfo,
+        seed_response_type=None,
+        fetch_response_type=CreateFetchResponse,
+        create_response_type=None,
+        list_response_type=CreateListResponse,
+        desired_category=ItemCategory.ACTIVITY,
+        desired_subtype=ItemSubType.CREATE,
+        # These are None for now
+        ui_schema=UI_SCHEMA_OVERRIDES.get(ItemCreate),
+        json_schema_override=JSON_SCHEMA_OVERRIDES.get(ItemCreate),
+        library_postfix="activity_create",
+        available_roles=ENTITY_BASE_ROLE_LIST,
+        default_roles=normal_default_roles,
+        enforce_username_person_link=True,
+        provenance_enabled_versioning=False,
+    ),
+    # Activity: Registry VERSION
+    RouteConfig(
+        desired_actions=READ_ONLY_ROUTE_ACTIONS,
+        tags=['Version Activity'],
+        item_model_type=ItemVersion,
+        item_domain_info_type=VersionDomainInfo,
+        seed_response_type=None,
+        fetch_response_type=VersionFetchResponse,
+        create_response_type=None,
+        list_response_type=VersionListResponse,
+        desired_category=ItemCategory.ACTIVITY,
+        desired_subtype=ItemSubType.VERSION,
+        # These are None for now
+        ui_schema=UI_SCHEMA_OVERRIDES.get(ItemVersion),
+        json_schema_override=JSON_SCHEMA_OVERRIDES.get(ItemVersion),
+        library_postfix="activity_version",
+        available_roles=ENTITY_BASE_ROLE_LIST,
+        default_roles=normal_default_roles,
+        enforce_username_person_link=True,
+        provenance_enabled_versioning=False,
+    ),
     # model run
     RouteConfig(
         desired_actions=MODEL_RUN_ROUTE_ACTIONS,
@@ -269,7 +383,9 @@ route_configs: List[RouteConfig] = [
         # the model runs can only be created and modified through the prov API
         # in proxy mode where username is passed through - this is for all the
         # proxy style routes
-        limited_access_roles=model_run_limited_access_roles
+        limited_access_roles=model_run_limited_access_roles,
+        enforce_username_person_link=False,
+        provenance_enabled_versioning=False
     ),
 ]
 
@@ -293,7 +409,8 @@ for r_config in route_configs:
         default_roles=r_config.default_roles,
         limited_access_roles=r_config.limited_access_roles,
         json_schema_override=r_config.json_schema_override,
-        enforce_username_person_link=r_config.enforce_username_person_link
+        enforce_username_person_link=r_config.enforce_username_person_link,
+        provenance_enabled_versioning=r_config.provenance_enabled_versioning
     )
 
     # Work out nice prefix
@@ -314,6 +431,13 @@ app.include_router(
     tags=['General Registry']
 )
 
+# general registry route
+app.include_router(
+    dataset.router,
+    prefix="/registry/entity/dataset",
+    tags=['Entity Dataset']
+)
+
 # admin management routes
 app.include_router(
     import_export_restore.router,
@@ -326,13 +450,6 @@ app.include_router(
     prefix="/admin",
     tags=['Admin']
 )
-"""
-app.include_router(
-    batch_create.router,
-    prefix="/admin",
-    tags=['Admin']
-)
-"""
 
 
 @app.get("/", operation_id="root")

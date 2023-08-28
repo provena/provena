@@ -7,10 +7,10 @@ from enum import Enum
 # where as pip install prefers module level import
 try:
     from SharedInterfaces.SharedTypes import Status, StatusResponse
-    from SharedInterfaces.RegistryModels import ItemDataset, S3Location, CollectionFormat, Roles
+    from SharedInterfaces.RegistryModels import ItemDataset, S3Location, CollectionFormat, Roles, IdentifiedResource
 except:
     from .SharedTypes import Status, StatusResponse
-    from .RegistryModels import ItemDataset, S3Location, CollectionFormat, Roles
+    from .RegistryModels import ItemDataset, S3Location, CollectionFormat, Roles, IdentifiedResource
 
 Handle = str
 ROCrate = Dict[str, Any]
@@ -100,6 +100,7 @@ class MintResponse(BaseModel):
     status: Status
     handle: Optional[str]
     s3_location: Optional[S3Location]
+    register_create_activity_session_id: Optional[str]
 
 
 class UpdateMetadataResponse(BaseModel):
@@ -195,3 +196,25 @@ class ResponseConvertRocrateCollectionFormat(BaseModel):
 
 class ResponseConvertCollectionFormatRocrate(BaseModel):
     rocrate_items: List[PossibleRocrate]
+
+
+class ReleaseApprovalRequest(BaseModel):
+    dataset_id: IdentifiedResource
+    approver_id: IdentifiedResource
+    notes: str
+
+class ReleaseApprovalRequestResponse(BaseModel):
+    dataset_id: IdentifiedResource
+    approver_id: IdentifiedResource
+    details: str
+
+
+class ActionApprovalRequest(BaseModel):
+    dataset_id: IdentifiedResource
+    approve: bool
+    notes: str
+
+class ActionApprovalRequestResponse(BaseModel):
+    dataset_id: IdentifiedResource
+    approved: bool
+    details: str

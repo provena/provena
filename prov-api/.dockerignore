@@ -5,3 +5,5 @@ thunder-tests/*
 environment.yml
 requirements.txt
 .env
+JobDockerfile
+Dockerfile

@@ -14,6 +14,7 @@ class Config(BaseSettings):
     REGISTRY_API_ENDPOINT: str
     DATA_STORE_API_ENDPOINT: str
     PROV_API_ENDPOINT: str
+    JOB_API_ENDPOINT: str
     AUTH_API_ENDPOINT: str
     SYSTEM_WRITE_USERNAME: str
     SYSTEM_WRITE_PASSWORD: str
@@ -48,7 +49,9 @@ def check_expiry(token: str) -> bool:
     try:
         decoded = jwt.decode(
             jwt=token,
-            options={'verify_signature': False}
+            # Don't bother verifying the signature, API  does that, just check
+            # expiry
+            options={'verify_signature': False, 'verify_exp': True}
         )
         return True
     except jwt.ExpiredSignatureError:
@@ -60,6 +63,7 @@ def fetch_token(username: str, password: str) -> str:
 
 
 def refresh_user1() -> str:
+    print("Refreshing user1 token")
     return fetch_token(
         username=config.SYSTEM_WRITE_USERNAME,
         password=config.SYSTEM_WRITE_PASSWORD
@@ -67,6 +71,7 @@ def refresh_user1() -> str:
 
 
 def refresh_user2() -> str:
+    print("Refreshing user2 token")
     return fetch_token(
         username=config.SYSTEM_WRITE_USERNAME_2,
         password=config.SYSTEM_WRITE_PASSWORD_2
@@ -74,13 +79,18 @@ def refresh_user2() -> str:
 
 
 def refresh_admin() -> str:
+    print("Refreshing admin token")
     return fetch_token(
         username=config.ADMIN_USERNAME,
         password=config.ADMIN_PASSWORD
     )
 
 
-def check_and_update(token: Optional[str], refresh_method: Callable[[], str], set_method: Callable[[str], None]) -> str:
+TokenGenerator = Callable[[], str]
+TokenSetter = Callable[[str], None]
+
+
+def check_and_update(token: Optional[str], refresh_method: TokenGenerator, set_method: TokenSetter) -> str:
     if token is None:
         new_token = refresh_method()
         set_method(new_token)
@@ -133,8 +143,8 @@ class Tokens:
     token_state: CurrentTokens = CurrentTokens()
 
     # system write and read access users
-    user1: Callable[[], str] = token_state.get_refresh_user1
-    user2: Callable[[], str] = token_state.get_refresh_user2
+    user1: TokenGenerator = token_state.get_refresh_user1
+    user2: TokenGenerator = token_state.get_refresh_user2
 
     # static usernames
     user1_username: str = config.SYSTEM_WRITE_USERNAME
@@ -142,7 +152,7 @@ class Tokens:
     admin_username: str = config.ADMIN_USERNAME
 
     # system admin access for clean up + admin only endpoints (such as auth/group management)
-    admin: Callable[[], str] = token_state.get_refresh_admin
+    admin: TokenGenerator = token_state.get_refresh_admin
 
 
 # endpoint setup for link service

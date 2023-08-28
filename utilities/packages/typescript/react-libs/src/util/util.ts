@@ -1,10 +1,10 @@
-import { Buffer } from "buffer";
-import { HTTPValidationError, Detail } from "../shared-interfaces/APIResponses";
-import { StatusResponse } from "../shared-interfaces/SharedTypes";
 import { FieldProps } from "@rjsf/utils";
-import { ItemSubType } from "../shared-interfaces/RegistryModels";
-import { REGISTRY_LINK } from "../queries";
+import { Buffer } from "buffer";
 import unset from "lodash.unset";
+import { REGISTRY_LINK } from "../queries";
+import { Detail, HTTPValidationError } from "../shared-interfaces/APIResponses";
+import { ItemSubType } from "../shared-interfaces/RegistryModels";
+import { StatusResponse } from "../shared-interfaces/SharedTypes";
 
 export const parseJwt = (token: string) => {
     var base64Payload = token.split(".")[1];
@@ -228,7 +228,11 @@ export function requestErrToMsg(err: any): string {
             } catch {}
 
             try {
-                message = err.data.detail ? err.data.detail : "";
+                message = err.data.detail[0].msg
+                    ? err.data.detail[0].msg
+                    : err.data.detail
+                    ? err.data.detail
+                    : "";
             } catch {}
         }
 
@@ -258,3 +262,16 @@ export function deriveTitleDescription<T>(
         description,
     };
 }
+
+export const createSubtypeAcronym = (subtype: string) => {
+    return subtype
+        .split("_")
+        .map((word) => word.toLowerCase()[0].toUpperCase())
+        .join(" ");
+};
+
+// Check if input string is empty
+export const isBlank = (str: string): boolean => {
+    const blankReg = new RegExp(/^\s*$/);
+    return !str || blankReg.test(str);
+};

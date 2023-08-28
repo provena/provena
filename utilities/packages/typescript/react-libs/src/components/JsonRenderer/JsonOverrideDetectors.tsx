@@ -59,3 +59,4 @@ export const STRING_AUTO_DETECTORS: OverrideDetectorList<string> = [
 ];
 export const NUMBER_AUTO_DETECTORS: OverrideDetectorList<number> = [];
 export const BOOLEAN_AUTO_DETECTORS: OverrideDetectorList<boolean> = [];
+export const OBJECT_AUTO_DETECTORS: OverrideDetectorList<object> = [];

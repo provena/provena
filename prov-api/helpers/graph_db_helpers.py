@@ -14,9 +14,9 @@ def mocked_graph_db_store() -> str:
 
 
 def upload_prov_document(
-        model_run_item: ItemModelRun,
+        id: str,
         prov_document: ProvDocument,
-        config : Config
+        config: Config
 ) -> str:
     """    upload_prov_document
         Wrapper method for uploading provenance document to backend store.
@@ -42,20 +42,20 @@ def upload_prov_document(
         Examples (optional)
         --------
     """
-    if config.MOCK_GRAPH_DB:
+    if config.mock_graph_db:
         return mocked_graph_db_store()
     else:
         return neo4j_graph_db_store(
-            model_run_item=model_run_item,
+            id=id,
             prov_document=prov_document,
             config=config
         )
 
 
 def neo4j_graph_db_store(
-        model_run_item: ItemModelRun,
+        id: str,
         prov_document: ProvDocument,
-        config : Config
+        config: Config
 ) -> str:
     """    neo4j_graph_db_store
         Uses prov-db-connector to save the python prov document 
@@ -71,8 +71,7 @@ def neo4j_graph_db_store(
 
         Arguments
         ----------
-        model_run_item : ItemModelRun
-            The model run item - not currently used
+        id: str
         prov_document : ProvDocument
             The prov document (python-prov)
 
@@ -107,12 +106,13 @@ def neo4j_graph_db_store(
             auth_info={
                 "user_name": user,
                 "user_password": password,
-                "host": f"{config.NEO4J_HOST}:{config.NEO4J_PORT}",
-                "encrypted": config.NEO4J_ENCRYPTED,
+                "host": f"{config.neo4j_host}:{config.neo4j_port}",
+                "encrypted": config.neo4j_encrypted,
             },
         )
     except Exception as e:
-        print(f"Failed to connect to neo4j instance through prov-db-connector. Error: {e}")
+        print(
+            f"Failed to connect to neo4j instance through prov-db-connector. Error: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to connect to neo4j instance through prov-db-connector. Error: {e}"
@@ -124,10 +124,11 @@ def neo4j_graph_db_store(
             content=prov_document
         )
     except Exception as e:
-        print(f"For record with ID: {model_run_item.id}, failed to save document to neo4j instance through prov-db-connector. Error: {e}")
+        print(
+            f"For record with ID: {id}, failed to save document to neo4j instance through prov-db-connector. Error: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"For record with ID: {model_run_item.id}, failed to save document to neo4j instance through prov-db-connector. Error: {e}"
+            detail=f"For record with ID: {id}, failed to save document to neo4j instance through prov-db-connector. Error: {e}"
         )
 
     return document_id

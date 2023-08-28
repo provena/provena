@@ -21,7 +21,6 @@ def global_config_provider() -> Config:
     return Config(
         keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
-        email_secret_arn="",
         access_request_table_name=test_access_request_table_name,
         user_groups_table_name=test_user_group_table_name,
         
@@ -29,7 +28,11 @@ def global_config_provider() -> Config:
         link_update_registry_connection=False,
         registry_api_endpoint="",
         username_person_link_table_name="",
-        username_person_link_table_person_index_name=""
+        username_person_link_table_person_index_name="",
+        
+        service_account_secret_arn="",
+        job_api_endpoint="",
+        access_request_email_address="",
     )
 
 

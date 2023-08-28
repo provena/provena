@@ -66,9 +66,7 @@ export const combineLoadStates = (
     loads: Array<BaseLoadedEntity | undefined>
 ): BaseLoadedEntity => {
     const error = loads.some((i) => (i !== undefined ? i.error : false));
-    const success = !loads.some((i) => {
-        i !== undefined ? !i.success : true;
-    });
+    const success = !loads.some((i) => (i !== undefined ? !i.success : true));
     const loading = loads.some((i) => (i !== undefined ? i.loading : false));
     const errorMessage = error
         ? loads.find((i) => {

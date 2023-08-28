@@ -123,6 +123,9 @@ def get_api_endpoint(api: API_NAME, env: PopulatedToolingEnvironment) -> str:
     if api == API_NAME.identity_api:
         return env.handle_service_api_endpoint
 
+    if api == API_NAME.job_api:
+        return env.jobs_service_api_endpoint
+
     raise ValueError(f"No API target for {api}")
 
 
@@ -252,14 +255,14 @@ def bootstrap_stage(
     starting_cwd = os.getcwd()
 
     # TODO PROVENA UPDATE
-    expected_cwd_postfix = "rrap-is-proto/admin-tooling/environment-bootstrapper"
+    expected_cwd_postfix = "provena/admin-tooling/environment-bootstrapper"
     assert starting_cwd.endswith(
         expected_cwd_postfix), f"Working directory is unexpected, you may need to edit the script, cwd {starting_cwd}, expected ending in {expected_cwd_postfix}."
     os.chdir(RELATIVE_TO_HOME)
     base_working_dir = os.getcwd()
     # TODO PROVENA UPDATE
     assert base_working_dir.endswith(
-        "rrap-is-proto"), f"After changing directories with relative path {RELATIVE_TO_HOME}, failed to end in provena base path as expected..."
+        "provena"), f"After changing directories with relative path {RELATIVE_TO_HOME}, failed to end in provena base path as expected..."
 
     # Setup each environment
     for api_name in API_LOCATIONS_MAP.keys():
@@ -276,7 +279,7 @@ def bootstrap_stage(
 
         # check we are back to base!
         assert os.getcwd().endswith(
-            "rrap-is-proto"), f"After changing directories, failed to end in provena base path as expected..."
+            "provena"), f"After changing directories, failed to end in provena base path as expected..."
     # return back to original wd
     os.chdir(starting_cwd)
 

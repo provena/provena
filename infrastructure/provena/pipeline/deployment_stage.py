@@ -68,6 +68,7 @@ class ProvenaDeploymentStage(CdkStage):
         # cfn outputs
         self.data_store_ui_bucket_name: CfnOutput = self.infra.data_store_ui_bucket_name
         self.data_api_endpoint: CfnOutput = self.infra.data_api_endpoint
+        self.job_api_endpoint: CfnOutput = self.infra.job_api_endpoint
         self.registry_api_endpoint: CfnOutput = self.infra.registry_api_endpoint
         self.registry_ui_bucket_name: CfnOutput = self.infra.registry_ui_bucket_name
         self.prov_ui_bucket_name: CfnOutput = self.infra.prov_ui_bucket_name

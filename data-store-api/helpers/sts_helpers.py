@@ -1,7 +1,7 @@
 from distutils.command.config import config
 from helpers.keycloak_helpers import get_oidc_service_token
 import json
-from dependencies.dependencies import secret_cache
+from dependencies.secret_cache import secret_cache
 from SharedInterfaces.DataStoreAPI import *
 import boto3  # type: ignore
 from helpers.aws_helpers import create_policy_document

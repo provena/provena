@@ -1,60 +1,10 @@
 from tests.helpers.auth_helpers import *
 from tests.helpers.link_helpers import *
 from tests.config import config, Tokens
-from tests.helpers.registry_helpers import create_item_successfully, perform_entity_cleanup, IdentifiedResource
-from SharedInterfaces.RegistryModels import ItemSubType
-import pytest
 from typing import Generator, Tuple
+from tests.helpers.fixtures import *
 
-# define globally for fixture and test funcs to both access.
 test_group_id = "integration_test_group_id"
-cleanup_group_ids: List[str] = []
-
-# list of usernames which should have associations cleared
-cleanup_links: List[str] = []
-
-
-@pytest.fixture(scope='session', autouse=True)
-def person_fixture() -> Generator[Tuple[str, str], None, None]:
-    # create person 1 and 2  (user 1 and 2)
-    person_1 = create_item_successfully(
-        item_subtype=ItemSubType.PERSON,
-        token=Tokens.user1()
-    )
-    person_1_id = person_1.id
-
-    person_2 = create_item_successfully(
-        item_subtype=ItemSubType.PERSON,
-        token=Tokens.user2()
-    )
-    person_2_id = person_2.id
-
-    # provide to any test that uses them
-    yield (person_1_id, person_2_id)
-
-    # clean up
-    perform_entity_cleanup([
-        (person_1.item_subtype, person_1.id),
-        (person_2.item_subtype, person_2.id),
-    ], token=Tokens.admin())
-
-
-@pytest.fixture(scope='function', autouse=True)
-def link_cleanup_fixture() -> Generator:
-    # runs after each function to clean up any links created
-    # function scope required because tests depend on fresh start with no links
-    yield
-    perform_link_cleanup(cleanup_links, token=Tokens.admin())
-    cleanup_links.clear()
-
-
-@pytest.fixture(scope='function', autouse=False)
-def group_cleanup_fixture() -> Generator:
-    # start up code here:
-    yield
-    # clean up code here:
-    perform_group_cleanup(
-        cleanup_group_ids=cleanup_group_ids, token=Tokens.admin())
 
 
 def test_groups(group_cleanup_fixture: Generator) -> None:
@@ -136,8 +86,8 @@ def test_group_removal() -> None:
         id=test_group_id, token=Tokens.admin())
 
 
-def test_user_lookup(person_fixture: Tuple[str, str]) -> None:
-    person_1_id, person_2_id = person_fixture
+def test_user_lookup(two_person_fixture: Tuple[str, str], manual_link_test_cleanup: None) -> None:
+    person_1_id, person_2_id = two_person_fixture
 
     # lookup with no entry (no username)
     lookup_user_user_assert_missing(token=Tokens.user1())
@@ -188,8 +138,8 @@ def test_user_lookup(person_fixture: Tuple[str, str]) -> None:
         token=Tokens.user2(), check_id=person_2_id, username=Tokens.user2_username)
 
 
-def test_user_assign(person_fixture: Tuple[str, str]) -> None:
-    person_1_id, _ = person_fixture
+def test_user_assign(two_person_fixture: Tuple[str, str], manual_link_test_cleanup: None) -> None:
+    person_1_id, _ = two_person_fixture
     # lookup with no entry
     lookup_user_user_assert_missing(token=Tokens.user1())
 
@@ -213,8 +163,8 @@ def test_user_assign(person_fixture: Tuple[str, str]) -> None:
     lookup_user_user_assert_success(token=Tokens.user1(), check_id=person_1_id)
 
 
-def test_admin_assign_and_clear(person_fixture: Tuple[str, str]) -> None:
-    person_1_id, person_2_id = person_fixture
+def test_admin_assign_and_clear(two_person_fixture: Tuple[str, str], manual_link_test_cleanup: None) -> None:
+    person_1_id, person_2_id = two_person_fixture
 
     # lookup with no entry
     lookup_user_user_assert_missing(token=Tokens.user1())
@@ -292,8 +242,8 @@ def test_admin_assign_and_clear(person_fixture: Tuple[str, str]) -> None:
     lookup_user_user_assert_missing(token=Tokens.user2())
 
 
-def test_reverse_lookup(person_fixture: Tuple[str, str]) -> None:
-    person_1_id, person_2_id = person_fixture
+def test_reverse_lookup(two_person_fixture: Tuple[str, str], manual_link_test_cleanup: None) -> None:
+    person_1_id, person_2_id = two_person_fixture
 
     usernames = [
         "1@gmail.com",

@@ -43,29 +43,33 @@ class BaseConfig(BaseSettings):
 
 class Config(BaseConfig):
     # General API settings
-    SERVICE_ACCOUNT_SECRET_ARN: str
-    REGISTRY_API_ENDPOINT: str
-    MOCK_GRAPH_DB: bool = False
-    NEO4J_HOST: str
-    NEO4J_PORT: int
+    service_account_secret_arn: str
+    registry_api_endpoint: str
+    mock_graph_db: bool = False
+    neo4j_host: str
+    neo4j_port: int
+
+    # Job API endpoint
+    job_api_endpoint: str
 
     # default depth upper limit
-    DEPTH_UPPER_LIMIT: int = 10
-    DEPTH_DEFAULT_LIMIT: int = 2
+    depth_upper_limit: int = 10
+    depth_default_limit: int = 2
+    depth_specialised_default_limit: int = 4
 
     # potential overrides of user/pass for testing neo4j
-    NEO4J_AUTH_ARN: Optional[str] = None
-    NEO4J_TEST_USERNAME: Optional[str] = None
-    NEO4J_TEST_PASSWORD: Optional[str] = None
+    neo4j_auth_arn: Optional[str] = None
+    neo4j_test_username: Optional[str] = None
+    neo4j_test_password: Optional[str] = None
 
     # default settings
-    KEYCLOAK_TOKEN_POSTFIX: str = "/protocol/openid-connect/token"
+    keycloak_token_postfix: str = "/protocol/openid-connect/token"
 
     @property
-    def KEYCLOAK_TOKEN_ENDPOINT(self) -> str:
-        return self.keycloak_endpoint + self.KEYCLOAK_TOKEN_POSTFIX
+    def keycloak_token_endpoint(self) -> str:
+        return self.keycloak_endpoint + self.keycloak_token_postfix
 
-    NEO4J_ENCRYPTED: bool = False
+    neo4j_encrypted: bool = False
 
     # for use in writing temp files
     TEMP_FILE_LOCATION: str = "/tmp"
@@ -73,20 +77,15 @@ class Config(BaseConfig):
     # config options for csv templates
     INPUT_DATASET_TEMPLATE_PREFIX: str = "Input dataset id for template: "
     OUTPUT_DATASET_TEMPLATE_PREFIX: str = "Output dataset id for template: "
-    TEMPLATE_RESOURCE_PREFIX: str = "resource: "
+    INPUT_TEMPLATE_RESOURCE_PREFIX: str = "Input resource: "
+    OUTPUT_TEMPLATE_RESOURCE_PREFIX: str = "Output resource: "
     WORKFLOW_TEMPLATE_MARKER_PREFIX: str = "workflow template id"
+    TEMPLATE_DISPLAY_NAME_HEADER: str = "display name"
     TEMPLATE_DESCRIPTION_HEADER: str = "description"
     TEMPLATE_AGENT_HEADER: str = "agent id"
     TEMPLATE_ORGANISATION_HEADER: str = "requesting organisation id"
     TEMPLATE_START_TIME_HEADER: str = "execution start time (YYYY-MM-DD HH:MM:SS+HH:MM)"
     TEMPLATE_END_TIME_HEADER: str = "execution end time (YYYY-MM-DD HH:MM:SS+HH:MM)"
-
-    # job queue info
-    PROV_JOB_TABLE_NAME: str
-    PROV_JOB_TOPIC_ARN: str
-
-    # batch table
-    BATCH_TABLE_NAME: str
 
     class Config:
         env_file = ".env"
@@ -140,6 +139,8 @@ def dispatch_cors(stage: str, base_domain: str) -> CorsGeneratorReturnType:
     return generator_func(base_domain)
 
 # Setup settings dependency
+
+
 @lru_cache()
 def get_settings() -> Config:
     return Config()

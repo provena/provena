@@ -13,6 +13,7 @@ from provena.custom_constructs.DNS_allocator import DNSAllocator
 from provena.utility.direct_secret_import import direct_import
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
 from provena.component_constructs.data_registry import DataRegistry
+from provena.component_constructs.registry_table import IdIndexTable
 from typing import Any, List
 
 
@@ -34,6 +35,7 @@ class LambdaDataStoreAPI(Construct):
                  oidc_service_role_arn: str,
                  storage_bucket_arn: str,
                  allocator: DNSAllocator,
+                 reviewers_table: IdIndexTable,
                  github_build_token_arn: str,
                  cert_arn: str,
                  extra_hash_dirs: List[str] = [],
@@ -57,7 +59,7 @@ class LambdaDataStoreAPI(Construct):
             dockerfile_path_relative="lambda_dockerfile",
             build_args={
                 "github_token": oauth_token,
-                "repo_string" : repo_string,
+                "repo_string": repo_string,
                 "branch_name": branch_name
             },
             extra_hash_dirs=extra_hash_dirs,
@@ -105,9 +107,10 @@ class LambdaDataStoreAPI(Construct):
         # requirements
         api_environment = {
             "KEYCLOAK_ENDPOINT": keycloak_endpoint,
-            "DOMAIN_BASE" : domain_base,
+            "DOMAIN_BASE": domain_base,
             "KEYCLOAK_ISSUER": keycloak_issuer,
             "HANDLE_API_ENDPOINT": handle_endpoint,
+            "REVIEWERS_TABLE_NAME": reviewers_table.table_name,
             "AUTH_API_ENDPOINT": auth_api_endpoint,
             "REGISTRY_API_ENDPOINT": registry_api_endpoint,
             "S3_STORAGE_BUCKET_NAME": bucket.bucket_name,
@@ -158,3 +161,9 @@ class LambdaDataStoreAPI(Construct):
 
         # expose endpoint
         self.endpoint = f"https://{target_host}"
+
+        # Add the permissions for the reviewers table
+        reviewers_table.table.grant_read_write_data(api_func.function)
+
+        # expose ability to add environment
+        self.add_api_environment = api_func.function.add_environment

@@ -50,6 +50,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
                 )
             ),
             s3=S3Location(bucket_name="test", path="test", s3_uri="test"),
+            release_status=ReleasedStatus.NOT_RELEASED,
             created_timestamp=int(datetime.now().timestamp()),
             updated_timestamp=int(datetime.now().timestamp()),
             history=[]
@@ -230,6 +231,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
         start_time=int(datetime.now().timestamp()),
+        display_name="test display name",
+        description="test description",
         end_time=int(datetime.now().timestamp())
     )
 
@@ -237,19 +240,17 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
     fake_config = Config(
         stage=stage,
         keycloak_endpoint=base_config.keycloak_endpoint,
-        SERVICE_ACCOUNT_SECRET_ARN="",
-        REGISTRY_API_ENDPOINT="",
-        MOCK_GRAPH_DB=True,
-        NEO4J_HOST="",
-        NEO4J_PORT=0,
-        NEO4J_TEST_USERNAME="",
-        NEO4J_TEST_PASSWORD="",
-        DEPTH_DEFAULT_LIMIT=30,
-        DEPTH_UPPER_LIMIT=100,
-        # Sort these out
-        PROV_JOB_TOPIC_ARN="",
-        PROV_JOB_TABLE_NAME="",
-        BATCH_TABLE_NAME=""
+        service_account_secret_arn="",
+        # This should not be used
+        job_api_endpoint="",
+        registry_api_endpoint="",
+        mock_graph_db=True,
+        neo4j_host="",
+        neo4j_port=0,
+        neo4j_test_username="",
+        neo4j_test_password="",
+        depth_default_limit=30,
+        depth_upper_limit=100,
     )
 
     fake_request_style = RequestStyle(
@@ -356,6 +357,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -386,6 +389,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -416,6 +421,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -445,6 +452,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -476,6 +485,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -507,6 +518,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -538,6 +551,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -569,6 +584,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -599,6 +616,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
+        display_name = "test display name",
+        description= "test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={

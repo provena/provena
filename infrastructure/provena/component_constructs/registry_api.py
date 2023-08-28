@@ -4,7 +4,8 @@ from aws_cdk import (
     aws_certificatemanager as aws_cm,
     aws_secretsmanager as sm,
     Duration,
-    RemovalPolicy
+    RemovalPolicy,
+    aws_iam as iam
 )
 
 from constructs import Construct
@@ -12,7 +13,7 @@ from provena.custom_constructs.DNS_allocator import DNSAllocator
 from provena.utility.direct_secret_import import direct_import
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
 from provena.component_constructs.registry_table import RegistryTable, IdIndexTable
-from typing import Any, List
+from typing import Any, List, Optional
 
 
 REGISTRY_API_TIMEOUT = 60  # seconds
@@ -35,6 +36,11 @@ class RegistryAPI(Construct):
                  registry_table: RegistryTable,
                  auth_table: IdIndexTable,
                  lock_table: IdIndexTable,
+                 git_commit_id: Optional[str],
+                 git_commit_url: Optional[str],
+                 git_tag_name: Optional[str],
+                 git_release_title: Optional[str],
+                 git_release_url: Optional[str],
                  extra_hash_dirs: List[str] = [],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -71,13 +77,13 @@ class RegistryAPI(Construct):
             secret_complete_arn=api_service_account_secret_arn
         )
 
-        # Grant read to data store api role
-        service_secret.grant_read(api_func.function.role)
 
         # Environment
 
         # Make sure these parameters match deployment
         # requirements
+
+
         api_environment = {
             "KEYCLOAK_ENDPOINT": keycloak_endpoint,
             "DOMAIN_BASE": domain_base,
@@ -87,11 +93,17 @@ class RegistryAPI(Construct):
             "REGISTRY_TABLE_NAME": registry_table.table_name,
             "AUTH_TABLE_NAME": auth_table.table_name,
             "LOCK_TABLE_NAME": lock_table.table_name,
-            "SERVICE_ACCOUNT_SECRET_ARN": api_service_account_secret_arn
+            "SERVICE_ACCOUNT_SECRET_ARN": api_service_account_secret_arn,
+            "GIT_COMMIT_ID": git_commit_id,
+            "GIT_COMMIT_URL": git_commit_url,
+            "GIT_TAG_NAME": git_tag_name,
+            "GIT_RELEASE_TITLE": git_release_title,
+            "GIT_RELEASE_URL": git_release_url,
         }
 
         for key, val in api_environment.items():
-            api_func.function.add_environment(key, val)
+            if val is not None:
+                api_func.function.add_environment(key, val)
 
         # Setup api gw integration
         # retrieve certificate
@@ -128,7 +140,20 @@ class RegistryAPI(Construct):
         # expose endpoint
         self.endpoint = f"https://{target_host}"
 
-        # Add the permissions
-        registry_table.table.grant_read_write_data(api_func.function)
-        auth_table.table.grant_read_write_data(api_func.function)
-        lock_table.table.grant_read_write_data(api_func.function)
+        
+        def grant_api_equivalent_permissions(grantee: iam.IGrantable) -> None:
+            # let api r/w registry table
+            registry_table.table.grant_read_write_data(grantee)
+            # and auth/lock table
+            auth_table.table.grant_read_write_data(grantee)
+            lock_table.table.grant_read_write_data(grantee)
+
+            # let api func act as service acc
+            service_secret.grant_read(grantee)
+
+        # grant permissions to registry api
+        grant_api_equivalent_permissions(api_func.function)
+        
+        self.registry_api_environment = api_environment
+        self.grant_api_equivalent_permissions = grant_api_equivalent_permissions
+        self.add_to_environment = api_func.function.add_environment

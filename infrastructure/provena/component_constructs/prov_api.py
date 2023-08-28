@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_apigateway as api_gw,
     aws_certificatemanager as aws_cm,
     aws_secretsmanager as sm,
+    aws_iam as iam,
     Duration,
     RemovalPolicy
 )
@@ -53,7 +54,7 @@ class ProvAPI(Construct):
             dockerfile_path_relative="lambda_dockerfile",
             build_args={
                 "github_token": oauth_token,
-                "repo_string" : repo_string,
+                "repo_string": repo_string,
                 "branch_name": branch_name
             },
             timeout=function_timeout,
@@ -93,7 +94,7 @@ class ProvAPI(Construct):
         # requirements
         api_environment = {
             "KEYCLOAK_ENDPOINT": keycloak_endpoint,
-            "DOMAIN_BASE" : domain_base,
+            "DOMAIN_BASE": domain_base,
             "STAGE": stage,
             "SERVICE_ACCOUNT_SECRET_ARN": service_account_secret_arn,
             "NEO4J_HOST": neo4j_host,
@@ -141,3 +142,16 @@ class ProvAPI(Construct):
         # expose endpoint and function
         self.endpoint = f"https://{target_host}"
         self.function = api_func.function
+
+        # expose alterable environment to resolve dependency with job API
+        self.prov_api_environment = api_environment
+        self.add_to_environment = api_func.function.add_environment
+
+        def grant_equivalent_permissions(entity: iam.IGrantable) -> None:
+            # Grant read to data store api role
+            service_secret.grant_read(entity)
+
+            # Grant read to data store api role
+            neo4j_auth_secret.grant_read(entity)
+            
+        self.grant_equivalent_permissions = grant_equivalent_permissions
