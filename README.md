@@ -6,9 +6,12 @@ Provena is an information system built to capture, manage, and analyse [Provenan
 
 To facilitate system functionality, Provena implements a suite of components. Each comprise of a Docker deployed Python FastAPI serverless microservice, and where user interaction is required, these APIs are paired with a front-end web application. The following components are implemented:
 
-## Citation
+## Citations
 
+### Conference paper 
 Yu, J., Baker, P., Cox, S.J.D., Petridis, R., Freebairn, A.C., Mirza, F., Thomas, L., Tickell, S., Lemon, D. and Rezvani, M., Provena: A provenance system for large distributed modelling and simulation workflows, In Vaze, J., Chilcott, C., Hutley, L. and Cuddy, S.M. (eds) MODSIM2023, 25th International Congress on Modelling and Simulation. Modelling and Simulation Society of Australia and New Zealand, July 2023, pp. 14–20. ISBN: 978-0-9872143-0-0. https://doi.org/10.36334/modsim.2023.yu90 
+
+### Software citation
 
 Yu, Jonathan; Baker, Peter; Petridis, Ross; Freebairn, Andrew; Thomas, Linda; Mirza, Fareed; Tickell, Sharon; Lemon, David; Rezvani, Mojtaba; Hou, Xinyu; Cox, Simon (2023): Provena. v1. CSIRO. Software Collection. http://hdl.handle.net/102.100.100/487364
 
