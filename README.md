@@ -147,7 +147,7 @@ Contact Provena Developers via [https://www.csiro.au/en/contact](https://www.csi
 
 The development of Provena Version 1.0 was funded by Reef Restoration and Adaptation Program (RRAP), which is a  partnership between the Australian Government’s Reef Trust and the Great Barrier Reef Foundation. Provena has been developed to support the Modelling and Decision Support (MDS) Subprogram (https://gbrrestoration.org/program/modelling-and-decision-support/). 
 
-People who contributed and developed Provena (in no particular order, alphabetical):
+People who contributed and developed Provena (ordered alphabetically):
 -   Andrew Freebairn
 -   David Lemon
 -   Fareed Mirza
