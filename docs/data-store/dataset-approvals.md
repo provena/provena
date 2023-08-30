@@ -66,7 +66,7 @@ PENDING -> RELEASED : Approved
 
 |                                        Release Lifecycle                                         |
 | :----------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/release_lifecycle.svg" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/release_lifecycle.svg" alt="drawing" width="800"/> |
 
 ## (Dataset Owner) How to request a dataset review
 
@@ -84,7 +84,7 @@ For example, you could search (1) for your dataset, and select it in the list (2
 
 |                                            Find Dataset                                             |
 | :-------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_find_dataset.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_find_dataset.png" alt="drawing" width="800"/> |
 
 ### View approval information
 
@@ -92,7 +92,7 @@ Once you are viewing your dataset details, you should validate the current statu
 
 |                                            Approvals Tab                                             |
 | :--------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_approvals_tab.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_approvals_tab.png" alt="drawing" width="800"/> |
 
 ### Submit for approval
 
@@ -100,7 +100,7 @@ After moving to the approvals tab, you can verify the approval status (1) and cl
 
 |                                            Request Approval                                             |
 | :-----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_request_approval.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_request_approval.png" alt="drawing" width="800"/> |
 
 Doing so will open a new page, where you can select your Approver using the dropdown menu (1), and include any notes to assist the Approver in the review process (2). Once ready, click (3) to confirm your readiness to submit the request, and (4) to submit. If you want to cancel this process and return to the previous view, click (5) (noting that this information is not saved until submitted).
 
@@ -110,13 +110,13 @@ If your desired dataset reviewer is not available in the dropdown menu, please c
 
 |                                            Request Details                                             |
 | :----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_request_details.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_request_details.png" alt="drawing" width="800"/> |
 
 After clicking submit, a popup will appear notifying you of a successful request. After a few seconds, you will be redirected to the approvals tab of the dataset.
 
 |                                        Request Success                                         |
 | :--------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_success.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_success.png" alt="drawing" width="800"/> |
 
 ### Await review response
 
@@ -130,13 +130,13 @@ After being redirected to the approvals tab, you will see an updated display inc
 
 |                                             Request Pending                                             |
 | :-----------------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_approval_pending.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_approval_pending.png" alt="drawing" width="800"/> |
 
 A email is automatically sent to the requested reviewer, notifying them of the request for review. The email includes a link to the requester (1), and a link to the approvals view of the requested dataset (2).
 
 |                                        Request Email                                         |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_email.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_email.png" alt="drawing" width="800"/> |
 
 For more information about performing a review, see [below](#dataset-reviewer-how-to-perform-a-dataset-review).
 
@@ -146,13 +146,13 @@ For example, in this case the review was approved (1):
 
 |                                        Approved Email                                        |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/approve_email.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/approve_email.png" alt="drawing" width="800"/> |
 
 In the case where your review is denied, you will see an email like so - noting the reject action (1):
 
 |                                       Rejected Email                                        |
 | :-----------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/reject_email.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/reject_email.png" alt="drawing" width="800"/> |
 
 As noted in the [release lifecycle](#release-lifecycle), rejecting a pending request returns the dataset to the NOT_RELEASED state, meaning it can be requested again. You can follow the same steps to request review again after applying the changes recommended in the review. The notes provided by the reviewer can be seen both in the email above, and in the approvals tab of the dataset. To explore the full history of a dataset's approval actions (including requester and reviewer notes), see [understanding approval history](#understanding-approval-history).
 
@@ -177,13 +177,42 @@ The email includes a link to the requester (1), and a link to the approvals view
 
 |                                        Request Email                                         |
 | :------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/release/request_email.png" alt="drawing" width="600"/> |
+| <img src="../assets/images/data_store/release/request_email.png" alt="drawing" width="800"/> |
 
-Secondly, you can use the approvals tab to discover pending requests. See [below](#using-the-approvals-tab).
+Secondly, you can use the approvals tab to discover pending requests. See [below](#using-the-approvals-tab) for more information.
 
 ### Using the Approvals tab
 
+The approvals tab is designed for dataset reviewers to quickly ascertain any outstanding pending reviews. It lists the most recent pending, requested or approved dataset reviews **for which you are the requested reviewer**.
+
+Columns:
+
+1. The action most recently taken for this dataset (REJECTED \| APPROVED \| REQUESTED)
+1. The timestamp of the most recent action on this dataset's approval process
+1. The Name and ID of the dataset
+1. The Name and [linked person](../getting-started-is/linking-identity) ID of the requester
+1. The note corresponding to the latest action
+1. If the dataset is in a pending state, you can press this button to perform the review
+1. A quick link to view the dataset
+
+You can also order by different columns by clicking on the column header, hide columns by clicking on "Columns" and filter by clicking on "Filters" in the tool menu (8).
+
+To see the approval history of a dataset, you can double click it. See [understanding approval history](#understanding-approval-history) for more information about the history view.
+
+|                                         Request Email                                         |
+| :-------------------------------------------------------------------------------------------: |
+| <img src="../assets/images/data_store/release/approvals_view.png" alt="drawing" width="800"/> |
+
 ### Performing a review
+
+Once you have identified the dataset to be reviewed, and assessed the dataset as required, visit the approvals tab (1). You can see the PENDING status (2) and the notes from the requester (3). When ready to take action, click on (4) "Take action for approval".
+
+
+|                                         Pending Approval                                         |
+| :-------------------------------------------------------------------------------------------: |
+| <img src="../assets/images/data_store/release/pending_approval.png" alt="drawing" width="800"/> |
+
+Once
 
 ## Understanding approval history
 
