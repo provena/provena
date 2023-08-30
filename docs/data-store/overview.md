@@ -29,8 +29,8 @@ All datasets that are inputs or outputs for operational products can be register
 
 The Data Store facilitates registration and creation of datasets for a project. Uploaded data is stored in an AWS S3 bucket, which serves as a persistent storage repository.
 
-|                                      Simple Data Store                                      |
-| :-----------------------------------------------------------------------------------------: |
+|                                    Simple Data Store                                     |
+| :--------------------------------------------------------------------------------------: |
 | <img src="../assets/images/data_store/Data_Store_simple.jpg" alt="drawing" width="600"/> |
 
 ## What can users do in the Data Store?
@@ -45,6 +45,8 @@ Users can login to Provena's Data Store to do the following.
 [**Upload files**](./uploading-a-dataset.md){:target="\_blank"}: Authorised users are able to upload files to a location registered in the Data Store. When a user registers a dataset, a digital identifier is minted for that dataset and a folder is created in the shared AWS S3 bucket. Users can then upload files to that location via AWS S3 tools. Learn more about Provena's Digital Identifiers here.
 
 [**Discover datasets**](./viewing-a-dataset.md){:target="\_blank"}: Authorised users can access the Data store to search for datasets and view their details.
+
+[**Review and approve datasets**](./dataset-approvals){:target="\_blank"}: Dataset owners can request review and approval by an approved dataset reviewer. Approved datasets cannot be modified.
 
 [**Download and synchronise datasets**](./downloading-datasets.md){:target="\_blank"}: Authorised users are able to access files on the Data Store and download them to a local computing environment using AWS tools and the AWS web console. Users can also synchronise dataset folders to a local computing environment, which only downloads updated files optimising file transfer. This will allow users to share data and synchronise data updates.
 
