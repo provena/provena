@@ -25,11 +25,11 @@ ____
 To upload dataset files, two access types are required:
 
 -   Role level access: you must have **write** access to the Entity Registry - see [requesting access](../getting-started-is/requesting-access-is.html){:target="\_blank"} for information on how to request access. If you registered the dataset, you will already have this access.
--   Resource role access: datasets are registered resources in the [Registry](../provenance/registry/overview) - uploading dataset files requires the 'Dataset Data Write' role. If you are the owner of this dataset, you will already have this role. For more information about access control for registered entitites, see [access control](../provenance/registry/access-control).
+-   Resource role access: datasets are registered resources in the [Registry](../registry/overview) - uploading dataset files requires the 'Dataset Data Write' role. If you are the owner of this dataset, you will already have this role. For more information about access control for registered entities, see [access control](../registry/access-control).
 
 ## File types and maximum file size
 
-The Provena Data Store can store a variety of data files e.g. text, csv, netCDF, word documents, images, video etc... Users can upload files or folders using either the AWS web console (GUI), AWS command line interface (AWS CLI) or a program like [WinSCP](../data-store/WinSCP-data-access.md){:target="\_blank"}.
+The Provena Data Store can store a variety of data files e.g. text, csv, netCDF, word documents, images, video etc... Users can upload files or folders using either the AWS web console (GUI), AWS command line interface (AWS CLI) or a program like [WinSCP](../data-store/WinSCP-data-access){:target="\_blank"}.
 
 While the AWS CLI can handle large files (>100GB) and the AWS Console GUI can handle up to 160GB uploads, please contact the Provena team if you know you will be uploading large or numerous files. For technical information about the storage limitations of the S3 service (which the data store is built on) you can review the AWS FAQ [here](https://aws.amazon.com/s3/faqs/#:~:text=How%20much%20data%20can%20I%20store%20in%20Amazon%20S3?){:target="\_blank"}.
 

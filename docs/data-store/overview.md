@@ -42,7 +42,7 @@ Users can login to Provena's Data Store to do the following.
 -   CSV files
 -   a set of related NetCDF files
 
-[**Upload files**](./uploading-dataset-files){:target="\_blank"}: Authorised users are able to upload files to a location registered in the Data Store. When a user registers a dataset, a digital identifier is minted for that dataset and a folder is created in the shared AWS S3 bucket. Users can then upload files to that location via AWS S3 tools. Learn more about Provena's Digital Identifiers [here](../digital-object-identifiers).
+[**Upload files**](./uploading-dataset-files){:target="\_blank"}: Authorised users are able to upload files to a location registered in the Data Store. When a user registers a dataset, a digital identifier is minted for that dataset and a folder is created in the shared AWS S3 bucket. Users can then upload files to that location via AWS S3 tools. Learn more about Provena's Digital Identifiers [here](../digital-object-identifiers){:target="\_blank"}.
 
 [**Discover datasets**](./viewing-a-dataset){:target="\_blank"}: Authorised users can access the Data store to search for datasets and view their details.
 
