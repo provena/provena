@@ -185,7 +185,7 @@ Secondly, you can use the approvals tab to discover pending requests. See [below
 
 The approvals tab is designed for dataset reviewers to quickly ascertain any outstanding pending reviews. It lists the most recent pending, requested or approved dataset reviews **for which you are the requested reviewer**.
 
-Columns:
+The columns of this table are explained below:
 
 1. The action most recently taken for this dataset (REJECTED \| APPROVED \| REQUESTED)
 1. The timestamp of the most recent action on this dataset's approval process
@@ -207,12 +207,21 @@ To see the approval history of a dataset, you can double click it. See [understa
 
 Once you have identified the dataset to be reviewed, and assessed the dataset as required, visit the approvals tab (1). You can see the PENDING status (2) and the notes from the requester (3). When ready to take action, click on (4) "Take action for approval".
 
-
-|                                         Pending Approval                                         |
-| :-------------------------------------------------------------------------------------------: |
+|                                        Pending Approval                                         |
+| :---------------------------------------------------------------------------------------------: |
 | <img src="../assets/images/data_store/release/pending_approval.png" alt="drawing" width="800"/> |
 
-Once
+After clicking take action, you will be redirected to the display shown below. You can view the metadata for the dataset being reviewed by expanding (1). You can view information about the requester by expanding (2). The supporting notes supplied by the requester can be viewed in (3). You can supply notes in the box (4), and then either approve (5) or reject (6) the review. If you would like to cancel the operation, click (7) to return to the dataset. After submitting a response, you will be redirected to the dataset approvals page.
+
+<td>{% include warning.html content="The notes section can include standard text, including new lines and punctuation. Currently, non ASCII characters such as emojis, are not supported and may cause issues in email delivery. Please include plain text only."%}</td>
+
+|                                        Action Approval                                         |
+| :--------------------------------------------------------------------------------------------: |
+| <img src="../assets/images/data_store/release/action_approval.png" alt="drawing" width="800"/> |
+
+If you reject a review, the dataset will return to the NOT_RELEASED state. If you approve the dataset, it will enter the RELEASED state. See [release lifecycle](#release-lifecycle) for more information.
+
+If you reject a dataset release, the requester can action your recommended changes by modifying the data and metadata of the dataset, and then re-request review.
 
 ## Understanding approval history
 
