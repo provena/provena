@@ -59,7 +59,7 @@ You will also require permission to **write** into the provenance store and regi
 
 For more information about how to access the system, see [requesting access](../../getting-started-is/requesting-access-is) and [logging in](../../getting-started-is/logging-in).
 
-{% include warning.html content="From this point on, it is assumed that you know how to use the entity registry to create, update, find and share entities. If not, you should see our documentation <a href=\"../registry/index.html\">here</a> before proceeding." %}
+{% include warning.html content="From this point on, it is assumed that you know how to use the entity registry to create, update, find and share entities. If not, you should see our documentation <a href=\"../../registry/index.html\">here</a> before proceeding." %}
 
 ## Dataset Template
 
@@ -89,9 +89,9 @@ It may be worth noting the following when deciding how to structure your dataset
 
 ### How do I register a dataset template?
 
-If the dataset template you are creating refers to shared input data that multiple models likely reference, it is worth [exploring the registry](../registry/exploring_the_registry) to see if others have registered a dataset template you could reuse.
+If the dataset template you are creating refers to shared input data that multiple models likely reference, it is worth [exploring the registry](../../registry/exploring_the_registry) to see if others have registered a dataset template you could reuse.
 
-To begin registration, navigate to the new entity form in the registry (for help, see [registering an entity](../registry/registering_and_updating.html)). Select the "Dataset Template" entity type. Information on the various metadata fields has been provided below.
+To begin registration, navigate to the new entity form in the registry (for help, see [registering an entity](../../registry/registering_and_updating.html)). Select the "Dataset Template" entity type. Information on the various metadata fields has been provided below.
 
 -   **Display Name**\*: A user friendly, brief name for this dataset template? E.g. "Connectivity Matrices Input Template"
 -   **Description**\*: A description which helps you and other users understand the purpose, contents and resources of this dataset template.
@@ -105,7 +105,7 @@ Each dataset template contains a list of defined resources - to add a new define
 -   **Resource Usage Type**\*: Select a usage type from the drop down menu. This selection should describe how the resource/data is being used. If none of the options are suitable for your use case, consider getting in contact with us to expand the list of selections.
 -   **Optional**: True or false - if checked, the resource is considered optional. Non optional resources **must** be present in the dataset. Optional resources are sometimes present in the dataset.
 -   **Is Folder**: True or false - if checked, the path must refer to a folder. This option is useful if you would like to describe a collection of files in a folder, rather than listing out every individual file.
--   **Additional Metadata**: If you would like to add additional key, value annotations to this resource, you can do so by ticking "Add annotations?" and using the "+" and "-" buttons to add and remove them. Annotations must have a key and value provided, and the keys must be unique within the resource. These annotations will be searchable which can assist you and others in discovering this entity when [exploring the registry](../registry/exploring_the_registry).
+-   **Additional Metadata**: If you would like to add additional key, value annotations to this resource, you can do so by ticking "Add annotations?" and using the "+" and "-" buttons to add and remove them. Annotations must have a key and value provided, and the keys must be unique within the resource. These annotations will be searchable which can assist you and others in discovering this entity when [exploring the registry](../../registry/exploring_the_registry).
 
 **Deferred Resources**
 
@@ -113,7 +113,7 @@ The metadata for a deferred resource are the same as a defined resource (above),
 
 -   the **path** is unknown at dataset template registration time - instead, we define a **key** which is a unique (within the entity) identifier for the deferred resource. Choose a key that will help you remember which resource is which when using the template later in the provenance workflow.
 
-Once you have completed your registration, you can view the record and take note of the identifier (noting that you can find your entity again at any time by [exploring the registry](../registry/exploring_the_registry.html)).
+Once you have completed your registration, you can view the record and take note of the identifier (noting that you can find your entity again at any time by [exploring the registry](../../registry/exploring_the_registry.html)).
 
 ## Model Run Workflow Template
 
@@ -137,7 +137,7 @@ Workflow templates have been designed to facilitate reusability. By configuring 
 
 ### How do I register a model run workflow template?
 
-To begin registration, navigate to the new entity form in the registry (for help, see [registering an entity](../registry/registering_and_updating.html)). Select the "Model Run Workflow Template" entity type. This form makes use of search tools which allow you to rapidly locate existing registered entities which you need to refer to in the form. For more information about using the search tools, see [filling out registry forms](../registry/registering_and_updating#step-3-filling-out-the-form). For help discovering and finding registered entities, see [exploring the registry](../registry/exploring_the_registry). Information on the various metadata fields has been provided below.
+To begin registration, navigate to the new entity form in the registry (for help, see [registering an entity](../../registry/registering_and_updating.html)). Select the "Model Run Workflow Template" entity type. This form makes use of search tools which allow you to rapidly locate existing registered entities which you need to refer to in the form. For more information about using the search tools, see [filling out registry forms](../../registry/registering_and_updating#step-3-filling-out-the-form). For help discovering and finding registered entities, see [exploring the registry](../../registry/exploring_the_registry). Information on the various metadata fields has been provided below.
 
 -   **Display Name**\*: A user friendly, brief name for this model run workflow template? E.g. "Simple Coral Model v1.5 Workflow Template"
 -   **Model**\*: A reference to a registered [model](./establishing-required-entities#model) which this workflow template is a blueprint to. You can use the search tool to help find the registered model.
@@ -146,4 +146,4 @@ To begin registration, navigate to the new entity form in the registry (for help
 -   **Output Dataset Templates**\*: Outputs are defined in the same way as inputs. Ensure you have registered your output dataset template(s) and use the search tool to help locate it.
 -   **Annotations**\*: A model run workflow template can optionally specify a collection of required or optional annotation keys. These annotations are provided at model run time. If required keys are not provided in a model run record, the system will not accept the record. To add annotations, tick the "Add required or optional annotations" box, and use the "+ Add Item" button in the Required or Optional sections below to add required and optional annotations respectively.
 
-Once you have completed your registration, you can view the record and take note of the identifier (noting that you can find your entity again at any time by [exploring the registry](../registry/exploring_the_registry.html)).
+Once you have completed your registration, you can view the record and take note of the identifier (noting that you can find your entity again at any time by [exploring the registry](../../registry/exploring_the_registry.html)).

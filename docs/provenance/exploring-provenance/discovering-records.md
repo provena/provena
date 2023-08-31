@@ -23,18 +23,18 @@ ____
 
 ## Finding records
 
-To explore the lineage of records in the [registry](../registry/overview), the record must first be discovered.
+To explore the lineage of records in the [registry](../../registry/overview), the record must first be discovered.
 
 There are two methods to discover explorable records:
 
-1. Receive a shared link to an existing record - see [sharing an entity](../registry/sharing_an_entity). Clicking a shared link will bring you to the registry view of the item. For example: <img src="../../assets/images/provenance/exploring/shared.png" alt="drawing" width="800"/>
-2. Use the [registry](../registry/overview) to list, filter and search for registered entities. See [exploring the registry](../registry/exploring_the_registry) for more information.
+1. Receive a shared link to an existing record - see [sharing an entity](../../registry/sharing_an_entity). Clicking a shared link will bring you to the registry view of the item. For example: <img src="../../assets/images/provenance/exploring/shared.png" alt="drawing" width="800"/>
+2. Use the [registry](../../registry/overview) to list, filter and search for registered entities. See [exploring the registry](../../registry/exploring_the_registry) for more information.
 
 ### Finding model run records
 
 [Registered model run records](../registering-model-runs/index) records are good candidates for provenance exploration as they are complex collections of connected entities. They may form a good starting point if you would like to explore provenance.
 
-To discover model run records - visit the [registry](../registry/overview), [explore the records](../registry/exploring_the_registry), [filtering](../registry/exploring_the_registry#listing-sorting-and-filtering-entities) by "Model Run".
+To discover model run records - visit the [registry](../../registry/overview), [explore the records](../../registry/exploring_the_registry), [filtering](../../registry/exploring_the_registry#listing-sorting-and-filtering-entities) by "Model Run".
 
 ## Exploring record lineage in the Provenance Store
 
