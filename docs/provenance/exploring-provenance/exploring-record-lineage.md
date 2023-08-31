@@ -177,7 +177,7 @@ This section will provide an overview of [important terms and concepts](#importa
 -   [Expand the graph by exploring](#expanding-the-graph-by-exploring)
 -   [Reset the graph](#resetting-the-graph)
 -   [Change the root node of the graph](#understanding-and-changing-the-root-node)
-
+-   [Advanced Provenance Queries](#advanced-provenance-queries)
 ### Important terms and concepts for provenance exploration
 
 For an overview of the data models which describe provenance in the system, see the [provenance overview](../overview/what-is-provenance).
@@ -244,6 +244,28 @@ To use the "View Selected Entity" button, first select the node to show it's [de
 |                                     Changing the selected root node                                      |
 | :------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/view_entity.png" alt="drawing" width="800"/> |
+
+
+### Advanced Provenance Queries
+
+In addition to interrogation of provenance via normal queries facilitated by the manual expansion of entities, the Provenance System supplies special querying capabilities for automatically discerning affected downstream or upstream Datasets and Agents. These special queries can explore at a greater depth, and filter by relationships and types. There are four types of special queries:
+
+**Affected Downstream Datasets**: Expands all nodes in the downstream direction to find any affected Datasets.  
+**Contributing Upstream Datasets**: Expands all nodes in the upstream direction to find any contributing Datasets.  
+**Affected Downstream Agents**: Expands all nodes relationships in the downstream direction to find any affected Agents.  
+**Contributing Upstream Agents**: Expands all nodes relationships in the upstream direction to find any contributing Agents.  
+
+#### How to Perform a Special Query
+
+These queries can be made from a starting node by single clicking and using the "Provenance Queries" drop down (which appears on the right panel) to select the desired query. For example, selecting a Dataset used as Input to a Model Run, and querying for "Contributing Upstream Datasets" will return all the upstream lineage of connected datasets that were (by definition of upstream) occuring before, or used to produce or contribute towards this input dataset. The below images illustrate how to perform this activity in the Provenance System. 
+
+|                                       Finding the Advanced Queries                                       |
+| :------------------------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/provenance/exploring/special_query.png" alt="drawing" width="800"/>        |
+
+|                  Result from Contributing Upstream Datasets query on Model Run                           |
+| :------------------------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/provenance/exploring/special_query_result.png" alt="drawing" width="800"/> |
 
 # Common issues and FAQs
 
