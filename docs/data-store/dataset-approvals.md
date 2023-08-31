@@ -255,3 +255,11 @@ If you would like to close this view, press the close button (6) or press the es
 | <img src="../assets/images/data_store/release/history.png" alt="drawing" width="800"/> |
 
 ## Who can review datasets?
+
+The Provena system internally stores a list of users who are allocated as dataset reviewers. Only system administrators can modify this list.
+
+To become a dataset reviewer, you must
+
+-   [link your identity to a Person in the registry](../getting-started-is/linking-identity)
+-   ensure your linked identity has [general metadata read](../registry/access-control#overview) granted; this enables users to view your name and email when selecting your identity from the list
+-   contact your system maintainer(s) to become a dataset reviewer
