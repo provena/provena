@@ -263,7 +263,7 @@ These queries can be made from a starting node by single clicking and using the 
 | :------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/special_query.png" alt="drawing" width="800"/>        |
 
-|                  Result from Contributing Upstream Datasets query on Model Run                           |
+|                  Result from Contributing Upstream Datasets query on Model Run Input Dataset             |
 | :------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/special_query_result.png" alt="drawing" width="800"/> |
 
