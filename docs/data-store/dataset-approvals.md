@@ -225,6 +225,33 @@ If you reject a dataset release, the requester can action your recommended chang
 
 ## Understanding approval history
 
-TODO process here
+It can be useful to review the history of dataset approval actions for a dataset. To reach the approvals history you can either
+
+a) View the dataset details, head to the approvals tab (1), and select "Approvals History" (2)
+
+|                                      Finding History View                                      |
+| :--------------------------------------------------------------------------------------------: |
+| <img src="../assets/images/data_store/release/finding_history.png" alt="drawing" width="800"/> |
+
+b) Head to the Approvals tab, as a dataset reviewer, and double click on an entry.
+
+Once you have navigated to the approval history view, you will see a table of actions. A typical example is shown below.
+
+The dataset is identified (1), and the columns (2-5) provide information about the approval actions on this dataset. The actions are ordered, by default, from newest to oldest.
+
+The image below describes a typical review workflow. The dataset owner requests a review, the reviewer denies the request specifying some required changes, the dataset owner makes then changes then requests another review, and the review is approved. The dataset is now locked down and cannot be modified.
+
+The columns are described below:
+
+-   (2) The action taken, either "REQUESTED", "APPROVED", or "REJECTED"
+-   (3) The timestamp of this action, you can click the column header to reverse the sort order
+-   (4) The person/actor who performed this action
+-   (5) Any notes associated with this action
+
+If you would like to close this view, press the close button (6) or press the escape key on your keyboard.
+
+|                                    Approval History                                    |
+| :------------------------------------------------------------------------------------: |
+| <img src="../assets/images/data_store/release/history.png" alt="drawing" width="800"/> |
 
 ## Who can review datasets?
