@@ -23,11 +23,11 @@ ____
 
 Provena enables users to create and modify resources of various types in various ways. Some actions performed by a user in the system are persisted as part of data and workflow [provenance](../provenance/overview/what-is-provenance). It is helpful, when [exploring provenance](../provenance/exploring-provenance), to link to the [Agent](../provenance/overview/what-are-entities#2-what-entity-types-are-used-in-the-provena) (Person), associated with an activity.
 
-In order to minimise repetitive data entry, we require that users, who intend to create or modify resources, perform a **one time** process which links the user's account with a registered [Person](../provenance/registering-model-runs/establishing-required-entities#person) in the [Registry](../provenance/registry/overview).
+In order to minimise repetitive data entry, we require that users, who intend to create or modify resources, perform a **one time** process which links the user's account with a registered [Person](../provenance/registering-model-runs/establishing-required-entities#person) in the [Registry](../registry/overview).
 
 The overview of this process is as follows:
 
-1. (If not already done) Register yourself as a [Person](../provenance/registering-model-runs/establishing-required-entities#person) in the [Registry](../provenance/registry/overview) - see [Registering yourself](#registering-yourself) below
+1. (If not already done) Register yourself as a [Person](../provenance/registering-model-runs/establishing-required-entities#person) in the [Registry](../registry/overview) - see [Registering yourself](#registering-yourself) below
 2. Use the provided tools to link your user account to your Person in the registry - see [Linking from your account to your Person](#linking-from-your-account-to-your-person) below
 
 {% include warning.html content="If you do not perform this process, you will be unable to create or modify resources in Provena. This includes registering and updating datasets, creating and editing registry entries, and registering workflow provenance." %}
@@ -42,9 +42,9 @@ See [requesting access](./requesting-access-is) for more information.
 
 ### Ensure you aren't already registered
 
-If you are uncertain as to whether you have already registered yourself in the Registry, start by [exploring the registry](../provenance/registry/exploring_the_registry). You can filter by "Person" subtype, and include your name as a search term to narrow the results.
+If you are uncertain as to whether you have already registered yourself in the Registry, start by [exploring the registry](../registry/exploring_the_registry). You can filter by "Person" subtype, and include your name as a search term to narrow the results.
 
-If you are already registered, but you are not the owner of the record (see [access controls](../provenance/registry/access-control)), **please contact us**. If you are the owner of the record, you can make note of the existing Person, and proceed to the second step below - [linking from your account to your person](#linking-from-your-account-to-your-person).
+If you are already registered, but you are not the owner of the record (see [access controls](../registry/access-control)), **please contact us**. If you are the owner of the record, you can make note of the existing Person, and proceed to the second step below - [linking from your account to your person](#linking-from-your-account-to-your-person).
 
 ### Go to the Person registration form
 
@@ -177,4 +177,4 @@ These errors currently can appear when:
 
 ### Why can't we perform this process automatically?
 
-While it would be technically possible to register a Person on your behalf when you first login, we believe that this violates our requirement to seek consent for a Person's registration in the system. We also believe that there may be situations where the user's login account details (email, name etc) are not the preferred contact details when users discover your actions in Provenance records. By separating the two identities, you can clearly understand what information is visible to other users (and [control this](../provenance/registry/access-control)), and maintain this persistently identified information through time.
+While it would be technically possible to register a Person on your behalf when you first login, we believe that this violates our requirement to seek consent for a Person's registration in the system. We also believe that there may be situations where the user's login account details (email, name etc) are not the preferred contact details when users discover your actions in Provenance records. By separating the two identities, you can clearly understand what information is visible to other users (and [control this](../registry/access-control)), and maintain this persistently identified information through time.
