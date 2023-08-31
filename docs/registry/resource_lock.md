@@ -45,7 +45,7 @@ If a dataset is locked, the upload tab will show a customised message:
 
 ## Who can lock a resource?
 
-Resource locks can be applied and removed by users who have administrative access to the resource. See [access control](/access-control.html){:target="\_blank"} for more information about resource access.
+Resource locks can be applied and removed by users who have administrative access to the resource. See [access control](./access-control.html){:target="\_blank"} for more information about resource access.
 
 ## How to add or remove a resource lock
 
