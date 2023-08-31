@@ -31,7 +31,7 @@ ____
 
 ### Required inputs to establish connection
 
-You can obtain authentication parameters from a dataset record from within the [Provena Data Store](https://data.mds.gbrrestoration.org/datasets){:target="\_blank"}. Select a target preconfigure dataset and then the **'Upload Data'** tab. Then click the **'Generate Credentials'** button. You will notice that there are three parts to the credentials.
+You can obtain authentication parameters from a dataset record from within the [Provena Data Store](./index). Select a target preconfigure dataset and then the **'Upload Data'** tab. Then click the **'Generate Credentials'** button. You will notice that there are three parts to the credentials.
 
 1. AWS_ACCESS_KEY_ID
 1. AWS_SECRET_ACCESS_KEY
