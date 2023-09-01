@@ -38,8 +38,8 @@ In Provena, authorised users can register records in the [Registry](../registry/
 
 In the Provena, users can explore an interactive visualisation of registered provenance. The connections between registered entities are represented as links between nodes in a graph. In the image of a provenance graph below, a node (1) represents an item registered in the Registry. The directional link between nodes (2) represents a connection in the underlying provenance data. The connection is labelled (2) - this label describes the type of relationship between the registered entities.
 
-|                                         Parts of the graph                                         |
-| :------------------------------------------------------------------------------------------------: |
+|                                       Parts of the graph                                        |
+| :---------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/parts.png" alt="drawing" width="800"/> |
 
 ## Provenance relationships
@@ -65,8 +65,8 @@ The explorer is composed of two sections - the top and bottom.
 
 The top section of the provenance explorer tool (shown below) provides detailed information about the "Root Record" (1), as well as a Legend (2) for the graph. The "Root Record Details" panel can be scrolled if all details are not visible. If you would like more information about a particular type of registered item, you can click the Legend entry (3) which links to the documentation of that type.
 
-|                                        Overview of the top section                                        |
-| :-------------------------------------------------------------------------------------------------------: |
+|                                      Overview of the top section                                       |
+| :----------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/overview_top.png" alt="drawing" width="800"/> |
 
 The **root record** is the "starting point" of the exploration - the central node in the provenance graph. Later, we will see [how to change the root node](#understanding-and-changing-the-root-node).
@@ -77,14 +77,14 @@ The bottom section of the provenance explorer tool (shown below) is the main int
 
 The graph contains nodes (1) and links (2). The meaning of these nodes and links was defined [above](#provenance-relationships). The right hand panel (3) contains details about the currently selected node. If no node is currently selected, the panel will be hidden. Nodes can be selected with a single click (see the [interacting section](#interacting-with-and-traversing-the-provenance-graph) for more detailed instructions). This panel is scrollable. The graph provides a set of controls (4 and 5). These controls will be explained in the [interacting section](#interacting-with-and-traversing-the-provenance-graph) below.
 
-|                                        Overview of the bottom section                                        |
-| :----------------------------------------------------------------------------------------------------------: |
+|                                      Overview of the bottom section                                       |
+| :-------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/overview_bottom.png" alt="drawing" width="800"/> |
 
 You can always come back to this page by using the help button, highlighted below (1).
 
-|                                               Getting Help                                               |
-|   :------------------------------------------------------------------------------------------------------: |
+|                                             Getting Help                                              |
+| :---------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/help_button.png" alt="drawing" width="800"/> |
 
 # Interacting with and traversing the provenance graph
@@ -109,8 +109,8 @@ To zoom in and out, scroll the mouse wheel up and down, or use the zoom buttons 
 
 If you would like the graph to occupy the full height of the screen (hiding the [top section](#the-top-section)), you can click the expand icon (3), and click it to again to collapse the graph to the default view.
 
-|                                          Panning and Zooming                                          |
-| :---------------------------------------------------------------------------------------------------: |
+|                                        Panning and Zooming                                         |
+| :------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/pan_zoom.png" alt="drawing" width="800"/> |
 
 ### Moving, locking and unlocking nodes
@@ -125,16 +125,16 @@ When you let go of a node, it's position will not change again. This node is con
 
 To **unlock** all nodes in the graph, use the open padlock icon (1) which appears in the toolbar when at least one node is locked.
 
-|                                           Unlocking Nodes                                           |
-| :-------------------------------------------------------------------------------------------------: |
+|                                         Unlocking Nodes                                          |
+| :----------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/unlock.png" alt="drawing" width="800"/> |
 
 ### Disabling or enabling link labels
 
 In some cases, it might be simpler to view the connections of the graph without the [relationship](#provenance-relationships) labels. You can untick "Show link labels" (1) to change the visualisation to hide the labels. Simply tick it again to revert to the default view. In the example below, link labels have been disabled.
 
-|                                               Link Labels                                                |
-| :------------------------------------------------------------------------------------------------------: |
+|                                              Link Labels                                              |
+| :---------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/link_labels.png" alt="drawing" width="800"/> |
 
 ## Investigating and interrogating the graph
@@ -158,16 +158,16 @@ If this information is not sufficient, you can quickly view a summary of key nod
 
 To view a summary of a node's key details, simply hover over the node with your mouse. While the mouse remains in the node (1), a popup (2) will appear in the upper left hand corner of the graph window. This summary shows the [persistent identifier](../../digital-object-identifiers), name and type of the registry item. The summary will not appear while [nodes are being dragged](#moving-locking-and-unlocking-nodes).
 
-|                                       Summary on mouse hover                                       |
-| :------------------------------------------------------------------------------------------------: |
+|                                     Summary on mouse hover                                      |
+| :---------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/hover.png" alt="drawing" width="800"/> |
 
 ### Viewing node details
 
 If the details included while hovering are insufficient, you can simply click once with the left mouse button on the node, revealing the right hand details panel (1). To collapse the panel, click the close button (2), the "View selected entity" button will be explained [below](#understanding-and-changing-the-root-node).
 
-|                                         Viewing node details                                         |
-| :--------------------------------------------------------------------------------------------------: |
+|                                       Viewing node details                                        |
+| :-----------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/details.png" alt="drawing" width="800"/> |
 
 ## Traversing and exploring the graph
@@ -178,6 +178,7 @@ This section will provide an overview of [important terms and concepts](#importa
 -   [Reset the graph](#resetting-the-graph)
 -   [Change the root node of the graph](#understanding-and-changing-the-root-node)
 -   [Advanced Provenance Queries](#advanced-provenance-queries)
+
 ### Important terms and concepts for provenance exploration
 
 For an overview of the data models which describe provenance in the system, see the [provenance overview](../overview/what-is-provenance).
@@ -210,20 +211,20 @@ In the below _before_ and _after_ graphs, we can see that a model run record is 
 
 This results in the _after_ graph. We can see some highlighted new nodes. In particular, there is now a model run which produced the input dataset (2) displayed - this is a good example of upstream lineage. If you wanted to understand more about the history of the item, you could continue exploring, for example, by expanding the model run (2) with a double click.
 
-|                                                   Before                                                    |
-| :---------------------------------------------------------------------------------------------------------: |
+|                                                  Before                                                  |
+| :------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/explore_before.png" alt="drawing" width="800"/> |
 
-|                                                   After                                                    |
-| :--------------------------------------------------------------------------------------------------------: |
+|                                                  After                                                  |
+| :-----------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/explore_after.png" alt="drawing" width="800"/> |
 
 ### Resetting the graph
 
 If you would like to reset your graph to the starting view, you can use the reset button (1) below. If you have dragged nodes (and therefore locked their positions), resetting the graph will **not** unlock them. You can use the unlock button to do so. See [unlocking nodes](#moving-locking-and-unlocking-nodes).
 
-|                                            Reset Graph                                             |
-| :------------------------------------------------------------------------------------------------: |
+|                                           Reset Graph                                           |
+| :---------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/reset.png" alt="drawing" width="800"/> |
 
 ### Understanding and changing the root node
@@ -241,29 +242,28 @@ To change the root node you can either
 
 To use the "View Selected Entity" button, first select the node to show it's [detailed view](#viewing-node-details), then click the "View Selected Entity" button (1). This button will be disabled if the selected node is the same as the current root node.
 
-|                                     Changing the selected root node                                      |
-| :------------------------------------------------------------------------------------------------------: |
+|                                    Changing the selected root node                                    |
+| :---------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/view_entity.png" alt="drawing" width="800"/> |
 
+### Advanced provenance queries
 
-### Advanced Provenance Queries
+The Provenance Graph Explorer provides advanced querying capabilities which can explore at a greater depth, and filter by relationships and types. There are four types of special queries currently provided:
 
-In addition to interrogation of provenance via normal queries facilitated by the manual expansion of entities, the Provenance System supplies special querying capabilities for automatically discerning affected downstream or upstream Datasets and Agents. These special queries can explore at a greater depth, and filter by relationships and types. There are four types of special queries:
+-   **Affected Downstream Datasets**: Expands all nodes in the downstream direction to find any affected Datasets. For example, if you want to understand the impact of an error in a data product, you can see all downstream uses of this product.
+-   **Contributing Upstream Datasets**: Expands all nodes in the upstream direction to find any contributing Datasets. For example, if you want to understand the critical dependencies of your data product, you can see all upstream inputs to this product.
+-   **Affected Downstream Agents**: Expands all nodes relationships in the downstream direction to find any affected Agents. For example, if you have discovered an error in a data product, you may wish to contact all People or Organisations effected by this change.
+-   **Contributing Upstream Agents**: Expands all nodes relationships in the upstream direction to find any contributing Agents. For example, if you would like to thoroughly attribute credits to the production of a data product, you may wish to explore upstream to find all contributing People and Organisations.
 
-**Affected Downstream Datasets**: Expands all nodes in the downstream direction to find any affected Datasets.  
-**Contributing Upstream Datasets**: Expands all nodes in the upstream direction to find any contributing Datasets.  
-**Affected Downstream Agents**: Expands all nodes relationships in the downstream direction to find any affected Agents.  
-**Contributing Upstream Agents**: Expands all nodes relationships in the upstream direction to find any contributing Agents.  
+**How to perform an advanced query**
 
-#### How to Perform a Special Query
+These queries can be made from a starting node by single clicking (1) and using the "Provenance Queries" drop down (which appears on the right panel) to select the desired query (2-3). For example, selecting a Dataset used as Input to a Model Run, and querying for "Contributing Upstream Datasets" will return all the upstream lineage of connected datasets that were used to produce or contribute towards it. The result of performing this query is shown below (4).
 
-These queries can be made from a starting node by single clicking and using the "Provenance Queries" drop down (which appears on the right panel) to select the desired query. For example, selecting a Dataset used as Input to a Model Run, and querying for "Contributing Upstream Datasets" will return all the upstream lineage of connected datasets that were (by definition of upstream) occuring before, or used to produce or contribute towards this input dataset. The below images illustrate how to perform this activity in the Provenance System. 
+|                                   Finding the Advanced Queries                                    |
+| :-----------------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/provenance/exploring/special_query.png" alt="drawing" width="800"/> |
 
-|                                       Finding the Advanced Queries                                       |
-| :------------------------------------------------------------------------------------------------------: |
-| <img src="../../assets/images/provenance/exploring/special_query.png" alt="drawing" width="800"/>        |
-
-|                  Result from Contributing Upstream Datasets query on Model Run Input Dataset             |
+|                             Contributing Upstream Datasets query on Dataset                              |
 | :------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/special_query_result.png" alt="drawing" width="800"/> |
 
@@ -273,8 +273,8 @@ These queries can be made from a starting node by single clicking and using the 
 
 It is not uncommon to see the following error message when exploring the provenance graph:
 
-|                                                Details 401 Error                                                |
-| :-------------------------------------------------------------------------------------------------------------: |
+|                                              Details 401 Error                                               |
+| :----------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/errors/details_401.png" alt="drawing" width="800"/> |
 
 This error message occurs when the provenance graph tries to retrieve the metadata of an item for which the user does not have the required permissions to view. See [controlling access](../registry/access-control) for more information about access in the registry. The graph will still allow you to [explore the record](#traversing-and-exploring-the-graph), however, you will not be able to view any details of the item beyond it's identifier and type.
@@ -285,8 +285,8 @@ If you believe the system should be granting access to an item, but isn't, try r
 
 If you receive the following error message, it means the system believes you do not have the correct permissions to read from the registry. See [requesting access](../../getting-started-is/requesting-access-is) for more information.
 
-|                                                   Insufficient Permissions                                                   |
-| :--------------------------------------------------------------------------------------------------------------------------: |
+|                                                 Insufficient Permissions                                                  |
+| :-----------------------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/errors/insufficient_permissions.png" alt="drawing" width="800"/> |
 
 If you think the error is incorrect, you should first try refreshing the page. If that doesn't fix the issue, try logging out and back in. If you still experience this issue, follow the process in [requesting access](../../getting-started-is/requesting-access-is) to request access. Otherwise, please report an issue using the Contact Us link in the top panel.
@@ -297,8 +297,8 @@ An empty graph can be caused by a few issues
 
 **There are no connections from the given starting point** - if you are trying to explore the lineage of a node which is not linked to any other entities, the following message is shown. This behaviour is expected - there is no graph to view.
 
-|                                             Empty provenance graph                                              |
-| :-------------------------------------------------------------------------------------------------------------: |
+|                                            Empty provenance graph                                            |
+| :----------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/errors/empty_graph.png" alt="drawing" width="800"/> |
 
 **An issue fetching or loading the graph** - if you are experiencing an empty graph without any explanation or clear error messages, try refreshing the page. If that doesn't fix the issue, try using the graph reset button [explained here](#resetting-the-graph). If neither approach fixes the issue, please use the contact us button in the top panel to report the issue. Please note the root node ID in the report.
