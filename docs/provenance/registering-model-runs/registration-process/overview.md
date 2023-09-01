@@ -23,7 +23,7 @@ ____
 
 ## What is a model run?
 
-Model runs are an activity (as per the [PROV Ontology](https://www.w3.org/TR/prov-o/)) which form a critical piece of our [provenance conceptual model](../../overview/what-is-provenance). Once registered, a model run will have a persistent identifier and be discoverable in the [Registry](../../registry/overview) and explorable in the [Provenance Store](../../exploring-provenance/index).
+Model runs are an activity (as per the [PROV Ontology](https://www.w3.org/TR/prov-o/)) which form a critical piece of our [provenance conceptual model](../../overview/what-is-provenance). Once registered, a model run will have a persistent identifier and be discoverable in the [Registry](../../../registry/overview) and explorable in the [Provenance Store](../../exploring-provenance/index).
 
 It is useful to think of the modelling process as a discrete series of "model runs" - where a model run accepts some inputs, and produces some outputs.
 

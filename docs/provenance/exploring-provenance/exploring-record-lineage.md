@@ -34,7 +34,7 @@ The sections are outlined below
 
 # What is the provenance graph
 
-In Provena, authorised users can register records in the [Registry](../registry/overview). Users can register [Model Runs](../registering-model-runs/registration-process/overview) which connect various registered entities - representing an activity, performed at a point in time, which possibly consumes inputs and produces (or contributes to) outputs. The collection of this chain of activities collectively forms [workflow provenance](../overview/what-is-provenance).
+In Provena, authorised users can register records in the [Registry](../../registry/overview). Users can register [Model Runs](../registering-model-runs/registration-process/overview) which connect various registered entities - representing an activity, performed at a point in time, which possibly consumes inputs and produces (or contributes to) outputs. The collection of this chain of activities collectively forms [workflow provenance](../overview/what-is-provenance).
 
 In the Provena, users can explore an interactive visualisation of registered provenance. The connections between registered entities are represented as links between nodes in a graph. In the image of a provenance graph below, a node (1) represents an item registered in the Registry. The directional link between nodes (2) represents a connection in the underlying provenance data. The connection is labelled (2) - this label describes the type of relationship between the registered entities.
 
@@ -229,7 +229,7 @@ If you would like to reset your graph to the starting view, you can use the rese
 
 ### Understanding and changing the root node
 
-The root node of the provenance graph explorer refers to the starting point of the graph. Being a registered entity in the [Registry](../registry/overview) means that the root node is identified by a [persistent identifier](../../digital-object-identifiers).
+The root node of the provenance graph explorer refers to the starting point of the graph. Being a registered entity in the [Registry](../../registry/overview) means that the root node is identified by a [persistent identifier](../../digital-object-identifiers).
 
 The root node's record details are always displayed in the [top section](#the-top-section), alongside the graph legend. If you have expand the graph, hiding the root record details, you can expand it by pressing the expand button, as detailed in [resizing the graph](#panning-zooming-and-resizing).
 
@@ -277,7 +277,7 @@ It is not uncommon to see the following error message when exploring the provena
 | :----------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/errors/details_401.png" alt="drawing" width="800"/> |
 
-This error message occurs when the provenance graph tries to retrieve the metadata of an item for which the user does not have the required permissions to view. See [controlling access](../registry/access-control) for more information about access in the registry. The graph will still allow you to [explore the record](#traversing-and-exploring-the-graph), however, you will not be able to view any details of the item beyond it's identifier and type.
+This error message occurs when the provenance graph tries to retrieve the metadata of an item for which the user does not have the required permissions to view. See [controlling access](../../registry/access-control) for more information about access in the registry. The graph will still allow you to [explore the record](#traversing-and-exploring-the-graph), however, you will not be able to view any details of the item beyond it's identifier and type.
 
 If you believe the system should be granting access to an item, but isn't, try refreshing the page. If this doesn't fix it, please use the contact us form in the top panel to report an issue.
 

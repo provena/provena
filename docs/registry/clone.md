@@ -27,7 +27,7 @@ In the registry, you can _clone_ an item. Cloning an item is the same as registe
 
 This enables you to quickly produce multiple records with similar contents.
 
-This could be useful for producing similar [Datasets](../../data-store/overview) or [Dataset Templates](../registering-model-runs/model-workflow-configuration#dataset-template), for example.
+This could be useful for producing similar [Datasets](../../data-store/overview) or [Dataset Templates](../provenance/registering-model-runs/model-workflow-configuration#dataset-template), for example.
 
 ## How to clone an item in the Registry
 

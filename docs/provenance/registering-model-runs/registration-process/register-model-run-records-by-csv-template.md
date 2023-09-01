@@ -65,7 +65,7 @@ The following provides a brief description on the default fields required by the
 
 -   **Description**: A brief description of the Model Run.
 
--   **Agent ID**: The ID of agent responsible for running the model run. This is the ID of the person/organisation in the entity registry. To obtain an ID for a person, first try [searching](../../registry/exploring_the_registry.md) for them in the registry, if they don't exist, they will need to be registered to create an ID for them. See [here](../establishing-required-entities.md#what-entities-are-required-to-register-provenance) for help on establishing the required entities and [How do I register a model run workflow template?](../../registering-model-runs/model-workflow-configuration#how-do-i-register-a-model-run-workflow-template).
+-   **Agent ID**: The ID of agent responsible for running the model run. This is the ID of the person/organisation in the entity registry. To obtain an ID for a person, first try [searching](../../../registry/exploring_the_registry) for them in the registry, if they don't exist, they will need to be registered to create an ID for them. See [here](../establishing-required-entities.md#what-entities-are-required-to-register-provenance) for help on establishing the required entities and [How do I register a model run workflow template?](../../registering-model-runs/model-workflow-configuration#how-do-i-register-a-model-run-workflow-template).
 
 -   **Execution Start/End Time**: The respective start and end time of the model run execution.
 

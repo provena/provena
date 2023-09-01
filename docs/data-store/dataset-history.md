@@ -21,7 +21,7 @@ ____
 
 ## What is Dataset metadata history?
 
-Datasets are registered records in the [Registry](../provenance/registry/overview). This means that changes to the **metadata** of a dataset are recorded. Each change produces a new iteration or version of the dataset metadata.
+Datasets are registered records in the [Registry](../registry/overview). This means that changes to the **metadata** of a dataset are recorded. Each change produces a new iteration or version of the dataset metadata.
 
 ## Does this include the files within a dataset?
 
@@ -55,4 +55,4 @@ The data store's dataset detail view (see [viewing a dataset](./viewing-a-datase
 | :---------------------------------------------------------------------------------------: |
 | <img src="../assets/images/data_store/dataset_history.png" alt="drawing" width="800"/> |
 
-For instructions on how to use this tool, see [registry item history](../provenance/registry/item_history).
+For instructions on how to use this tool, see [registry item history](../registry/item_history).

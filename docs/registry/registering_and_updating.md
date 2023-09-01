@@ -105,7 +105,7 @@ After correcting the issue, the submit button can be pressed again - it is safe 
 
 Updating an entity is a very similar process to registering an entity, except that the existing form details are pre-filled from the record.
 
-Start by navigating to the entity (see [exploring the registry](./exploring-the-registry.html) for more information). From the entity detailed view, you can select "Edit Entity" on the right hand side:
+Start by navigating to the entity (see [exploring the registry](./exploring_the_registry.html) for more information). From the entity detailed view, you can select "Edit Entity" on the right hand side:
 
 |                                          Edit                                          |
 | :------------------------------------------------------------------------------------: |
