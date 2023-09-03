@@ -79,6 +79,16 @@ For example, the following search query "Moore" found datasets which referenced 
 | :---------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/registry/search_results.png" alt="drawing" width="800"/> |
 
+### Fetching an item from the registry
+
+Instead of searching for registry items by using the search tool, you can also fetch a specific item by entering its [item ID](../digital-object-identifiers). 
+
+The entered [item ID](../digital-object-identifiers) will be automatically validated to check if it exists in the registry. If the entered item ID exists in the registry, the action button on the right of the input box will turn green and become clickable. You can then click the action button to navigate to the item’s page based on its item ID. Otherwise, the input box border will turn red, and a related error message will appear when you hover your mouse over the action button.
+
+|                                      Fetching an item                                     |
+| :---------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/registry/fetching_item.png" alt="drawing" width="800"/> |
+
 ## Viewing records
 
 Once you have discovered a record, possibly by:
@@ -88,6 +98,7 @@ Once you have discovered a record, possibly by:
   - [Finding records](#finding-records)
     - [Listing, sorting and filtering entities](#listing-sorting-and-filtering-entities)
     - [Searching the registry](#searching-the-registry)
+    - [Fetching an item from the registry](#fetching-an-item-from-the-registry)
   - [Viewing records](#viewing-records)
 
 You can view detailed information about the record by visiting it's details page.
