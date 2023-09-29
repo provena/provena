@@ -1,4 +1,12 @@
-import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
+import {
+    Box,
+    ButtonBase,
+    Card,
+    CardActions,
+    CardContent,
+    Grid,
+    Typography,
+} from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
@@ -35,11 +43,15 @@ const useStyles = (props: any) =>
                 padding: theme.spacing(1),
                 borderRadius: "8px",
                 border: "2px solid " + props.swatch.colour,
+                height: "380px",
                 "&:hover": {
                     backgroundColor: theme.palette.grey[100],
                     cursor: "pointer",
                 },
-                height: "380px",
+            },
+            resultCardButtonBase: {
+                alignItems: "stretch",
+                borderRadius: "8px",
             },
             cardContentContainer: {
                 width: "100%",
@@ -113,106 +125,115 @@ const ResultCard = (props: ResultCardProps) => {
     );
     return (
         <Grid container item className={classes.resultCardContainer}>
-            <Card
-                variant="outlined"
-                className={classes.resultCard}
-                onClick={() => {
-                    history.push(`/item/${props.cardDetails.id}`);
-                }}
+            <ButtonBase
+                href={`/item/${props.cardDetails.id}`}
+                className={classes.resultCardButtonBase}
+                disableRipple
             >
-                <Grid
-                    container
-                    item
-                    xs={1}
-                    className={classes.cardColourBar}
-                ></Grid>
-
-                <Grid container className={classes.cardContentContainer}>
+                <Card variant="outlined" className={classes.resultCard}>
                     <Grid
                         container
                         item
-                        xs={11}
-                        className={classes.cardDetailContainer}
-                    >
-                        <CardContent
-                            className={classes.cardContent}
-                            style={{ width: "100%" }}
+                        xs={1}
+                        className={classes.cardColourBar}
+                    ></Grid>
+
+                    <Grid container className={classes.cardContentContainer}>
+                        <Grid
+                            container
+                            item
+                            xs={11}
+                            className={classes.cardDetailContainer}
                         >
-                            <Typography className={classes.cardHeader}>
-                                {mapSubTypeToPrettyName(
-                                    props.cardDetails.item_subtype
-                                )}
-                                {props.isUser && " (You)"}
-                            </Typography>
-                            <Grid
-                                className={classes.cardDetailText}
-                                title={props.cardDetails.display_name}
+                            <CardContent
+                                className={classes.cardContent}
+                                style={{ width: "100%" }}
                             >
-                                <Typography
-                                    variant="body2"
-                                    fontWeight={"bold"}
-                                    display="inline"
-                                >
-                                    Name:
-                                </Typography>{" "}
-                                {!!props.cardDetails.versioning_info?.version &&
-                                    subtypeHasVersioning(
+                                <Typography className={classes.cardHeader}>
+                                    {mapSubTypeToPrettyName(
                                         props.cardDetails.item_subtype
-                                    ) &&
-                                    `(V${props.cardDetails.versioning_info?.version}) `}
-                                <span style={{ overflowWrap: "break-word" }}>
-                                    {truncate(props.cardDetails.display_name)}
-                                </span>
-                            </Grid>
-                            <Grid className={classes.cardDetailText}>
-                                <Typography
-                                    variant="body2"
-                                    fontWeight={"bold"}
-                                    display="inline"
+                                    )}
+                                    {props.isUser && " (You)"}
+                                </Typography>
+                                <Grid
+                                    className={classes.cardDetailText}
+                                    title={props.cardDetails.display_name}
                                 >
-                                    ID:
-                                </Typography>{" "}
-                                <Grid container direction="row">
-                                    {props.cardDetails.id}
-                                    <CopyFloatingButton
-                                        clipboardText={props.cardDetails.id}
-                                        iconOnly={true}
-                                    />
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight={"bold"}
+                                        display="inline"
+                                    >
+                                        Name:
+                                    </Typography>{" "}
+                                    {!!props.cardDetails.versioning_info
+                                        ?.version &&
+                                        subtypeHasVersioning(
+                                            props.cardDetails.item_subtype
+                                        ) &&
+                                        `(V${props.cardDetails.versioning_info?.version}) `}
+                                    <span
+                                        style={{ overflowWrap: "break-word" }}
+                                    >
+                                        {truncate(
+                                            props.cardDetails.display_name
+                                        )}
+                                    </span>
                                 </Grid>
-                            </Grid>
-                            <Grid className={classes.cardDetailText}>
-                                <Typography
-                                    variant="body2"
-                                    fontWeight={"bold"}
-                                    display="inline"
-                                >
-                                    Date Created:
-                                </Typography>{" "}
-                                {timestampToLocalTime(
-                                    props.cardDetails.created_timestamp
-                                )}
-                            </Grid>
-                            <Grid
-                                container
-                                item
-                                xs={12}
-                                className={classes.cardFooterContainer}
-                            >
+                                <Grid className={classes.cardDetailText}>
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight={"bold"}
+                                        display="inline"
+                                    >
+                                        ID:
+                                    </Typography>{" "}
+                                    <Grid container direction="row">
+                                        {props.cardDetails.id}
+                                        <CopyFloatingButton
+                                            clipboardText={props.cardDetails.id}
+                                            iconOnly={true}
+                                        />
+                                    </Grid>
+                                </Grid>
+                                <Grid className={classes.cardDetailText}>
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight={"bold"}
+                                        display="inline"
+                                    >
+                                        Date Created:
+                                    </Typography>{" "}
+                                    {timestampToLocalTime(
+                                        props.cardDetails.created_timestamp
+                                    )}
+                                </Grid>
                                 <Grid
                                     container
                                     item
                                     xs={12}
-                                    className={classes.cardIconContainer}
+                                    className={classes.cardFooterContainer}
                                 >
-                                    <Box className={classes.cardIconBackground}>
-                                        {iconSelection}
-                                    </Box>
+                                    <Grid
+                                        container
+                                        item
+                                        xs={12}
+                                        className={classes.cardIconContainer}
+                                    >
+                                        <Box
+                                            className={
+                                                classes.cardIconBackground
+                                            }
+                                        >
+                                            {iconSelection}
+                                        </Box>
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                        </CardContent>
+                            </CardContent>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </Card>
+                </Card>
+            </ButtonBase>
         </Grid>
     );
 };

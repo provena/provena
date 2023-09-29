@@ -1045,7 +1045,7 @@ const ControlDrawer = observer((props: ControlDrawerProps) => {
                     onClick={() => {
                         window.open(
                             DOCUMENTATION_BASE_URL +
-                                "/information-system/provenance/exploring-provenance/exploring-record-lineage",
+                                "/provenance/exploring-provenance/exploring-record-lineage.html",
                             "_blank",
                             "noopener,noreferrer"
                         );

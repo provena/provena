@@ -53,6 +53,7 @@ working_dir="${PWD}"
 
 # Array of locations and corresponding requirement files
 locations=(
+    "utilities/packages/python/shared-interfaces"
     "prov-api"
     "data-store-api"
     "identity-service"
@@ -62,6 +63,7 @@ locations=(
 )
 
 requirement_files=(
+    "testing-requirements.txt"
     "testing_requirements.txt"
     "testing_requirements.txt"
     "testing_requirements.txt"

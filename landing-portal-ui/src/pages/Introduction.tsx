@@ -1,33 +1,31 @@
-import { observer } from "mobx-react-lite";
 import {
+    Alert,
+    AlertTitle,
+    Button,
+    Card,
+    CardActions,
+    CardContent,
     Dialog,
     DialogActions,
     DialogContent,
-    Button,
     DialogTitle,
     Grid,
-    Card,
-    CardContent,
-    CardActions,
-    Typography,
-    Alert,
-    AlertTitle,
     Stack,
+    Typography,
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
-import makeStyles from "@mui/styles/makeStyles";
 import createStyles from "@mui/styles/createStyles";
-import accessStore from "../stores/accessStore";
-import { useKeycloak } from "@react-keycloak/web";
+import makeStyles from "@mui/styles/makeStyles";
+import { observer } from "mobx-react-lite";
+import { useContext } from "react";
 import {
     BoundedContainer,
     DOCUMENTATION_BASE_URL,
-    useAccessCheck,
+    useUserLinkServiceLookup
 } from "react-libs";
-import { useUserLinkServiceLookup } from "react-libs";
-import { useContext } from "react";
-import { ThemeConfigContext } from "../index";
 import { LandingPortalThemeConfig } from "react-libs/util/themeValidation";
+import { ThemeConfigContext } from "../index";
+import accessStore from "../stores/accessStore";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -116,7 +114,7 @@ const UserLinkCheckDisplayComponent = (
     const toolLink = "/profile?function=identity";
     const docLink =
         DOCUMENTATION_BASE_URL +
-        "/information-system/getting-started-is/linking-identity.html";
+        "/getting-started-is/linking-identity.html";
 
     const content: JSX.Element = (
         <Stack direction="column" spacing={2}>
@@ -253,7 +251,7 @@ const Introduction = observer(() => {
                 <a
                     href={
                         DOCUMENTATION_BASE_URL +
-                        "/information-system/getting-started-is/requesting-access-is.html"
+                        "/getting-started-is/requesting-access-is.html"
                     }
                     target="_blank"
                 >
@@ -309,7 +307,7 @@ const Introduction = observer(() => {
                                     variant="outlined"
                                     href={
                                         DOCUMENTATION_BASE_URL +
-                                        "/information-system/getting-started-is/logging-in.html"
+                                        "/getting-started-is/logging-in.html"
                                     }
                                     target="_blank"
                                 >
@@ -320,7 +318,7 @@ const Introduction = observer(() => {
                                     variant="outlined"
                                     href={
                                         DOCUMENTATION_BASE_URL +
-                                        "/information-system/getting-started-is/requesting-access-is.html"
+                                        "/getting-started-is/requesting-access-is.html"
                                     }
                                     target="_blank"
                                 >

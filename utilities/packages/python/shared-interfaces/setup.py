@@ -13,7 +13,8 @@ setup(
     install_requires=[
         'fastapi',
         'pydantic[email]==1.*',
-        'email-validator'
+        'email-validator',
+        'isodate',        
     ],
     package_data={
         'SharedInterfaces': ['py.typed']

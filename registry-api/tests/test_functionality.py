@@ -1252,108 +1252,120 @@ def test_create_dataset_validation(override_perform_validation_config_dependency
 
     # 1. Ensure failure to create dataset with items that do not exist
     dataset_domain_info: DatasetDomainInfo = params.model_examples.domain_info[0]
-    create_route = get_route(action=RouteActions.CREATE, params=params)
-    create_resp = client.post(
-        create_route,
-        json=json.loads(dataset_domain_info.json(exclude_none=True))
-    )
-    create_resp: GenericCreateResponse = response_model.parse_obj(
-        create_resp.json())
-
+    create_resp = create_item_from_domain_info(client=client, domain_info=dataset_domain_info, params=params)
+    create_resp: GenericCreateResponse = response_model.parse_obj(create_resp.json())
     # should fail due to items not existing (db empty)
     assert not create_resp.status.success
 
     # 2. Ensure failure when payload references seed Items
 
     # seed agent, and organisation
-    org_route_params = get_item_subtype_route_params(ItemSubType.ORGANISATION)
-
-    # seed organisation
-    seed_route = get_route(action=RouteActions.SEED, params=org_route_params)
-    response = client.post(seed_route)
-    assert response.status_code == 200, f"Status code was {response.status_code}."
-    seed_resp = GenericSeedResponse.parse_obj(response.json())
-    assert seed_resp.status.success
-    item = seed_resp.seeded_item
-    assert item
-    org_id = item.id
+    org_item =  seed_item_successfully(client=client, item_subtype=ItemSubType.ORGANISATION)
+    org_id = org_item.id
 
     # seed person
-    person_route_params = get_item_subtype_route_params(
-        ItemSubType.PERSON)
-    seed_route = get_route(action=RouteActions.SEED,
-                           params=person_route_params)
-    response = client.post(seed_route)
-
-    assert response.status_code == 200, f"Status code was {response.status_code}."
-    seed_resp = GenericSeedResponse.parse_obj(response.json())
-    assert seed_resp.status.success
-    item = seed_resp.seeded_item
-    assert item
-    person_id = item.id
+    person_item =  seed_item_successfully(client=client, item_subtype=ItemSubType.PERSON)
+    person_id = person_item.id
 
     # swap payload references to use newly seeded items that exist.
     dataset_domain_info.collection_format.associations.organisation_id = org_id
     dataset_domain_info.collection_format.dataset_info.publisher_id = org_id
+    dataset_domain_info.collection_format.associations.data_custodian_id = person_id
 
     # attempt creation with seed items and ensure failure
-    create_route = get_route(action=RouteActions.CREATE, params=params)
-    create_resp = client.post(
-        create_route,
-        json=json.loads(dataset_domain_info.json(exclude_none=True))
-    )
+    create_resp = create_resp = create_item_from_domain_info(client=client, domain_info=dataset_domain_info, params=params)
     create_resp: GenericCreateResponse = response_model.parse_obj(
         create_resp.json())
     # should fail due to refering to seed items
     assert not create_resp.status.success
 
     # update both items to be complete items, then ensure successful validation
-
     # organisation update
-    org_domain_info = org_route_params.model_examples.domain_info[0]
-    update_route = get_route(action=RouteActions.UPDATE,
-                             params=org_route_params)
-    update_item_resp = client.put(
-        update_route,
-        params={"id": org_id},
-        json=json.loads(org_domain_info.json(exclude_none=True))
-    )
+    update_item_resp = update_item_from_domain_info(client=client, id=org_id, updated_domain_info=get_model_example(item_subtype=ItemSubType.ORGANISATION), subtype=ItemSubType.ORGANISATION)
     assert update_item_resp.status_code == 200
 
     # person update
-    person_domain_info = person_route_params.model_examples.domain_info[0]
-    update_route = get_route(action=RouteActions.UPDATE,
-                             params=person_route_params)
-    update_item_resp = client.put(
-        update_route,
-        params={"id": person_id},
-        json=json.loads(person_domain_info.json(exclude_none=True))
-    )
-    assert update_item_resp.status_code == 200
+    update_item_resp = update_item_from_domain_info(client=client, id=person_id, updated_domain_info=get_model_example(item_subtype=ItemSubType.PERSON), subtype=ItemSubType.PERSON)
+    assert update_item_resp.status_code == 200, f"Status code was {update_item_resp.status_code}. Details: {update_item_resp.json()}"
 
     # 4. (3. below) now ensure the creation will succeed with correct payload
-    create_route = get_route(action=RouteActions.CREATE, params=params)
-    create_resp = client.post(
-        create_route,
-        json=json.loads(dataset_domain_info.json(exclude_none=True))
-    )
-    create_resp: GenericCreateResponse = response_model.parse_obj(
-        create_resp.json())
-    assert create_resp.status.success  # should succeed as created full items
+    create_item_from_domain_info_successfully(client=client, domain_info=dataset_domain_info, params=params)
+    valid_domain_info = DatasetDomainInfo.parse_obj(py_to_dict(dataset_domain_info)) # make object copy for later
 
     # now swap the person/organisation IDs and ensure the type validation causes an error
     dataset_domain_info.collection_format.associations.organisation_id = person_id
-
     # 3. now ensure the creation will fail due to the id for software in payload actually being for a dataset template
-    create_resp = client.post(
-        create_route,
-        json=json.loads(dataset_domain_info.json(exclude_none=True))
-    )
+    create_resp = create_item_from_domain_info(client=client, domain_info=dataset_domain_info, params=params)
 
-    create_resp: GenericCreateResponse = response_model.parse_obj(
-        create_resp.json())
+    create_resp: GenericCreateResponse = response_model.parse_obj(create_resp.json())
     # should fail due to referencing wrong item types.
     assert not create_resp.status.success
+
+    # Testing New domain info validation in f-1524
+
+    # check success first
+    create_item_from_domain_info_successfully(client=client, domain_info=valid_domain_info, params=params)
+    
+    # Test invalid spatial coverage
+    domain_info_invalid_spatial = DatasetDomainInfo.parse_obj(py_to_dict(valid_domain_info))
+    assert domain_info_invalid_spatial.collection_format.dataset_info.spatial_info
+    invalid_spatial_coverages = ["invalid spatial coverage", "SRID=123123123123;POINT(-73.987587 40.757929)", "SRID=a6;POINT(-73.987587 40.757929)", "SRID=4326POINT(-73.987587 40.757929)", "SRID=4326;POINT(-73.987587)", "SRID 4326;POINT(-73.987587 40.757929)", "SRID=4326;POINT(-73.987vvxz587 40.757929)"]
+    for invalid_spatial_coverage in invalid_spatial_coverages:
+        domain_info_invalid_spatial.collection_format.dataset_info.spatial_info.coverage = invalid_spatial_coverage
+        create_item_from_domain_info_not_successfully(client=client, domain_info=domain_info_invalid_spatial, params=params)
+
+    # test with valid spatial converage so we know it was failing for the right reasons
+    domain_info_invalid_spatial.collection_format.dataset_info.spatial_info.coverage = "SRID=4326;POINT(-73.987587 40.757929)"
+    create_item_from_domain_info_successfully(client=client, domain_info=domain_info_invalid_spatial, params=params)
+
+    # repeat for the spatial extent
+    for invalid_spatial_coverage in invalid_spatial_coverages:
+        domain_info_invalid_spatial.collection_format.dataset_info.spatial_info.extent = invalid_spatial_coverage
+        create_item_from_domain_info_not_successfully(client=client, domain_info=domain_info_invalid_spatial, params=params)
+    
+    # test with valid spatial converage so we know it was failing for the right reasons
+    domain_info_invalid_spatial.collection_format.dataset_info.spatial_info.extent = "SRID=4326;POINT(-73.987587 40.757929)"
+    create_item_from_domain_info_successfully(client=client, domain_info=domain_info_invalid_spatial, params=params)
+
+    invalid_spatial_resolutions = ["abc", "-1.2"]
+    for invalid_spatial_res in invalid_spatial_resolutions:
+        domain_info_invalid_spatial.collection_format.dataset_info.spatial_info.resolution = invalid_spatial_res
+        resp = create_item_from_domain_info(client=client, domain_info=domain_info_invalid_spatial, params=params)
+        assert resp.status_code == 422, f"Expected 422 for invalid spatial resolution. Got {resp.status_code} instead."
+
+    # test with valid spatial res so we know it was failing for the right reasons
+    domain_info_invalid_spatial.collection_format.dataset_info.spatial_info.resolution = "1.2"
+    create_item_from_domain_info_successfully(client=client, domain_info=domain_info_invalid_spatial, params=params)
+
+    # invalid temporal info 
+    domain_info_invalid_temporal = DatasetDomainInfo.parse_obj(py_to_dict(valid_domain_info))
+    temporal_info = domain_info_invalid_temporal.collection_format.dataset_info.temporal_info # reference
+    assert temporal_info
+
+    invalid_temporal_resolutions = ["123_invalid", "1Y2M10DT2H30M",  "P1Y2M10DT2", "1Y2M10DT2H"]
+    for invalid_temp_res in invalid_temporal_resolutions:
+        temporal_info.resolution = invalid_temp_res
+        resp = create_item_from_domain_info(client=client, domain_info=domain_info_invalid_temporal, params=params)
+        assert resp.status_code == 422, f"Expected 422 for invalid temporal resolution ({invalid_temp_res}). Got {resp.status_code} instead. Details: {resp.json()}"
+
+    temporal_info.resolution="P1Y2M10DT2H30M" # reset to acceptable and test missing one date time
+    create_item_from_domain_info_successfully(client=client, domain_info=domain_info_invalid_temporal, params=params)
+
+    assert temporal_info.duration, f"Expected example item in example models to have a duration, but is None."
+    temporal_info.duration.begin_date = None # type: ignore
+    resp = create_item_from_domain_info(client=client, domain_info=domain_info_invalid_temporal, params=params)
+    assert resp.status_code == 422
+
+    # invalid data custodian
+    domain_info_invalid_custodian = DatasetDomainInfo.parse_obj(py_to_dict(valid_domain_info))
+    domain_info_invalid_custodian.collection_format.associations.data_custodian_id = "invalid id 234"
+    resp = create_item_from_domain_info(client=client, domain_info=domain_info_invalid_custodian, params=params)
+    create_resp: GenericCreateResponse = response_model.parse_obj(resp.json())
+    assert not create_resp.status.success
+    # and check OK with valid custodian ID
+    domain_info_invalid_custodian.collection_format.associations.data_custodian_id = person_id
+    create_resp = create_item_from_domain_info_successfully(client=client, domain_info=domain_info_invalid_custodian, params=params)
+
 
 @mock_dynamodb
 def test_create_model_run_workflow_def_validation(override_perform_validation_config_dependency: Generator) -> None:

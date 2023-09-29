@@ -68,8 +68,7 @@ INTEGRATION_TEST_KEYCLOAK_CLIENT_ID = "integration-tests"
 
 # This is the deployed gbrrestoration base documentation URL
 # update to use Provena
-# TODO PROVENA UPDATE
-DEFAULT_DOCUMENTATION_BASE_URL = "https://gbrrestoration.github.io/rrap-mds-knowledge-hub"
+DEFAULT_DOCUMENTATION_BASE_URL = "https://docs.provena.io"
 
 # Compute and other config
 # ===============================================

@@ -34,6 +34,7 @@ import {
     REGISTRY_LINK,
     ReleaseActionText,
     ReleasedStatusText,
+    RenderLongTextExpand,
     TabPanel,
     VersioningView,
     WorkflowDefinition,
@@ -224,6 +225,9 @@ const PreviewDataset = observer((props: PreviewProps) => {
         });
     }
 
+    // Initial character numbers for long dataset description.
+    const descriptionInitialCharNum = 200;
+
     // Approval status and related colour
 
     // Default values for no release history
@@ -270,7 +274,13 @@ const PreviewDataset = observer((props: PreviewProps) => {
                     <h3>Dataset name:</h3>
                     {props.dataset.collection_format.dataset_info.name}
                     <h3>Dataset description:</h3>
-                    {props.dataset.collection_format.dataset_info.description}
+                    <RenderLongTextExpand
+                        text={
+                            props.dataset.collection_format.dataset_info
+                                .description
+                        }
+                        initialCharNum={descriptionInitialCharNum}
+                    />
                     <h3>Date created:</h3>
                     {collectionFormat.dataset_info.created_date}
                     <h3>Approval status:</h3>
@@ -529,8 +539,7 @@ const CredentialRequest = observer((props: CredentialRequestProps) => {
 
 const fullLockGuidance = () => {
     const lockGuidanceLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/provenance/registry/resource_lock.html";
+        DOCUMENTATION_BASE_URL + "/registry/resource_lock.html";
     return (
         <Stack
             justifyContent="center"
@@ -579,10 +588,9 @@ const shortLockGuidance = (
 
 // Released
 const releaseApprovedLockGuidance = () => {
-    // TODO, update this link later
+    // TODO, Link needs to be updated
     const releaseApprovedLockGuidanceLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/provenance/registry/resource_lock.html";
+        DOCUMENTATION_BASE_URL + "/registry/resource_lock.html";
     return (
         <Stack
             justifyContent="center"
@@ -614,10 +622,9 @@ const releaseApprovedLockGuidance = () => {
 
 // Pending
 const releasePendingLockGuidance = () => {
-    //TODO, update this link later
+    // TODO, Link needs to be updated
     const releasePendingLockGuidanceLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/provenance/registry/resource_lock.html";
+        DOCUMENTATION_BASE_URL + "/registry/resource_lock.html";
     return (
         <Stack
             justifyContent="center"
@@ -654,11 +661,10 @@ type DownloadGuidanceProps = {
 const DownloadGuidance = observer((props: DownloadGuidanceProps) => {
     const classes = useStyles();
     const cliGuidanceLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/data-store/downloading-datasets.html";
+        DOCUMENTATION_BASE_URL + "/data-store/downloading-datasets.html";
     const downloadingGuidanceLink =
         DOCUMENTATION_BASE_URL +
-        "/information-system/data-store/downloading-datasets.html#downloading-and-synchronising-datasets";
+        "/data-store/downloading-datasets.html#downloading-and-synchronising-datasets";
     const creds = datasetDetailStore.read_aws_creds;
     const consoleURL = datasetDetailStore.read_console_url;
 
@@ -829,8 +835,7 @@ const ExternalAccess = observer((props: ExternalAccessProps) => {
     This applies for datasets which are not reposited in the data store.
      */
     const documentationLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/data-store/externally-hosted-datasets.html";
+        DOCUMENTATION_BASE_URL + "/data-store/externally-hosted-datasets.html";
     const accessInfo = props.dataset.collection_format.dataset_info.access_info;
     const isWebUrl = (accessInfo.uri ?? "Unknown").startsWith("http");
 
@@ -883,14 +888,11 @@ type UploadGuidanceProps = {
 const UploadGuidance = observer((props: UploadGuidanceProps) => {
     const classes = useStyles();
     const cli_guidance_link =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/data-store/setting-up-the-aws-cli.html";
+        DOCUMENTATION_BASE_URL + "/data-store/setting-up-the-aws-cli.html";
     const registering_guidance_link =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/data-store/uploading-a-dataset.html";
+        DOCUMENTATION_BASE_URL + "/data-store/registering-a-dataset.html";
     const guiUploadingGuidanceLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/data-store/uploading-a-dataset.html";
+        DOCUMENTATION_BASE_URL + "/data-store/uploading-dataset-files.html";
     const creds = datasetDetailStore.read_write_aws_creds;
     const consoleURL = datasetDetailStore.read_write_console_url;
 
@@ -931,7 +933,7 @@ const UploadGuidance = observer((props: UploadGuidanceProps) => {
                     Your dataset was minted successfully, you can now upload the
                     dataset files. For more information about this process,
                     visit this{" "}
-                    <a href={registering_guidance_link} target="_blank">
+                    <a href={guiUploadingGuidanceLink} target="_blank">
                         link.
                     </a>{" "}
                     Start by requesting credentials using the button below.
@@ -1125,7 +1127,7 @@ const MetadataSummary = observer((props: MetadataSummaryProps) => {
     // This is the documentation for sharing datasets
     const sharingLink =
         DOCUMENTATION_BASE_URL +
-        "/information-system/data-store/viewing-a-dataset.html#collaborating";
+        "/data-store/viewing-a-dataset.html#collaborating";
 
     // Try parsing times
     var d = new Date();

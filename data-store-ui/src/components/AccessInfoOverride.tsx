@@ -70,7 +70,6 @@ const parseFormData = (formData: FormData): ParsedFormData => {
     // There is a bug in the custom form which doesn't pass in the value of
     // reposited if its false - so assume if uri/description are present but
     // reposited value isn't, that it is false
-    console.log("INPUT: ", formData);
     const uriOrDesc =
         formData["uri"] !== undefined || formData["description"] !== undefined;
 
@@ -81,7 +80,6 @@ const parseFormData = (formData: FormData): ParsedFormData => {
         uri: formData["uri"] ?? undefined,
         description: formData["description"] ?? undefined,
     };
-    console.log("OUTPUT:", output);
     return output;
 };
 
@@ -89,14 +87,10 @@ const AccessInfoOverride = (props: OverrideProps) => {
     /**
      */
 
-    console.log("Rendering custom");
-    console.log(JSON.stringify(props.formData));
-
     // Parse defaults/input
     const parsedFormData = parseFormData(props.formData);
 
     const updateFormData = (parsedFormData: ParsedFormData) => {
-        console.log("Updating form data");
         const newFormData: ParsedFormData = JSON.parse(
             JSON.stringify(parsedFormData)
         );
@@ -104,7 +98,6 @@ const AccessInfoOverride = (props: OverrideProps) => {
             delete newFormData["description"];
             delete newFormData["uri"];
         }
-        console.log("Updating with", JSON.stringify(newFormData));
         props.onChange(newFormData);
     };
 

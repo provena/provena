@@ -22,7 +22,7 @@ import { REGISTRY_LINK } from "../queries";
 import { useCombinedLoadedItem } from "../hooks";
 import { ItemDisplayWithStatusComponent } from "./ItemDisplayWithStatus";
 import { ExpansionArray, GraphExploreQueries } from "../hooks/useProvGraphData";
-import { HelpOutline } from "@mui/icons-material";
+import HelpOutline from "@mui/icons-material/HelpOutline";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -130,7 +130,9 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
                     value={placeholderText}
                     displayEmpty
                     renderValue={() => (
-                        <Typography variant="body1">{placeholderText}</Typography>
+                        <Typography variant="body1">
+                            {placeholderText}
+                        </Typography>
                     )}
                     label={filterTitle}
                     fullWidth

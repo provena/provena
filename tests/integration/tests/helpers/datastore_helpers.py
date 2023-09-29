@@ -83,6 +83,13 @@ def generate_write_creds(dataset_id: str, token: str) -> Response:
     return resp
 
 
+def generate_write_creds_assert_status_code(dataset_id: str, token: str, desired_status_code: int) -> Response:
+
+    resp = generate_write_creds(dataset_id=dataset_id, token=token)
+    assert resp.status_code == desired_status_code, f"Recieved non {desired_status_code} status code ({resp.status_code}) to generate write credentials. Details: {resp.json()}"
+    return resp
+
+
 def generate_write_creds_successfully(dataset_id: str, token: str) -> CredentialResponse:
 
     resp = generate_write_creds(dataset_id=dataset_id, token=token)

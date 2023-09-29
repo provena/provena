@@ -45,6 +45,8 @@ export const GenericDetailViewWrapperComponent = (
                     layout: props.layout,
                     layoutConfig: props.layoutConfig,
                 }}
+                // Start with no context
+                context={{ fields: [] }}
             />
         </div>
     );

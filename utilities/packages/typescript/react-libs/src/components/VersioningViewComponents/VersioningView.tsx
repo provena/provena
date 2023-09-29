@@ -1,4 +1,4 @@
-import { HelpOutline } from "@mui/icons-material";
+import HelpOutline from "@mui/icons-material/HelpOutline";
 import {
     Alert,
     AlertTitle,
@@ -16,7 +16,11 @@ import React, { useEffect, useState } from "react";
 
 import { useHistory } from "react-router-dom";
 import "react-vertical-timeline-component/style.min.css";
-import { SubtypeHeaderComponent, useLoadedVersionList } from "../..";
+import {
+    DOCUMENTATION_BASE_URL,
+    SubtypeHeaderComponent,
+    useLoadedVersionList,
+} from "../..";
 import { LoadedEntity } from "../../interfaces";
 import { ItemBase } from "../../shared-interfaces/RegistryAPI";
 import { Swatch, assignIcon, getSwatchForSubtype } from "../../util";
@@ -257,8 +261,8 @@ export const VersioningView = (props: VersioningViewProps) => {
 
     const subtypeIcon = assignIcon(props.item.item_subtype, classes.icon);
 
-    // TODO replace the actual links later
-    const HELP_LINK = "https://gbrrestoration.github.io/rrap-mds-knowledge-hub";
+    const HELP_LINK =
+        DOCUMENTATION_BASE_URL + "/versioning/versioning-overview.html";
 
     // Open create new version dialog
     const [openCreateNewVersion, setOpenCreateNewVersion] =

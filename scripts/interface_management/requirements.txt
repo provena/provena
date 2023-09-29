@@ -1,2 +1,3 @@
 pydantic-to-typescript
 pydantic[email]==1.*
+isodate

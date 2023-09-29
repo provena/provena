@@ -1,28 +1,26 @@
 import {
     Button,
-    Container,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Grid,
+    Grid
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
-import Form from "@rjsf/mui";
 import { RJSFSchema } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
+import {
+    Form, useUserLinkEnforcer,
+    userLinkEnforcerDocumentationLink,
+    userLinkEnforcerProfileLink
+} from "react-libs";
 import { useHistory } from "react-router-dom";
 import newDatasetStore from "../stores/registerOrModifyStore";
-import { uiSchema, fields } from "../util/formUtil";
-import validator from "@rjsf/validator-ajv8";
-import {
-    useUserLinkEnforcer,
-    userLinkEnforcerDocumentationLink,
-    userLinkEnforcerProfileLink,
-} from "react-libs";
+import { fields, uiSchema } from "../util/formUtil";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -115,12 +113,12 @@ const NewDataset = observer((props: NewDatasetProps) => {
                         }}
                         onSubmit={({ formData }) => {
                             newDatasetStore.registerDatasetAction(
-                                formData,
+                                formData as unknown as JSON,
                                 history
                             );
                         }}
                         onChange={({ formData }) => {
-                            newDatasetStore.onFormChange(formData);
+                            newDatasetStore.onFormChange(formData as JSON);
                         }}
                         formData={newDatasetStore.currentValue}
                         id="registration-form"

@@ -3,6 +3,18 @@ from copy import deepcopy
 import json
 from pydantic import BaseModel
 from datetime import datetime
+from requests import Response
+
+def assert_x_ok(res: Response, desired_status_code: int = 200) -> None:
+    status_code = res.status_code
+    text = res.text
+    if status_code != desired_status_code:
+        raise Exception(
+            f"Failed request, expected {desired_status_code}, got {status_code}. Text: {text}")
+
+
+def assert_200_ok(res: Response) -> None:
+    assert_x_ok(res=res, desired_status_code=200)
 
 
 def display_failed_cleanups(failed_cleanups: Any) -> None:

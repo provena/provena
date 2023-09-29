@@ -70,9 +70,7 @@ def get_schema(config: Config) -> Schema:
     --------
 
     """
-    path: str = config.SCHEMA_PATH
-    with open(path, 'r') as f:
-        return Schema(json_schema=json.loads(f.read()))
+    return Schema(json_schema=json.loads(CollectionFormat.schema_json()))
 
 def validate_optionally_required_check(
     check: OptionallyRequiredCheck,

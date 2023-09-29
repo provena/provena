@@ -1,4 +1,4 @@
-from SharedInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, AccessLevel
+from SharedInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, SYS_ADMIN_COMPONENT, AccessLevel
 from SharedInterfaces.AsyncJobModels import EmailSendEmailPayload
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config, Config, get_settings
@@ -32,6 +32,27 @@ read_write_user_protected_role_dependency = kc_auth.get_all_protected_role_depen
 )
 admin_user_protected_role_dependency = kc_auth.get_all_protected_role_dependency(
     [read_usage_role, write_usage_role, admin_usage_role]
+)
+
+sys_admin_auth_component = SYS_ADMIN_COMPONENT
+
+# Create dependencies
+# This is from the shared authorisation model
+sys_admin_read_usage_role = sys_admin_auth_component.get_role_at_level(
+    AccessLevel.READ).role_name
+sys_admin_write_usage_role = sys_admin_auth_component.get_role_at_level(
+    AccessLevel.WRITE).role_name
+sys_admin_admin_usage_role = sys_admin_auth_component.get_role_at_level(
+    AccessLevel.ADMIN).role_name
+
+sys_admin_read_user_protected_role_dependency = kc_auth.get_all_protected_role_dependency(
+    [sys_admin_read_usage_role]
+)
+sys_admin_read_write_user_protected_role_dependency = kc_auth.get_all_protected_role_dependency(
+    [sys_admin_read_usage_role, sys_admin_write_usage_role]
+)
+sys_admin_admin_user_protected_role_dependency = kc_auth.get_all_protected_role_dependency(
+    [sys_admin_read_usage_role, sys_admin_write_usage_role, sys_admin_admin_usage_role]
 )
 
 

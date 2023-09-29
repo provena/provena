@@ -17,6 +17,7 @@ import { useCreateNewVersion } from "../hooks/useCreateNewVersion";
 import { ItemBase, VersionResponse } from "../shared-interfaces/RegistryAPI";
 import { isBlank } from "../util";
 import { GenericDetailViewWrapperComponent } from "./JsonRenderer";
+import { DOCUMENTATION_BASE_URL } from "../queries";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -89,7 +90,7 @@ const CreateNewVersion = (props: CreateNewVersionProps) => {
 
     // Documentation for providing information on creating new version
     const CREATE_NEW_VERSION_HELP_LINK =
-        "https://gbrrestoration.github.io/rrap-mds-knowledge-hub";
+        DOCUMENTATION_BASE_URL + "/versioning/";
 
     // States
     const isSubmitting = createNewVersionMutate.isLoading;

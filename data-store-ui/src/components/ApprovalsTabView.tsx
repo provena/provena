@@ -16,6 +16,7 @@ import { createStyles, makeStyles } from "@mui/styles";
 import { useKeycloak } from "@react-keycloak/web";
 import React, { useState } from "react";
 import {
+    DOCUMENTATION_BASE_URL,
     GenericDetailViewWrapperComponent,
     ReleaseActionText,
     ReleasedStatusText,
@@ -34,6 +35,7 @@ import {
     ReleasedStatus,
 } from "react-libs/shared-interfaces/RegistryAPI";
 import { ApprovalsHistoryDialog } from "./ApprovalsHistoryDialog";
+import HelpOutline from "@mui/icons-material/HelpOutline";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -101,6 +103,9 @@ export const ApprovalsTabView = (props: ApprovalsTabViewProps) => {
 
     const classes = useStyles();
     const theme = useTheme();
+
+    // Doc links
+    const HELP_LINK = DOCUMENTATION_BASE_URL; // TODO, Link needs to be updated
 
     // If approvals history dialog need to open, true for opening, false for closing
     const [approvalsHistoryDialogOpen, setApprovalsHistoryDialogOpen] =
@@ -347,6 +352,20 @@ export const ApprovalsTabView = (props: ApprovalsTabViewProps) => {
                                                 Approvals History
                                             </Button>
                                         )}
+                                        {/* Help Button */}
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => {
+                                                window.open(
+                                                    HELP_LINK,
+                                                    "_blank",
+                                                    "noopener,noreferrer"
+                                                );
+                                            }}
+                                            endIcon={<HelpOutline />}
+                                        >
+                                            Help
+                                        </Button>
                                         {/* Approvals history dialog */}
                                         {approvalsHistoryDialogOpen && (
                                             <ApprovalsHistoryDialog

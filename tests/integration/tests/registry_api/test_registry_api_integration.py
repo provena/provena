@@ -181,7 +181,7 @@ def test_item_auth_and_edit_workflow(group_cleanup_fixture: None) -> None:
     assert fetched_org.display_name == org_domain_info.display_name, f"Expected fetched item to have updated display name. Got {fetched_org.display_name} instead."
 
 
-def test_list() -> None:
+def test_list(linked_person_fixture: ItemPerson) -> None:
     # make some models
     # make some orgs
     # test filtering and ordering
@@ -306,7 +306,7 @@ def test_person_ethics_approved_validation() -> None:
     assert not create_resp.status.success, f"Expected create to fail due to no ethics approval. Got {create_resp.status.success} instead."
 
 
-def test_invalid_mrwt_update() -> None:
+def test_invalid_mrwt_update(linked_person_fixture: ItemPerson) -> None:
     # Test that will create the requirements needed for a MRWT register it succesfully, then,
     # will try to update the MRWT with invalid handle references and ensure failure
     # register custom dataset templates (input and output)

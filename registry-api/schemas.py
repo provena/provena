@@ -112,6 +112,7 @@ UI_SCHEMA_OVERRIDES: Dict[ItemModelTypeVar, Dict[str, Any]] = {  # type: ignore
         "annotations": {
             "ui:widget": "annotationsOverride",
             "ui:title": "Model Run Annotations",
+            "disableOptional" : True,
             "ui:description": "If you would like model runs to require or optionally provide additional user defined annotations, you can include them here. These annotations will be searchable.",
             "items": {
                 "required": {

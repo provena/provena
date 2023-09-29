@@ -6,8 +6,7 @@ import {
 } from "../queries/endpoints";
 
 export const userLinkEnforcerDocumentationLink =
-    DOCUMENTATION_BASE_URL +
-    "/information-system/getting-started-is/linking-identity.html";
+    DOCUMENTATION_BASE_URL + "/getting-started-is/linking-identity.html";
 export const userLinkEnforcerProfileLink =
     LANDING_PAGE_LINK + "/profile?function=identity";
 

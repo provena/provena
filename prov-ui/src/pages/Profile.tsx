@@ -84,7 +84,7 @@ const Profile = observer(() => {
                         <a
                             href={
                                 DOCUMENTATION_BASE_URL +
-                                "/information-system/getting-started-is/requesting-access-is.html"
+                                "/getting-started-is/requesting-access-is.html"
                             }
                             target="_blank"
                         >
@@ -109,7 +109,7 @@ const Profile = observer(() => {
                                 <a
                                     href={
                                         DOCUMENTATION_BASE_URL +
-                                        "/information-system/getting-started-is/requesting-access-is.html"
+                                        "/getting-started-is/requesting-access-is.html"
                                     }
                                     target="_blank"
                                 >

@@ -63,9 +63,10 @@ def generate_export_local(
         [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
 ) -> None:
     """
-    Given a handle ID, will pull the model run record from the stage's registry,
-    and run a restore into the neo4j graph db using the prov API admin endpoint.
-    Requires registry READ and prov store ADMIN permissions.
+    Generates a CSV report of the specified type by listing all model runs and
+    transforming according to report format.
+
+    Local run mode.
     """
 
     # Process optional environment replacement parameters
@@ -123,9 +124,8 @@ def generate_export_aws(
     )
 ) -> None:
     """
-    Given a handle ID, will pull the model run record from the stage's registry,
-    and run a restore into the neo4j graph db using the prov API admin endpoint.
-    Requires registry READ and prov store ADMIN permissions.
+    Generates a CSV report of the specified type by listing all model runs and
+    transforming according to report format.
 
     This is used by the AWS scheduled job - it requires usage of a service
     account.

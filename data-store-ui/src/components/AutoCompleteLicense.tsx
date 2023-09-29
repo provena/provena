@@ -110,7 +110,6 @@ const AutoCompleteLicense = (props: any) => {
 
         // Set the value and notify form of update
         setCurrentValue(value);
-        console.log("License selected:" + value);
         props.onChange(path);
     };
 

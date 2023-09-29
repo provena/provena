@@ -4,6 +4,7 @@ import { prettifyRecordName } from "../../util/util";
 import {
     ColumnLayoutConfig,
     DEFAULT_LAYOUT_CONFIG,
+    JsonContext,
     JsonDetailViewComponent,
     JsonDetailViewComponentProps,
     JsonRenderer,
@@ -20,9 +21,14 @@ import {
 } from "./JsonOverrideDetectors";
 import {
     ARRAY_RENDER_OVERRIDES,
+    ARRAY_RENDER_PATH_OVERRIDES,
     BOOLEAN_RENDER_OVERRIDES,
+    BOOLEAN_RENDER_PATH_OVERRIDES,
     NUMBER_RENDER_OVERRIDES,
+    NUMBER_RENDER_PATH_OVERRIDES,
     STRING_RENDER_OVERRIDES,
+    STRING_RENDER_PATH_OVERRIDES,
+    buildPath,
 } from "./JsonRendererOverrides";
 
 /**
@@ -194,6 +200,9 @@ export const stringRenderer: JsonRenderer = (
 
     // Check for a direct or auto renderer override
     const override =
+        STRING_RENDER_PATH_OVERRIDES.get(
+            buildPath([buildPath(props.context.fields), props.json.name])
+        ) ??
         STRING_RENDER_OVERRIDES.get(props.json.name) ??
         checkForAutoDetectors<string>(
             STRING_AUTO_DETECTORS,
@@ -239,6 +248,9 @@ export const numberRenderer = (
 
     // Check for a direct or auto renderer override
     const override =
+        NUMBER_RENDER_PATH_OVERRIDES.get(
+            buildPath([buildPath(props.context.fields), props.json.name])
+        ) ??
         NUMBER_RENDER_OVERRIDES.get(props.json.name) ??
         checkForAutoDetectors<number>(
             NUMBER_AUTO_DETECTORS,
@@ -283,6 +295,9 @@ export const booleanRenderer = (
 
     // Check for a direct or auto renderer override
     const override =
+        BOOLEAN_RENDER_PATH_OVERRIDES.get(
+            buildPath([buildPath(props.context.fields), props.json.name])
+        ) ??
         BOOLEAN_RENDER_OVERRIDES.get(props.json.name) ??
         checkForAutoDetectors<boolean>(
             BOOLEAN_AUTO_DETECTORS,
@@ -334,6 +349,16 @@ export const objectRendererBoxer = (inputs: {
     );
 };
 
+export const appendContext = (inputs: {
+    name: string;
+    context: JsonContext;
+}): JsonContext => {
+    const { name, context } = inputs;
+    const newContext: JsonContext = JSON.parse(JSON.stringify(context));
+    newContext.fields.push(name);
+    return newContext;
+};
+
 export const objectRenderer = (
     props: JsonDetailViewComponentProps
 ): JSX.Element => {
@@ -354,6 +379,7 @@ export const objectRenderer = (
                         <JsonDetailViewComponent
                             json={{ name: key, value: val }}
                             style={props.style}
+                            context={props.context}
                         />
                     );
                 })}
@@ -363,6 +389,12 @@ export const objectRenderer = (
 
     // We are not at top level and we have a name - standard display
     const key = prettifyRecordName(props.json.name);
+
+    // new context
+    const newContext = appendContext({
+        name: props.json.name,
+        context: props.context,
+    });
 
     // LH Content
     const lhContent = (
@@ -376,6 +408,7 @@ export const objectRenderer = (
         interior: objectRenderer({
             ...props,
             json: { ...props.json, name: undefined },
+            context: newContext,
         }),
     });
 
@@ -399,6 +432,9 @@ export const arrayRenderer = (
     // Check for a direct or auto renderer override
     if (props.json.name !== undefined) {
         const override =
+            ARRAY_RENDER_PATH_OVERRIDES.get(
+                buildPath([buildPath(props.context.fields), props.json.name])
+            ) ??
             ARRAY_RENDER_OVERRIDES.get(props.json.name) ??
             checkForAutoDetectors<object>(
                 OBJECT_AUTO_DETECTORS,
@@ -410,6 +446,15 @@ export const arrayRenderer = (
             return override(props.json.name, val, props);
         }
     }
+
+    const newContext =
+        props.json.name === undefined
+            ? props.context
+            : appendContext({
+                  name: props.json.name!,
+                  context: props.context,
+              });
+
     // Start by removing any null or defined entries
     const filtered = val.filter((e) => {
         return !(e === undefined || e === null);
@@ -452,6 +497,8 @@ export const arrayRenderer = (
                         <JsonDetailViewComponent
                             json={{ name: undefined, value: entry }}
                             style={props.style}
+                            // Inject context here since we strip name
+                            context={newContext}
                         />
                     );
                     return objectRendererBoxer({

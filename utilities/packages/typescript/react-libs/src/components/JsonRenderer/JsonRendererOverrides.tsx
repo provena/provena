@@ -35,10 +35,11 @@ import {
 import { LinkedUsernameDisplayComponent as LinkedUsernameToJsonDetails } from "../LinkedUsernameDisplay";
 import { SubtypeHeaderComponent } from "../SubtypeSpecialisedHeader";
 import {
-    FieldRendererMap,
+    AllFieldRendererMap,
     JsonDetailViewComponent,
     JsonDetailViewComponentProps,
     JsonTypes,
+    PathedRendererMap,
     RendererOverride,
 } from "./JsonDetailView";
 import {
@@ -65,6 +66,15 @@ import {
     Some overrides make modifications and pass into existing type renderers,
     others define new rendering approaches such as the id resolver overrides.
  */
+
+const EWKT_DOCS_LINK =
+    "https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry";
+const DECIMAL_DEGREES_LINK = "https://en.wikipedia.org/wiki/Decimal_degrees";
+const ISO8601_DURATION_LINK = "https://en.wikipedia.org/wiki/ISO_8601#Durations";
+
+export const buildPath = (fields: string[]): string => {
+    return fields.join("$");
+};
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -334,6 +344,109 @@ export const serialisedJsonOverride: RendererOverride<string> = (
     }
 };
 
+// Override for EWKT content
+export const ewktOverride: RendererOverride<string> = (
+    name: string,
+    val: string,
+    props: JsonDetailViewComponentProps
+) => {
+    const classes = useStyles();
+
+    // LH Content
+    const lhContent = (
+        <Typography className={classes.boldText}>
+            <>
+                {prettifyRecordName(name)} (
+                <a href={EWKT_DOCS_LINK} target="_blank" rel="noreferrer">
+                    EWKT
+                </a>
+                )
+            </>
+        </Typography>
+    );
+
+    // RH Content
+    const rhContent = (
+        <Typography className={classes.valueText}>{val}</Typography>
+    );
+
+    return genericStyledRenderer({
+        style: props.style,
+        lhContent,
+        rhContent,
+    });
+};
+
+// Override for EWKT content
+export const ISO8601DurationOverride: RendererOverride<string> = (
+    name: string,
+    val: string,
+    props: JsonDetailViewComponentProps
+) => {
+    const classes = useStyles();
+
+    // LH Content
+    const lhContent = (
+        <Typography className={classes.boldText}>
+            <>
+                {prettifyRecordName(name)} (
+                <a
+                    href={ISO8601_DURATION_LINK}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    ISO8601 Duration
+                </a>
+                )
+            </>
+        </Typography>
+    );
+
+    // RH Content
+    const rhContent = (
+        <Typography className={classes.valueText}>{val}</Typography>
+    );
+
+    return genericStyledRenderer({
+        style: props.style,
+        lhContent,
+        rhContent,
+    });
+};
+
+// Override for EWKT content
+export const decimalDegreesOverride: RendererOverride<string> = (
+    name: string,
+    val: string,
+    props: JsonDetailViewComponentProps
+) => {
+    const classes = useStyles();
+
+    // LH Content
+    const lhContent = (
+        <Typography className={classes.boldText}>
+            <>
+                {prettifyRecordName(name)} (
+                <a href={DECIMAL_DEGREES_LINK} target="_blank" rel="noreferrer">
+                    Decimal Degrees
+                </a>
+                )
+            </>
+        </Typography>
+    );
+
+    // RH Content
+    const rhContent = (
+        <Typography className={classes.valueText}>{val}</Typography>
+    );
+
+    return genericStyledRenderer({
+        style: props.style,
+        lhContent,
+        rhContent,
+    });
+};
+
 // Defines a handle display renderer override
 export const truncationOverride: RendererOverride<string> = (
     name: string,
@@ -445,6 +558,8 @@ function subtypedIdResolverOverrideGenerator(inputs: {
                     [k: string]: JsonTypes;
                 },
             },
+            // Reset the context
+            context: { fields: [] },
         });
         var readyToDisplay = false;
 
@@ -767,7 +882,7 @@ export const releaseStatusOverride: RendererOverride<string> = (
 };
 
 // Maps field name -> Override
-export const STRING_RENDER_OVERRIDES: FieldRendererMap<string> = new Map([
+export const STRING_RENDER_OVERRIDES: AllFieldRendererMap<string> = new Map([
     // IDs/handles that shouldn't resolve
     ["id", handleOverride],
 
@@ -923,15 +1038,17 @@ export const STRING_RENDER_OVERRIDES: FieldRendererMap<string> = new Map([
     // ["prov_serialisation", serialisedJsonOverride],
 ]);
 
-export const OBJECT_RENDER_OVERRIDES: FieldRendererMap<object> = new Map([]);
+export const OBJECT_RENDER_OVERRIDES: AllFieldRendererMap<object> = new Map([]);
 
-export const ARRAY_RENDER_OVERRIDES: FieldRendererMap<object> = new Map([
+export const ARRAY_RENDER_OVERRIDES: AllFieldRendererMap<object> = new Map([
     ["release_history", releaseHistoryOverride],
 ]);
 
-export const BOOLEAN_RENDER_OVERRIDES: FieldRendererMap<boolean> = new Map([]);
+export const BOOLEAN_RENDER_OVERRIDES: AllFieldRendererMap<boolean> = new Map(
+    []
+);
 
-export const NUMBER_RENDER_OVERRIDES: FieldRendererMap<number> = new Map([
+export const NUMBER_RENDER_OVERRIDES: AllFieldRendererMap<number> = new Map([
     ["updated_timestamp", timestampOverride],
     ["created_timestamp", timestampOverride],
     ["start_time", timestampOverride],
@@ -940,3 +1057,51 @@ export const NUMBER_RENDER_OVERRIDES: FieldRendererMap<number> = new Map([
     ["release_timestamp", timestampOverride],
     ["timestamp", timestampOverride],
 ]);
+
+// Maps field name + Context -> Override
+export const STRING_RENDER_PATH_OVERRIDES: PathedRendererMap<string> = new Map([
+    // EWKT and Decimal Degrees
+    [
+        buildPath([
+            "collection_format",
+            "dataset_info",
+            "spatial_info",
+            "coverage",
+        ]),
+        ewktOverride,
+    ],
+    [
+        buildPath([
+            "collection_format",
+            "dataset_info",
+            "spatial_info",
+            "resolution",
+        ]),
+        decimalDegreesOverride,
+    ],
+    // ISO 8601 duration
+    [
+        buildPath([
+            "collection_format",
+            "dataset_info",
+            "temporal_info",
+            "resolution",
+        ]),
+        ISO8601DurationOverride,
+    ],
+]);
+
+export const OBJECT_RENDER_PATH_OVERRIDES: PathedRendererMap<object> = new Map(
+    []
+);
+
+export const ARRAY_RENDER_PATH_OVERRIDES: PathedRendererMap<object> = new Map(
+    []
+);
+
+export const BOOLEAN_RENDER_PATH_OVERRIDES: PathedRendererMap<boolean> =
+    new Map([]);
+
+export const NUMBER_RENDER_PATH_OVERRIDES: PathedRendererMap<number> = new Map(
+    []
+);

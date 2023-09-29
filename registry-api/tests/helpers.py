@@ -152,6 +152,18 @@ def filtered_none_deep_copy(input: Any) -> Union[Dict[Any, Any], List[Any], Any]
         # Return a native copy of the leaf node
         return deepcopy(input)
 
+def seed_item_successfully(client: TestClient, item_subtype: ItemSubType) -> SeededItem:
+    resp = seed_item(client, item_subtype)
+    check_status_success_true(resp)
+    seed_resp = GenericSeedResponse.parse_obj(resp.json())
+    assert seed_resp.status.success
+    item = seed_resp.seeded_item
+    assert item
+    return item
+
+def seed_item(client: TestClient, item_subtype: ItemSubType) -> Response:
+    seed_route = get_route(action=RouteActions.SEED, params=get_item_subtype_route_params(item_subtype))
+    return client.post(seed_route)
 
 def entity_list_exhaust(client: TestClient, params: RouteParameters, subtype_list_request: Optional[SubtypeListRequest] = None) -> Tuple[List[ItemBase], List[SeededItem]]:
     list_route = get_route(action=RouteActions.LIST, params=params)
@@ -1096,6 +1108,23 @@ def unlock_item(client: TestClient, id: str, params: RouteParameters) -> StatusR
     return unlock_resp
 
 
+def get_model_example(item_subtype: ItemSubType) -> DomainInfoBase:
+    params = get_item_subtype_route_params(item_subtype=item_subtype)
+    return params.model_examples.domain_info[0]
+
+
+def update_item_from_domain_info(client: TestClient, id: str, subtype: ItemSubType, updated_domain_info: DomainInfoBase) -> Response:
+
+    params = get_item_subtype_route_params(item_subtype=subtype)
+    update_route = get_route(action=RouteActions.UPDATE, params=params)
+    update_item_resp = client.put(
+        update_route,
+        params={'id': id, 'reason': "testin' update functionality"},
+        json=py_to_dict(updated_domain_info)
+    )
+    return update_item_resp
+
+
 def update_item(client: TestClient, id: str, params: RouteParameters) -> Response:
     reason = "fake reason"
     updated_domain_info = params.model_examples.domain_info[1]
@@ -1168,6 +1197,19 @@ def create_item_from_domain_info_successfully(client: TestClient, domain_info: D
     assert created_item
     return created_item
 
+
+def create_item_from_domain_info_not_successfully(client: TestClient, domain_info: DomainInfoBase, params: RouteParameters) -> None:
+    """Used when status 200 OK is returned, but status success is false.
+    """
+    create_resp = create_item_from_domain_info(
+        client=client, domain_info=domain_info, params=params)
+    assert create_resp.status_code == 200, "Create response was not 200. Details: " + create_resp.text
+    response_model = params.typing_information.create_response
+    assert response_model, f"Typing information for {params.subtype} does not have a create response model."
+    create_resp: GenericCreateResponse = response_model.parse_obj(
+        create_resp.json())
+    assert not create_resp.status.success
+    
 
 class TestingUser():
 
@@ -1497,20 +1539,4 @@ def check_current_with_buffer(ts: int, buffer: int = 5) -> None:
     current = get_timestamp()
     assert ts > current - buffer and ts < current + buffer
 
-# TODO think further about this approach - for now excluding subtypes which don't have full suite
-# def check_for_skip(params: RouteParameters, actions: List[RouteActions]) -> bool:
-#    """Called inside parametrised tests to check if they should be executed or skipped.
-#    Not every combination of parameters and actions is implemented. For example,
-#    the "registry create" activity entitiy does not have a /create endpoint implemeneted.
-#
-#    Parameters
-#    ----------
-#    params : RouteParameters
-#        The params of the test (params are what are parametrised)
-#    actions : List[RouteActions]
-#        The actions that a used in this test. E.g. create, delete, fetch, etc.
-#    """
-#    for action in actions:
-#        if (params.subtype, action) in to_skip:
-#            return True
-#    return False
+

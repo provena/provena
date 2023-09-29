@@ -56,27 +56,27 @@ export const entityRegisterDocumentationMap: Map<ItemSubType, string> = new Map(
         [
             "DATASET_TEMPLATE",
             DOCUMENTATION_BASE_URL +
-                "/information-system/provenance/registering-model-runs/model-workflow-configuration#dataset-template",
+                "/provenance/registering-model-runs/model-workflow-configuration.html#dataset-template",
         ],
         [
             "MODEL",
             DOCUMENTATION_BASE_URL +
-                "/information-system/provenance/registering-model-runs/establishing-required-entities.html#model",
+                "/provenance/registering-model-runs/establishing-required-entities.html#model",
         ],
         [
             "MODEL_RUN_WORKFLOW_TEMPLATE",
             DOCUMENTATION_BASE_URL +
-                "information-system/provenance/registering-model-runs/model-workflow-configuration#model-run-workflow-template",
+                "/provenance/registering-model-runs/model-workflow-configuration.html#model-run-workflow-template",
         ],
         [
             "ORGANISATION",
             DOCUMENTATION_BASE_URL +
-                "/information-system/provenance/registering-model-runs/establishing-required-entities#organisation",
+                "/provenance/registering-model-runs/establishing-required-entities.html#organisation",
         ],
         [
             "PERSON",
             DOCUMENTATION_BASE_URL +
-                "/information-system/provenance/registering-model-runs/establishing-required-entities#person",
+                "/provenance/registering-model-runs/establishing-required-entities.html#person",
         ],
     ]
 );

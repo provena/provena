@@ -1,14 +1,15 @@
-import PersonIcon from "@mui/icons-material/Person";
-import MultilineChartIcon from "@mui/icons-material/MultilineChart";
-import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
-import DonutSmallIcon from "@mui/icons-material/DonutSmall";
-import DataArrayIcon from "@mui/icons-material/DataArray";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
-import GroupsIcon from "@mui/icons-material/Groups";
-import SchoolIcon from "@mui/icons-material/School";
-import TerminalIcon from "@mui/icons-material/Terminal";
+import DataArrayIcon from "@mui/icons-material/DataArray";
+import DonutSmallIcon from "@mui/icons-material/DonutSmall";
 import GradingIcon from "@mui/icons-material/Grading";
+import GroupsIcon from "@mui/icons-material/Groups";
+import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
+import MultilineChartIcon from "@mui/icons-material/MultilineChart";
+import PersonIcon from "@mui/icons-material/Person";
+import TerminalIcon from "@mui/icons-material/Terminal";
 import TimelapseIcon from "@mui/icons-material/Timelapse";
+import AutoGraph from "@mui/icons-material/AutoGraph";
+import Update from "@mui/icons-material/Update";
 import { ItemSubType } from "../shared-interfaces/RegistryAPI";
 
 export interface Swatch {
@@ -29,6 +30,8 @@ export interface SwatchCollection {
     qualifiedAssociationSwatch: Swatch;
     softwareSwatch: Swatch;
     workflowDefinitonSwatch: Swatch;
+    createSwatch: Swatch;
+    versionSwatch: Swatch;
     defaultSwatch: Swatch;
 }
 
@@ -88,6 +91,16 @@ export const Swatches: SwatchCollection = {
         tintColour: "#58a24d",
         shadeColour: "#254521",
     },
+    createSwatch: {
+        colour: "#3f6a6b",
+        tintColour: "#779495",
+        shadeColour: "#233f3f",
+    },
+    versionSwatch: {
+        colour: "#8a508f",
+        tintColour: "#ad83b0",
+        shadeColour: "#653969",
+    },
     defaultSwatch: {
         colour: "#500778",
         tintColour: "#810bc2",
@@ -128,13 +141,11 @@ export const getSwatchForSubtype = (subtype: ItemSubType | undefined) => {
         case "WORKFLOW_RUN":
             baseSwatch = Swatches.workflowDefinitonSwatch;
             break;
-        // TODO make this nice
         case "CREATE":
-            baseSwatch = Swatches.workflowDefinitonSwatch;
+            baseSwatch = Swatches.createSwatch;
             break;
-        // TODO make this nice
         case "VERSION":
-            baseSwatch = Swatches.workflowDefinitonSwatch;
+            baseSwatch = Swatches.versionSwatch;
             break;
         default:
             baseSwatch = Swatches.defaultSwatch;
@@ -162,12 +173,10 @@ export const assignIcon = (
             return <ModelTrainingIcon className={specifiedClass} />;
         case "MODEL_RUN_WORKFLOW_TEMPLATE":
             return <AccountTreeIcon className={specifiedClass} />;
-
-        // TODO make these nice
         case "CREATE":
-            return <AccountTreeIcon className={specifiedClass} />;
+            return <AutoGraph className={specifiedClass} />;
         case "VERSION":
-            return <AccountTreeIcon className={specifiedClass} />;
+            return <Update className={specifiedClass} />;
         case "ORGANISATION":
             return <GroupsIcon className={specifiedClass} />;
         case "PERSON":

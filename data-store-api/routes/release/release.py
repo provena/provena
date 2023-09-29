@@ -3,13 +3,35 @@ from KeycloakFastAPI.Dependencies import ProtectedRole
 from SharedInterfaces.DataStoreAPI import *
 from fastapi import APIRouter, Depends
 from config import get_settings, Config
-from dependencies.dependencies import read_write_user_protected_role_dependency, email_dependency
+from dependencies.dependencies import read_write_user_protected_role_dependency, email_dependency, admin_user_protected_role_dependency, sys_admin_read_write_user_protected_role_dependency, sys_admin_admin_user_protected_role_dependency
 from helpers.registry_api_helpers import *
-from helpers.release_helpers import get_all_reviewers, perform_action_of_approval_request, perform_approval_request
+from helpers.release_helpers import add_reviewer, delete_reviewer_by_id, get_all_reviewers, perform_action_of_approval_request, perform_approval_request
 from helpers.auth_helpers import get_user_link
 from interfaces.EmailClient import EmailClient
 
 router = APIRouter()
+
+
+@router.delete("/sys-reviewers/delete", operation_id="delete_reviewer")
+async def delete_dataset_reviewer(
+    reviewer_id: str,
+    protect_roles: ProtectedRole = Depends(
+        sys_admin_admin_user_protected_role_dependency), # admin only endpoint
+    config: Config = Depends(get_settings),
+) -> None:
+
+    delete_reviewer_by_id(reviewer_id, config)
+
+
+@router.post("/sys-reviewers/add", operation_id="add_reviewer")
+async def add_dataset_reviewer(
+    reviewer_id: IdentifiedResource,
+    protected_roles: ProtectedRole = Depends(
+        sys_admin_read_write_user_protected_role_dependency),
+    config: Config = Depends(get_settings),
+) -> None:
+    
+    add_reviewer(reviewer_id, config)
 
 
 @router.get("/sys-reviewers/list", operation_id="list_reviewers")

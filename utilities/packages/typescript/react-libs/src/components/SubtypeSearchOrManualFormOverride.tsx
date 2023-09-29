@@ -166,7 +166,7 @@ export const SearchSelectorComponent = (
         // Check if item has version
         const versionNum =
             option.version !== undefined ? ` (V${option.version})` : "";
-            
+
         return `${option.display_name}${versionNum} - ${option.id}`;
     };
 
@@ -294,8 +294,7 @@ export const SearchSelectorComponent = (
 const fallthroughDescription = "Use the search tool above to select an ID";
 const fallthroughTitle = "Select an item from the registry";
 
-const registryHelpLink =
-    DOCUMENTATION_BASE_URL + "/information-system/provenance/registry/";
+const registryHelpLink = DOCUMENTATION_BASE_URL + "/registry/";
 
 export interface SubtypeSearchAutoCompleteProps
     extends FieldProps<IdSelectionValue> {
@@ -333,7 +332,9 @@ export const SubtypeSearchAutoComplete = (
         <Grid container justifyContent="space-between" alignItems="center">
             <Grid item xs={7}>
                 <Stack spacing={1}>
-                    <Typography variant="h6">{title}</Typography>
+                    <Typography variant="h6">
+                        {title + (props.required ? "*" : "")}
+                    </Typography>
                     <Typography variant="subtitle1">{description}</Typography>
                 </Stack>
             </Grid>

@@ -6,18 +6,8 @@ from SharedInterfaces.AuthAPI import UserLinkUserLookupResponse, UserLinkReverse
 from KeycloakRestUtilities.Token import BearerAuth
 from dataclasses import dataclass
 from tests.helpers.general_helpers import display_failed_cleanups
+from tests.helpers.general_helpers import assert_200_ok, assert_x_ok
 
-
-def assert_x_ok(res: Response, desired_status_code: int = 200) -> None:
-    status_code = res.status_code
-    text = res.text
-    if status_code != desired_status_code:
-        raise Exception(
-            f"Failed request, expected {desired_status_code}, got {status_code}. Text: {text}")
-
-
-def assert_200_ok(res: Response) -> None:
-    assert_x_ok(res=res, desired_status_code=200)
 
 
 def lookup_user_user(token: str,  username: Optional[str] = None) -> UserLinkUserLookupResponse:
@@ -195,6 +185,9 @@ def perform_link_cleanup(link_usernames: List[str], token: str) -> None:
     
     if len(failed_cleanups) > 0:
         display_failed_cleanups(failed_cleanups)
+        # TODO add flag to bypass this false if it is a conservative cleanup?
         assert False, "Failed to clean up all links"
 
     return
+
+

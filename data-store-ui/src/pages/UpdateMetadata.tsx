@@ -1,7 +1,6 @@
 import {
     Alert,
     Button,
-    Container,
     Dialog,
     DialogActions,
     DialogContent,
@@ -14,12 +13,12 @@ import {
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
-import Form from "@rjsf/mui";
 import { UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import {
+    Form,
     useUserLinkEnforcer,
     userLinkEnforcerDocumentationLink,
     userLinkEnforcerProfileLink,

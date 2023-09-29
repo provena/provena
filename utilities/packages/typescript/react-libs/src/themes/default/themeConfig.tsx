@@ -18,9 +18,11 @@ export const defaultThemeConfig: CompleteThemeConfig = {
             <React.Fragment>
                 <a href="https://gbrrestoration.org/terms-and-conditions/">
                     Terms &amp; Conditions
+                    {/* // TODO, Link needs to be updated Terms &amp; Conditions */}
                 </a>
                 <a href="https://gbrrestoration.org/privacy-policy/">
                     Privacy Policy
+                    {/* // TODO, Link needs to be updated Privacy Policy */}
                 </a>
             </React.Fragment>
         ),
@@ -54,7 +56,7 @@ export const defaultThemeConfig: CompleteThemeConfig = {
                         decisions.
                     </li>
                 </ul>
-                Learn more about in the Provena Specification.
+                Learn more about in the Provena Documentation.
             </React.Fragment>
         ),
         lhCardActionsHtml: (
@@ -68,35 +70,21 @@ export const defaultThemeConfig: CompleteThemeConfig = {
                         } as React.CSSProperties
                     }
                     variant="outlined"
-                    href="https://static.rrap-is.com/assets/RRAP+M%26DS-02+Information+System+Specification+high+level+view.pdf"
-                    target="_blank"
-                >
-                    Provena Specification
-                </Button>
-                <Button
-                    style={
-                        {
-                            marginTop: defaultScssTheme.spacing(3),
-                            marginBottom: defaultScssTheme.spacing(4),
-                            marginRight: defaultScssTheme.spacing(1),
-                        } as React.CSSProperties
-                    }
-                    variant="outlined"
                     href={DOCUMENTATION_BASE_URL}
                     target="_blank"
                 >
-                    User docs
+                    Provena Documentation
                 </Button>
             </React.Fragment>
         ),
-        rhCardTitle: "Documentation and Support",
+        rhCardTitle: "Provena Support",
         rhCardBodyHtml: (
             <React.Fragment>
                 <p>
                     As an open-source system, Provena values transparency and
                     community support. Discover a wealth of information and
-                    assistance in our documentation and support resources,
-                    accessible via the Provena Resources.
+                    assistance in our support resources, accessible via the
+                    Provena Resources.
                 </p>
             </React.Fragment>
         ),

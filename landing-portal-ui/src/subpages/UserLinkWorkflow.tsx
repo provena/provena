@@ -10,9 +10,10 @@ import React, { useState } from "react";
 import {
     DOCUMENTATION_BASE_URL,
     REGISTRY_LINK,
+    SearchSelectorComponent,
+    useAccessCheck,
     useUserLinkServiceLookup,
 } from "react-libs";
-import { SearchSelectorComponent } from "react-libs";
 import { useValidateAndAssignLink } from "../hooks/useValidateAndAssignLink";
 
 interface MissingStatusAlertComponentProps {
@@ -29,8 +30,7 @@ const MissingStatusAlertComponent = (
     Basic failure status for the user link.
     */
     const docLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/getting-started-is/linking-identity.html";
+        DOCUMENTATION_BASE_URL + "/getting-started-is/linking-identity.html";
 
     const content: JSX.Element = (
         <Stack direction="column" spacing={2}>
@@ -395,6 +395,50 @@ export const UserLinkWorkflowComponent = (
     const shouldLink = link.shouldLink;
     const linked = !!link.data;
 
+    // Check read permissions for alerting new users
+    const readCheck = useAccessCheck({
+        componentName: "entity-registry",
+        desiredAccessLevel: "READ",
+    });
+
+    const accessErrorOccurred = readCheck.error;
+    const readAccessDeniedGlobal = !readCheck.fallbackGranted;
+
+    // Link for docs
+    const rolePermissionsDocLink =
+        DOCUMENTATION_BASE_URL +
+        "/getting-started-is/requesting-access-is.html";
+
+    // Error alert for access permission
+    const accessErrorAlert = (
+        <Alert variant="outlined" severity="error">
+            An error occurred while determining access permissions:{" "}
+            {readCheck.errorMessage ?? "No error provided"}
+        </Alert>
+    );
+
+    // Error alert for reading permission denied, keep title for consistent page structure
+    const readAccessDeniedAlert = (
+        <React.Fragment>
+            <Typography variant="h6">
+                Search for yourself in the Registry
+            </Typography>
+            <Alert variant="outlined" severity="warning">
+                <AlertTitle>
+                    Insufficient permissions to read from the Registry.
+                </AlertTitle>
+                To access and search for resources in the Registry, you must
+                have Registry Read permissions. We have detected that you do not
+                have sufficient permissions. For help in requesting additional
+                system access, please visit our{" "}
+                <a href={rolePermissionsDocLink} target="_blank">
+                    documentation
+                </a>
+                .
+            </Alert>
+        </React.Fragment>
+    );
+
     // Determine top status section
     const statusSection: JSX.Element = (
         <React.Fragment>
@@ -446,24 +490,36 @@ export const UserLinkWorkflowComponent = (
                     {showInstructions && (
                         <RegisterPersonInstructionsComponent />
                     )}
-                    {showSearch && (
-                        <SearchSelectPersonComponent
-                            personId={personId}
-                            setPersonId={setPersonId}
-                        />
-                    )}
-                    {showValidateAssign && (
-                        <ValidateAssignComponentComponent
-                            personId={personId}
-                            onClear={() => {
-                                setPersonId(undefined);
-                            }}
-                            onAssignment={() => {
-                                setTimeout(() => {
-                                    link.refetch();
-                                }, refreshDelayOnSuccess);
-                            }}
-                        />
+                    {/* Only show search tool and validate assign alert when user have read permission,
+                     and no error occurred when checking access */}
+                    {readCheck.loading ? (
+                        <CircularProgress />
+                    ) : accessErrorOccurred ? (
+                        accessErrorAlert
+                    ) : readAccessDeniedGlobal ? (
+                        readAccessDeniedAlert
+                    ) : (
+                        <React.Fragment>
+                            {showSearch && (
+                                <SearchSelectPersonComponent
+                                    personId={personId}
+                                    setPersonId={setPersonId}
+                                />
+                            )}
+                            {showValidateAssign && (
+                                <ValidateAssignComponentComponent
+                                    personId={personId}
+                                    onClear={() => {
+                                        setPersonId(undefined);
+                                    }}
+                                    onAssignment={() => {
+                                        setTimeout(() => {
+                                            link.refetch();
+                                        }, refreshDelayOnSuccess);
+                                    }}
+                                />
+                            )}
+                        </React.Fragment>
                     )}
                 </React.Fragment>
             )}

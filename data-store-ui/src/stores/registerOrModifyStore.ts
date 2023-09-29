@@ -1,22 +1,22 @@
 import * as H from "history";
+import lodashGet from "lodash.get";
+import lodashSet from "lodash.set";
 import { makeAutoObservable } from "mobx";
+import { LabelPathAndValue } from "pages/UpdateMetadata";
 import {
     DATA_STORE_API_ENDPOINTS,
     displayValidationError,
     requests,
 } from "react-libs";
+import { CollectionFormat } from "shared-interfaces/registryModels";
 import { HTTPValidationError } from "../shared-interfaces/APIResponses";
 import {
-    CollectionFormat,
     MintResponse,
     RegistryFetchResponse,
     Schema,
     Status,
     UpdateMetadataResponse,
 } from "../shared-interfaces/DataStoreAPI";
-import lodashSet from "lodash.set";
-import lodashGet from "lodash.get";
-import { LabelPathAndValue } from "pages/UpdateMetadata";
 
 // Clean up function from
 // https://stackoverflow.com/questions/23774231/how-do-i-remove-all-null-and-empty-string-values-from-an-object
@@ -375,17 +375,22 @@ export class RegisterOrModifyStore {
                 })
                 .catch((e) => {
                     var errorMessage;
-                    if (e.response) {
-                        if (e.response.status == 422) {
-                            let valError: HTTPValidationError = e.response.data;
+                    console.log("Validation error");
+                    console.log(e);
+                    const response = e.response ?? e;
+                    if (response) {
+                        if (response.status == 422) {
+                            console.log("422 found");
+                            let valError: HTTPValidationError = response.data;
                             errorMessage =
                                 "Validation error: " +
                                 displayValidationError(valError);
+                            console.log(errorMessage);
                         } else {
                             errorMessage = `Unexpected error when performing metadata validation, status code: ${
-                                e.response.status
+                                response.status
                             }, and reason: ${
-                                e.response.data.detail ?? "Unknown"
+                                response.data.detail ?? "Unknown"
                             }`;
                         }
                     } else if (e.message) {
