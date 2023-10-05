@@ -9,7 +9,7 @@ httpx
 mangum
 aws-secretsmanager-caching
 types-requests
-pydantic==1.*
+pydantic==1.10.12
 python-multipart
 aiocache
 cachetools

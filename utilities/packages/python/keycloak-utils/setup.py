@@ -5,7 +5,8 @@ setup(
     version='0.1.0',
     packages=find_packages(
         include=['KeycloakRestUtilities', 'KeycloakRestUtilities.*']),
-    install_requires=['requests', 'types-requests', 'pydantic==1.*', 'python-jose'],
+    install_requires=['requests', 'types-requests',
+                      'pydantic==1.10.12', 'python-jose'],
     package_data={
         'KeycloakRestUtilities': ['py.typed']
     }
