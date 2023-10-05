@@ -18,8 +18,12 @@ from helpers.util import py_to_dict  # type: ignore
 # Setup AWS secret cache (ensure you have AWS_DEFAULT_REGION if running locally)
 secret_cache = setup_secret_cache()
 
+def add_reviewer(reviewer_id: IdentifiedResource, config: Config) -> None:
 
-def get_all_reviewers(config: Config) -> Set[IdentifiedResource]:
+    # TODO - verify the reviewer id belongs to a person entity
+    # ok for now, admin only, similar level of precaution to manual 
+    # management in the console.
+
     try:
         ddb_resource = boto3.resource('dynamodb')
         reviewers_table = ddb_resource.Table(config.REVIEWERS_TABLE_NAME)
@@ -28,6 +32,53 @@ def get_all_reviewers(config: Config) -> Set[IdentifiedResource]:
             status_code=500,
             detail=(f"Failed to connect to the reviewers database. Error: {e}")
         )
+    
+    try:
+        reviewers_table.put_item(
+            Item={
+                'id': reviewer_id
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=(f"Failed to add reviewer {reviewer_id} to the reviewers database. Error: {e}")
+        )
+
+def connect_to_table(table_name: str) -> Any:
+    
+    reviewers_table: Any
+    try:
+        ddb_resource = boto3.resource('dynamodb')
+        reviewers_table = ddb_resource.Table(table_name)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=(f"Failed to connect to the reviewers database. Error: {e}")
+        )
+    return reviewers_table
+
+
+def delete_reviewer_by_id(reviewer_id: IdentifiedResource, config: Config) -> None:
+    
+    reviewers_table = connect_to_table(config.REVIEWERS_TABLE_NAME)
+
+    try:
+        reviewers_table.delete_item(
+            Key={
+                'id': reviewer_id
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=(f"Failed to delete reviewer {reviewer_id} from the reviewers database. Error: {e}")
+        )
+
+
+def get_all_reviewers(config: Config) -> Set[IdentifiedResource]:
+    
+    reviewers_table = connect_to_table(config.REVIEWERS_TABLE_NAME)
 
     try:
         items = list_all_items_in_db(table=reviewers_table)
@@ -214,7 +265,7 @@ async def perform_approval_request(
         ):
             raise HTTPException(
                 status_code=400,
-                detail=(f"Desired revier '{username}' does not have read permissions into dataset {dataset_id}. Cannot request for dataset to be reviewed for release by a reviewer who cannot read it. Please provide {username} with dataset read and metadata read access to dataset for review.")
+                detail=(f"Desired reviewer '{username}' does not have read permissions into dataset {dataset_id}. Cannot request for dataset to be reviewed for release by a reviewer who cannot read it. Please provide {username} with dataset read and metadata read access to dataset for review.")
             )
 
     # done all neccessary checks

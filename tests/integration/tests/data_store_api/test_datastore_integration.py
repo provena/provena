@@ -15,6 +15,7 @@ from resources.example_models import *
 from tests.helpers.fixtures import *
 from tests.helpers.async_job_helpers import *
 from tests.helpers.prov_api_helpers import *
+from tests.helpers.release_helpers import *
 
 
 # system read and write token
@@ -497,26 +498,11 @@ def test_mint_and_update_metadata(linked_person_fixture: ItemPerson, organisatio
         )
 
 
-def test_basic_mint_and_list(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
+def test_basic_mint_and_list(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation, dataset_io_fixture: Tuple[str,str]) -> None:
     # pull out prebuilt references from the fixture
     person = linked_person_fixture
     organisation = organisation_fixture
-
-    # use these in the dataset
-    # cleaned up fully
-    mint_response = mint_basic_dataset_successfully(
-        token=Tokens.user1(),
-        author_organisation_id=organisation.id,
-        publisher_organisation_id=organisation.id
-    )
-
-    assert mint_response.handle
-    cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
-
-    cleanup_create_activity_from_dataset_mint(
-        mint_response=mint_response,
-        get_token=Tokens.user1
-    )
+    id1, id2 = dataset_io_fixture
 
     response = requests.post(
         config.DATA_STORE_API_ENDPOINT + "/registry/items/list",
@@ -544,6 +530,8 @@ def test_non_reposited_download_and_upload(linked_person_fixture: ItemPerson, or
         description="Fake Description",
         uri="https://fake.url.com"
     )
+    collection_format.associations.data_custodian_id = person.id
+
 
     # use these in the dataset
     # cleaned up fully
@@ -597,7 +585,9 @@ def test_non_reposited_download_and_upload(linked_person_fixture: ItemPerson, or
     assert resp.status_code == 400, f"Status code is not 400, response message: {resp.text}"
 
 
-def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
+    
+    
+def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation, dataset_io_fixture: Tuple[str, str]) -> None:
     """
     Tests for regression against RRAPIS-1480 
 
@@ -620,35 +610,17 @@ def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisatio
     revert.
 
     """
-    # Mint a dataset - anything will do
-    organisation = organisation_fixture
-    dataset_domain_info = cast(DatasetDomainInfo, get_item_subtype_domain_info_example(
-        item_subtype=ItemSubType.DATASET))
-
-    # use these in the dataset
-    mint_response = mint_basic_dataset_successfully(
-        token=Tokens.user1(),
-        author_organisation_id=organisation.id,
-        publisher_organisation_id=organisation.id,
-        model=dataset_domain_info
-    )
-
-    assert mint_response.handle, "Mint response does not contain a handle"
-    cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
-
-    # Await cleanup
-    cleanup_create_activity_from_dataset_mint(
-        mint_response=mint_response,
-        get_token=Tokens.user1
-    )
+    
+    dataset_id=dataset_io_fixture[0]
 
     # Now make a revision
     version_response = ds_parsed_version_item(
-        id=mint_response.handle,
+        id=dataset_id,
         token=Tokens.user1(),
         reason="Testing access regression for versioned item"
     )
     new_ds_id = version_response.new_version_id
+    cleanup_items.append((ItemSubType.DATASET, new_ds_id))
 
     # check the current entry has expected props
     # - check new item properties
@@ -664,7 +636,7 @@ def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisatio
 
     # check the s3 path is at the new location
     sanitized_new_id = sanitize(new_ds_id)
-    sanitized_old_id = sanitize(mint_response.handle)
+    sanitized_old_id = sanitize(dataset_id)
 
     assert sanitized_new_id in fetched_revised_dataset.s3.path
     assert sanitized_old_id not in fetched_revised_dataset.s3.path
@@ -692,7 +664,7 @@ def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisatio
     # fetch again
     original_dataset = cast(ItemDataset, cast(DatasetFetchResponse, fetch_item_successfully_parse(
         item_subtype=ItemSubType.DATASET,
-        id=mint_response.handle,
+        id=dataset_id,
         token=Tokens.user1(),
         model=DatasetFetchResponse
     )).item)
@@ -718,3 +690,224 @@ def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisatio
     version_activity_id = parsed_result.version_activity_id
     cleanup_items.append(
         (ItemSubType.VERSION, version_activity_id))
+
+
+def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_release: Tuple[PersonToken, PersonToken, PersonToken], dataset_io_fixture: Tuple[str, str]) -> None: # , dataset_seed_fixture: SeededItem 
+
+    # 2 datasets created by user1
+    dataset_id_1, dataset_id_2 = dataset_io_fixture 
+    # user1 is first, making them the owner
+    owner, reviewer, other_person = three_person_tokens_fixture_unlinked_for_release
+
+    # generate write creds successfuly as not pending/released
+    generate_write_creds_successfully(dataset_id=dataset_id_1, token=owner.token())
+
+    add_id_to_reviewers_table_and_check(token=Tokens.admin(), id=reviewer.id, config=config)
+    
+    # acceptable release request with correct approver and not pending/release dataset
+    # used to test ownership and user checks
+    release_request = ReleaseApprovalRequest(
+        dataset_id=dataset_id_1,
+        approver_id=reviewer.id,
+        notes="Integration Test"
+    )
+
+    # hit /approval-request without being linked to a person entity and ensure 400
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=owner.token(),
+        config=config,
+        desired_status_code=400,
+    )
+
+    # now link owner and other person (but not the approver yet as still to test this)
+    assign_user_user_assert_success(owner.token(), owner.id)
+    assign_user_user_assert_success(other_person.token(), other_person.id)
+
+    # hit /approval-request with a user who is not admin of dataset (but is linked) and ensure 401
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=other_person.token(),
+        config=config,
+        desired_status_code=401,
+    )
+
+
+    # hit /approval-request using a reviewer who is not a dataset reviewer and ensure 400
+    release_request_wrong_reviewer = ReleaseApprovalRequest(
+        dataset_id=dataset_id_1,
+        approver_id=other_person.id,
+        notes="Integration Test using wrong reviewer"
+    )
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request_wrong_reviewer,
+        token=owner.token(),
+        config=config,
+        desired_status_code=400,
+    )
+
+
+    # Success Case. ensure item is updated currently by re fetching 
+    # high level fields (release, status, approver and timestamp) and also in the release history fields. (ReleaseHistoryEntry in release_history)
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=owner.token(),
+        config=config,
+        desired_status_code=200,
+    )
+    
+    fetch_and_assert_successful_review_request(release_request=release_request, token=owner.token(), expected_released_status=ReleasedStatus.PENDING)
+
+
+    #hit /approval-request for a dataset that is already pending (now its been requested) and ensure 400
+    # (same request again as previous)
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=owner.token(),
+        config=config,
+        desired_status_code=400,
+    )
+
+    # ensure failure to get creds since dataset is pending
+    generate_write_creds_assert_status_code(dataset_id=dataset_id_1, token=owner.token(), desired_status_code=403)
+
+    
+    # hit /action-approval-request with user who is not linked to a person
+    action_request_deny = ActionApprovalRequest(
+        dataset_id=dataset_id_1,
+        approve=False,
+        notes="Integration Test - Rejection!!"
+    )
+
+    action_review_request_desired_status_code(
+        action_request=action_request_deny,
+        token=reviewer.token(),
+        config=config,
+        desired_status_code=400
+        )
+    
+    # Now can link to person to check other cases
+    assign_user_user_assert_success(reviewer.token(), reviewer.id)
+    # hit /action-approval-request as a non dataset reviewer
+    remove_id_from_reviewers_table_and_check(token=Tokens.admin(), id=reviewer.id, config=config)
+    action_review_request_desired_status_code(
+        action_request=action_request_deny,
+        token=other_person.token(),
+        config=config,
+        desired_status_code=401
+        )
+    add_id_to_reviewers_table_and_check(token=Tokens.admin(), id=reviewer.id, config=config)
+
+    # hit /action-approval-request and ensure 401 for a user who is a reviewer, but not the reviewer for this dataset
+    add_id_to_reviewers_table_and_check(token=Tokens.admin(), id=other_person.id, config=config)
+    action_review_request_desired_status_code(
+        action_request=action_request_deny,
+        token=other_person.token(),
+        config=config,
+        desired_status_code=401
+    )
+
+
+    ## hit /action-approval-request and REJECT, check success update of item
+    action_review_request_desired_status_code(
+        action_request=action_request_deny,
+        token=reviewer.token(),
+        config=config,
+        desired_status_code=200
+        )
+    
+    fetch_and_assert_successful_action_review_request(action_request=action_request_deny, token=owner.token(), expected_released_status=ReleasedStatus.NOT_RELEASED)
+    
+    # ensure can make changes to rejected (Release.Status = NOT_RELEASED) dataset
+    generate_write_creds_successfully(dataset_id=dataset_id_1, token=owner.token())
+
+    # hit /action-approval-request for a dataset that is not pending review (for the one that was just denied)
+    action_review_request_desired_status_code(
+        action_request=action_request_deny,
+        token=reviewer.token(),
+        config=config,
+        desired_status_code=400
+    )
+
+
+    # hit /action-approval-request for a dataset that is not pending review (a new dataset that hasnt been requested at all)
+    action_request_wrong_dataset = ActionApprovalRequest.parse_obj(action_request_deny.dict())
+    action_request_wrong_dataset.dataset_id = dataset_id_2
+    action_review_request_desired_status_code(
+        action_request=action_request_wrong_dataset,
+        token=reviewer.token(),
+        config=config,
+        desired_status_code=400
+    )
+    
+    # re request review successfully, and accept
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=owner.token(),
+        config=config,
+        desired_status_code=200,
+    )
+
+    fetch_and_assert_successful_review_request(release_request=release_request, token=owner.token(), expected_released_status=ReleasedStatus.PENDING)
+
+    action_request_approve = ActionApprovalRequest(
+        dataset_id=dataset_id_1,
+        approve=True,
+        notes="Integration Test - Rejection!!"
+    )
+
+    # hit /action-approval-request and ensure correctness. (check high level fields and release history fields)   
+    action_review_request_desired_status_code(
+        action_request=action_request_approve,
+        token=reviewer.token(),
+        config=config,
+        desired_status_code=200
+    )
+
+    fetch_and_assert_successful_action_review_request(action_request=action_request_approve, token=owner.token(), expected_released_status=ReleasedStatus.RELEASED)
+    
+    # hit /approval-request for a dataset that is already released and ensure 400
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=owner.token(),
+        config=config,
+        desired_status_code=400,
+    )
+
+    # ensure cannot generate write creds now it is finally released
+    generate_write_creds_assert_status_code(dataset_id=dataset_id_1, token=owner.token(), desired_status_code=403)
+
+
+    # hit /approval-request for a dataset that the reviewer does not have read access and ensure 400 
+    # remove general registry read and write from dataset
+    original_auth_config = get_auth_config(
+        id=dataset_id_2, item_subtype=ItemSubType.DATASET, token=owner.token())
+    restrictive_auth_config = AccessSettings.parse_obj(original_auth_config.dict())
+    restrictive_auth_config.general = []
+    put_auth_config(id=dataset_id_2, auth_payload=py_to_dict(restrictive_auth_config),
+                    item_subtype=ItemSubType.DATASET, token=owner.token())
+
+    release_request = ReleaseApprovalRequest(
+        dataset_id=dataset_id_2,
+        approver_id=reviewer.id,
+        notes="Integration Test"
+    )
+    # ensure doesnt work because reviewr cant read the dataset!
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=owner.token(),
+        config=config,
+        desired_status_code=400,
+    )
+
+    # allow general user to read
+    put_auth_config(id=dataset_id_2, auth_payload=py_to_dict(original_auth_config),
+                    item_subtype=ItemSubType.DATASET, token=owner.token())
+
+    # ensure request works now.
+    request_dataset_review_desired_status_code(
+        release_approval_request=release_request,
+        token=owner.token(),
+        config=config,
+        desired_status_code=200,
+    )

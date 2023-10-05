@@ -6,31 +6,38 @@ from helpers.util import py_to_dict
 
 # map from (name, optional ror) -> ID for prod datasets
 PROD_INFO_ORG_LOOKUP: Dict[Tuple[str, Optional[str]], str] = {
-    # CSIRO O&A
-    ("CSIRO Oceans and Atmosphere", "https://ror.org/026nh4520"): "102.100.100/485873",
-    # CSIRO
-    ("Commonwealth Scientific and Industrial Research Organisation", "https://ror.org/03qn8fb07"): "102.100.100/474557",
-    # GBRMPA
-    ("Great Barrier Reef Marine Park Authority", "https://ror.org/00pfevw30"): "102.100.100/485874",
-    # UQ
-    ("University of Queensland", "https://ror.org/00rqy9422"): "102.100.100/483651",
-    # AIMS
-    ("Australian Institute of Marine Science", "https://ror.org/03x57gn41"): "102.100.100/480344"
+    # ADD LINKS AS REQUIRED - (Org name, org ror) -> ID to link to
 }
+
+STAGE_INFO_ORG_LOOKUP: Dict[Tuple[str, Optional[str]], str] = {
+    # ADD LINKS AS REQUIRED - (Org name, org ror) -> ID to link to
+}
+
+STAGE_FALLTHROUGH = "TODO - add a fallthrough ID if required"
 
 
 def determine_new_org_id_from_old_info(name: str, ror: Optional[str], stage: str) -> str:
-    if (stage != "PROD"):
+    if (stage == "PROD"):
+        org_id = PROD_INFO_ORG_LOOKUP.get((name, ror))
+
+        if org_id is None:
+            raise Exception(
+                f"Cannot find an organisation from the PROD org lookup for name: {name}, ror: {ror}.")
+
+        return org_id
+
+    if (stage == "STAGE"):
+        org_id = STAGE_INFO_ORG_LOOKUP.get((name, ror))
+
+        if org_id is None:
+            print(f"Using stage fallthrough for organisation link: {name = } {ror = } fallthrough = {STAGE_FALLTHROUGH}.")
+            return STAGE_FALLTHROUGH
+
+        return org_id
+    
+    else:
         raise Exception(
-            "Cannot proceed with this migration for non PROD stages. No mapping defined for other stages.")
-
-    org_id = PROD_INFO_ORG_LOOKUP.get((name, ror))
-
-    if org_id is None:
-        raise Exception(
-            f"Cannot find an organisation from the PROD org lookup for name: {name}, ror: {ror}.")
-
-    return org_id
+            "Cannot proceed with this migration for non PROD/STAGE stages. No mapping defined for other stages.")
 
 
 def change_dataset_references(stage: str, item: Dict[str, Any]) -> Dict[str, Any]:
@@ -121,6 +128,8 @@ def f1176_migrator_function(stage: str, old_item: Dict[str, Any], parse: bool = 
         # no change required
         print(
             f"Skipping seed item: type: {record_base.item_subtype}, id: {record_base.id}.")
+        # now update the bundled item with the updated item
+        old_item['item_payload'] = item
         return old_item
 
     subtype = record_base.item_subtype

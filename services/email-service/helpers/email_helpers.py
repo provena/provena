@@ -2,12 +2,14 @@ import smtplib
 import ssl
 import re
 from config import Config
-
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 def generate_email_text(subject: str, body: str) -> str:
-    final_subject = f"Subject: {subject}"
-    final_body = body
-    return final_subject + "\n\n" + final_body
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain', 'utf-16'))
+    return msg.as_string()
 
 
 # From https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
@@ -40,11 +42,8 @@ def validate_email(email: str) -> bool:
 
 
 def send_email(to_address: str, email_subject: str, email_body: str, config: Config) -> None:
-    # Generate email text
-    email_text = generate_email_text(
-        subject=email_subject,
-        body=email_body
-    )
+    # Generate email msg text containg body and subject info.
+    email_text = generate_email_text(email_subject, email_body)
 
     # Setup connection
     context = ssl.create_default_context()

@@ -20,6 +20,8 @@ class Config(BaseSettings):
     SYSTEM_WRITE_PASSWORD: str
     SYSTEM_WRITE_USERNAME_2: str
     SYSTEM_WRITE_PASSWORD_2: str
+    SYSTEM_WRITE_USERNAME_3: str
+    SYSTEM_WRITE_PASSWORD_3: str
     ADMIN_USERNAME: str
     ADMIN_PASSWORD: str
     KEYCLOAK_ENDPOINT: str
@@ -77,6 +79,13 @@ def refresh_user2() -> str:
         password=config.SYSTEM_WRITE_PASSWORD_2
     )
 
+def refresh_user3() -> str:
+    print("Refreshing user3 token")
+    return fetch_token(
+        username=config.SYSTEM_WRITE_USERNAME_3,
+        password=config.SYSTEM_WRITE_PASSWORD_3
+    )
+
 
 def refresh_admin() -> str:
     print("Refreshing admin token")
@@ -108,6 +117,7 @@ def check_and_update(token: Optional[str], refresh_method: TokenGenerator, set_m
 class CurrentTokens:
     user1: Optional[str] = refresh_user1()
     user2: Optional[str] = refresh_user2()
+    user3: Optional[str] = refresh_user3()
     admin: Optional[str] = refresh_admin()
 
     def get_refresh_user1(self) -> str:
@@ -125,6 +135,15 @@ class CurrentTokens:
         return check_and_update(
             token=self.user2,
             refresh_method=refresh_user2,
+            set_method=update
+        )
+    
+    def get_refresh_user3(self) -> str:
+        def update(t: str) -> None:
+            self.user3 = t
+        return check_and_update(
+            token=self.user3,
+            refresh_method=refresh_user3,
             set_method=update
         )
 
@@ -145,10 +164,12 @@ class Tokens:
     # system write and read access users
     user1: TokenGenerator = token_state.get_refresh_user1
     user2: TokenGenerator = token_state.get_refresh_user2
+    user3: TokenGenerator = token_state.get_refresh_user3
 
     # static usernames
     user1_username: str = config.SYSTEM_WRITE_USERNAME
     user2_username: str = config.SYSTEM_WRITE_USERNAME_2
+    user3_username: str = config.SYSTEM_WRITE_USERNAME_3
     admin_username: str = config.ADMIN_USERNAME
 
     # system admin access for clean up + admin only endpoints (such as auth/group management)

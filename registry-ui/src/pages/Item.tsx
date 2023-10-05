@@ -1,4 +1,5 @@
-import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LaunchIcon from "@mui/icons-material/Launch";
 import LockIcon from "@mui/icons-material/Lock";
 import {
@@ -145,8 +146,7 @@ type ItemParams = {
 };
 
 const resourceLockLink =
-    DOCUMENTATION_BASE_URL +
-    "/information-system/provenance/registry/resource_lock.html";
+    DOCUMENTATION_BASE_URL + "/registry/resource_lock.html";
 
 export const lockedResourceContent = (
     // HTML example is from MUI documentation
@@ -193,10 +193,9 @@ const RecordView = observer((props: {}) => {
     // links
     const requestingAccessLink =
         DOCUMENTATION_BASE_URL +
-        "/information-system/getting-started-is/requesting-access-is.html";
+        "/getting-started-is/requesting-access-is.html";
     const registryAccessLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/provenance/registry/access-control.html";
+        DOCUMENTATION_BASE_URL + "/registry/access-control.html";
     // Pull out the ID component of path (post /item)
     const params = useParams<ItemParams>();
 

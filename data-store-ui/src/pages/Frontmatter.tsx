@@ -90,13 +90,7 @@ const Frontmatter = observer(() => {
                     <Grid item xs={3} pl={2}>
                         <Typography variant="h6">Find out more</Typography>
                         <Typography variant="body1">
-                            <a
-                                target="doc"
-                                href={
-                                    DOCUMENTATION_BASE_URL +
-                                    "/#what-is-mds-and-its-role"
-                                }
-                            >
+                            <a target="doc" href={DOCUMENTATION_BASE_URL}>
                                 Learn more about Provena
                             </a>
                         </Typography>
@@ -105,7 +99,7 @@ const Frontmatter = observer(() => {
                                 target="doc"
                                 href={
                                     DOCUMENTATION_BASE_URL +
-                                    "/information-system/data-store/registering-a-dataset.html"
+                                    "/data-store/registering-a-dataset.html"
                                 }
                             >
                                 How do I register data?

@@ -36,9 +36,21 @@ export type ImportMode =
   | "SYNC_ADD_OR_OVERWRITE"
   | "SYNC_DELETION_ALLOWED";
 
+/**
+ * Please specify whether data is going to be stored in the Data Store, or referenced from an existing, externally hosted, source.
+ */
 export interface AccessInfo {
-  reposited: boolean;
+  /**
+   * Is the data going to be stored in the Data Store?
+   */
+  reposited?: boolean;
+  /**
+   * Provide the best URI of the externally hosted data.
+   */
   uri?: string;
+  /**
+   * Provide information about how to access the externally hosted data, or other relevant notes.
+   */
   description?: string;
 }
 export interface AccessSettings {
@@ -120,51 +132,163 @@ export interface BundledItem {
     [k: string]: unknown;
   };
 }
-export interface CollectionFormat {
-  associations: CollectionFormatAssociations;
-  dataset_info: CollectionFormatDatasetInfo;
-  approvals: CollectionFormatApprovals;
+/**
+ * This form collects metadata about the dataset you are registering as well as the registration itself. Please ensure the fields below are completed accurately.
+ */
+export interface DatasetMetadata {
+  associations: DatasetAssociations;
+  approvals: DatasetApprovals;
+  dataset_info: DatasetInformation;
 }
-export interface CollectionFormatAssociations {
+/**
+ * Please provide information about the people and organisations related to this dataset.
+ */
+export interface DatasetAssociations {
+  /**
+   * Please select the organisation on behalf of which you are registering this data.
+   */
   organisation_id: string;
+  /**
+   * Please select the Registered Person who is the dataset custodian.
+   */
+  data_custodian_id?: string;
+  /**
+   * Please provide a point of contact for enquiries about this data e.g. email address. Please ensure you have sought consent to include these details in the record.
+   */
+  point_of_contact?: string;
 }
-export interface CollectionFormatDatasetInfo {
-  name: string;
-  description: string;
-  access_info: AccessInfo;
-  publisher_id: string;
-  created_date: string;
-  published_date: string;
-  license: string;
-  preferred_citation?: string;
-  keywords?: string[];
-  version?: string;
-}
-export interface CollectionFormatApprovals {
-  ethics_registration: DatasetEthicsRegistrationCheck;
-  ethics_access: DatasetEthicsAccessCheck;
-  indigenous_knowledge: IndigenousKnowledgeCheck;
+/**
+ * Please ensure that the following approvals are considered. Your dataset may not be fit for inclusion in the Data Store if it does not meet the following requirements.
+ */
+export interface DatasetApprovals {
+  ethics_registration: DatasetRegistrationEthicsAndPrivacy;
+  ethics_access: DatasetAccessEthicsAndPrivacy;
+  indigenous_knowledge: IndigenousKnowledgeAndConsent;
   export_controls: ExportControls;
 }
-export interface DatasetEthicsRegistrationCheck {
+/**
+ * Does this dataset include any human data or require ethics/privacy approval for its registration? If so, have you included any required ethics approvals, consent from the participants and/or appropriate permissions to register this dataset in this information system?
+ */
+export interface DatasetRegistrationEthicsAndPrivacy {
   relevant?: boolean;
   obtained?: boolean;
 }
-export interface DatasetEthicsAccessCheck {
+/**
+ * Does this dataset include any human data or require ethics/privacy approval for enabling its access by users of the information system? If so, have you included any required consent from the participants and/or appropriate permissions to facilitate access to this dataset in this information system?
+ */
+export interface DatasetAccessEthicsAndPrivacy {
   relevant?: boolean;
   obtained?: boolean;
 }
-export interface IndigenousKnowledgeCheck {
+/**
+ * Does this dataset contain Indigenous Knowledge? If so, do you have consent from the relevant Aboriginal and Torres Strait Islander communities for its use and access via this data store?
+ */
+export interface IndigenousKnowledgeAndConsent {
   relevant?: boolean;
   obtained?: boolean;
 }
+/**
+ * Is this dataset subject to any export controls permits? If so, has this dataset cleared any required due diligence checks and have you obtained any required permits?
+ */
 export interface ExportControls {
   relevant?: boolean;
   obtained?: boolean;
 }
-export interface CollectionFormatOrganisation {
+/**
+ * Please provide information about this dataset, including the name, description, creation date and publisher information.
+ */
+export interface DatasetInformation {
+  /**
+   * Please provide a readable name for the dataset.
+   */
   name: string;
-  ror?: string;
+  /**
+   * Please provide a more detailed description of the dataset. This should include the nature of the data, the intended usage, and any other relevant information.
+   */
+  description: string;
+  access_info: AccessInfo;
+  /**
+   * Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below.
+   */
+  publisher_id: string;
+  /**
+   * The date on which this version of the dataset was produced or generated.
+   */
+  created_date: string;
+  /**
+   * The date on which this version of the dataset was first published. If the data has never been published before - please use today's date.
+   */
+  published_date: string;
+  /**
+   * Please select a standard license for usage, by default it will be 'Copyright'.
+   */
+  license: string;
+  /**
+   * A brief description of the reason a data asset was created. Should be a good guide to the potential usefulness of a data asset to other users.
+   */
+  purpose?: string;
+  /**
+   * Specify the party owning or managing rights over the resource. Please ensure you have sought consent to include these details in the record.
+   */
+  rights_holder?: string;
+  /**
+   * A statement that provides information on any caveats or restrictions on access or on the use of the data asset, including legal, security, privacy, commercial or other limitations.
+   */
+  usage_limitations?: string;
+  /**
+   * If you would like to specify how this dataset should be cited, please use the checkbox below to indicate this preference, and enter your preferred citation in the text box.
+   */
+  preferred_citation?: string;
+  spatial_info?: DatasetSpatialInformation;
+  temporal_info?: DatasetTemporalInformation;
+  /**
+   * What file formats are present in this dataset? E.g. "pdf", "csv" etc.
+   */
+  formats?: string[];
+  /**
+   * Provide a list of keywords which describe your dataset [Optional].
+   */
+  keywords?: string[];
+}
+/**
+ * If your dataset includes spatial data, you can indicate the coverage, resolution and extent of this spatial data.
+ */
+export interface DatasetSpatialInformation {
+  /**
+   * The geographic area applicable to the data asset. Please specify spatial coverage using the EWKT format.
+   */
+  coverage?: string;
+  /**
+   * The spatial resolution applicable to the data asset. Please use the Decimal Degrees standard.
+   */
+  resolution?: string;
+  /**
+   * The range of spatial coordinates applicable to the data asset. Please provide a bounding box extent using the EWKT format.
+   */
+  extent?: string;
+}
+/**
+ * If your dataset provides data over a specified time period, you can include the duration and resolution of this temporal coverage.
+ */
+export interface DatasetTemporalInformation {
+  duration?: TemporalDuration;
+  /**
+   * The temporal resolution (i.e. time step) of the data. Please use the [ISO8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations) e.g. "P1Y2M10DT2H30M".
+   */
+  resolution?: string;
+}
+/**
+ * You can specify the duration of temporal coverage by including both start and end date.
+ */
+export interface TemporalDuration {
+  /**
+   * Please provide the start date of the dataset's temporal coverage.
+   */
+  begin_date: string;
+  /**
+   * Please provide the end date of the dataset's temporal coverage.
+   */
+  end_date: string;
 }
 export interface CreateDomainInfo {
   display_name: string;
@@ -236,7 +360,7 @@ export interface DatasetCreateResponse {
 }
 export interface ItemDataset {
   display_name: string;
-  collection_format: CollectionFormat;
+  collection_format: DatasetMetadata;
   s3: S3Location;
   release_history?: ReleaseHistoryEntry[];
   release_status: ReleasedStatus;
@@ -274,7 +398,7 @@ export interface HistoryEntryDatasetDomainInfo {
 }
 export interface DatasetDomainInfo {
   display_name: string;
-  collection_format: CollectionFormat;
+  collection_format: DatasetMetadata;
   s3: S3Location;
   release_history?: ReleaseHistoryEntry[];
   release_status: ReleasedStatus;

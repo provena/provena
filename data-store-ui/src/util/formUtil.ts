@@ -1,4 +1,7 @@
-import { AutoCompleteOrganisationLookup } from "react-libs";
+import {
+    AutoCompleteOrganisationLookup,
+    AutoCompletePersonLookup,
+} from "react-libs";
 import AccessInfoOverride from "../components/AccessInfoOverride";
 import AutoCompleteLicense from "../components/AutoCompleteLicense";
 import {
@@ -10,9 +13,15 @@ import {
 import { PreferredCitationOverride } from "../components/PreferredCitationOverride";
 
 export const uiSchema = {
+    // This is used in the optional field override to disable the optional
+    // switch at top level
+    disableOptional: true,
     associations: {
         organisation_id: {
             "ui:field": "searchOrganisation",
+        },
+        data_custodian_id: {
+            "ui:field": "searchPerson",
         },
     },
     approvals: {
@@ -49,6 +58,7 @@ export const uiSchema = {
 };
 export const fields: { [name: string]: any } = {
     searchOrganisation: AutoCompleteOrganisationLookup,
+    searchPerson: AutoCompletePersonLookup,
     ethicsAccess: DatasetEthicsAccessOverride,
     ethicsRegistration: DatasetEthicsRegistrationOverride,
     autoCompleteLicense: AutoCompleteLicense,

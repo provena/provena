@@ -74,7 +74,7 @@ const Frontmatter = observer(() => {
                                 target="doc"
                                 href={
                                     DOCUMENTATION_BASE_URL +
-                                    "/information-system/provenance/registry/overview.html"
+                                    "/registry/overview.html"
                                 }
                             >
                                 About the Entity Registry
@@ -85,7 +85,7 @@ const Frontmatter = observer(() => {
                                 target="doc"
                                 href={
                                     DOCUMENTATION_BASE_URL +
-                                    "/information-system/provenance/registry/registering_and_updating.html"
+                                    "/registry/registering_and_updating.html"
                                 }
                             >
                                 How do I register entities?

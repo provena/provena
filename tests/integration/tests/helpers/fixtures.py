@@ -9,9 +9,15 @@ import pytest  # type: ignore
 from typing import Generator, cast
 from tests.helpers.auth_helpers import perform_group_cleanup
 from tests.helpers.async_job_helpers import *
+from tests.helpers.release_helpers import perform_reviewers_table_cleanup
 from tests.helpers.shared_lists import *
 
 
+# make a person class for housing their id and token
+class PersonToken():
+    def __init__(self, id: str, token: Callable[[], str]) -> None:
+        self.id = id
+        self.token = token
 
 @pytest.fixture(scope='session', autouse=False)
 def person_fixture() -> Generator[ItemPerson, None, None]:
@@ -55,7 +61,7 @@ def manual_link_test_cleanup(person_fixture: ItemPerson) -> Generator[None, None
     ), person_id=person.id, username=Tokens.admin_username, force=True)
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='session', autouse=False)
 def linked_person_fixture(person_fixture: ItemPerson) -> Generator[ItemPerson, None, None]:
     person = person_fixture
 
@@ -120,6 +126,70 @@ def two_person_fixture() -> Generator[Tuple[str, str], None, None]:
         (person_2.item_subtype, person_2.id),
     ], token=Tokens.admin())
 
+@pytest.fixture(scope='function', autouse=False)
+def three_person_tokens_fixture_unlinked_for_release() -> Generator[Tuple[PersonToken, PersonToken, PersonToken], None, None]:
+    # create person 1, 2, and 3  (user 1, 2, and 3) (with conservative link clearing)
+    
+    # owner of datasets to be created
+    owner = create_item_successfully(
+        item_subtype=ItemSubType.PERSON,
+        token=Tokens.user1()
+    )
+    owner_id = owner.id
+
+    # reviewer1
+    reviewer = create_item_successfully(
+        item_subtype=ItemSubType.PERSON,
+        token=Tokens.user2()
+    )
+    reviewer_id = reviewer.id
+
+    # reviewer2
+    other_person = create_item_successfully(
+        item_subtype=ItemSubType.PERSON,
+        token=Tokens.user3()
+    )
+    other_person_id = other_person.id
+
+    # ensure they arent currently link so we can test correct 400 for no linked users
+    clear_user_admin(token=Tokens.admin(), username=Tokens.user1_username)
+    clear_user_admin(token=Tokens.admin(), username=Tokens.user2_username)
+    clear_user_admin(token=Tokens.admin(), username=Tokens.user3_username)
+
+
+    # provide to any test that uses them
+    yield (
+        PersonToken(owner_id, Tokens.user1), 
+        PersonToken(reviewer_id, Tokens.user2), 
+        PersonToken(other_person_id, Tokens.user3), 
+        )
+
+    # clean up
+    perform_entity_cleanup([
+        (owner.item_subtype, owner.id),
+        (reviewer.item_subtype, reviewer.id),
+        (other_person.item_subtype, other_person.id),
+    ], token=Tokens.admin())
+
+    # clean up links (conservative cleanup incase tests fail mid way)
+    perform_link_cleanup([
+        Tokens.user1_username,
+        Tokens.user2_username,
+        Tokens.user3_username,
+        Tokens.admin_username,
+    ], token=Tokens.admin())
+
+    
+    perform_reviewers_table_cleanup([
+        # owner but lets be conservative. None should be left in the
+        owner.id,
+        reviewer.id,
+        other_person.id,
+    ], 
+    token=Tokens.admin(),
+    config=config,
+    )
+    
 
 @pytest.fixture(scope='function', autouse=True)
 def link_cleanup_fixture() -> Generator:
@@ -152,6 +222,7 @@ def entity_cleanup_fixture() -> Generator:
 
 @pytest.fixture(scope='session', autouse=False)
 def dataset_io_fixture(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> Generator[Tuple[str, str], None, None]:
+    # Create two datasets where user1 is the owner. test_release_process assumes user1 is owner.
     # pull out prebuilt references from the fixture
     person = linked_person_fixture
     organisation = organisation_fixture

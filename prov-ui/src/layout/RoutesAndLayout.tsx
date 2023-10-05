@@ -1,4 +1,4 @@
-import { Menu } from "@mui/icons-material";
+import Menu from "@mui/icons-material/Menu";
 import {
     AppBar,
     Button,

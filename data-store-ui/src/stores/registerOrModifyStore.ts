@@ -1,22 +1,22 @@
 import * as H from "history";
+import lodashGet from "lodash.get";
+import lodashSet from "lodash.set";
 import { makeAutoObservable } from "mobx";
+import { LabelPathAndValue } from "pages/UpdateMetadata";
 import {
     DATA_STORE_API_ENDPOINTS,
     displayValidationError,
     requests,
 } from "react-libs";
-import { HTTPValidationError } from "../shared-interfaces/APIResponses";
 import {
-    CollectionFormat,
     MintResponse,
     RegistryFetchResponse,
     Schema,
     Status,
     UpdateMetadataResponse,
-} from "../shared-interfaces/DataStoreAPI";
-import lodashSet from "lodash.set";
-import lodashGet from "lodash.get";
-import { LabelPathAndValue } from "pages/UpdateMetadata";
+} from "react-libs/shared-interfaces/DataStoreAPI";
+import { DatasetMetadata } from "react-libs/shared-interfaces/RegistryModels";
+import { HTTPValidationError } from "../shared-interfaces/APIResponses";
 
 // Clean up function from
 // https://stackoverflow.com/questions/23774231/how-do-i-remove-all-null-and-empty-string-values-from-an-object
@@ -224,7 +224,7 @@ export class RegisterOrModifyStore {
             });
     }
 
-    registerNewDataset(inputData: CollectionFormat) {
+    registerNewDataset(inputData: DatasetMetadata) {
         return new Promise((resolve, reject) => {
             // Calls the update metadata post
             // and interprets response including error conditions
@@ -275,7 +275,7 @@ export class RegisterOrModifyStore {
         });
     }
 
-    updateMetadata(inputData: CollectionFormat, reason: string) {
+    updateMetadata(inputData: DatasetMetadata, reason: string) {
         return new Promise((resolve, reject) => {
             // Calls the update metadata post
             // and interprets response including error conditions
@@ -329,11 +329,11 @@ export class RegisterOrModifyStore {
         return new Promise((resolve, reject) => {
             // This method validates the metadata then performs an update
             // of the metadata
-            var inputData: CollectionFormat | undefined = undefined;
+            var inputData: DatasetMetadata | undefined = undefined;
 
             // Parse into proper input format
             try {
-                inputData = formData as unknown as CollectionFormat;
+                inputData = formData as unknown as DatasetMetadata;
             } catch (error: any) {
                 const errorMessage = `Failed to convert form data into expected format, error: ${error.message}`;
                 reject(errorMessage);
@@ -375,17 +375,22 @@ export class RegisterOrModifyStore {
                 })
                 .catch((e) => {
                     var errorMessage;
-                    if (e.response) {
-                        if (e.response.status == 422) {
-                            let valError: HTTPValidationError = e.response.data;
+                    console.log("Validation error");
+                    console.log(e);
+                    const response = e.response ?? e;
+                    if (response) {
+                        if (response.status == 422) {
+                            console.log("422 found");
+                            let valError: HTTPValidationError = response.data;
                             errorMessage =
                                 "Validation error: " +
                                 displayValidationError(valError);
+                            console.log(errorMessage);
                         } else {
                             errorMessage = `Unexpected error when performing metadata validation, status code: ${
-                                e.response.status
+                                response.status
                             }, and reason: ${
-                                e.response.data.detail ?? "Unknown"
+                                response.data.detail ?? "Unknown"
                             }`;
                         }
                     } else if (e.message) {
@@ -409,7 +414,7 @@ export class RegisterOrModifyStore {
         this.validateMetadata(formData)
             // Validate
             .then((rawCollectionFormat: any) => {
-                let collectionFormat = rawCollectionFormat as CollectionFormat;
+                let collectionFormat = rawCollectionFormat as DatasetMetadata;
                 this.processingMessage =
                     "Schema validation success. Registering dataset. Please wait...";
                 return this.registerNewDataset(collectionFormat);
@@ -460,7 +465,7 @@ export class RegisterOrModifyStore {
         this.validateMetadata(formData)
             // Validate
             .then((rawCollectionFormat: any) => {
-                let collectionFormat = rawCollectionFormat as CollectionFormat;
+                let collectionFormat = rawCollectionFormat as DatasetMetadata;
                 this.processingMessage =
                     "Schema validation success. Updating dataset. Please wait...";
                 return this.updateMetadata(collectionFormat, reason);

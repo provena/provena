@@ -12,9 +12,9 @@ import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
 import { useKeycloak } from "@react-keycloak/web";
-import Form from "@rjsf/mui";
 import { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
+import lodashSet from "lodash.set";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import {
@@ -26,6 +26,7 @@ import {
     AutoCompletePersonLookup,
     AutoCompletePublisher,
     DATA_STORE_LINK,
+    Form,
     LoadedEntity,
     PROV_STORE_LINK,
     combineLoadStates,
@@ -53,7 +54,6 @@ import {
     PersonDomainInfo,
 } from "../shared-interfaces/RegistryModels";
 import { getRegisteringDocumentationLink } from "../util/helper";
-import lodashSet from "lodash.set";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -575,7 +575,11 @@ const RegisterUpdateForm = (props: RegisterUpdateFormProps) => {
         <div className={classes.stackContainer}>
             <Form
                 schema={props.jsonSchema as RJSFSchema}
-                uiSchema={props.uiSchema}
+                uiSchema={{
+                    ...props.uiSchema,
+                    // Forces the form to always include the top level object
+                    disableOptional: true,
+                }}
                 fields={customFields}
                 widgets={customWidgets}
                 formData={props.formData}

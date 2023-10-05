@@ -330,9 +330,9 @@ export const useProvGraphData = (
                 },
                 special: [
                     {
-                        name: "Effected Downstream Datasets",
+                        name: "Affected Downstream Datasets",
                         description:
-                            "Expands all node relationships in the downstream direction to find any effected Datasets.",
+                            "Expands all node relationships in the downstream direction to find any affected Datasets.",
                         queryList: ["downstream_dataset"],
                         run: generateBasicExploreFunc(["downstream_dataset"]),
                     },
@@ -345,9 +345,9 @@ export const useProvGraphData = (
                         run: generateBasicExploreFunc(["upstream_dataset"]),
                     },
                     {
-                        name: "Effected Downstream Agents",
+                        name: "Affected Downstream Agents",
                         description:
-                            "Expands all node relationships in the downstream direction to find any effected Agents.",
+                            "Expands all node relationships in the downstream direction to find any affected Agents.",
                         queryList: ["downstream_agent"],
                         run: generateBasicExploreFunc(["downstream_agent"]),
                     },

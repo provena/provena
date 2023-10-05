@@ -1,4 +1,4 @@
-import { MoreHorizRounded } from "@mui/icons-material";
+import MoreHorizRounded from "@mui/icons-material/MoreHorizRounded";
 import { CircularProgress, Theme, Tooltip } from "@mui/material";
 import { createStyles, makeStyles } from "@mui/styles";
 import React from "react";

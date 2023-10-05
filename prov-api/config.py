@@ -116,10 +116,11 @@ def stage_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
 
 
 def prod_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
-    # generates regex format -> same as DEV but doesn't include localhost
+    # generates regex format -> prov and data front ends currently supported
     prefix = "https://"
     options: List[str] = [
-        f"{prefix}prov.{base_domain}"
+        f"{prefix}prov.{base_domain}",
+        f"{prefix}data.{base_domain}"
     ]
     return options
 

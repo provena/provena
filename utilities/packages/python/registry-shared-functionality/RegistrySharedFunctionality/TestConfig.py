@@ -196,7 +196,9 @@ route_params: List[RouteParameters] = [
                     display_name="example dataset 1",
                     collection_format=CollectionFormat(
                         associations=CollectionFormatAssociations(
-                            organisation_id="1234"
+                            organisation_id="1234",
+                            data_custodian_id="4678",
+                            point_of_contact="Not Peter Baker.",
                         ),
                         approvals=CollectionFormatApprovals(
                             ethics_registration=DatasetEthicsRegistrationCheck(),
@@ -214,7 +216,24 @@ route_params: List[RouteParameters] = [
                             created_date=date.today(),
                             published_date=date.today(),
                             license="https://example.com",
-                            keywords=["a", "b"]
+                            keywords=["a", "b"],
+                            spatial_info=CollectionFormatSpatialInfo(
+                                coverage="SRID=4326;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
+                                resolution="0.1",
+                                extent="SRID=4326;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
+                            ),
+                            temporal_info=CollectionFormatTemporalInfo(
+                                duration=TemporalDurationInfo(
+                                    begin_date=date.today(),
+                                    end_date=date.today(),
+                                ),
+                                resolution="P1Y2M10DT2H30M"
+                            ),
+                            purpose="But why, you might ask, was the Test Dataset so important? Well, dear reader, it served as a mirror reflecting the very essence of the software, exposing its vulnerabilities and frailties. It was Testy's trustworthy sidekick, always ready to point out flaws, inconsistencies, and missteps in the code. It was the guardian of reliability, ensuring that the software would perform its duties diligently without crashing or misbehaving. And it was the staunch defender of predictability, making sure that the software would respond consistently to various inputs and scenarios.",
+                            usage_limitations="You may not use this dataset while wearing an eyepatch, unless you are an actual pirate sailing the high seas. In that case, a parrot on your shoulder is also required for compliance.",
+                            preferred_citation="Testy McTestface, \"The Test Dataset: A Mirror to the Soul of the Software\", Journal of Testy Software, 2021",
+                            formats = ["pdf"],
+                            rights_holder="ME",
                         )
                     ),
                     s3=S3Location(
@@ -228,7 +247,7 @@ route_params: List[RouteParameters] = [
                     display_name="example dataset 2",
                     collection_format=CollectionFormat(
                         associations=CollectionFormatAssociations(
-                            organisation_id="12345"
+                            organisation_id="12345",
                         ),
                         approvals=CollectionFormatApprovals(
                             ethics_registration=DatasetEthicsRegistrationCheck(),
@@ -250,6 +269,21 @@ route_params: List[RouteParameters] = [
                             created_date=date.today(),
                             published_date=date.today(),
                             license="https://example.com",
+                            spatial_info=CollectionFormatSpatialInfo(
+                                coverage="SRID=4326;POLYGON ((20 10, 40 40, 20 40, 10 20, 30 10))",
+                                resolution="1.23456",
+                            ),
+                            temporal_info=CollectionFormatTemporalInfo(
+                                duration=TemporalDurationInfo(
+                                    begin_date=date.today(),
+                                    end_date=date.today(),
+                                ),
+                                resolution="P1Y2M10DT2H24M"
+                            ),
+                            purpose="Explore the intricacies of intergalactic communication with this dataset, which deciphers the meaning behind alien emojis. Learn when it's appropriate to send a cosmic winky face or a UFO thumbs-up in your next close encounter.",
+                            usage_limitations=" If you accidentally drop your device while using the dataset, you must perform a ceremonial dance to appease the digital spirits and ensure your files remain unharmed.",
+                            formats = ["png"],
+
                         )
                     ),
                     s3=S3Location(

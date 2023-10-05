@@ -120,6 +120,14 @@ def generate_integration_secret_env_vars(config: IntegrationTestConfig) -> Dict[
             value=f"{test_bots_creds_arn}:password2",
             type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
         ),
+        "SYSTEM_WRITE_USERNAME_3": build.BuildEnvironmentVariable(
+            value=f"{test_bots_creds_arn}:username3",
+            type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
+        ),
+        "SYSTEM_WRITE_PASSWORD_3": build.BuildEnvironmentVariable(
+            value=f"{test_bots_creds_arn}:password3",
+            type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
+        ),
         "ADMIN_USERNAME": build.BuildEnvironmentVariable(
             value=f"{test_bots_creds_arn}:admin_username",
             type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
@@ -140,7 +148,7 @@ def generate_integration_test_cfn_env_vars(data_store_api_endpoint: CfnOutput, j
         "REGISTRY_API_ENDPOINT": registry_api_endpoint,
         "PROV_API_ENDPOINT": prov_api_endpoint,
         "AUTH_API_ENDPOINT": auth_api_endpoint,
-        "JOB_API_ENDPOINT" : job_api_endpoint,
+        "JOB_API_ENDPOINT": job_api_endpoint,
     }
 
     return env

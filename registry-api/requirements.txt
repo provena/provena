@@ -11,6 +11,8 @@ aws-secretsmanager-caching
 types-requests
 pydantic[email]==1.*
 python-dotenv
+shapely
+pyproj
 
 # this links to the utilities package deployed as part of 
 # this provena repo - ensure this is correct in your 

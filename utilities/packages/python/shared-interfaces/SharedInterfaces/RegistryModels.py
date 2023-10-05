@@ -1,8 +1,10 @@
-from pydantic import BaseModel, AnyHttpUrl, EmailStr, root_validator, validator, HttpUrl, Extra
+from pydantic import BaseModel, AnyHttpUrl, EmailStr, root_validator, validator, Extra, Field, schema
+from pydantic.fields import ModelField
 from pydantic.generics import GenericModel
 from enum import Enum
 from typing import Optional, List, Tuple, TypeVar, Dict, Type, Any, Set, Generic
 import itertools
+from isodate import parse_duration  # type: ignore
 from datetime import datetime, date
 
 try:
@@ -14,6 +16,19 @@ except:
 
 # Type alias to denote that a string references an ID
 IdentifiedResource = str
+
+# Apply pydantic patch from https://github.com/tiangolo/fastapi/issues/1378
+
+
+def field_schema(field: ModelField, **kwargs: Any) -> Any:
+    if field.field_info.extra.get("hidden_from_schema", False):
+        raise schema.SkipField(f"{field.name} field is being hidden")
+    else:
+        return original_field_schema(field, **kwargs)
+
+
+original_field_schema = schema.field_schema
+schema.field_schema = field_schema
 
 
 class ItemCategory(str, Enum):
@@ -835,38 +850,65 @@ class ItemWorkflowTemplate(EntityBase, WorkflowTemplateDomainInfo):
 # ======================================================================================
 
 
-class CollectionFormatOrganisation(BaseModel):
-    # Required
-    name: str
-
-    # Optional
-    ror: Optional[HttpUrl]
-
-    class Config:
-        # Set all strings to not be empty
-        min_anystr_length = 1
-        # don't allow extra fields
-        extra = Extra.forbid
-
-
 class CollectionFormatAssociations(BaseModel):
+    """
+    Please provide information about the people and organisations related to this dataset.
+    """
     # Registered organisation id
-    organisation_id: str
+    organisation_id: str = Field(
+        ...,
+        title="Record Creator Organisation",
+        description="Please select the organisation on behalf of which you are registering this data."
+    )
+
+    # ID of the registered Person Custodian
+    data_custodian_id: Optional[str] = Field(
+        None,
+        title="Dataset Custodian",
+        description="Please select the Registered Person who is the dataset custodian.",
+    )
+
+    # Free text info for point of contact
+    point_of_contact: Optional[str] = Field(
+        None,
+        title="Point of Contact",
+        description="Please provide a point of contact for enquiries about this data e.g. email address. Please ensure you have sought consent to include these details in the record.",
+    )
 
     class Config:
         # Set all strings to not be empty
         min_anystr_length = 1
         # don't allow extra fields
         extra = Extra.forbid
+
+        # JSON Schema
+        title = "Dataset Associations"
 
 
 class AccessInfo(BaseModel):
+    """
+    Please specify whether data is going to be stored in the Data Store, or referenced from an existing, externally hosted, source.
+    """
     # is this going to be stored in the provena data store?
-    reposited: bool
+    reposited: bool = Field(
+        True,
+        title="Data Storage",
+        description="Is the data going to be stored in the Data Store?"
+    )
+
     # What is the best URI to access this data
-    uri: Optional[AnyUri]
+    uri: Optional[AnyUri] = Field(
+        None,
+        title="Dataset URI",
+        description="Provide the best URI of the externally hosted data.",
+        format="uri"
+    )
     # Instructions/advice on how to retrieve it
-    description: Optional[str]
+    description: Optional[str] = Field(
+        None,
+        title="Access Description",
+        description="Provide information about how to access the externally hosted data, or other relevant notes."
+    )
 
     @root_validator(skip_on_failure=True)
     def check_external_access_provided(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -888,6 +930,14 @@ class AccessInfo(BaseModel):
                     "Must provide a description for external access if data is not reposited in the Data Store.")
         return values
 
+    class Config:
+        # Set all strings to not be empty
+        min_anystr_length = 1
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Access Info"
+
 
 class OptionallyRequiredCheck(BaseModel):
     # default to False to ensure forms require explicit inclusion
@@ -898,44 +948,96 @@ class OptionallyRequiredCheck(BaseModel):
 
 # both of these controls are instances of optionally required check
 class ExportControls(OptionallyRequiredCheck):
-    pass
+    """
+    Is this dataset subject to any export controls permits? If so, has this dataset cleared any required due diligence checks and have you obtained any required permits?
+    """
+    class Config:
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Export Controls"
 
 
 class IndigenousKnowledgeCheck(OptionallyRequiredCheck):
-    pass
+    """
+    Does this dataset contain Indigenous Knowledge? If so, do you have consent from the relevant Aboriginal and Torres Strait Islander communities for its use and access via this data store?
+    """
+    class Config:
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Indigenous Knowledge and Consent"
 
 
 class DatasetEthicsRegistrationCheck(OptionallyRequiredCheck):
-    pass
+    """
+    Does this dataset include any human data or require ethics/privacy approval for its registration? If so, have you included any required ethics approvals, consent from the participants and/or appropriate permissions to register this dataset in this information system?
+    """
+    class Config:
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Dataset Registration Ethics and Privacy"
 
 
 class DatasetEthicsAccessCheck(OptionallyRequiredCheck):
-    pass
+    """
+    Does this dataset include any human data or require ethics/privacy approval for enabling its access by users of the information system? If so, have you included any required consent from the participants and/or appropriate permissions to facilitate access to this dataset in this information system?
+    """
+    class Config:
+        # Set all strings to not be empty
+        min_anystr_length = 1
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Dataset Access Ethics and Privacy"
 
 
-class CollectionFormatDatasetInfo(BaseModel):
-    # Required
-    name: str
-    description: str
+class CollectionFormatSpatialInfo(BaseModel):
+    """
+    If your dataset includes spatial data, you can indicate the coverage, resolution and extent of this spatial data.
+    """
+    # What is the spatial coverage of the dataset? EWKT TODO validator
+    coverage: Optional[str] = Field(
+        None,
+        title="Spatial Coverage",
+        # TODO clarity here re: format and expectations of geometry features e.g. Geometry Collection?
+        description="The geographic area applicable to the data asset. Please specify spatial coverage using the EWKT format.",
+        # 50000 characters limit TODO justify this limit
+        max_length=50000
+    )
 
-    # information about whether the dataset is reposited or not
-    access_info: AccessInfo
+    # Decimal Degrees spatial resolution TODO validator
+    resolution: Optional[str] = Field(
+        None,
+        title="Spatial Resolution",
+        description="The spatial resolution applicable to the data asset. Please use the Decimal Degrees standard."
+    )
 
-    # linked publisher in registry
-    publisher_id: str
+    # Spatial extent i.e. bounding box - EWKT TODO validator
+    extent: Optional[str] = Field(
+        None,
+        title="Spatial Extent",
+        # TODO clarity here re: format and expectations of geometry features e.g. Geometry Collection, Polygon?
+        description="The range of spatial coordinates applicable to the data asset. Please provide a bounding box extent using the EWKT format.",
+        # 50000 characters limit TODO justify this limit
+        max_length=50000
+    )
 
-    created_date: date
-    published_date: date
-    license: AnyHttpUrl
+    @validator('resolution')
+    def validate_spatial_resolution(cls: Any, v: Optional[str]) -> Optional[str]:
+        # None is okay as the field is optional
+        if v is None:
+            return v
 
-    # Optional
-    preferred_citation: Optional[str]
-
-    keywords: Optional[List[str]]
-
-    # this is not going to be shown in schema anymore, but will remain in the
-    # actual model in case existing versions are relevant
-    version: Optional[str] = None
+        # val must be parsable as float
+        try:
+            val = float(v)
+            assert val>0, f"Spatial resolution must be non-negative and greater than than 0. Got '{val}'."
+        except Exception as e:
+            raise ValueError(
+                f"Invalid spatial resolution. The value must conform to the Decimal Degrees format. Please provide a positive decimal value. Failed to parse the spatial resolution as a positive float. Details: {e}")
+        return v
 
     class Config:
         # Set all strings to not be empty
@@ -943,8 +1045,190 @@ class CollectionFormatDatasetInfo(BaseModel):
         # don't allow extra fields
         extra = Extra.forbid
 
+        title = "Dataset Spatial Information"
+
+
+class TemporalDurationInfo(BaseModel):
+    """
+    You can specify the duration of temporal coverage by including both start and end date.
+    """
+    begin_date: date = Field(
+        ...,
+        title="Start Date",
+        description="Please provide the start date of the dataset's temporal coverage."
+    )
+    end_date: date = Field(
+        ...,
+        title="End Date",
+        description="Please provide the end date of the dataset's temporal coverage."
+    )
+
+    # validator to ensure that if both are set, they are in the correct order
+    @root_validator(pre=False, skip_on_failure=True)
+    def check_dates_in_order(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
+        begin_date: Optional[date] = values.get('begin_date')
+        end_date: Optional[date] = values.get('end_date')
+
+        if begin_date is not None and end_date is not None:
+            if begin_date > end_date:
+                raise ValueError(
+                    "Begin Date must be before or equal to End Date.")
+        return values
+
+    class Config:
+        # Set all strings to not be empty
+        min_anystr_length = 1
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Temporal Duration"
+
+
+class CollectionFormatTemporalInfo(BaseModel):
+    """
+    If your dataset provides data over a specified time period, you can include the duration and resolution of this temporal coverage.
+    """
+    # Supplying duration is optional but both fields within it required
+    duration: Optional[TemporalDurationInfo] = None
+
+    # Temporal resolution - ISO8601 Duration format e.g. "P1Y2M10DT2H30M"
+    resolution: Optional[str] = Field(
+        None,
+        title="Temporal Resolution",
+        description="The temporal resolution (i.e. time step) of the data. Please use the [ISO8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations) e.g. \"P1Y2M10DT2H30M\".",
+    )
+
+    # validate the temporal resolution conforms to expected format: "P1Y2M10DT2H30M\".
+    @validator('resolution', always=True) # run even for default value.
+    def validate_temporal_resolution(cls: Any, v: str) -> str:
+        try:
+            if v is not None: parse_duration(v)
+        except Exception as e:
+            raise ValueError(
+                f"Invalid temporal resolution. The value must conform to the ISO8601 Time Duration format (e.g.'P1Y2M10DT2H30M'). Details: {e}")
+        return v
+
+    class Config:
+        # Set all strings to not be empty
+        min_anystr_length = 1
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Dataset Temporal Information"
+
+
+class CollectionFormatDatasetInfo(BaseModel):
+    """
+    Please provide information about this dataset, including the name, description, creation date and publisher information.
+    """
+    name: str = Field(
+        ...,
+        title="Dataset name",
+        description="Please provide a readable name for the dataset.",
+    )
+    description: str = Field(
+        ...,
+        title="Description",
+        description="Please provide a more detailed description of the dataset. This should include the nature of the data, the intended usage, and any other relevant information.",
+    )
+
+    # information about whether the dataset is reposited or not
+    access_info: AccessInfo
+
+    # linked publisher in registry
+    publisher_id: str = Field(
+        ...,
+        title="Publisher",
+        description="Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below.",
+    )
+
+    # created/published dates
+    created_date: date = Field(
+        ...,
+        title="Dataset Creation Date",
+        description="The date on which this version of the dataset was produced or generated.",
+    )
+    published_date: date = Field(
+        ...,
+        title="Dataset Publish Date",
+        description="The date on which this version of the dataset was first published. If the data has never been published before - please use today's date.",
+    )
+
+    # License field - selected by drop down
+    license: AnyHttpUrl = Field(
+        ...,
+        title="Usage license",
+        description="Please select a standard license for usage, by default it will be 'Copyright'.",
+        format="uri"
+    )
+
+    # What is the purpose of this dataset?
+    purpose: Optional[str] = Field(
+        None,
+        title="Dataset Purpose",
+        description="A brief description of the reason a data asset was created. Should be a good guide to the potential usefulness of a data asset to other users.",
+    )
+
+    # Who holds the rights to this dataset? Free text input
+    rights_holder: Optional[str] = Field(
+        None,
+        title="Dataset Rights Holder",
+        description="Specify the party owning or managing rights over the resource. Please ensure you have sought consent to include these details in the record.",
+    )
+
+    # Usage limitations? Free text input
+    usage_limitations: Optional[str] = Field(
+        None,
+        title="Usage Limitations",
+        description="A statement that provides information on any caveats or restrictions on access or on the use of the data asset, including legal, security, privacy, commercial or other limitations.",
+    )
+
+    preferred_citation: Optional[str] = Field(
+        None,
+        title="Preferred dataset citation",
+        description="If you would like to specify how this dataset should be cited, please use the checkbox below to indicate this preference, and enter your preferred citation in the text box.",
+    )
+
+    # Spatial information?
+    spatial_info: Optional[CollectionFormatSpatialInfo] = None
+
+    # Temporal information?
+    temporal_info: Optional[CollectionFormatTemporalInfo] = None
+
+    # What formats are included in the dataset files e.g. txt, pdf, html, css, json etc
+    formats: Optional[List[str]] = Field(
+        None,
+        title="Dataset File Formats",
+        description="What file formats are present in this dataset? E.g. \"pdf\", \"csv\" etc.",
+    )
+
+    # Keywords associated with this dataset
+
+    # TODO validate this JSON schema is suitable
+    keywords: Optional[List[str]] = Field(
+        None,
+        title="Keywords",
+        description="Provide a list of keywords which describe your dataset [Optional].",
+    )
+
+    # this is not going to be shown in schema anymore, but will remain in the
+    # actual model in case existing versions are relevant
+    version: Optional[str] = Field(None, hidden_from_schema=True)
+
+    class Config:
+        # Set all strings to not be empty
+        min_anystr_length = 1
+        # don't allow extra fields
+        extra = Extra.forbid
+
+        title = "Dataset Information"
+        field = {'version': {'exclude': True}}
+
 
 class CollectionFormatApprovals(BaseModel):
+    """
+    Please ensure that the following approvals are considered. Your dataset may not be fit for inclusion in the Data Store if it does not meet the following requirements.
+    """
     ethics_registration: DatasetEthicsRegistrationCheck
     ethics_access: DatasetEthicsAccessCheck
     indigenous_knowledge: IndigenousKnowledgeCheck
@@ -956,18 +1240,27 @@ class CollectionFormatApprovals(BaseModel):
         # don't allow extra fields
         extra = Extra.forbid
 
+        # JSON Schema
+        title = "Dataset Approvals"
+
 
 class CollectionFormat(BaseModel):
+    """
+    This form collects metadata about the dataset you are registering as well as the registration itself. Please ensure the fields below are completed accurately.
+    """
     # Required
     associations: CollectionFormatAssociations
-    dataset_info: CollectionFormatDatasetInfo
     approvals: CollectionFormatApprovals
+    dataset_info: CollectionFormatDatasetInfo
 
     class Config:
         # Set all strings to not be empty
         min_anystr_length = 1
         # don't allow extra fields
         extra = Extra.forbid
+
+        # JSON Schema
+        title = "Dataset Metadata"
 
 
 class S3Location(BaseModel):
@@ -1054,7 +1347,17 @@ class ItemDataset(EntityBase, DatasetDomainInfo):
     def get_searchable_fields() -> List[str]:
         # this is a special elastic search syntax
         return ItemBase.get_searchable_fields() + [
-            'description', 'name', 'publisher', 'author', 'keywords^2'
+            'description',
+            'name',
+            'publisher',
+            'organisation',
+            'keywords^2',
+            'formats',
+            'preferred_citation',
+            'usage_limitations',
+            'rights_holder',
+            'purpose',
+            'data_custodian'
         ]
 
     def get_search_ready_object(self) -> Dict[str, str]:
@@ -1064,15 +1367,22 @@ class ItemDataset(EntityBase, DatasetDomainInfo):
 
         # pull out relevant sub fields
         cf = self.collection_format
-        di = cf.dataset_info
-        org = cf.associations.organisation_id
+        di: CollectionFormatDatasetInfo = cf.dataset_info
+        assoc: CollectionFormatAssociations = cf.associations
+        org = assoc.organisation_id
 
         extended: Dict[str, str] = {
             'description': di.description,
             'name': di.name,
             'publisher': di.publisher_id,
             'organisation': org,
-            'keywords': " ".join(di.keywords or [])
+            'keywords': " ".join(di.keywords or []),
+            'formats': " ".join(di.formats or []),
+            'preferred_citation': di.preferred_citation or "",
+            'usage_limitations': di.usage_limitations or "",
+            'rights_holder': di.rights_holder or "",
+            'purpose': di.purpose or "",
+            'data_custodian': assoc.data_custodian_id or ""
         }
         base.update(extended)
 
@@ -1090,7 +1400,6 @@ class ItemDataset(EntityBase, DatasetDomainInfo):
 
 
 class ModelRunWorkflowTemplateDomainInfo(WorkflowTemplateDomainInfo):
-    # TODO expand model work flow def'n
     # expects that the software references a Model rather than just generic software
     # this can be enforced at ingestion time
     None

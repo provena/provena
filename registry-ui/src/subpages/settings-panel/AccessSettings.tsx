@@ -160,9 +160,7 @@ const GeneralAccess = observer((props: GeneralAccessProps) => {
 
     Displays and allows modification of the selected general access roles
     */
-    const helpLink =
-        DOCUMENTATION_BASE_URL +
-        "/information-system/provenance/registry/access-control.html";
+    const helpLink = DOCUMENTATION_BASE_URL + "/registry/access-control.html";
     return (
         <div style={{ width: "100%" }}>
             <Stack direction="column" spacing={2}>

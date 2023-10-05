@@ -76,6 +76,7 @@ export const CopyFloatingButton = (props: CopyFloatingButtonProps) => {
                         <ContentCopyIcon
                             onClick={(e) => {
                                 e.stopPropagation();
+                                e.preventDefault();
                                 navigator.clipboard.writeText(
                                     props.clipboardText
                                 );

@@ -1,10 +1,8 @@
-import {
-    CancelOutlined,
-    CheckCircleOutline,
-    KeyboardArrowDown,
-    KeyboardArrowRight,
-    PendingOutlined,
-} from "@mui/icons-material";
+import CancelOutlined from "@mui/icons-material/CancelOutlined";
+import CheckCircleOutline from "@mui/icons-material/CheckCircleOutline";
+import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import PendingOutlined from "@mui/icons-material/PendingOutlined";
 import {
     Alert,
     AlertTitle,

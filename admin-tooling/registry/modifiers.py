@@ -9,10 +9,21 @@ from helpers.migrations.f1176_migration import f1176_migrator_function
 from helpers.migrations.f1442_migration import f1442_migrator_function
 from helpers.migrations.f1458_migration import f1458_migrator_function
 from helpers.migrations.f1339_migration import f1339_migration
+
+
+from ToolingEnvironmentManager.Management import EnvironmentManager, process_params
 from helpers.migrations.s3_bucket import update_s3_location
 from helpers.migrations.external_access import external_access
 from helpers.migrations.item_history import add_starting_history
 from helpers.migrations.example_migration import example_migration as example_migration_func
+
+# Typer CLI typing hint for parameters
+ParametersType = List[str]
+
+# Establish env manager
+env_manager = EnvironmentManager(environment_file_path="../environments.json")
+valid_env_str = env_manager.environment_help_string
+
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 

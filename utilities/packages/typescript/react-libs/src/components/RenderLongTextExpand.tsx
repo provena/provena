@@ -19,17 +19,23 @@ export const RenderLongTextExpand = (props: RenderLongTextExpandProps) => {
     // Default is not expanded
     const [expanded, setExpanded] = useState<boolean>(false);
 
+    // If need to show "view less"/"view more"
+    const showExpand =
+        props.initialCharNum !== undefined &&
+        props.text.length > props.initialCharNum;
+
     // For long Text render, can collapse text.
     if (props.text === "" || !props.text) return <Typography></Typography>;
 
-    if (props.initialCharNum === undefined)
-        return <Typography>{props.text}</Typography>;
+    if (!showExpand) return <Typography>{props.text}</Typography>;
+
+    const slicedText = props.text.slice(0, props.initialCharNum) + "...";
 
     return (
         <Typography>
-            {expanded ? props.text : props.text.slice(0, props.initialCharNum)}
+            {expanded ? props.text : slicedText}
             <Typography>
-                {props.text.length > props.initialCharNum && (
+                {showExpand && (
                     <Link
                         type="button"
                         component="button"

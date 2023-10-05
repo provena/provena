@@ -1,4 +1,4 @@
-import { AccountCircle } from "@mui/icons-material";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 import { Box, Button, IconButton, Theme, useTheme } from "@mui/material";
 import { createStyles, makeStyles } from "@mui/styles";
 import { useKeycloak } from "@react-keycloak/web";

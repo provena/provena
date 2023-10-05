@@ -1,5 +1,5 @@
-import { Swatches } from "../util";
 import { DOCUMENTATION_BASE_URL } from "../queries";
+import { Swatches } from "../util";
 
 export interface LegendInformationProps {
     colour: string;
@@ -15,7 +15,7 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         name: "Person",
         href:
             DOCUMENTATION_BASE_URL +
-            "/information-system/provenance/registering-model-runs/establishing-required-entities#person",
+            "/provenance/registering-model-runs/establishing-required-entities.html#person",
     },
     {
         colour: Swatches.organisationSwatch.colour,
@@ -23,7 +23,7 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         name: "Organisation",
         href:
             DOCUMENTATION_BASE_URL +
-            "/information-system/provenance/registering-model-runs/establishing-required-entities#organisation",
+            "/provenance/registering-model-runs/establishing-required-entities.html#organisation",
     },
     {
         colour: Swatches.datasetSwatch.colour,
@@ -31,7 +31,7 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         name: "Dataset",
         href:
             DOCUMENTATION_BASE_URL +
-            "/information-system/data-store/overview#data-store-overview",
+            "/data-store/overview.html#data-store-overview",
     },
     {
         colour: Swatches.datasetTemplateSwatch.colour,
@@ -39,7 +39,7 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         name: "Dataset Template",
         href:
             DOCUMENTATION_BASE_URL +
-            "/information-system/provenance/registering-model-runs/model-workflow-configuration.html#dataset-template",
+            "/provenance/registering-model-runs/model-workflow-configuration.html#dataset-template",
     },
     {
         colour: Swatches.modelSwatch.colour,
@@ -47,7 +47,7 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         name: "Model",
         href:
             DOCUMENTATION_BASE_URL +
-            "/information-system/provenance/registering-model-runs/establishing-required-entities#model",
+            "/provenance/registering-model-runs/establishing-required-entities.html#model",
     },
     {
         colour: Swatches.modelRunSwatch.colour,
@@ -55,7 +55,7 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         name: "Model Run",
         href:
             DOCUMENTATION_BASE_URL +
-            "/information-system/provenance/registering-model-runs/registration-process/overview.html#model-run-overview",
+            "/provenance/registering-model-runs/registration-process/overview.html#model-run-overview",
     },
     {
         colour: Swatches.modelRunWorkflowDefinitionSwatch.colour,
@@ -63,6 +63,22 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         name: "Model Run Workflow Template",
         href:
             DOCUMENTATION_BASE_URL +
-            "/information-system/provenance/registering-model-runs/model-workflow-configuration#model-run-workflow-template",
+            "/provenance/registering-model-runs/model-workflow-configuration.html#model-run-workflow-template",
+    },
+    {
+        colour: Swatches.createSwatch.colour,
+        acronym: "C",
+        name: "Create",
+        href:
+            DOCUMENTATION_BASE_URL +
+            "/registry/registering_and_updating.html#registering-an-entity",
+    },
+    {
+        colour: Swatches.versionSwatch.colour,
+        acronym: "V",
+        name: "Version",
+        href:
+            DOCUMENTATION_BASE_URL +
+            "/versioning/versioning-overview.html",
     },
 ];

@@ -1,4 +1,4 @@
-import { Search as SearchIcon } from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import { IconButton, Input } from "@mui/material";
 import { Theme } from "@mui/material/styles";
@@ -65,7 +65,6 @@ export const DatasetSearchLinked = observer(
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
                                 // Enter key down
-                                console.log("Enter key down");
                                 window.open(link, "_self");
                             }
                         }}

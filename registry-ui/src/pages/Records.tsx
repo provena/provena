@@ -1,19 +1,24 @@
+import OpenInNew from "@mui/icons-material/OpenInNew";
+import OpenInNewOff from "@mui/icons-material/OpenInNewOff";
 import SearchIcon from "@mui/icons-material/Search";
 import WarningIcon from "@mui/icons-material/Warning";
 import {
     Alert,
+    Box,
     Button,
     Checkbox,
     CircularProgress,
     FormControl,
     FormControlLabel,
     Grid,
+    IconButton,
     InputAdornment,
     InputLabel,
     MenuItem,
     Select,
     Stack,
     TextField,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
@@ -21,14 +26,17 @@ import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
 import { useKeycloak } from "@react-keycloak/web";
+import debounce from "lodash.debounce";
 import { observer } from "mobx-react-lite";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     useLoadedSearch,
     usePaginatedRecordList,
     useQueryStringVariable,
+    useUntypedLoadedItem,
     useUserLinkServiceLookup,
 } from "react-libs";
+import { registryItemIdHdlLinkResolver } from "util/helper";
 import { ItemSubtypeSelector } from "../components/ItemSubtypeSelector";
 import ResultCard from "../components/ResultCard";
 import { SortOptions, SortType } from "../shared-interfaces/RegistryAPI";
@@ -224,6 +232,92 @@ const FilterAndSearchPanel = observer((props: FilterPanelProps) => {
     layout not align properly 
     */
     const classes = useStyles();
+
+    // Input handle id for opening item in a new page
+    const [textfieldInputHandleId, setTextfieldInputHandleId] =
+        useState<string>("");
+    // Handle id save for query, undefined for not querying on mount
+    const [queryHandleId, setQueryHandleId] = useState<string | undefined>(
+        undefined
+    );
+
+    // Check item id is valid before go to the new page
+    const untypedLoadedItem = useUntypedLoadedItem({
+        id: queryHandleId,
+        enabled: true,
+    });
+
+    // Debounce query handle id setting
+    const debounceTimeout = 500;
+    const debouncedSetQueryHandleId = useCallback(
+        debounce(setQueryHandleId, debounceTimeout),
+        []
+    );
+
+    // Validate input handle id with debounced setting
+    useEffect(() => {
+        if (textfieldInputHandleId !== "") {
+            debouncedSetQueryHandleId(textfieldInputHandleId);
+        } else {
+            debouncedSetQueryHandleId(undefined);
+        }
+    }, [textfieldInputHandleId]);
+
+    // Handlers
+
+    const onOpenNewPageClick = (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    ) => {
+        event.preventDefault();
+        // Open item page if id is valid
+        if (!!untypedLoadedItem.data?.id) {
+            window.open(
+                registryItemIdHdlLinkResolver(untypedLoadedItem.data.id),
+                "_blank",
+                "noopener,noreferrer"
+            );
+        } else {
+            console.error(
+                "Error: Handle id is undefined. No handle id returned from validation."
+            );
+        }
+    };
+
+    // JSX Element
+
+    // Button for opening new page based on handle id
+    const openNewPageEndAdornment: JSX.Element = (
+        <InputAdornment position="end">
+            <Tooltip
+                title={
+                    untypedLoadedItem.loading
+                        ? "Validating input handle id..."
+                        : untypedLoadedItem.success
+                        ? "Click to open the item page based on the entered ID."
+                        : untypedLoadedItem.error
+                        ? untypedLoadedItem.errorMessage ??
+                          "No error message provided."
+                        : false
+                }
+            >
+                <Box>
+                    <IconButton
+                        aria-label="Open page for item handle id"
+                        disabled={!untypedLoadedItem.success}
+                        onClick={onOpenNewPageClick}
+                        edge="end"
+                    >
+                        {untypedLoadedItem.success ? (
+                            <OpenInNew color="success" />
+                        ) : (
+                            <OpenInNewOff />
+                        )}
+                    </IconButton>
+                </Box>
+            </Tooltip>
+        </InputAdornment>
+    );
+
     return (
         <Grid2 container className={classes.filterPanel} spacing={1}>
             <Grid2 xs={3}>
@@ -268,24 +362,57 @@ const FilterAndSearchPanel = observer((props: FilterPanelProps) => {
                     />
                 </FormControl>
             </Grid2>
-            <Grid2 flexGrow={1}>
-                <FormControl fullWidth>
-                    <TextField
-                        id="search-input"
-                        label="Search for registry items"
-                        value={props.searchQuery}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <SearchIcon />
-                                </InputAdornment>
-                            ),
-                        }}
-                        onChange={(event) => {
-                            props.setSearchQuery(event.target.value as string);
-                        }}
-                    />
-                </FormControl>
+            <Grid2 flexGrow={1} padding={0} margin={0}>
+                <Grid2>
+                    <FormControl fullWidth>
+                        <TextField
+                            id="search-input"
+                            label="Search for registry items"
+                            value={props.searchQuery}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <SearchIcon />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            onChange={(event) => {
+                                props.setSearchQuery(
+                                    event.target.value as string
+                                );
+                            }}
+                        />
+                    </FormControl>
+                </Grid2>
+                <Stack
+                    direction="row"
+                    columnGap={2}
+                    padding={"4px"}
+                    alignItems="center"
+                    justifyContent="end"
+                >
+                    <Typography>Or:</Typography>
+                    <FormControl>
+                        <TextField
+                            id="item-handle-id-input"
+                            label="Enter item ID"
+                            onChange={(event) => {
+                                event.preventDefault();
+                                setTextfieldInputHandleId(
+                                    event.target.value as string
+                                );
+                            }}
+                            value={textfieldInputHandleId}
+                            error={
+                                untypedLoadedItem.error &&
+                                textfieldInputHandleId !== ""
+                            }
+                            InputProps={{
+                                endAdornment: openNewPageEndAdornment,
+                            }}
+                        />
+                    </FormControl>
+                </Stack>
             </Grid2>
         </Grid2>
     );

@@ -10,6 +10,8 @@ mangum
 aws-secretsmanager-caching
 pydantic[email]==1.*
 python-dotenv
+shapely
+pyproj
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package

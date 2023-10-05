@@ -21,3 +21,4 @@ export * from "./CreateNewVersion";
 export * from "./MetadataHistory";
 export * from "./JobWaker";
 export * from "./RenderLongTextExpand";
+export * from "./RJSFOptionalOverride";

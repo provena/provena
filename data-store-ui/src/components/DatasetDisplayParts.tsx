@@ -12,7 +12,7 @@ import {
 import {
     ItemOrganisation,
     ItemPerson,
-} from "../shared-interfaces/registryModels";
+} from "react-libs/shared-interfaces/RegistryModels";
 import { DatedCredentials } from "../types/types";
 
 const useStyles = makeStyles((theme: Theme) =>

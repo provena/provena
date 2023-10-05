@@ -122,7 +122,7 @@ const Frontmatter = observer(() => {
                                     target="doc"
                                     href={
                                         DOCUMENTATION_BASE_URL +
-                                        "/information-system/provenance/overview/what-is-provenance.html"
+                                        "/provenance/overview/what-is-provenance.html"
                                     }
                                 >
                                     Learn more about provenance
@@ -136,7 +136,7 @@ const Frontmatter = observer(() => {
                                     target="doc"
                                     href={
                                         DOCUMENTATION_BASE_URL +
-                                        "/information-system/provenance/registering-model-runs/"
+                                        "/provenance/registering-model-runs/"
                                     }
                                 >
                                     How do I register provenance?
@@ -150,7 +150,7 @@ const Frontmatter = observer(() => {
                                     target="doc"
                                     href={
                                         DOCUMENTATION_BASE_URL +
-                                        "/information-system/provenance/exploring-provenance/"
+                                        "/provenance/exploring-provenance/"
                                     }
                                 >
                                     How do I explore provenance?

@@ -65,10 +65,17 @@ export interface StylingData {
     layoutConfig?: ColumnLayoutConfig;
 }
 
+export type ContextArray = string[];
+export interface JsonContext {
+    // The list of field names - empty if top level - from highest to lowest
+    fields: ContextArray;
+}
+
 export interface JsonDetailViewComponentProps {
     // To render we require the data + the style
     json: JsonData;
     style: StylingData;
+    context: JsonContext;
 }
 
 // Define a set of renderer overrides for the various types
@@ -80,7 +87,8 @@ export type RendererOverride<T> = (
     props: JsonDetailViewComponentProps
 ) => JSX.Element | null;
 
-export type FieldRendererMap<T> = Map<string, RendererOverride<T>>;
+export type AllFieldRendererMap<T> = Map<string, RendererOverride<T>>;
+export type PathedRendererMap<T> = Map<string, RendererOverride<T>>;
 
 // An override detector uses the value to determine a renderer override if any
 export type OverrideDetector<T> = (

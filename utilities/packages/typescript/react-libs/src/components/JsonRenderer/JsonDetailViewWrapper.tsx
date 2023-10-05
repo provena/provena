@@ -46,6 +46,7 @@ export const JsonDetailViewWrapperComponent = (
                     layout: props.layout,
                     layoutConfig: props.layoutConfig,
                 }}
+                context={{fields: []}}
                 key={props.item.id + "display"}
             />
         </div>

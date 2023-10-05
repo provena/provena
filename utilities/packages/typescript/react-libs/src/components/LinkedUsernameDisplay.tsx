@@ -39,6 +39,7 @@ export const LinkedUsernameDisplayComponent = (
         <JsonDetailViewComponent
             json={{ name: undefined, value: objContents }}
             style={props.jsonProps.style}
+            context={props.jsonProps.context}
         />
     );
 };

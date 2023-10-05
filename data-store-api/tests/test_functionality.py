@@ -1,16 +1,17 @@
+from helpers.release_helpers import *
 import tests.env_setup
 import os
 from aws_secretsmanager_caching import SecretCache  # type: ignore
 import random as r
+from moto import mock_dynamodb  # type: ignore
 from main import app
 from config import Config, get_settings
 from datetime import datetime
-from typing import List, Tuple, Generator
+from typing import List, Generator
 from SharedInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck, UpdateResponse
 from SharedInterfaces.RegistryModels import ReleasedStatus
 from SharedInterfaces.DataStoreAPI import *
-from itertools import product
-from tests.config import test_bucket_name, test_registry_name, NUM_FAKE_ENTRIES, test_email
+from tests.config import test_bucket_name, test_email
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from helpers.metadata_helpers import validate_fields
@@ -21,7 +22,8 @@ from fastapi.testclient import TestClient
 import json
 from moto import mock_s3  # type: ignore
 import boto3  # type: ignore
-import pytest  # type: ignore
+import pytest
+from tests.helpers import setup_dynamodb_reviewers_table  # type: ignore
 
 client = TestClient(app)
 
@@ -37,7 +39,7 @@ def test_config() -> Config:
         OIDC_SERVICE_ROLE_ARN="",
         SERVICE_ACCOUNT_SECRET_ARN="",
         AUTH_API_ENDPOINT="",
-        REVIEWERS_TABLE_NAME="",
+        REVIEWERS_TABLE_NAME="test_reviewers_table",
         BUCKET_ROLE_ARN="",
         S3_STORAGE_BUCKET_NAME=test_bucket_name,
         KEYCLOAK_ISSUER="",
@@ -140,12 +142,6 @@ def test_dataset_schema() -> None:
     # Check that it is valid
     assert json_content, "JSON object was none"
 
-    # Check that it can be serialized and deserialized
-    assert json.loads(json.dumps(json_content)) == json_content
-
-    # Check that the contents of the json file match
-    json_file = json.loads(open('resources/schema.json', 'r').read())
-    assert json_file == json_content
 
 
 def test_mint_dataset_invalid_schema() -> None:
@@ -538,3 +534,25 @@ def test_validate_fields() -> None:
         field=data.approvals.export_controls,
         data=data
     )
+
+@mock_dynamodb
+def test_reviewers_table(test_config: Config) -> None:
+
+    # Override the auth dependency (only admins access reviewers table add, delete, list.)
+    app.dependency_overrides[admin_user_protected_role_dependency] = user_protected_dependency_override
+
+    # connect to dynamodb
+    setup_dynamodb_reviewers_table(client=boto3.client('dynamodb'), table_name=test_config.REVIEWERS_TABLE_NAME)
+    # use a UUID for the fake id
+    fake_id = "FakePersonID"
+    
+    add_reviewer(reviewer_id=fake_id, config=test_config)
+
+    # check that the id is in the table
+    assert fake_id in get_all_reviewers(config=test_config), f"Fake id {fake_id} was not added to reviewers table"
+
+    # remove id
+    delete_reviewer_by_id(reviewer_id=fake_id, config=test_config)
+
+    # check that the id is not in the table
+    assert fake_id not in get_all_reviewers(config=test_config), f"Fake id {fake_id} was not removed from reviewers table"

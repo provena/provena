@@ -2,7 +2,7 @@ import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
 import { Link } from "react-router-dom";
-import { timestampToLocalTime } from "react-libs";
+import { RenderLongTextExpand, timestampToLocalTime } from "react-libs";
 import { ItemDataset } from "../shared-interfaces/RegistryAPI";
 import { AuthorCompactDisplayComponent } from "./DatasetDisplayParts";
 
@@ -43,7 +43,11 @@ const Dataset = (props: DatasetPropsType) => {
     const classes = useStyles();
     const dataset = props.dataset;
 
+    // How many characters need to be left as "View less" text for long dataset description
+    const descriptionInitialCharNum = 500;
+
     const createdTime = timestampToLocalTime(props.dataset.created_timestamp);
+
     return (
         <div className={classes.root}>
             <div className={classes.datasetHeader}>
@@ -59,7 +63,12 @@ const Dataset = (props: DatasetPropsType) => {
                     username={dataset.owner_username}
                 />
             </div>
-            <div>{dataset.collection_format.dataset_info.description}</div>
+            <div>
+                <RenderLongTextExpand
+                    text={dataset.collection_format.dataset_info.description}
+                    initialCharNum={descriptionInitialCharNum}
+                />
+            </div>
             <div className={classes.datasetMeta}>
                 <div>Record creation time: {createdTime}</div>
             </div>
