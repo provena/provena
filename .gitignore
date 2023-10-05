@@ -301,3 +301,4 @@ dist
 
 # thunderclient environments
 *tc_env_*
+*.aider*
