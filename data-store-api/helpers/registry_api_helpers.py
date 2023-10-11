@@ -1,11 +1,13 @@
 from config import Config
 import requests
 import json
+from helpers.auth_helpers import evaluate_user_access
 from helpers.keycloak_helpers import get_service_token
 from aws_secretsmanager_caching import SecretCache  # type: ignore
 from fastapi import HTTPException
 from SharedInterfaces.RegistryAPI import *
 from SharedInterfaces.RegistryModels import ReleasedStatus
+from SharedInterfaces.DataStoreAPI import *
 from typing import Dict
 from dependencies.dependencies import User
 from helpers.util import py_to_dict
@@ -622,6 +624,42 @@ def user_fetch_dataset_from_registry(id: str, config: Config, user: User) -> Dat
     return fetch_response
 
 
+def fetch_dataset_helper(handle_id: IdentifiedResource, user: User, config: Config) -> RegistryFetchResponse:
+    # Fetches all columns of the registry for a particular handle_id ("row")
+    if handle_id == "":
+        raise HTTPException(
+            status_code=400,
+            detail="Empty string received for query handle_id"
+        )
+
+    # fetch the dataset from reg api - this will respect auth and raise
+    # appropriate error - it also checks that the item exists in the payload and that
+    # success was true - it includes roles as well
+    try:
+        registry_item = user_fetch_dataset_from_registry(
+            id=handle_id,
+            config=config,
+            user=user
+        )
+    except HTTPException as e:
+        # something has handled this responsibly in fast API format so just
+        # raise the error
+        raise e
+    except Exception as e:  # all other errors.
+        raise Exception(
+            f"Something unexpected went wrong during data retrieval. Error: {e}")
+
+    return RegistryFetchResponse(
+        status=Status(
+            success=True,
+            details=f"Successfully fetched data for handle '{handle_id}'"
+        ),
+        item=registry_item.item,
+        roles=registry_item.roles,
+        locked=registry_item.locked
+    )
+
+
 def user_list_datasets_from_registry(config: Config, user: User, list_request: NoFilterSubtypeListRequest) -> DatasetListResponse:
     """
 
@@ -918,3 +956,58 @@ def get_user_email(person_id: str, secret_cache: SecretCache, config: Config) ->
     person: ItemPerson = fetch_result.item
 
     return person.email
+
+
+def ensure_user_roles_access_to_dataset(dataset_id: IdentifiedResource, user: User, roles: List[str], config: Config) -> ItemDataset:
+    """Fetches the dataset from the registry and ensures the user has the expected roles for accessing the dataset. The fetch 
+    minimally requires metadata read. 
+    Returns the Dataset if user has the right roles (roles param) into the dataset (dataset_fetch.roles)
+
+    Parameters
+    ----------
+    dataset_id : IdentifiedResource
+        Dataset ID to fetch and check if the user has the correct roles for.
+    user : User
+        The user fetching and checking roles of
+    roles : List[str]
+        The roles the user must have into this dateset item.
+    config : Config
+        configuration context object
+
+    Returns
+    -------
+    ItemDataset
+        The datatset being fetched and checked if the user has the roles
+
+    Raises
+    ------
+    HTTPException
+        401 - No metadata read to fetch dataset
+    HTTPException
+        401 - User does not have expected privileges for dataset with id
+    """
+    dataset_fetch = fetch_dataset_helper(dataset_id, user, config)
+    
+    # Bug. This requires metadata read to dataset to succeed. But roles could be just dataset data read. 
+    # WHen would someone have dataset data read but not metadata read?
+    if dataset_fetch.roles is None:
+        raise HTTPException(
+            status_code=401,
+            detail=f"Failed to source roles for dataset '{dataset_id}'. Action requires metadata read access to dataset."
+        )
+
+    # Checks if expected role are present
+    if not evaluate_user_access(
+        user_roles=dataset_fetch.roles,
+        acceptable_roles=roles
+    ):
+        raise HTTPException(
+            status_code=401,  # unauthorised.
+            detail=f"User {user.username} does not have expected dataset data privileges for dataset with id '{dataset_id}'." + 
+            f"Expected roles of {str(roles)} but got {dataset_fetch.roles}"
+        )
+    
+
+    assert dataset_fetch.item, f"Expected an item to be fetched, but got None for dataset item."
+    return dataset_fetch.item
+    

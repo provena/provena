@@ -77,8 +77,14 @@ export const LegendInformation: readonly LegendInformationProps[] = [
         colour: Swatches.versionSwatch.colour,
         acronym: "V",
         name: "Version",
+        href: DOCUMENTATION_BASE_URL + "/versioning/versioning-overview.html",
+    },
+    {
+        colour: Swatches.studySwatch.colour,
+        acronym: "S",
+        name: "Study",
         href:
             DOCUMENTATION_BASE_URL +
-            "/versioning/versioning-overview.html",
+            "/provenance/registering-model-runs/establishing-required-entities.html#study",
     },
 ];

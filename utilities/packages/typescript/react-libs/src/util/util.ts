@@ -135,6 +135,9 @@ export const composeSectionHeaderTitle = (
 // The prioritisedProperties list defines the properties that will be at the top of the view and also the order of those items
 export const prioritisedProperties: string[] = [
     "id",
+    // Study fields
+    "title",
+    "description",
     "owner_username",
     "workflow_template_id",
     "display_name",

@@ -22,6 +22,7 @@ export type DatasetType = "DATA_STORE";
 export type ItemSubType =
   | "WORKFLOW_RUN"
   | "MODEL_RUN"
+  | "STUDY"
   | "CREATE"
   | "VERSION"
   | "PERSON"
@@ -97,6 +98,7 @@ export interface ModelRunRecord {
   };
   display_name: string;
   description: string;
+  study_id?: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;
@@ -800,6 +802,33 @@ export interface SoftwareDomainInfo {
   description: string;
   documentation_url: string;
   source_url: string;
+}
+export interface ItemStudy {
+  display_name: string;
+  title: string;
+  description: string;
+  history: HistoryEntryStudyDomainInfo[];
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category?: ItemCategory & string;
+  item_subtype?: ItemSubType & string;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface HistoryEntryStudyDomainInfo {
+  id: number;
+  timestamp: number;
+  reason: string;
+  username: string;
+  item: StudyDomainInfo;
+}
+export interface StudyDomainInfo {
+  display_name: string;
+  title: string;
+  description: string;
 }
 export interface ItemVersion {
   display_name: string;

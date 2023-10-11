@@ -911,3 +911,73 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         config=config,
         desired_status_code=200,
     )
+
+
+#def test_presigned_url()
+    # need two people, owner who removes access for other people. and other person who tries to access
+    # make an owner user fixture.
+
+    # test cases
+    # person has no metadata read access should fails
+    # person has metadata read but not dataset data read should fail
+    # dataset does not exist
+    # file path does not exist
+    # file path has ../..
+
+def test_presigned_url(dataset_io_fixture: Tuple[str, str]) -> None:
+
+    # Two datasets owned and created by Tokens.user1()
+    dataset_id_1, dataset_id_2 = dataset_io_fixture
+
+    # Desire to generate presigned url for metadata.json file in the dataset storage loc.
+    url_req = PresignedURLRequest(
+        dataset_id=dataset_id_1,
+        file_path="metadata.json" 
+    )
+
+    url_resp = get_presigned_url_successfully(pre_signed_url_req=url_req, token=Tokens.user1())
+
+    # check content matches
+    downloaded_metadata = fetch_url_content(url_resp.presigned_url)
+    fetched_metadata = fetch_dataset_metadata(dataset_id=dataset_id_1, token=Tokens.user1())
+    assert downloaded_metadata==fetched_metadata, f"Downloaded metadata does not match fetched metadata"
+
+
+    # give path that does not exist and check fail
+    url_req_wrong_path = PresignedURLRequest(
+        dataset_id=dataset_id_1,
+        file_path="fake_path_123456.json" 
+    )
+    get_presigned_url_status_code(pre_signed_url_req=url_req_wrong_path, token=Tokens.user1(), desired_status_code=400)
+
+    # give path that has ../.. and check fail
+    url_req_illegal_path = PresignedURLRequest(
+        dataset_id=dataset_id_1,
+        file_path="../../metadata.json" 
+    )
+    get_presigned_url_status_code(pre_signed_url_req=url_req_illegal_path, token=Tokens.user1(), desired_status_code=400)
+
+    # remove dataset read and write check fail (401) (attempt as user 2)
+    remove_general_access_from_item(id=dataset_id_1, item_subtype=ItemSubType.DATASET, token=Tokens.user1())
+    get_presigned_url_successfully(pre_signed_url_req=url_req, token=Tokens.user1()) # works for owner
+    resp=get_presigned_url_status_code(pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=401) # not for others
+    print(resp.text)
+
+    # check with metadata read but not dataset read (401) (attemp at user 2)
+    give_general_read_access(id=dataset_id_1, item_subtype=ItemSubType.DATASET, token=Tokens.user1())
+    resp=get_presigned_url_status_code(pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=401) 
+    print(resp.text)
+
+    # give back both metadata and dataset read, check OK
+    set_general_access_roles(id=dataset_id_1, general_access_roles=['metadata-read','dataset-data-read'],item_subtype=ItemSubType.DATASET, token=Tokens.user1())
+    get_presigned_url_status_code(pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=200)
+    # check content matches
+    downloaded_metadata = fetch_url_content(url_resp.presigned_url)
+    assert downloaded_metadata==fetched_metadata, f"Downloaded metadata does not match fetched metadata"
+
+    # finally, try for a dataset ID that doesn't exist
+    url_req_nonexistant_id = PresignedURLRequest(
+        dataset_id="1234234344",
+        file_path="metadata.json" 
+    )
+    get_presigned_url_status_code(pre_signed_url_req=url_req_nonexistant_id, token=Tokens.user2(), desired_status_code=400)

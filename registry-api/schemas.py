@@ -1,5 +1,5 @@
 from SharedInterfaces.RegistryModels import *
-from helpers.item_type_route_generator import ItemModelTypeVar
+from route_models import ItemModelTypeVar
 
 DISPLAY_NAME_LABEL = "Enter a brief name, label or title for this resource."
 
@@ -8,6 +8,18 @@ DISPLAY_NAME_LABEL = "Enter a brief name, label or title for this resource."
 UI_SCHEMA_OVERRIDES: Dict[ItemModelTypeVar, Dict[str, Any]] = {  # type: ignore
     ItemModelRun: {
         # This should not be registered through UI
+    },
+    ItemStudy: {
+        "ui:title": "Study",
+        "display_name": {
+            "ui:description": DISPLAY_NAME_LABEL,
+        },
+        'title': {
+            'ui:description': "Please provide a complete title which identifies this Study.",
+        },
+        'description': {
+            'ui:description': "Please provide any additional relevant description about this Study activity."
+        },
     },
     ItemOrganisation: {
         "ui:title": "Organisation",

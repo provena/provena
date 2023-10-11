@@ -384,16 +384,16 @@ def end_to_end_mint(
             item_is_seed=False,
         )
 
-    import routes.registry.items as items
+    import helpers.registry_api_helpers as registry_api_helpers
     monkeypatch.setattr(
-        items,
+        registry_api_helpers,
         'user_fetch_dataset_from_registry',
         mocked_user_fetch_dataset_from_registry
     )
 
     fetch_resp = client.get('registry/items/fetch-dataset',
                             params={"handle_id": mint_response.handle})
-    assert fetch_resp.status_code == 200
+    assert fetch_resp.status_code == 200, f"Should have gotten 200. Got {fetch_resp.status_code}. Details: {fetch_resp.json()}"
     registryFetchResponse = RegistryFetchResponse.parse_obj(fetch_resp.json())
     fetched_item = registryFetchResponse.item
     assert fetched_item

@@ -64,6 +64,7 @@ class AuthRolesResponse(BaseModel):
 
 # Shared models
 
+
 class QueryRecordTypes(str, Enum):
     # All types are returned - no filters
     ALL = "ALL"
@@ -72,11 +73,13 @@ class QueryRecordTypes(str, Enum):
     # Only complete items are returned (DEFAULT)
     COMPLETE_ONLY = "COMPLETE_ONLY"
 
+
 class QueryDatasetReleaseStatusType(str, Enum):
     # should mirror ReleaseStatus in RegistryModels.py
     NOT_RELEASED = "NOT_RELEASED"
     PENDING = "PENDING"
     RELEASED = "RELEASED"
+
 
 class QueryFilter(BaseModel):
     item_category: Optional[ItemCategory]
@@ -90,7 +93,6 @@ class SortType(str, Enum):
     UPDATED_TIME = "UPDATED_TIME"
     DISPLAY_NAME = "DISPLAY_NAME"
     RELEASE_TIMESTAMP = "RELEASE_TIMESTAMP"
-    
 
 
 # newest first (assuming timestamp)
@@ -105,28 +107,28 @@ class SortOptions(BaseModel):
 class SubtypeFilterOptions(BaseModel):
     # all filters that are not subtype specific
     record_type: QueryRecordTypes = QueryRecordTypes.COMPLETE_ONLY
-    
+
 
 class FilterOptions(SubtypeFilterOptions):
     item_subtype: Optional[ItemSubType]
-    #release_status: Optional[ReleasedStatus] # changing this to be a post filter
+    # release_status: Optional[ReleasedStatus] # changing this to be a post filter
     release_reviewer: Optional[IdentifiedResource]
     release_status: Optional[QueryDatasetReleaseStatusType]
 
-    #validate not having both values present
+    # validate not having both values present
     @root_validator
-    def validate_filter_options(cls: Any, values: Dict[str,Any])->Dict[str,Any]:
+    def validate_filter_options(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
         if values.get("item_subtype") and values.get("release_status"):
-            raise ValueError("Cannot filter by both item_subtype and release_status")
+            raise ValueError(
+                "Cannot filter by both item_subtype and release_status")
         return values
-
-    
 
 
 class FilterType(str, Enum):
     ITEM_SUBTYPE = "ITEM_SUBTYPE"
     RELEASE_REVIEWER = "RELEASE_REVIEWER"
-    #RELEASE_STATUS = "RELEASE_STATUS"
+    # RELEASE_STATUS = "RELEASE_STATUS"
+
 
 PaginationKey = Dict[str, Any]
 
@@ -156,9 +158,8 @@ class GeneralListRequest(BaseModel):
 class ListUserReviewingDatasetsRequest(BaseModel):
     pagination_key: Optional[PaginationKey]
     page_size: int = DEFAULT_PAGE_SIZE
-    sort_by: Optional[SortOptions] 
-    filter_by: FilterOptions # must provide reviewer user id. 
-
+    sort_by: Optional[SortOptions]
+    filter_by: FilterOptions  # must provide reviewer user id.
 
 
 class SchemaResponse(BaseModel):
@@ -210,6 +211,7 @@ class PaginatedDatasetListResponse(StatusResponse):
     # Returned by previous paginations and used to indicate start of next query
     pagination_key: Optional[PaginationKey]
 
+
 class UpdateResponse(StatusResponse):
     # if this item has provenance enabled versioning AND the update was from
     # seed -> complete
@@ -236,8 +238,10 @@ class VersionResponse(BaseModel):
     # Version activity provenance
     version_job_session_id: str
 
+
 class FetchItemRequest(BaseModel):
     item_id: IdentifiedResource
+
 
 class ProxyItemFetchRequest(FetchItemRequest):
     username: str
@@ -356,6 +360,26 @@ class CreateFetchResponse(GenericFetchResponse):
 
 class CreateListResponse(GenericListResponse):
     items: Optional[List[ItemCreate]]
+
+
+# ===================================
+# Study (Activity <- Study)
+# ===================================
+
+class StudyFetchResponse(GenericFetchResponse):
+    item: Optional[Union[ItemStudy, SeededItem]]
+
+
+class StudySeedResponse(GenericSeedResponse):
+    None
+
+
+class StudyCreateResponse(GenericCreateResponse):
+    created_item: Optional[ItemStudy]
+
+
+class StudyListResponse(GenericListResponse):
+    items: Optional[List[ItemStudy]]
 
 
 # ================================================================

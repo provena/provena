@@ -8,6 +8,7 @@ from tests.helpers.link_helpers import *
 from resources.example_models import *
 from tests.config import config, Tokens
 from tests.helpers.fixtures import *
+from tests.helpers.prov_api_helpers import *
 
 
 def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
@@ -49,7 +50,7 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     )
     cleanup_items.append((input_template.item_subtype, input_template.id))
 
-    # cleanup create activity 
+    # cleanup create activity
     cleanup_create_activity_from_item_base(
         item=input_template,
         get_token=Tokens.user1
@@ -80,7 +81,7 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     )
     cleanup_items.append((output_template.item_subtype, output_template.id))
 
-    # cleanup create activity 
+    # cleanup create activity
     cleanup_create_activity_from_item_base(
         item=output_template,
         get_token=Tokens.user1
@@ -90,9 +91,8 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     model = create_item_successfully(
         item_subtype=ItemSubType.MODEL, token=write_token())
     cleanup_items.append((model.item_subtype, model.id))
-    
-    
-    # cleanup create activity 
+
+    # cleanup create activity
     cleanup_create_activity_from_item_base(
         item=model,
         get_token=Tokens.user1
@@ -117,13 +117,13 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     mrwt = create_item_from_domain_info_successfully(
         item_subtype=ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE, token=write_token(), domain_info=mrwt_domain_info)
     cleanup_items.append((mrwt.item_subtype, mrwt.id))
-    
-    # cleanup create activity 
+
+    # cleanup create activity
     cleanup_create_activity_from_item_base(
         item=mrwt,
         get_token=Tokens.user1
     )
-    
+
     # create model run to register
     model_run_record = ModelRunRecord(
         workflow_template_id=mrwt.id,
@@ -158,10 +158,59 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     )
 
     # register model run
-    model_run_record = register_modelrun_from_record_info_successfully(
+    response_model_run_record = register_modelrun_from_record_info_successfully(
         get_token=write_token, model_run_record=model_run_record)
-    model_run_id = model_run_record.id
+    model_run_id = response_model_run_record.id
     cleanup_items.append((ItemSubType.MODEL_RUN, model_run_id))
+
+    # create model run to register including a linked study
+    study = create_item_successfully(
+        item_subtype=ItemSubType.STUDY, token=write_token())
+    cleanup_items.append((study.item_subtype, study.id))
+
+    model_run_record.study_id = study.id
+
+    # register model run
+    response_model_run_record = register_modelrun_from_record_info_successfully(
+        get_token=write_token, model_run_record=model_run_record)
+    model_run_id = response_model_run_record.id
+    cleanup_items.append((ItemSubType.MODEL_RUN, model_run_id))
+
+
+    # - check the prov graph lineage is appropriate
+
+    # The lineage should have 
+    
+    activity_upstream_query = successful_basic_prov_query(
+        start=model_run_id,
+        direction=Direction.UPSTREAM,
+        depth=1,
+        token=Tokens.user1()
+    )
+
+    # model run -wasInformedBy-> study
+    assert_non_empty_graph_property(
+        prop=GraphProperty(
+            type="wasInformedBy",
+            source=model_run_id,
+            target=study.id
+        ),
+        lineage_response=activity_upstream_query
+    )
+
+
+    # ensure invalid study id results in failure
+    model_run_record.study_id = '1234'
+
+    # register model run
+    failed, possible_model_run_record = register_modelrun_from_record_info_failed(
+        get_token=write_token, model_run_record=model_run_record, expected_code=400)
+
+    if not failed:
+        assert possible_model_run_record
+        model_run_id = possible_model_run_record.id
+        cleanup_items.append((ItemSubType.MODEL_RUN, model_run_id))
+        assert False, f"Model run registration with invalid study should have failed, but did not."
 
 
 def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
@@ -170,10 +219,9 @@ def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_p
     person = linked_person_fixture
     organisation = organisation_fixture
 
-
     # Data store API update workflow
     # ==============================
-    
+
     # use one of the provided datasets for testing
     id = dataset_io_fixture[0]
 
@@ -347,10 +395,9 @@ def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_p
 
     # check reason is not empty
     assert history_item.reason != ""
-    
-    # Clean up Create Activity 
+
+    # Clean up Create Activity
     cleanup_create_activity_from_item_base(item=item, get_token=write_token)
-    
 
     # grant write
     # --------------

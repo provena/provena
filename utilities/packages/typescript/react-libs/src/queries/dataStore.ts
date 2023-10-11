@@ -1,5 +1,7 @@
 import {
-    RegistryFetchResponse, ReleaseApprovalRequestResponse,
+    PresignedURLResponse,
+    RegistryFetchResponse,
+    ReleaseApprovalRequestResponse,
 } from "../shared-interfaces/DataStoreAPI";
 import { requests } from "../stores/apiagent";
 import { requestErrToMsg } from "../util/util";
@@ -87,6 +89,27 @@ export const approvalAction = (props: ApproverActionProps) => {
         )
         .then((res) => {
             const resJson = res as ReleaseApprovalRequestResponse;
+            return resJson;
+        })
+        .catch((err) => {
+            return Promise.reject(requestErrToMsg(err));
+        });
+};
+
+export interface GetPresignedUrlInputs {
+    path: string;
+    datasetId: string;
+}
+
+export const getPresignedUrl = (props: GetPresignedUrlInputs) => {
+    const endpoint = DATA_STORE_API_ENDPOINTS.SIGN_DATASET;
+    return requests
+        .post(endpoint, {
+            dataset_id: props.datasetId,
+            file_path: props.path,
+        })
+        .then((res) => {
+            const resJson = res as PresignedURLResponse;
             return resJson;
         })
         .catch((err) => {

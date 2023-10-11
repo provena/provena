@@ -973,6 +973,13 @@ export const STRING_RENDER_OVERRIDES: AllFieldRendererMap<string> = new Map([
         }),
     ],
     [
+        "study_id",
+        subtypedIdResolverOverrideGenerator({
+            subtype: "STUDY",
+            fieldnameOverride: "Study",
+        }),
+    ],
+    [
         "template_id",
         subtypedIdResolverOverrideGenerator({
             subtype: "DATASET_TEMPLATE",

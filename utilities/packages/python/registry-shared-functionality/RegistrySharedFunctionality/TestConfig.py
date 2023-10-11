@@ -549,6 +549,44 @@ route_params: List[RouteParameters] = [
             ]
         )
     ),
+
+    # ACTIVITY - STUDY
+    RouteParameters(
+        route="/activity/study",
+        name="Agent - Study",
+        category=ItemCategory.ACTIVITY,
+        subtype=ItemSubType.STUDY,
+        typing_information=TypeParameters[
+            StudyDomainInfo,
+            ItemStudy,
+            StudySeedResponse,
+            StudyFetchResponse,
+            StudyListResponse,
+            StudyCreateResponse
+        ](
+            domain_info=StudyDomainInfo,
+            item_model=ItemStudy,
+            seed_response=StudySeedResponse,
+            fetch_response=StudyFetchResponse,
+            list_response=StudyListResponse,
+            create_response=StudyCreateResponse
+        ),
+        model_examples=ModelExamples[StudyDomainInfo](
+            domain_info=[
+                StudyDomainInfo(
+                    display_name="Test Study 1",
+                    title="Test Study 1",
+                    description="Test Study 1"
+                ),
+                StudyDomainInfo(
+                    display_name="Test Study 2",
+                    title="Test Study 2",
+                    description="Test Study 2"
+                )
+            ]
+        )
+    ),
+
 ]
 
 # E.g. Create, Version

@@ -91,6 +91,9 @@ class ModelRunRecord(BaseModel):
     # provide a description of this run
     description: str
 
+    # is this model run part of a study?
+    study_id: Optional[str] = None
+
     # Associations of the record
     associations: AssociationInfo
 
@@ -105,19 +108,20 @@ class ModelRunRecord(BaseModel):
     def validate_start_and_end(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         start_time = values.get('start_time')
         end_time = values.get('end_time')
-        
+
         if start_time is not None and end_time is not None:
             if start_time > end_time:
-                raise ValueError(f"The 'start_time' value ({start_time}) must be smaller than or equal to the 'end_time' value ({end_time}).")
+                raise ValueError(
+                    f"The 'start_time' value ({start_time}) must be smaller than or equal to the 'end_time' value ({end_time}).")
         return values
-    
+
     # validate display name and description are not empty strings using the same validator
     @validator("display_name", "description")
     def string_must_not_be_empty(cls: Any, v: str) -> str:
         if v == "":
             raise ValueError("string must not be empty")
         return v
-    
+
     def make_annotations_searchable(self) -> str:
         annotation_strings = []
         if self.annotations:

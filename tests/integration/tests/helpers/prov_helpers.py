@@ -117,6 +117,49 @@ def register_modelrun_from_record_info_successfully(get_token: TokenGenerator, m
     return created_model_run_record
 
 
+def register_modelrun_from_record_info_failed(get_token: TokenGenerator, model_run_record: ModelRunRecord, expected_code: int) -> Tuple[bool, Optional[ProvenanceRecordInfo]]:
+    """Register a model run and assert that it failed.
+
+    Expects failure of initial stage.
+
+    Parameters
+    ----------
+    token : str
+        _description_
+    model_run_record : ModelRunRecord
+        The model run record to create.
+
+    Returns
+    -------
+    bool, Optional[ProvenanceRecordInfo]
+        True, None iff expected Code
+        False, details if the registration didn't fail - allows cleanup anyway
+    """
+
+    # create is done using the domain_info.record
+    create_resp = register_model_run_from_record_info(
+        token=get_token(), model_run_record=model_run_record)
+
+    if create_resp.status_code == 200:
+        lodge_resp = assert_succesfull_lodge_model_run_and_parse(
+            create_resp=create_resp)
+
+        session_id = lodge_resp.session_id
+        assert session_id
+
+        payload = wait_for_full_lifecycle(
+            session_id=session_id, get_token=get_token)
+
+        created_model_run_record = assert_succesfull_create_model_run_and_parse(
+            status=payload)
+
+        return False, created_model_run_record
+    elif create_resp.status_code == expected_code:
+        return True, None
+    else:
+        assert False, f"Status code was expected to be {expected_code} but was {create_resp.status_code}. Details: {create_resp.text}."
+
+
 Graph = Dict[str, Any]
 
 
@@ -166,4 +209,4 @@ def assert_non_empty_graph_property(prop: GraphProperty, lineage_response: Linea
     """
     g = lineage_response.graph
     assert g is not None, f"Empty graph when non empty graph was expected."
-    assert_graph_property(prop=prop, graph=g) 
+    assert_graph_property(prop=prop, graph=g)

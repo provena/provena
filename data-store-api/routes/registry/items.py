@@ -4,10 +4,15 @@ from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException
 from config import get_settings, Config
 from dependencies.dependencies import read_user_protected_role_dependency
+from helpers.auth_helpers import evaluate_user_access
+from helpers.s3_helpers import generate_presigned_url_for_download, get_dataset_files
 from helpers.registry_api_helpers import *
+from helpers.sanitize import sanitize_handle
+import re
 
 router = APIRouter()
 
+ILLEGAL_PATH_SUBSTRINGS = ["../", "/../", "..", "//", "\\", "\\\\"]
 
 @router.post("/list", response_model=DatasetListResponse, operation_id="list")
 async def list(
@@ -101,36 +106,62 @@ async def fetch_dataset(
         --------
     """
 
-    # Fetches all columns of the registry for a particular handle_id ("row")
-    if handle_id == "":
+    return fetch_dataset_helper(handle_id, protected_roles.user, config)
+
+
+@router.post('/generate-presigned-url', response_model=PresignedURLResponse, operation_id="generate_presigned_url")
+async def generate_presigned_url(
+    presigned_url_req: PresignedURLRequest,
+    protected_roles: ProtectedRole = Depends(
+        read_user_protected_role_dependency),
+    config: Config = Depends(get_settings)
+) -> PresignedURLResponse:
+
+    dataset_id = presigned_url_req.dataset_id
+    # relative path to file inside bucket/dataset_id.
+    file_path = presigned_url_req.file_path
+
+    # validate dataset id exists, and user has read access to it
+    try:
+        dataset_item = ensure_user_roles_access_to_dataset(
+            dataset_id=dataset_id, user=protected_roles.user, roles=[DATASET_READ_ROLE], config=config)
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=f"Failed to generate presigned url. Error: {e.detail}"
+        )
+
+    # validate file path does not do anything shifty or dodgy like ../
+    for illegal_string in ILLEGAL_PATH_SUBSTRINGS:
+        if illegal_string in file_path:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File path '{file_path}' contains '{illegal_string}' which is not allowed."
+            )
+
+    # create full path to compare with other full paths to items inside dataset_id
+    full_file_path = config.DATASET_PATH + '/' + sanitize_handle(dataset_id) + '/' + file_path
+
+    # validate file path exists in dataset
+    # list with entries formatted from root as 'datasets/{dataset_id}/{file_path}' to protect against ../../
+    dataset_file_paths = get_dataset_files(dataset_id, config)
+
+    if full_file_path not in dataset_file_paths:
         raise HTTPException(
             status_code=400,
-            detail="Empty string received for query handle_id"
+            detail=f"File path '{file_path}' does not exist in dataset with id {dataset_id}"
         )
 
-    # fetch the dataset from reg api - this will respect auth and raise
-    # appropriate error - it also checks that the item exists in the payload and that
-    # success was true - it includes roles as well
-    try:
-        registry_item = user_fetch_dataset_from_registry(
-            id=handle_id,
-            config=config,
-            user=protected_roles.user
-        )
-    except HTTPException as e:
-        # something has handled this responsibly in fast API format so just
-        # raise the error
-        raise e
-    except Exception as e:  # all other errors.
-        raise Exception(
-            f"Something unexpected went wrong during data retrieval. Error: {e}")
+    # generate presigned url using scoped credentials to the s3 location of the dataset
+    url = generate_presigned_url_for_download(
+        path=full_file_path,
+        expires_in=presigned_url_req.expires_in,
+        s3_loc=dataset_item.s3,
+        config=config
+    )
 
-    return RegistryFetchResponse(
-        status=Status(
-            success=True,
-            details=f"Successfully fetched data for handle '{handle_id}'"
-        ),
-        item=registry_item.item,
-        roles=registry_item.roles,
-        locked=registry_item.locked
+    return PresignedURLResponse(
+        dataset_id=dataset_id,
+        file_path=file_path,
+        presigned_url=url
     )

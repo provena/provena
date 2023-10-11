@@ -1,8 +1,12 @@
 from __future__ import annotations
 from typing import Dict, Any, List, Optional, Tuple, Union, ForwardRef
-from pydantic import BaseModel, HttpUrl, AnyHttpUrl, Extra
+from pydantic import BaseModel, Field, HttpUrl, AnyHttpUrl, Extra, validator
 from datetime import datetime, date
 from enum import Enum
+
+HOURS_TO_SECS = 3600
+
+
 # Interface exports prefer relative imports
 # where as pip install prefers module level import
 try:
@@ -218,3 +222,19 @@ class ActionApprovalRequestResponse(BaseModel):
     dataset_id: IdentifiedResource
     approved: bool
     details: str
+
+
+class PresignedURLRequest(BaseModel):
+    dataset_id: IdentifiedResource
+    file_path: str
+    expires_in: int = Field(
+        HOURS_TO_SECS*3, 
+        description="The number of seconds the presigned URL is valid for. Defaults to 3 hours (3600*3).",
+        ge=1,
+        le=HOURS_TO_SECS*24,
+    )
+
+class PresignedURLResponse(BaseModel):
+    dataset_id: IdentifiedResource
+    file_path: str
+    presigned_url: str

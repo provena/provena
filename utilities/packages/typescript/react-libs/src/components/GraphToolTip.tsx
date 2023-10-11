@@ -5,9 +5,9 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
+import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
-import { Theme } from "@mui/material/styles";
 import { HoverData } from "../hooks/useProvGraphData";
 import { mapSubTypeToPrettyName } from "../util";
 
@@ -128,6 +128,27 @@ export const GraphToolTip = (props: GraphToolTipProps) => {
                             </Grid>
                         </Grid>
                     ) : null}
+                    {!!props.hoverData.item.versioning_info && (
+                        <Grid container>
+                            <Grid item xs={4}>
+                                <Typography
+                                    variant="caption"
+                                    className={classes.itemPropertyName}
+                                >
+                                    VERSION
+                                </Typography>
+                            </Grid>
+
+                            <Grid item xs={8}>
+                                <Typography variant="caption">
+                                    {
+                                        props.hoverData.item.versioning_info
+                                            .version
+                                    }
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    )}
                 </Grid>
             )}
         </div>

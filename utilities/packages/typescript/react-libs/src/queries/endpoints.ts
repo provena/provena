@@ -193,6 +193,9 @@ export const DATA_STORE_API_ENDPOINTS = {
     LIST_DATASETS: DATA_STORE_API_URL + "/registry/items/list",
     FETCH_DATASET: DATA_STORE_API_URL + "/registry/items/fetch-dataset",
 
+    // Get presigned url
+    SIGN_DATASET: DATA_STORE_API_URL + "/registry/items/generate-presigned-url",
+
     // Access
     DESCRIBE_ACCESS:
         DATA_STORE_API_URL + "/registry/access/describe-dataset-access",

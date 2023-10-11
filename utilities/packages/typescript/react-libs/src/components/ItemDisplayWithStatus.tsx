@@ -1,7 +1,19 @@
-import { Alert, CircularProgress, Grid } from "@mui/material";
-import { ItemBase } from "../shared-interfaces/RegistryModels";
+import {
+    Alert,
+    CircularProgress,
+    Divider,
+    Grid,
+    Stack,
+    Typography,
+} from "@mui/material";
 import { LoadedEntity } from "../interfaces";
-import { ColumnLayoutConfig, DetailLayoutOptions, JsonDetailViewWrapperComponent } from "./JsonRenderer";
+import { ItemBase } from "../shared-interfaces/RegistryModels";
+import { getSwatchForSubtype, mapSubTypeToPrettyName } from "../util";
+import {
+    ColumnLayoutConfig,
+    DetailLayoutOptions,
+    JsonDetailViewWrapperComponent,
+} from "./JsonRenderer";
 
 interface ItemDisplayWithStatusComponentProps {
     // Always need to provide the id as a fallback for unloaded items
@@ -29,6 +41,8 @@ export const ItemDisplayWithStatusComponent = (
     const item = props.status.data;
     const readyToDisplay = item !== undefined;
 
+    const baseSwatch = getSwatchForSubtype(item?.item_subtype);
+
     return (
         <div style={{ width: "100%" }}>
             {!props.disabled &&
@@ -50,11 +64,36 @@ export const ItemDisplayWithStatusComponent = (
                     </Alert>
                 ) : (
                     readyToDisplay && (
-                        <JsonDetailViewWrapperComponent
-                            item={item!}
-                            layout={props.layout}
-                            layoutConfig={props.columnLayout}
-                        />
+                        <Stack direction="column">
+                            {/* Entity's subtype and its version number, if has  */}
+                            <Stack direction="row">
+                                <Typography variant="h6">
+                                    {mapSubTypeToPrettyName(item.item_subtype)}
+                                </Typography>
+                                {!!item.versioning_info && (
+                                    <Typography variant="h6">
+                                        <span>
+                                            &nbsp;(V
+                                            {item.versioning_info.version})
+                                        </span>
+                                    </Typography>
+                                )}
+                            </Stack>
+                            <Divider
+                                sx={{
+                                    borderColor: `${baseSwatch.colour}`,
+                                    borderStyle: "dotted",
+                                }}
+                            />
+                            {/* Entity details */}
+                            <Grid paddingTop={2}>
+                                <JsonDetailViewWrapperComponent
+                                    item={item!}
+                                    layout={props.layout}
+                                    layoutConfig={props.columnLayout}
+                                />
+                            </Grid>
+                        </Stack>
                     )
                 ))}
         </div>

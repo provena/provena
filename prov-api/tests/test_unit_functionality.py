@@ -128,6 +128,27 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         validate_organisation_id_mock
     )
 
+    # validate study ID
+
+    async def validate_study_id_mock(id: str, config: Config, request_style: RequestStyle) -> Union[ItemStudy, SeededItem, str]:
+        return ItemStudy(
+            id=id,
+            owner_username="1234",
+            created_timestamp=int(datetime.now().timestamp()),
+            updated_timestamp=int(datetime.now().timestamp()),
+            display_name="test",
+            title="Test Study",
+            description="Test Study",
+            history=[],
+            record_type=RecordType.COMPLETE_ITEM
+        )
+
+    monkeypatch.setattr(
+        helpers.validate_model_run_record,
+        'validate_study_id',
+        validate_study_id_mock
+    )
+
     # helper function to generate model run workflow template mocks
 
     def produce_mocked_validate_workflow(input_templates: List[TemplateResource], output_templates: List[TemplateResource], annotations: Optional[WorkflowTemplateAnnotations]) -> Any:
@@ -282,6 +303,48 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     assert not success, f"Validation should've failed with an end time before the start time."
 
+    # try setting up a study ID - should succeed
+    model_run_record_invalid_study_id = ModelRunRecord.parse_obj(
+        model_run_record.dict())
+
+    model_run_record_invalid_study_id.study_id = "1234"
+
+    # lodge it and make sure it validates
+    success, error = await helpers.validate_model_run_record.validate_model_run_record(
+        record=model_run_record_invalid_study_id,
+        config=fake_config,
+        request_style=fake_request_style
+    )
+
+    assert success, f"Providing study id with mocked validation response should have succeeded"
+
+    # validate study ID
+
+    async def non_valid_study_id_mock(id: str, config: Config, request_style: RequestStyle) -> Union[ItemStudy, SeededItem, str]:
+        return "Test setup to fail id for study id"
+
+    monkeypatch.setattr(
+        helpers.validate_model_run_record,
+        'validate_study_id',
+        non_valid_study_id_mock
+    )
+
+    # lodge it and make sure it doesn't validate
+    success, error = await helpers.validate_model_run_record.validate_model_run_record(
+        record=model_run_record_invalid_study_id,
+        config=fake_config,
+        request_style=fake_request_style
+    )
+
+    assert not success, f"Providing study id with mocked invalid response should have failed"
+
+    # return mock
+    monkeypatch.setattr(
+        helpers.validate_model_run_record,
+        'validate_study_id',
+        validate_study_id_mock
+    )
+
     # Now let's try adding a resource with a key + an annotation
 
     # Test a successful validation with no annotations or deferred resources
@@ -357,8 +420,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -389,8 +452,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -421,8 +484,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -452,8 +515,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -485,8 +548,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -518,8 +581,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -551,8 +614,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -584,8 +647,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={
@@ -616,8 +679,8 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
         )],
         associations=AssociationInfo(
             modeller_id="modeller", requesting_organisation_id="organisation"),
-        display_name = "test display name",
-        description= "test description",
+        display_name="test display name",
+        description="test description",
         start_time=int(datetime.now().timestamp()),
         end_time=int(datetime.now().timestamp()),
         annotations={

@@ -16,6 +16,7 @@ export const entityTypes: ItemSubType[] = [
     "WORKFLOW_RUN",
     "CREATE",
     "VERSION",
+    "STUDY",
 ];
 
 export const filterableEntityTypes: ItemSubType[] = [
@@ -28,6 +29,7 @@ export const filterableEntityTypes: ItemSubType[] = [
     "PERSON",
     "CREATE",
     "VERSION",
+    "STUDY",
 ];
 
 export const searchableEntityTypes: ItemSubType[] = [
@@ -40,6 +42,7 @@ export const searchableEntityTypes: ItemSubType[] = [
     "PERSON",
     "CREATE",
     "VERSION",
+    "STUDY",
 ];
 
 export const registerableEntityTypes: ItemSubType[] = [
@@ -49,6 +52,7 @@ export const registerableEntityTypes: ItemSubType[] = [
     "MODEL_RUN_WORKFLOW_TEMPLATE",
     "ORGANISATION",
     "PERSON",
+    "STUDY",
 ];
 
 export const entityRegisterDocumentationMap: Map<ItemSubType, string> = new Map(
@@ -77,6 +81,11 @@ export const entityRegisterDocumentationMap: Map<ItemSubType, string> = new Map(
             "PERSON",
             DOCUMENTATION_BASE_URL +
                 "/provenance/registering-model-runs/establishing-required-entities.html#person",
+        ],
+        [
+            "STUDY",
+            DOCUMENTATION_BASE_URL +
+                "/provenance/registering-model-runs/establishing-required-entities.html#study",
         ],
     ]
 );

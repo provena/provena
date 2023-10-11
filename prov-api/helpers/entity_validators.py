@@ -451,6 +451,48 @@ async def validate_person_id(id: str, request_style: RequestStyle, config: Confi
     elif isinstance(error_or_value, ItemBase):
         return ItemPerson(**error_or_value.dict())
 
+@cached(ttl=CACHE_TTL, cache=CACHE_TYPE)
+async def validate_study_id(id: str, request_style: RequestStyle, config: Config) -> Union[ItemStudy, SeededItem, str]:
+    """    validate_organisation_id
+        Validates a Study activity by ID
+
+        Arguments
+        ----------
+        id : str
+            The handle ID
+
+        Returns
+        -------
+         : Union[ItemStudy, SeededItem, str]
+            ItemStudy if full record
+            SeededItem if seed
+            Str if error
+
+        See Also (optional)
+        --------
+
+        Examples (optional)
+        --------
+    """
+    # endpoint to target
+    postfix = "/registry/activity/study"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
+
+    error_or_value = await validate_by_id(
+        id=id,
+        base_endpoint=endpoint,
+        fetch_response_class=StudyFetchResponse,
+        config=config,
+        request_style=request_style
+    )
+
+    if isinstance(error_or_value, str):
+        return error_or_value
+    if isinstance(error_or_value, SeededItem):
+        return error_or_value
+    elif isinstance(error_or_value, ItemBase):
+        return ItemStudy(**error_or_value.dict())
+
 
 @cached(ttl=CACHE_TTL, cache=CACHE_TYPE)
 async def validate_organisation_id(id: str, request_style: RequestStyle, config: Config) -> Union[ItemOrganisation, SeededItem, str]:

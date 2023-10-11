@@ -11,6 +11,7 @@ export type ItemCategory = "ACTIVITY" | "AGENT" | "ENTITY";
 export type ItemSubType =
   | "WORKFLOW_RUN"
   | "MODEL_RUN"
+  | "STUDY"
   | "CREATE"
   | "VERSION"
   | "PERSON"
@@ -329,6 +330,19 @@ export interface PossibleRocrate {
   };
   error_message?: string;
 }
+export interface PresignedURLRequest {
+  dataset_id: string;
+  file_path: string;
+  /**
+   * The number of seconds the presigned URL is valid for. Defaults to 3 hours (3600*3).
+   */
+  expires_in?: number;
+}
+export interface PresignedURLResponse {
+  dataset_id: string;
+  file_path: string;
+  presigned_url: string;
+}
 export interface ROConnectionExpandedIdName {
   name: string;
   to: RONode;
@@ -407,6 +421,7 @@ export interface ModelRunRecord {
   };
   display_name: string;
   description: string;
+  study_id?: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;
@@ -781,6 +796,33 @@ export interface SoftwareDomainInfo {
   description: string;
   documentation_url: string;
   source_url: string;
+}
+export interface ItemStudy {
+  display_name: string;
+  title: string;
+  description: string;
+  history: HistoryEntryStudyDomainInfo[];
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category?: ItemCategory & string;
+  item_subtype?: ItemSubType & string;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface HistoryEntryStudyDomainInfo {
+  id: number;
+  timestamp: number;
+  reason: string;
+  username: string;
+  item: StudyDomainInfo;
+}
+export interface StudyDomainInfo {
+  display_name: string;
+  title: string;
+  description: string;
 }
 export interface ItemVersion {
   display_name: string;
