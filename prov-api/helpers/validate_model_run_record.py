@@ -98,6 +98,16 @@ async def validate_model_run_record(record: ModelRunRecord, request_style: Reque
     if record.description == "":
         return False, f"Description cannot be empty string"
 
+    # validate study if linked
+    study = record.study_id
+    if study is not None:
+        study_response = await validate_study_id(id=study, request_style=request_style, config=config)
+        # ensure exists and complete
+        if isinstance(study_response, str):
+            return False, f"Provided model run workflow definition with id {study} was not a valid id, error: {study_response}"
+        if isinstance(study_response, SeededItem):
+            return False, f"Provided model run workflow definition with id {study} is an incomplete seed record."
+
     # validate workflow definition
     # ----------------------------
 

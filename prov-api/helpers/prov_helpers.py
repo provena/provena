@@ -287,6 +287,19 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
     )
     universal_activity_map[record_id] = model_run_activity
 
+    # Create study if provided
+    study_id = model_record.study_id
+    if study_id is not None:
+        study_node: prov.ProvActivity = document.activity(
+            identifier=study_id,
+            other_attributes=produce_attribute_set(
+                item_category=ItemCategory.ACTIVITY,
+                item_subtype=ItemSubType.STUDY,
+                id=study_id
+            )
+        )
+        universal_activity_map[study_id] = study_node
+
     # Add input datasets
 
     # pull out templates and produce a map from template ID to dataset that fulfils it
@@ -445,6 +458,12 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
     CREATE RELATIONS
     ================
     """
+
+    # if the model run is part of study, Model Run - wasInformedBy -> Study
+    if study_id is not None:
+        model_run_activity.wasInformedBy(
+            informant=universal_activity_map[study_id]
+        )
 
     # model run used input datasets
     for dataset_list in input_dataset_template_object_map.values():

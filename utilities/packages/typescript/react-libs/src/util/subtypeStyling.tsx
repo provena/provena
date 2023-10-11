@@ -6,6 +6,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
 import MultilineChartIcon from "@mui/icons-material/MultilineChart";
 import PersonIcon from "@mui/icons-material/Person";
+import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import TimelapseIcon from "@mui/icons-material/Timelapse";
 import AutoGraph from "@mui/icons-material/AutoGraph";
@@ -32,6 +33,7 @@ export interface SwatchCollection {
     workflowDefinitonSwatch: Swatch;
     createSwatch: Swatch;
     versionSwatch: Swatch;
+    studySwatch: Swatch;
     defaultSwatch: Swatch;
 }
 
@@ -101,6 +103,11 @@ export const Swatches: SwatchCollection = {
         tintColour: "#ad83b0",
         shadeColour: "#653969",
     },
+    studySwatch: {
+        colour: "#03adfc",
+        tintColour: "#6fccf7",
+        shadeColour: "#1b8bbf",
+    },
     defaultSwatch: {
         colour: "#500778",
         tintColour: "#810bc2",
@@ -147,6 +154,9 @@ export const getSwatchForSubtype = (subtype: ItemSubType | undefined) => {
         case "VERSION":
             baseSwatch = Swatches.versionSwatch;
             break;
+        case "STUDY":
+            baseSwatch = Swatches.studySwatch;
+            break;
         default:
             baseSwatch = Swatches.defaultSwatch;
             break;
@@ -187,6 +197,8 @@ export const assignIcon = (
             return <GradingIcon className={specifiedClass} />;
         case "WORKFLOW_RUN":
             return <TimelapseIcon className={specifiedClass} />;
+        case "STUDY":
+            return <StickyNote2Icon className={specifiedClass} />;
         default:
             return null;
     }

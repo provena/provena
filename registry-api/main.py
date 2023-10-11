@@ -18,6 +18,7 @@ from RegistrySharedFunctionality.RegistryRouteActions import DATA_STORE_SERVICE_
 import warnings
 from schemas import UI_SCHEMA_OVERRIDES, JSON_SCHEMA_OVERRIDES
 from RegistrySharedFunctionality.RegistryRouteActions import RouteActions, PROXY_EDIT_ROUTE_ACTIONS, STANDARD_ROUTE_ACTIONS, DATASET_ROUTE_ACTIONS, MODEL_RUN_ROUTE_ACTIONS
+from route_models import RouteConfig
 
 # Setup app
 app = FastAPI()
@@ -64,6 +65,7 @@ ITEM_SUB_TYPE_ROUTE_MAP: Dict[ItemSubType, str] = {
     ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE: "model_run_workflow",
     ItemSubType.DATASET_TEMPLATE: "dataset_template",
     ItemSubType.DATASET: "dataset",
+    ItemSubType.STUDY: "study",
 
     # These are read only routes which are directly controlled by async
     # jobs/side effects
@@ -72,59 +74,9 @@ ITEM_SUB_TYPE_ROUTE_MAP: Dict[ItemSubType, str] = {
 }
 
 
-@dataclass
-class RouteConfig(Generic[ItemModelTypeVar,
-                          ItemDomainInfoTypeVar,
-                          SeedResponseTypeVar,
-                          FetchResponseTypeVar,
-                          CreateResponseTypeVar,
-                          ListResponseTypeVar]):
-    tags: List[str]
-
-    # what actions should be enabled for this type
-    desired_actions: List[RouteActions]
-    desired_category: ItemCategory
-    desired_subtype: ItemSubType
-
-    # The following don't cooperate perfectly with
-    # mypy - the arguments should be Classes which are
-    # subclasses of the generic bases e.g. ItemBase
-    # Generic<Action>Response etc.
-    item_model_type: Type[ItemModelTypeVar]
-    item_domain_info_type: Type[ItemDomainInfoTypeVar]
-    seed_response_type: Optional[Type[SeedResponseTypeVar]]
-    fetch_response_type: Type[FetchResponseTypeVar]
-    create_response_type: Optional[Type[CreateResponseTypeVar]]
-    list_response_type: Type[ListResponseTypeVar]
-
-    # Specify a ui schema override which lets the
-    # front end know how to render specific views
-    ui_schema: Optional[Dict[str, Any]]
-    json_schema_override: Optional[Dict[str, Any]]
-
-    # client library route prefix
-    library_postfix: str
-
-    # authorisation roles
-    available_roles: Roles
-    default_roles: Roles
-
-    # The user must have at least one of these roles for the API to accept
-    # requests
-    limited_access_roles: Optional[Dict[RouteActions, Roles]] = None
-
-    # Should this item type enforce the user having a linked Person?
-    enforce_username_person_link: bool = False
-
-    # Should this subtype apply provenance enabled versioning?
-    provenance_enabled_versioning: bool = False
-
-
 # Can add more registry sub routes by adding to this config
 # list - might need to add more models in the SharedInterfaces
 # RegistryModels file.
-
-
 normal_default_roles: Roles = [METADATA_READ_ROLE]
 dataset_default_roles: Roles = [METADATA_READ_ROLE, DATASET_READ_ROLE]
 
@@ -321,6 +273,33 @@ route_configs: List[RouteConfig] = [
         provenance_enabled_versioning=True
     ),
     # ACTIVITY
+    # Study
+    RouteConfig(
+        desired_actions=outfit_with_prov_versioning(
+            base_actions=STANDARD_ROUTE_ACTIONS,
+            subtype=ItemSubType.STUDY,
+            proxy=False
+        ),
+        tags=['Study'],
+        item_model_type=ItemStudy,
+        item_domain_info_type=StudyDomainInfo,
+        seed_response_type=StudySeedResponse,
+        fetch_response_type=StudyFetchResponse,
+        create_response_type=StudyCreateResponse,
+        list_response_type=StudyListResponse,
+        desired_category=ItemCategory.ACTIVITY,
+        desired_subtype=ItemSubType.STUDY,
+        ui_schema=UI_SCHEMA_OVERRIDES.get(ItemStudy),
+        json_schema_override=JSON_SCHEMA_OVERRIDES.get(ItemStudy),
+        library_postfix="activity_study",
+        available_roles=ENTITY_BASE_ROLE_LIST,
+        default_roles=normal_default_roles,
+        # We will associate with a person in the lodged prov job - let's enforce
+        # it
+        enforce_username_person_link=True,
+        # TODO implement 'create only' provenance versioning mode
+        provenance_enabled_versioning=False
+    ),
     # Activity: Registry Create
     RouteConfig(
         desired_actions=READ_ONLY_ROUTE_ACTIONS,
@@ -394,23 +373,7 @@ route_configs: List[RouteConfig] = [
 for r_config in route_configs:
     # Generate router
     router = generate_router(
-        desired_actions=r_config.desired_actions,
-        desired_category=r_config.desired_category,
-        desired_subtype=r_config.desired_subtype,
-        item_model_type=r_config.item_model_type,
-        item_domain_info_type=r_config.item_domain_info_type,
-        seed_response_type=r_config.seed_response_type,
-        fetch_response_type=r_config.fetch_response_type,
-        create_response_type=r_config.create_response_type,
-        list_response_type=r_config.list_response_type,
-        ui_schema=r_config.ui_schema,
-        library_postfix=r_config.library_postfix,
-        available_roles=r_config.available_roles,
-        default_roles=r_config.default_roles,
-        limited_access_roles=r_config.limited_access_roles,
-        json_schema_override=r_config.json_schema_override,
-        enforce_username_person_link=r_config.enforce_username_person_link,
-        provenance_enabled_versioning=r_config.provenance_enabled_versioning
+        route_config=r_config,
     )
 
     # Work out nice prefix

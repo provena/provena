@@ -5,21 +5,11 @@ from SharedInterfaces.RegistryAPI import *
 from SharedInterfaces.RegistryModels import *
 from helpers.action_helpers import *
 from helpers.lock_helpers import *
-from typing import TypeVar, Type, Optional, cast
+from typing import Type, Optional, cast
 from config import Config, get_settings
 from RegistrySharedFunctionality.RegistryRouteActions import *
 from helpers.workflow_helpers import *
-
-
-SeedResponseTypeVar = TypeVar('SeedResponseTypeVar', bound=GenericSeedResponse)
-FetchResponseTypeVar = TypeVar(
-    'FetchResponseTypeVar', bound=GenericFetchResponse)
-ListResponseTypeVar = TypeVar(
-    'ListResponseTypeVar', bound=GenericListResponse)
-CreateResponseTypeVar = TypeVar(
-    'CreateResponseTypeVar', bound=GenericCreateResponse)
-ItemDomainInfoTypeVar = TypeVar('ItemDomainInfoTypeVar', bound=DomainInfoBase)
-ItemModelTypeVar = TypeVar('ItemModelTypeVar', bound=ItemBase)
+from route_models import *
 
 
 def get_correct_dependency(level: RouteAccessLevel) -> Any:
@@ -34,39 +24,21 @@ def get_correct_dependency(level: RouteAccessLevel) -> Any:
 
 
 def generate_router(
-        desired_actions: List[RouteActions],
-        desired_category: ItemCategory,
-        desired_subtype: ItemSubType,
-        item_model_type: Type[ItemModelTypeVar],
-        item_domain_info_type: Type[ItemDomainInfoTypeVar],
-        seed_response_type: Optional[Type[SeedResponseTypeVar]],
-        fetch_response_type: Type[FetchResponseTypeVar],
-        create_response_type: Optional[Type[CreateResponseTypeVar]],
-        list_response_type: Type[ListResponseTypeVar],
-        ui_schema: Optional[Dict[str, Any]],
-        json_schema_override: Optional[Dict[str, Any]],
-        library_postfix: str,
-        available_roles: Roles,
-        default_roles: Roles,
-        enforce_username_person_link: bool,
-        provenance_enabled_versioning: bool,
-        # if this entity type should only be usable via specific keycloak roles,
-        # they can be added here - this is an ANY constraint
-        limited_access_roles: Optional[Dict[RouteActions, Roles]] = None,
+        route_config: RouteConfig,
 ) -> APIRouter:
     router = APIRouter()
 
     action: RouteActions
-    route_config: RouteActionConfig
+    action_config: RouteActionConfig
 
     def limited_access_role_check(protected_roles: ProtectedRole, route_action: RouteActions, config: Config) -> None:
         # find current route config
-        route_config = ROUTE_ACTION_CONFIG_MAP[route_action]
+        action_config = ROUTE_ACTION_CONFIG_MAP[route_action]
 
         # pull out the route based limits or the model based limits
-        route_limited: Optional[Roles] = route_config.limited_access_roles
-        model_limited: Optional[Roles] = limited_access_roles.get(
-            route_action) if limited_access_roles else None
+        route_limited: Optional[Roles] = action_config.limited_access_roles
+        model_limited: Optional[Roles] = route_config.limited_access_roles.get(
+            route_action) if route_config.limited_access_roles else None
 
         if (route_limited or model_limited) and config.enforce_special_proxy_roles:
             # compile roles
@@ -168,20 +140,20 @@ def generate_router(
             )
 
     action = RouteActions.FETCH
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method], path=route_config.path,
-                          response_model=fetch_response_type,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method], path=action_config.path,
+                          response_model=route_config.fetch_response_type,
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def fetch_item(
             id: str,
             seed_allowed: bool = False,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> GenericFetchResponse:
             """    fetch_item
                 Fetches the item specified by the id from the 
@@ -218,7 +190,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.FETCH].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -227,33 +199,33 @@ def generate_router(
             response: GenericFetchResponse = fetch_helper(
                 id=id,
                 seed_allowed=seed_allowed,
-                item_model_type=item_model_type,
-                category=desired_category,
-                subtype=desired_subtype,
-                available_roles=available_roles,
+                item_model_type=route_config.item_model_type,
+                category=route_config.desired_category,
+                subtype=route_config.desired_subtype,
+                available_roles=route_config.available_roles,
                 user=protected_roles.user,
                 config=config,
                 service_proxy=False
             )
-            return fetch_response_type(
+            return route_config.fetch_response_type(
                 **response.dict()
             )
 
     action = RouteActions.LIST
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
-                          response_model=list_response_type,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
+                          response_model=route_config.list_response_type,
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def list_items(
             subtype_list_request: SubtypeListRequest,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level)),
+                get_correct_dependency(action_config.access_level)),
         ) -> GenericListResponse:
             """    list_items
                 Lists all items of the specified type (by route). Sorts items 
@@ -289,14 +261,14 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LIST].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
 
             # fixed subtype filter - pass in other parameters
             filter_by = FilterOptions(
-                item_subtype=desired_subtype,
+                item_subtype=route_config.desired_subtype,
                 record_type=subtype_list_request.filter_by.record_type if subtype_list_request.filter_by else QueryRecordTypes.COMPLETE_ONLY
             )
             sort_by = subtype_list_request.sort_by
@@ -317,35 +289,35 @@ def generate_router(
                 # pass through the items and pagination key
                 items=items,
                 pagination_key=returned_pagination_key,
-                item_model_type=item_model_type,
-                category=desired_category,
-                subtype=desired_subtype,
+                item_model_type=route_config.item_model_type,
+                category=route_config.desired_category,
+                subtype=route_config.desired_subtype,
                 user=protected_roles.user,
-                available_roles=available_roles,
+                available_roles=route_config.available_roles,
                 config=config,
             )
 
             # parse into specialised format
-            return list_response_type(
+            return route_config.list_response_type(
                 **generic_response.dict()
             )
 
     action = RouteActions.SEED
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        assert seed_response_type, f"Seed response type must be supplied for action {action}. Item category {desired_category} and subtype {desired_subtype}."
+    if action in route_config.desired_actions:
+        assert route_config.seed_response_type, f"Seed response type must be supplied for action {action}. Item category {route_config.desired_category} and subtype {route_config.desired_subtype}."
 
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
-                          response_model=seed_response_type,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
+                          response_model=route_config.seed_response_type,
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def seed_item(
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> GenericSeedResponse:
             """    seed_item
                 Posts a new empty item. This will mint a handle, 
@@ -377,37 +349,38 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.SEED].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
 
-            return seed_response_type(
+            assert route_config.seed_response_type
+            return route_config.seed_response_type(
                 ** (await seed_item_helper(
-                    category=desired_category,
-                    subtype=desired_subtype,
-                    default_roles=default_roles,
+                    category=route_config.desired_category,
+                    subtype=route_config.desired_subtype,
+                    default_roles=route_config.default_roles,
                     config=config,
                     user=protected_roles.user,
-                    versioning_enabled=provenance_enabled_versioning
+                    versioning_enabled=route_config.provenance_enabled_versioning
                 )).dict()
             )
 
     action = RouteActions.VERSION
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=VersionResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def version(
             version_request: VersionRequest,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> VersionResponse:
             """
             Runs a version versioning operation.
@@ -420,7 +393,7 @@ def generate_router(
             """
 
             # Ensure prov versioning is enabled!
-            if not provenance_enabled_versioning:
+            if not route_config.provenance_enabled_versioning:
                 raise HTTPException(
                     status_code=500,
                     detail=f"Version endpoint active without provenance versioning enabled. Error."
@@ -438,7 +411,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.VERSION].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 force_required=version_spinoff,
                 user=protected_roles.user,
                 config=config
@@ -453,13 +426,13 @@ def generate_router(
             version_info = await version_helper(
                 id=version_request.id,
                 reason=version_request.reason,
-                item_model_type=item_model_type,
-                domain_info_type=item_domain_info_type,
-                correct_category=desired_category,
-                correct_subtype=desired_subtype,
+                item_model_type=route_config.item_model_type,
+                domain_info_type=route_config.item_domain_info_type,
+                correct_category=route_config.desired_category,
+                correct_subtype=route_config.desired_subtype,
                 user=protected_roles.user,
-                available_roles=available_roles,
-                default_roles=default_roles,
+                available_roles=route_config.available_roles,
+                default_roles=route_config.default_roles,
                 service_proxy=False,
                 config=config
             )
@@ -477,7 +450,7 @@ def generate_router(
                     from_id=version_request.id,
                     to_id=version_info.new_handle_id,
                     linked_person_id=linked_person_id,
-                    item_subtype=desired_subtype,
+                    item_subtype=route_config.desired_subtype,
                     config=config
                 )
 
@@ -487,24 +460,24 @@ def generate_router(
             )
 
     action = RouteActions.UPDATE
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        assert create_response_type, f"Create response type must be supplied for action {action}. Item category {desired_category} and subtype {desired_subtype}."
+    if action in route_config.desired_actions:
+        assert route_config.create_response_type, f"Create response type must be supplied for action {action}. Item category {route_config.desired_category} and subtype {route_config.desired_subtype}."
 
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=UpdateResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def update_item(
             id: str,
-            replacement_domain_info: item_domain_info_type,  # type: ignore
+            replacement_domain_info: route_config.item_domain_info_type,  # type: ignore
             reason: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> UpdateResponse:
             """    update_item
                 PUT method to apply an update to an existing item. The existing
@@ -519,7 +492,7 @@ def generate_router(
                 ----------
                 id : str
                     The id of the object in the registry. (Handle)
-                replacement_domain_info : item_domain_info_type
+                replacement_domain_info : route_config.item_domain_info_type
                     The new domain specific information for that record.
                 reason: Optional[str] = None
                     The reason for updating this item. If the item is a seed
@@ -549,7 +522,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.UPDATE].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -559,9 +532,9 @@ def generate_router(
             if config.perform_validation:
                 validate_resp = validate_item_helper(
                     item=replacement_domain_info,
-                    desired_category=desired_category,
-                    desired_subtype=desired_subtype,
-                    json_schema_override=json_schema_override,
+                    desired_category=route_config.desired_category,
+                    desired_subtype=route_config.desired_subtype,
+                    json_schema_override=route_config.json_schema_override,
                     config=config,
                 )
 
@@ -577,9 +550,9 @@ def generate_router(
             # fetch the item
             fetch_response = retrieve_and_type_item(
                 id=id,
-                item_model_type=item_model_type,
-                correct_category=desired_category,
-                correct_subtype=desired_subtype,
+                item_model_type=route_config.item_model_type,
+                correct_category=route_config.desired_category,
+                correct_subtype=route_config.desired_subtype,
                 config=config
             )
 
@@ -593,7 +566,7 @@ def generate_router(
             assert record_type
 
             # This is a check for if we want the creation spinoff workflow
-            creation_spinoff = provenance_enabled_versioning and\
+            creation_spinoff = route_config.provenance_enabled_versioning and\
                 record_type == RecordType.SEED_ITEM and\
                 not config.test_mode
 
@@ -609,9 +582,9 @@ def generate_router(
                 record_type=record_type,
                 reason=reason,
                 replacement_domain_info=replacement_domain_info,
-                item_model_type=item_model_type,
+                item_model_type=route_config.item_model_type,
                 user=protected_roles.user,
-                available_roles=available_roles,
+                available_roles=route_config.available_roles,
                 config=config,
                 service_proxy=False
             )
@@ -645,20 +618,20 @@ def generate_router(
             return response
 
     action = RouteActions.REVERT
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=ItemRevertResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def revert_item(
             revert_request: ItemRevertRequest,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> ItemRevertResponse:
             """
             Reverts the given item to the previous history version as
@@ -685,7 +658,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.REVERT].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -700,32 +673,32 @@ def generate_router(
                 id=revert_request.id,
                 reason=revert_request.reason,
                 history_id=revert_request.history_id,
-                domain_info_type=item_domain_info_type,
-                item_model_type=item_model_type,
-                correct_category=desired_category,
-                correct_subtype=desired_subtype,
+                domain_info_type=route_config.item_domain_info_type,
+                item_model_type=route_config.item_model_type,
+                correct_category=route_config.desired_category,
+                correct_subtype=route_config.desired_subtype,
                 user=protected_roles.user,
-                available_roles=available_roles,
+                available_roles=route_config.available_roles,
                 config=config
             )
 
     action = RouteActions.CREATE
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        assert create_response_type, f"Create response type must be supplied for action {action}. Item category {desired_category} and subtype {desired_subtype}."
+    if action in route_config.desired_actions:
+        assert route_config.create_response_type, f"Create response type must be supplied for action {action}. Item category {route_config.desired_category} and subtype {route_config.desired_subtype}."
 
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
-                          response_model=create_response_type,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
+                          response_model=route_config.create_response_type,
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def create_item(
-            item_domain_info: item_domain_info_type,  # type: ignore
+            item_domain_info: route_config.item_domain_info_type,  # type: ignore
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> GenericCreateResponse:
             """    create_item
                 POSTs a new item to the registry of the given item type. 
@@ -755,7 +728,7 @@ def generate_router(
                 --------
             """
             # This is a check for if we want the creation spinoff workflow
-            creation_spinoff = provenance_enabled_versioning and not config.test_mode
+            creation_spinoff = route_config.provenance_enabled_versioning and not config.test_mode
 
             # permission check
             limited_access_role_check(
@@ -767,7 +740,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.CREATE].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 # Will throw an error if unlinked and versioning enabled
                 force_required=creation_spinoff,
                 user=protected_roles.user,
@@ -781,30 +754,31 @@ def generate_router(
             if config.perform_validation:
                 validate_resp = validate_item_helper(
                     item=item_domain_info,
-                    desired_category=desired_category,
-                    desired_subtype=desired_subtype,
-                    json_schema_override=json_schema_override,
+                    desired_category=route_config.desired_category,
+                    desired_subtype=route_config.desired_subtype,
+                    json_schema_override=route_config.json_schema_override,
                     config=config,
                 )
-
+                assert route_config.create_response_type
                 if not validate_resp.status.success:
-                    return create_response_type(
+                    return route_config.create_response_type(
                         status=validate_resp.status
                     )
 
             # creation
             obj = await create_item_helper(
                 item_domain_info=item_domain_info,
-                item_model_type=item_model_type,
-                category=desired_category,
-                subtype=desired_subtype,
-                default_roles=default_roles,
+                item_model_type=route_config.item_model_type,
+                category=route_config.desired_category,
+                subtype=route_config.desired_subtype,
+                default_roles=route_config.default_roles,
                 user=protected_roles.user,
                 config=config,
-                versioning_enabled=provenance_enabled_versioning
+                versioning_enabled=route_config.provenance_enabled_versioning
             )
             dict_ver = obj.dict()
-            response = create_response_type.parse_obj(dict_ver)
+            assert route_config.create_response_type
+            response = route_config.create_response_type.parse_obj(dict_ver)
 
             # Under the right conditions, spin off the creation job
             if creation_spinoff:
@@ -822,19 +796,19 @@ def generate_router(
             return response
 
     action = RouteActions.SCHEMA
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=JsonSchemaResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def get_schema(
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> JsonSchemaResponse:
             """    get_schema
                 Returns the auto generated pydantic model 
@@ -874,23 +848,24 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.SCHEMA].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
 
-            if json_schema_override:
+            if route_config.json_schema_override:
                 return JsonSchemaResponse(
                     status=Status(
                         success=True, details=f"Successfully returned manually overridden JSON schema."
                     ),
-                    json_schema=json_schema_override
+                    json_schema=route_config.json_schema_override
                 )
 
             try:
                 # Returns the JSON Schema of the domain info component
                 # of the item
-                json_schema: Dict[str, Any] = item_domain_info_type.schema()
+                json_schema: Dict[str,
+                                  Any] = route_config.item_domain_info_type.schema()
             except Exception as e:
                 raise HTTPException(
                     status_code=500, detail=f"Failed to extract json schema from the domain info pydantic model, exception{e}."
@@ -904,19 +879,19 @@ def generate_router(
             )
 
     action = RouteActions.UI_SCHEMA
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=UiSchemaResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
-        async def get_ui_schema(
+        async def ui_schema(
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> UiSchemaResponse:
             """Returns the ui schema override provided for this model.
 
@@ -944,7 +919,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.UI_SCHEMA].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -952,24 +927,24 @@ def generate_router(
             return UiSchemaResponse(
                 status=Status(
                     success=True, details=f"Delivered UI Schema successfully"),
-                ui_schema=ui_schema if ui_schema else {}
+                ui_schema=route_config.ui_schema if route_config.ui_schema else {}
             )
 
     action = RouteActions.VALIDATE
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=StatusResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def validate(
-            item: item_domain_info_type,  # type: ignore
+            item: route_config.item_domain_info_type,  # type: ignore
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> StatusResponse:
             """    validate
                 Validates the given item body input. If this method
@@ -1004,34 +979,34 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.VALIDATE].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
 
             return validate_item_helper(
                 item=item,
-                desired_category=desired_category,
-                desired_subtype=desired_subtype,
+                desired_category=route_config.desired_category,
+                desired_subtype=route_config.desired_subtype,
                 config=config,
-                json_schema_override=json_schema_override
+                json_schema_override=route_config.json_schema_override
             )
 
     action = RouteActions.AUTH_EVALUATE
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=DescribeAccessResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def evaluate_access(
             id: str,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> DescribeAccessResponse:
 
             # permission check
@@ -1044,7 +1019,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_EVALUATE].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1057,24 +1032,24 @@ def generate_router(
                 id=id,
                 config=config,
                 user=protected_roles.user,
-                available_roles=available_roles
+                available_roles=route_config.available_roles
             )
 
     action = RouteActions.AUTH_CONFIGURATION_GET
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=AccessSettings,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def get_auth_configuration(
             id: str,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> AccessSettings:
 
             # permission check
@@ -1088,7 +1063,7 @@ def generate_router(
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[
                     RouteActions.AUTH_CONFIGURATION_GET].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1101,28 +1076,28 @@ def generate_router(
             return get_and_check_access_settings_helper(
                 id=id,
                 config=config,
-                available_roles=available_roles,
+                available_roles=route_config.available_roles,
                 user=protected_roles.user,
-                expected_subtype=desired_subtype,
-                item_model=item_model_type
+                expected_subtype=route_config.desired_subtype,
+                item_model=route_config.item_model_type
             )
 
     action = RouteActions.AUTH_CONFIGURATION_PUT
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=StatusResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def put_auth_configuration(
             id: str,
             settings: AccessSettings,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> StatusResponse:
 
             # permission check
@@ -1136,7 +1111,7 @@ def generate_router(
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[
                     RouteActions.AUTH_CONFIGURATION_PUT].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1149,10 +1124,10 @@ def generate_router(
                 id=id,
                 config=config,
                 new_access_settings=settings,
-                available_roles=available_roles,
+                available_roles=route_config.available_roles,
                 user=protected_roles.user,
-                expected_subtype=desired_subtype,
-                item_model=item_model_type
+                expected_subtype=route_config.desired_subtype,
+                item_model=route_config.item_model_type
             )
             return StatusResponse(status=Status(
                 success=True,
@@ -1160,19 +1135,19 @@ def generate_router(
             ))
 
     action = RouteActions.AUTH_ROLES
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=AuthRolesResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def get_auth_roles(
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> AuthRolesResponse:
 
             # permission check
@@ -1185,30 +1160,30 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.AUTH_ROLES].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
 
             return AuthRolesResponse(
                 roles=list(
-                    map(lambda role_name: ROLE_METADATA_MAP[role_name], available_roles))
+                    map(lambda role_name: ROLE_METADATA_MAP[role_name], route_config.available_roles))
             )
 
     action = RouteActions.LOCK
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=StatusResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def lock_resource(
             lock_request: LockChangeRequest,
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level)),
+                get_correct_dependency(action_config.access_level)),
             config: Config = Depends(get_settings)
         ) -> StatusResponse:
             """
@@ -1245,7 +1220,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCK].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1255,9 +1230,9 @@ def generate_router(
                 lock_request=lock_request,
                 config=config,
                 user=protected_roles.user,
-                available_roles=available_roles,
-                expected_subtype=desired_subtype,
-                item_model=item_model_type
+                available_roles=route_config.available_roles,
+                expected_subtype=route_config.desired_subtype,
+                item_model=route_config.item_model_type
             )
 
             # return success
@@ -1267,19 +1242,19 @@ def generate_router(
             )
 
     action = RouteActions.UNLOCK
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=StatusResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def unlock_resource(
             unlock_request: LockChangeRequest,
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level)),
+                get_correct_dependency(action_config.access_level)),
             config: Config = Depends(get_settings)
         ) -> StatusResponse:
             """
@@ -1318,7 +1293,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.UNLOCK].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1328,9 +1303,9 @@ def generate_router(
                 unlock_request=unlock_request,
                 config=config,
                 user=protected_roles.user,
-                available_roles=available_roles,
-                expected_subtype=desired_subtype,
-                item_model=item_model_type
+                available_roles=route_config.available_roles,
+                expected_subtype=route_config.desired_subtype,
+                item_model=route_config.item_model_type
             )
 
             # return success
@@ -1340,19 +1315,19 @@ def generate_router(
             )
 
     action = RouteActions.LOCK_HISTORY
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=LockHistoryResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def lock_history(
             id: str,
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level)),
+                get_correct_dependency(action_config.access_level)),
             config: Config = Depends(get_settings)
         ) -> LockHistoryResponse:
             """
@@ -1392,7 +1367,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCK_HISTORY].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1401,23 +1376,23 @@ def generate_router(
                 id=id,
                 config=config,
                 user=protected_roles.user,
-                available_roles=available_roles
+                available_roles=route_config.available_roles
             )
 
     action = RouteActions.LOCKED
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=LockStatusResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def lock_status(
             id: str,
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level)),
+                get_correct_dependency(action_config.access_level)),
             config: Config = Depends(get_settings)
         ) -> LockStatusResponse:
             """
@@ -1449,7 +1424,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.LOCKED].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1458,24 +1433,24 @@ def generate_router(
                 id=id,
                 config=config,
                 user=protected_roles.user,
-                available_roles=available_roles
+                available_roles=route_config.available_roles
             )
 
     action = RouteActions.DELETE
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=StatusResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def delete_item(
             id: str,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> StatusResponse:
             """    delete_item
                 Admin only endpoint which can be used to delete 
@@ -1513,7 +1488,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.DELETE].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1554,20 +1529,20 @@ def generate_router(
       created that resource.
 
     WARNING - these routes should be protected by a service role auth (see
-    limited_access_roles).
+    route_config.limited_access_roles).
     
     Currently only used for the data store - however the prov store might end up
     using a lot of these patterns as well.
     '''
 
     action = RouteActions.PROXY_FETCH
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method], path=route_config.path,
-                          response_model=fetch_response_type,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method], path=action_config.path,
+                          response_model=route_config.fetch_response_type,
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def proxy_fetch_item(
             id: str,
@@ -1575,7 +1550,7 @@ def generate_router(
             seed_allowed: bool = False,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> GenericFetchResponse:
             """    fetch_item
                 Fetches the item specified by the id from the 
@@ -1620,7 +1595,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_FETCH].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1629,35 +1604,35 @@ def generate_router(
             response: GenericFetchResponse = fetch_helper(
                 id=id,
                 seed_allowed=seed_allowed,
-                item_model_type=item_model_type,
-                category=desired_category,
-                subtype=desired_subtype,
-                available_roles=available_roles,
+                item_model_type=route_config.item_model_type,
+                category=route_config.desired_category,
+                subtype=route_config.desired_subtype,
+                available_roles=route_config.available_roles,
                 user=user,
                 config=config,
                 service_proxy=True
             )
-            return fetch_response_type(
+            return route_config.fetch_response_type(
                 **response.dict()
             )
 
     action = RouteActions.PROXY_SEED
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        assert seed_response_type, f"Seed response type must be supplied for {action} route. Item category is {desired_category} and subtype is {desired_subtype}"
+    if action in route_config.desired_actions:
+        assert route_config.seed_response_type, f"Seed response type must be supplied for {action} route. Item category is {route_config.desired_category} and subtype is {route_config.desired_subtype}"
 
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
-                          response_model=seed_response_type,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
+                          response_model=route_config.seed_response_type,
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def proxy_seed_item(
             proxy_username: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> GenericSeedResponse:
             """    seed_item
                 Posts a new empty item. This will mint a handle, 
@@ -1693,37 +1668,38 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_SEED].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
 
-            return seed_response_type(
+            assert route_config.seed_response_type
+            return route_config.seed_response_type(
                 ** (await seed_item_helper(
-                    category=desired_category,
-                    subtype=desired_subtype,
-                    default_roles=default_roles,
+                    category=route_config.desired_category,
+                    subtype=route_config.desired_subtype,
+                    default_roles=route_config.default_roles,
                     config=config,
                     user=protected_roles.user,
-                    versioning_enabled=provenance_enabled_versioning
+                    versioning_enabled=route_config.provenance_enabled_versioning
                 )).dict()
             )
 
     action = RouteActions.PROXY_UPDATE
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        assert create_response_type, f"Create response type must be supplied for {action} route. Item category is {desired_category} and subtype is {desired_subtype}"
+    if action in route_config.desired_actions:
+        assert route_config.create_response_type, f"Create response type must be supplied for {action} route. Item category is {route_config.desired_category} and subtype is {route_config.desired_subtype}"
 
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=UpdateResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def proxy_update_item(
             id: str,
-            replacement_domain_info: item_domain_info_type,  # type: ignore
+            replacement_domain_info: route_config.item_domain_info_type,  # type: ignore
             reason: Optional[str] = None,
             proxy_username: Optional[str] = None,
             bypass_item_lock: bool = False,
@@ -1731,7 +1707,7 @@ def generate_router(
             manual_grant: bool = False,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> UpdateResponse:
             """    update_item
                 PUT method to apply an update to an existing item. The existing
@@ -1746,7 +1722,7 @@ def generate_router(
                 ----------
                 id : str
                     The id of the object in the registry. (Handle)
-                replacement_domain_info : item_domain_info_type
+                replacement_domain_info : route_config.item_domain_info_type
                     The new domain specific information for that record.
                 exclude_history_update: bool , optional
                     For excluding the history update. This should be true iff
@@ -1794,7 +1770,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_UPDATE].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1804,9 +1780,9 @@ def generate_router(
             if config.perform_validation:
                 validate_resp = validate_item_helper(
                     item=replacement_domain_info,
-                    desired_category=desired_category,
-                    desired_subtype=desired_subtype,
-                    json_schema_override=json_schema_override,
+                    desired_category=route_config.desired_category,
+                    desired_subtype=route_config.desired_subtype,
+                    json_schema_override=route_config.json_schema_override,
                     config=config,
                 )
 
@@ -1823,9 +1799,9 @@ def generate_router(
             # fetch the item
             fetch_response = retrieve_and_type_item(
                 id=id,
-                item_model_type=item_model_type,
-                correct_category=desired_category,
-                correct_subtype=desired_subtype,
+                item_model_type=route_config.item_model_type,
+                correct_category=route_config.desired_category,
+                correct_subtype=route_config.desired_subtype,
                 config=config
             )
 
@@ -1839,7 +1815,7 @@ def generate_router(
             assert record_type
 
             # This is a check for if we want the creation spinoff workflow
-            creation_spinoff = provenance_enabled_versioning and\
+            creation_spinoff = route_config.provenance_enabled_versioning and\
                 record_type == RecordType.SEED_ITEM and\
                 not config.test_mode
 
@@ -1855,9 +1831,9 @@ def generate_router(
                 record_type=record_type,
                 reason=reason,
                 replacement_domain_info=replacement_domain_info,
-                item_model_type=item_model_type,
+                item_model_type=route_config.item_model_type,
                 user=protected_roles.user,
-                available_roles=available_roles,
+                available_roles=route_config.available_roles,
                 config=config,
                 service_proxy=True,
                 exclude_history_update=exclude_history_update,
@@ -1893,21 +1869,21 @@ def generate_router(
             return response
 
     action = RouteActions.PROXY_REVERT
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=ItemRevertResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def proxy_revert_item(
             revert_request: ItemRevertRequest,
             proxy_username: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> ItemRevertResponse:
             """
             Reverts the given item to the previous history version as
@@ -1952,7 +1928,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_REVERT].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
                 config=config
             )
@@ -1961,31 +1937,31 @@ def generate_router(
                 id=revert_request.id,
                 reason=revert_request.reason,
                 history_id=revert_request.history_id,
-                domain_info_type=item_domain_info_type,
-                item_model_type=item_model_type,
-                correct_category=desired_category,
-                correct_subtype=desired_subtype,
+                domain_info_type=route_config.item_domain_info_type,
+                item_model_type=route_config.item_model_type,
+                correct_category=route_config.desired_category,
+                correct_subtype=route_config.desired_subtype,
                 user=protected_roles.user,
-                available_roles=available_roles,
+                available_roles=route_config.available_roles,
                 config=config,
                 service_proxy=True
             )
 
     action = RouteActions.PROXY_VERSION
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
+    if action in route_config.desired_actions:
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
                           response_model=VersionResponse,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def proxy_version(
             version_request: ProxyVersionRequest,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> VersionResponse:
             """
             Runs a version versioning operation in proxy mode. 
@@ -1996,7 +1972,7 @@ def generate_router(
             """
 
             # Ensure prov versioning is enabled!
-            if not provenance_enabled_versioning:
+            if not route_config.provenance_enabled_versioning:
                 raise HTTPException(
                     status_code=500,
                     detail=f"Version endpoint active without provenance versioning enabled. Error."
@@ -2017,7 +1993,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_VERSION].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 force_required=version_spinoff,
                 user=protected_roles.user,
                 config=config
@@ -2032,13 +2008,13 @@ def generate_router(
             version_info = await version_helper(
                 id=version_request.id,
                 reason=version_request.reason,
-                item_model_type=item_model_type,
-                domain_info_type=item_domain_info_type,
-                correct_category=desired_category,
-                correct_subtype=desired_subtype,
+                item_model_type=route_config.item_model_type,
+                domain_info_type=route_config.item_domain_info_type,
+                correct_category=route_config.desired_category,
+                correct_subtype=route_config.desired_subtype,
                 user=protected_roles.user,
-                available_roles=available_roles,
-                default_roles=default_roles,
+                available_roles=route_config.available_roles,
+                default_roles=route_config.default_roles,
                 service_proxy=True,
                 config=config
             )
@@ -2056,7 +2032,7 @@ def generate_router(
                     from_id=version_request.id,
                     to_id=version_info.new_handle_id,
                     linked_person_id=linked_person_id,
-                    item_subtype=desired_subtype,
+                    item_subtype=route_config.desired_subtype,
                     config=config
                 )
 
@@ -2066,23 +2042,23 @@ def generate_router(
             )
 
     action = RouteActions.PROXY_CREATE
-    route_config = ROUTE_ACTION_CONFIG_MAP[action]
+    action_config = ROUTE_ACTION_CONFIG_MAP[action]
 
-    if action in desired_actions:
-        assert create_response_type, f"Create response type must be supplied for {action} route. Item category is {desired_category} and subtype is {desired_subtype}"
+    if action in route_config.desired_actions:
+        assert route_config.create_response_type, f"Create response type must be supplied for {action} route. Item category is {route_config.desired_category} and subtype is {route_config.desired_subtype}"
 
-        @router.api_route(methods=[route_config.method],
-                          path=route_config.path,
-                          response_model=create_response_type,
-                          operation_id=route_config.op_id + library_postfix,
-                          include_in_schema=not route_config.hide
+        @router.api_route(methods=[action_config.method],
+                          path=action_config.path,
+                          response_model=route_config.create_response_type,
+                          operation_id=action_config.op_id + route_config.library_postfix,
+                          include_in_schema=not action_config.hide
                           )
         async def proxy_create_item(
-            item_domain_info: item_domain_info_type,  # type: ignore
+            item_domain_info: route_config.item_domain_info_type,  # type: ignore
             proxy_username: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(route_config.access_level))
+                get_correct_dependency(action_config.access_level))
         ) -> GenericCreateResponse:
             """    create_item
                 POSTs a new item to the registry of the given item type. 
@@ -2113,7 +2089,7 @@ def generate_router(
             """
 
             # This is a check for if we want the creation spinoff workflow
-            creation_spinoff = provenance_enabled_versioning and not config.test_mode
+            creation_spinoff = route_config.provenance_enabled_versioning and not config.test_mode
 
             # permission check
             limited_access_role_check(
@@ -2130,7 +2106,7 @@ def generate_router(
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_CREATE].enforce_linked_owner,
-                type_enforcement=enforce_username_person_link,
+                type_enforcement=route_config.enforce_username_person_link,
                 # Will throw an error if unlinked and versioning enabled
                 force_required=creation_spinoff,
                 user=protected_roles.user,
@@ -2142,27 +2118,29 @@ def generate_router(
             if config.perform_validation:
                 validate_resp = validate_item_helper(
                     item=item_domain_info,
-                    desired_category=desired_category,
-                    desired_subtype=desired_subtype,
-                    json_schema_override=json_schema_override,
+                    desired_category=route_config.desired_category,
+                    desired_subtype=route_config.desired_subtype,
+                    json_schema_override=route_config.json_schema_override,
                     config=config,
                 )
 
+                assert route_config.create_response_type
                 if not validate_resp.status.success:
-                    return create_response_type(
+                    return route_config.create_response_type(
                         status=validate_resp.status
                     )
 
-            response = create_response_type(
+            assert route_config.create_response_type
+            response = route_config.create_response_type(
                 ** (await create_item_helper(
                     item_domain_info=item_domain_info,
-                    item_model_type=item_model_type,
-                    category=desired_category,
-                    subtype=desired_subtype,
-                    default_roles=default_roles,
+                    item_model_type=route_config.item_model_type,
+                    category=route_config.desired_category,
+                    subtype=route_config.desired_subtype,
+                    default_roles=route_config.default_roles,
                     user=protected_roles.user,
                     config=config,
-                    versioning_enabled=provenance_enabled_versioning
+                    versioning_enabled=route_config.provenance_enabled_versioning
                 )).dict()
             )
 

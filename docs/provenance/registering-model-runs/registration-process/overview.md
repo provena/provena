@@ -54,6 +54,7 @@ The schema which is validated by the provenance API is available [here](https://
 -   **associations**\*:
     -   **modeller_id**\*: The entity registry identifier of the [Person](../establishing-required-entities#person) who is registering the model run record
     -   **requesting_organisation_id**\*: The entity registry identifier of the [Organisation](../establishing-required-entities#organisation) responsible for the model run activity.
+-   **study**: Optionally provide the registry identifier of the [Study](../establishing-required-entities#study) which informed/necessitated this modelling activity.
 -   **start_time**\*: The starting execution time of the model run in [unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) format
 -   **end_time**\*: The ending execution time of the model run in [unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) format
 -   **annotations**: A map of key value pairs which correspond to either required or optional workflow annotations specified in the model run workflow template. If mandatory annotations specified in the workflow template are not provided here, the model run will be invalid. e.g. `{"key1" : "value", "key2" : "value2}`.

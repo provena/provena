@@ -24,8 +24,8 @@ These registered entities can then referenced in provenance records, e.g. a prov
 
 Registering provenance records using cross-references to the registered entity provides the IS with the ability to create provenance graphs. Provenance graphs provide a representation of the provenance data, where nodes in the graph are entities, and links between the nodes are associations and relationships between them. An example of a provenance graph is shown below relating the Model Run record (MR) with input and output datasets (D) from that model run as well as the Agent/Person who ran it (P):
 
-|                                   Provenance graph example                                    |
-| :-------------------------------------------------------------------------------------------: |
+|                                  Provenance graph example                                  |
+| :----------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/provenance-graph.png" alt="drawing" width="600"/> |
 
 Provenance graphs provide users with a way to explore, query and traverse lineage of entities like datasets to the parent activities and entities upstream. Provena provides tools for navigating provenance graphs.
@@ -52,8 +52,8 @@ An _Activity_ "is something that occurs over a period of time and acts upon or w
 
 In Provena, the PROV-O model is extended to enable capture of provenance information relating to model run workflows and other related information (input data, associated modellers, outputs data, modelling software/processes) (see figure below).
 
-|                               Provenance model used in Provena using PROV-O                               |
-| :----------------------------------------------------------------------------------------------------: |
+|                            Provenance model used in Provena using PROV-O                            |
+| :-------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/provenance-abstract-model.jpg" alt="drawing" width="600"/> |
 
 The specialised types used in Provena are provided below:
@@ -66,6 +66,7 @@ The specialised types used in Provena are provided below:
 | Agent    | [Organisation](../registering-model-runs/establishing-required-entities#organisation)                             | "An organization is a social or legal institution such as a company, society, etc." [1]                                                                                                                                                                 |
 | Agent    | [Person](../registering-model-runs/establishing-required-entities#person)                                         | "Person agents are people" [1]                                                                                                                                                                                                                          |
 | Activity | [Model Run](../registering-model-runs/registration-process/overview#model-run-overview)                           | A computational modelling activity that estimates, simulates and/or calculates an outcome based on a model (simplification or abstraction of a perceived real world phenomena), and defined processes and inputs (e.g. datasets, and model parameters). |
+| Activity | [Study](../registering-model-runs/establishing-required-entities#study)                                           | A Study represents a collection of associated activities in Provena. Model Runs can be optionally associated with a Study, enabling greater discovery of related activities through a containing Study.                                                 |
 
 ## 3. References
 

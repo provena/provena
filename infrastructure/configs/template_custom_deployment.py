@@ -130,7 +130,7 @@ pipeline_alerts_activated: bool = False
 pipeline_alerts_email_address: Optional[str] = None
 
 # TODO What email address to send access alerts to?
-access_alerts_email_address="TODO"
+access_alerts_email_address = "TODO"
 register_checker("access_alerts_email_address", access_alerts_email_address)
 
 # ==================
@@ -175,6 +175,34 @@ ardc_endpoint: str = PROD_ARDC_SERVICE_ENDPOINT
 
 # Pre-existing S3 bucket used for storage, ensure Versioning is enabled and
 # public access disabled
+
+# NOTE Your bucket must have CORS enabled for at least the data store, and maybe localhost for dev, e.g.
+
+# A suitable S3 CORS policy for DEV
+"""
+[
+    {
+        "AllowedHeaders": [
+            "Authorization",
+            "Content-Type",
+            "X-Amz-*",
+            "Amz-*"
+        ],
+        "AllowedMethods": [
+            "GET"
+        ],
+        "AllowedOrigins": [
+            "http://localhost:3000",
+            "https://dev.rrap-is.com",
+            "https://*.dev.rrap-is.com"
+        ],
+        "ExposeHeaders": []
+    }
+]
+"""
+
+# NOTE For PROD, just remove the localhost
+
 bucket_arn = "TODO"
 register_checker(name="bucket_arn", var=bucket_arn)
 

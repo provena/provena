@@ -83,6 +83,7 @@ class Config(BaseConfig):
     TEMPLATE_DISPLAY_NAME_HEADER: str = "display name"
     TEMPLATE_DESCRIPTION_HEADER: str = "description"
     TEMPLATE_AGENT_HEADER: str = "agent id"
+    STUDY_HEADER: str = "study id"
     TEMPLATE_ORGANISATION_HEADER: str = "requesting organisation id"
     TEMPLATE_START_TIME_HEADER: str = "execution start time (YYYY-MM-DD HH:MM:SS+HH:MM)"
     TEMPLATE_END_TIME_HEADER: str = "execution end time (YYYY-MM-DD HH:MM:SS+HH:MM)"

@@ -43,6 +43,7 @@ Some entries relate to things that happened (occurrents) which will not be later
 
 -   activities
     -   model runs
+    -   studies
 
 Whenever we refer to reusable things, it is critical to the integrity of the provenance graph that a consistent identifier is used, so that we know we are talking about the same thing.
 
@@ -131,3 +132,27 @@ Navigate to the new entity form (for help, see [registering an entity](../../reg
 -   **Source URL**\*: A URL to a website which contains the source code/contents of the model.
 
 Once you have completed your registration, you can view the record and take note of the identifier (noting that you can find your entity again at any time by [exploring the registry](../../registry/exploring_the_registry.html)).
+
+### Study
+
+{% include notes.html content="The Study activity is provided as an <b>optional</b> way to link together related Activities. To register provenance, a Study is not required." %}
+
+#### What is a Study Activity?
+
+A Study represents a collection of associated activities in Provena. Model Runs can be optionally associated with a Study, enabling greater discovery of related activities through a containing Study.
+
+Not all Model Runs fit naturally within a particular Study, for this reason, this property is optional when [registering a model run record](./registration-process/overview.md).
+
+If a Study is registered, and linked to a Model Run, a link will be created between these Activities in the Provenance graph, allowing exploration of related model runs more easily.
+
+#### How to register a Study Activity?
+
+Start by [exploring the registry](../../registry/exploring_the_registry.html) to ensure that a record describing the Study does not already exist in the registry.
+
+Navigate to the new entity form (for help, see [registering an entity](../../registry/registering_and_updating.html)). Select the "Study" entity type. Information on the various metadata fields has been provided below.
+
+-   **Display Name**\*: How would you like the Study's name to appear when viewed as a system entity? E.g. "Study A3 - New prop. investigation"
+-   **Title**\*: The complete title of the Study e.g. "A3 - New property investigation - 2023"
+-   **Description**\*: A description of the Study which assists other users in understanding the nature of the Study e.g. "A Study started in 2023 which facilitates exploration of key new model properties. See ... and ... for more information."
+
+Once you have completed your registration, you can view the record and take note of the identifier (noting that you can find your activity again at any time by [exploring the registry](../../registry/exploring_the_registry.html)).

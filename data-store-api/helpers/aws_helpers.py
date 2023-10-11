@@ -2,7 +2,10 @@ import json
 from typing import List, Any
 import boto3  # type: ignore
 import botocore.session  # type: ignore
-from aws_secretsmanager_caching import SecretCache, SecretCacheConfig  # type: ignore
+from aws_secretsmanager_caching import SecretCache, SecretCacheConfig #type: ignore
+
+#from helpers.sts_helpers import call_sts_oidc_service
+#from SharedInterfaces.DataStoreAPI import Credentials 
 from .sanitize import *
 from config import Config
 from SharedInterfaces.RegistryModels import *
@@ -413,3 +416,4 @@ def create_policy_document(write_resource_uris: List[str], read_resource_uris: L
 
     }
     return json.dumps(policy_document)
+

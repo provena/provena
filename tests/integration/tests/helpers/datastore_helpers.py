@@ -3,7 +3,7 @@ from typing import Optional
 import json
 import requests
 from KeycloakRestUtilities.Token import BearerAuth
-from tests.helpers.registry_helpers import get_item_subtype_domain_info_example
+from tests.helpers.registry_helpers import fetch_item_successfully_parse, get_item_subtype_domain_info_example
 from tests.config import config
 from SharedInterfaces.RegistryModels import ItemSubType, DatasetDomainInfo
 from SharedInterfaces.RegistryAPI import *
@@ -161,3 +161,51 @@ def ds_fail_version_item(id: str, token: str, reason: str = "Integration testing
         assert raw.status_code != 200, f"200 status code. Expected failure. Res: {raw.text}."
 
     return raw
+
+def get_presigned_url_status_code(pre_signed_url_req: PresignedURLRequest, token: str, desired_status_code: int) -> Response:
+    resp = requests.post(
+        config.DATA_STORE_API_ENDPOINT + "/registry/items/generate-presigned-url",
+        auth=BearerAuth(token),
+        json=py_to_dict(pre_signed_url_req)
+    )
+
+    assert resp.status_code == desired_status_code, f"Desired status code {desired_status_code} not recieved. Recieved {resp.status_code}. Response: {resp.text}"
+    return resp
+
+
+def get_presigned_url_successfully(pre_signed_url_req: PresignedURLRequest, token: str) -> PresignedURLResponse:
+        resp = get_presigned_url_status_code(pre_signed_url_req=pre_signed_url_req, token=token, desired_status_code=200)
+        url_resp = PresignedURLResponse.parse_obj(resp.json())
+        
+        # to ensure success we must attempt download as the request will respond with a link (that 
+        # wont work) if request is invalid (for particular reasons), so we must test this.
+
+        url = url_resp.presigned_url
+        assert url, "Presigned url response did not contain a presigned url."
+
+        # will be 403 for attempted to download file with path outside of scope of dataset id's valid paths
+        fetch_url_content(url=url, desired_status_code=200) 
+
+        return url_resp
+
+
+
+
+def fetch_url_content(url: str, desired_status_code: int = 200) -> Dict[str, str]:
+    resp = requests.get(url=url)
+    assert resp.status_code == desired_status_code, f"Desired status code {desired_status_code} not recieved. Recieved {resp.status_code}. Response: {resp.text}"
+    return resp.json()
+    
+
+
+def fetch_dataset_metadata(dataset_id: str, token: str) -> Dict[str, str]:
+    
+    fetch_resp = fetch_item_successfully_parse(item_subtype=ItemSubType.DATASET, id=dataset_id, token=token, model=DatasetFetchResponse)#.
+    assert isinstance(fetch_resp, DatasetFetchResponse)
+    item = fetch_resp.item
+    assert isinstance(item, ItemDataset)
+
+    # to turn data time objects to string: yyy-mm-dd
+    fetched_metadata = py_to_dict(item.collection_format)
+
+    return fetched_metadata

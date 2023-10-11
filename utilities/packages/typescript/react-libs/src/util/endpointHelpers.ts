@@ -48,6 +48,7 @@ const subtypeRoutePrefixes: Map<ItemSubType, string> = new Map([
     ["DATASET", "/registry/entity/dataset"],
     ["CREATE", "/registry/activity/create"],
     ["VERSION", "/registry/activity/version"],
+    ["STUDY", "/registry/activity/study"],
 ]);
 
 export const subtypeActionToEndpoint = (

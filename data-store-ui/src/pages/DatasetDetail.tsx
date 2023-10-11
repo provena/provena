@@ -69,7 +69,11 @@ import {
     ReleaseHistoryEntry,
     ReleaseAction,
 } from "react-libs/shared-interfaces/RegistryAPI";
-import { ReleasedStatus } from "shared-interfaces/DataStoreAPI";
+import { Credentials, ReleasedStatus } from "shared-interfaces/DataStoreAPI";
+import { S3Explorer } from "components/S3Explorer";
+
+const AWS_HELP_LINK_PRESIGNED =
+    "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ShareObjectPreSignedURL.html";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -696,6 +700,34 @@ const DownloadGuidance = observer((props: DownloadGuidanceProps) => {
                             </h3>
                         </Grid>
                         <Grid item xs={12}>
+                            <div
+                                style={{ width: "100%", marginBottom: "10px" }}
+                            >
+                                Using the previewer below, you can navigate the
+                                files in this dataset, generate{" "}
+                                <a
+                                    href={AWS_HELP_LINK_PRESIGNED}
+                                    target="_blank"
+                                    referrerPolicy="no-referrer"
+                                >
+                                    Presigned URLs
+                                </a>
+                                , and copy file paths.
+                            </div>
+                            <S3Explorer
+                                datasetId={props.dataset.id}
+                                bucket={props.dataset.s3.bucket_name}
+                                credentials={
+                                    {
+                                        ...creds,
+                                        expiry: creds.expiry.toString(),
+                                    } as Credentials
+                                }
+                                prefix={props.dataset.s3.path}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12}>
                             <Grid container justifyContent="space-between">
                                 <Grid item xs={7.5}>
                                     <div>
@@ -1283,7 +1315,6 @@ const MetadataSummaryWorkflowComponent = (
     Combines the metadata summary component and workflow viewer (optionally displayed by default)
     
     */
-    // TODO Destub
     return (
         <React.Fragment>
             <MetadataSummary

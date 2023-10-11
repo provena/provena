@@ -9,6 +9,7 @@ export type ItemCategory = "ACTIVITY" | "AGENT" | "ENTITY";
 export type ItemSubType =
   | "WORKFLOW_RUN"
   | "MODEL_RUN"
+  | "STUDY"
   | "CREATE"
   | "VERSION"
   | "PERSON"
@@ -668,6 +669,7 @@ export interface ModelRunRecord {
   };
   display_name: string;
   description: string;
+  study_id?: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;
@@ -836,6 +838,33 @@ export interface SoftwareDomainInfo {
   description: string;
   documentation_url: string;
   source_url: string;
+}
+export interface ItemStudy {
+  display_name: string;
+  title: string;
+  description: string;
+  history: HistoryEntryStudyDomainInfo[];
+  id: string;
+  owner_username: string;
+  created_timestamp: number;
+  updated_timestamp: number;
+  item_category?: ItemCategory & string;
+  item_subtype?: ItemSubType & string;
+  record_type: RecordType;
+  workflow_links?: WorkflowLinks;
+  versioning_info?: VersioningInfo;
+}
+export interface HistoryEntryStudyDomainInfo {
+  id: number;
+  timestamp: number;
+  reason: string;
+  username: string;
+  item: StudyDomainInfo;
+}
+export interface StudyDomainInfo {
+  display_name: string;
+  title: string;
+  description: string;
 }
 export interface ItemVersion {
   display_name: string;
@@ -1237,6 +1266,38 @@ export interface SchemaResponse {
 }
 export interface StatusResponse {
   status: Status;
+}
+export interface StudyCreateResponse {
+  status: Status;
+  created_item?: ItemStudy;
+  register_create_activity_session_id?: string;
+}
+export interface StudyFetchResponse {
+  status: Status;
+  item?: ItemStudy | SeededItem;
+  roles?: string[];
+  locked?: boolean;
+  item_is_seed?: boolean;
+}
+export interface StudyListResponse {
+  status: Status;
+  items?: ItemStudy[];
+  seed_items?: SeededItem[];
+  unparsable_items?: {
+    [k: string]: unknown;
+  }[];
+  total_item_count?: number;
+  complete_item_count?: number;
+  seed_item_count?: number;
+  unparsable_item_count?: number;
+  not_authorised_count?: number;
+  pagination_key?: {
+    [k: string]: unknown;
+  };
+}
+export interface StudySeedResponse {
+  status: Status;
+  seeded_item?: SeededItem;
 }
 export interface SubtypeFilterOptions {
   record_type?: QueryRecordTypes & string;

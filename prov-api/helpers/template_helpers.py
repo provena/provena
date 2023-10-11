@@ -28,13 +28,16 @@ import csv
 TEMPLATE_INTERNAL_PREFIX: str = "_"
 ANNOTATION_PREFIX = "annotation: "
 
+
 def duplicates(my_list: List[str]) -> List[str]:
-    # Use collections counter object to get unique list of the inputted items 
+    # Use collections counter object to get unique list of the inputted items
     # and the fre of each to check for duplicates and return any :).
     return [x for x, count in collections.Counter(my_list).items() if count > 1]
 
+
 def has_duplicates(my_list: List[str]) -> bool:
-    return len(duplicates(my_list=my_list))>0
+    return len(duplicates(my_list=my_list)) > 0
+
 
 def delete_file(filename: str) -> None:
     """
@@ -151,16 +154,16 @@ def generate_headers_from_dataset_template(template: ItemDatasetTemplate, is_inp
         # for each deferred resource, allow reference to a file path
         headers = list(
             map(lambda deferred:  config.INPUT_TEMPLATE_RESOURCE_PREFIX + deferred.key, template.deferred_resources))
-    else: # is output
+    else:  # is output
         dec_header = f"{config.OUTPUT_DATASET_TEMPLATE_PREFIX}{name} [template id: {template.id}]"
         # for each deferred resource, allow reference to a file path
         headers = list(
             map(lambda deferred:  config.OUTPUT_TEMPLATE_RESOURCE_PREFIX + deferred.key, template.deferred_resources))
-    
+
     # for each deferred resource, allow reference to a file path
     keys = list(
         map(lambda deferred: deferred.key, template.deferred_resources))
-        
+
     return DatasetTemplateHeaderInfo(
         dataset_template_id=template.id,
         template_id_header=dec_header,
@@ -322,6 +325,7 @@ class GenericTemplateHeaderInfo():
     display_name_header: str
     description_header: str
     agent_id_header: str
+    study_id_header: str
     # Removing requesting organisation for v1
     # requesting_org_id_header: str
     start_time_header: str
@@ -330,11 +334,12 @@ class GenericTemplateHeaderInfo():
     def validate(self, headers: List[str]) -> None:
         for header in self.compile():
             assert header in headers, f"Expected header '{header}' not in headers!"
-        
+
     def compile(self) -> List[str]:
-        return [self.display_name_header, 
-                self.description_header, 
+        return [self.display_name_header,
+                self.description_header,
                 self.agent_id_header,
+                self.study_id_header,
                 # Removing requesting organisation for v1
                 # self.requesting_org_id_header,
                 self.start_time_header,
@@ -357,13 +362,21 @@ class GenericTemplateHeaderInfo():
         assert val is not None
         return val
 
-    # Removing requesting organisation for v1
-    """
-    def get_requesting_org_id(self, data: Dict[str, str]) -> Optional[str]:
-        val = data[self.requesting_org_id_header]
-        # can be None
+    def get_study_id(self, data: Dict[str, str]) -> Optional[str]:
+        val = data[self.study_id_header]
+        
+        if val == "":
+            return None
+        
+        # can be none
         return val
-    """
+
+    # Removing requesting organisation for v1
+
+    # def get_requesting_org_id(self, data: Dict[str, str]) -> Optional[str]:
+    #    val = data[self.requesting_org_id_header]
+    #    # can be None
+    #    return val
 
     def get_start_time(self, data: Dict[str, str]) -> int:
         val = data[self.start_time_header]
@@ -383,6 +396,9 @@ class GenericTemplateHeaderInfo():
 
         # agent id
         output_entries.append(model_run_record.associations.modeller_id)
+
+        # study
+        output_entries.append(model_run_record.study_id or "")
 
         # Removing requesting organisation for v1
         # requesting org
@@ -501,21 +517,20 @@ class JobTemplateHeaderInfo():
     def fillout_status(self, job: JobStatusTable) -> List[str]:
         # compile outputs
         outputs: List[str] = []
-        
+
         record_id = ""
         error_info = (job.info or "") if job.status == JobStatus.FAILED else ""
         # Parse the result type
         if job.result is not None:
             result = ProvLodgeModelRunResult.parse_obj(job.result)
-            record_id= result.record.id
-            
+            record_id = result.record.id
 
         # job id
         outputs.append(job.session_id)
 
         # job status
         outputs.append(job.status)
-        
+
         # model run record id
         outputs.append(record_id)
 
@@ -707,6 +722,7 @@ async def generate_csv_template_header_info(workflow_template_id: str, request_s
         display_name_header=config.TEMPLATE_DISPLAY_NAME_HEADER,
         description_header=config.TEMPLATE_DESCRIPTION_HEADER,
         agent_id_header=config.TEMPLATE_AGENT_HEADER,
+        study_id_header=config.STUDY_HEADER,
         # Removing requesting organisation for v1.
         # requesting_org_id_header=config.TEMPLATE_ORGANISATION_HEADER,
         start_time_header=config.TEMPLATE_START_TIME_HEADER,
@@ -748,6 +764,7 @@ async def generate_model_run_record_from_template(user: User, workflow_template_
     display_name = header_info.generic_headers.get_display_name(data=data)
     description = header_info.generic_headers.get_description(data=data)
     agent_id = header_info.generic_headers.get_agent_id(data=data)
+    study_id = header_info.generic_headers.get_study_id(data=data)
     # Removing requesting organisation for v1
     # org_id = header_info.generic_headers.get_requesting_org_id(data=data)
 
@@ -765,6 +782,7 @@ async def generate_model_run_record_from_template(user: User, workflow_template_
             # requesting_organisation_id=org_id
             # requesting_organisation_id=None
         ),
+        study_id=study_id,
         start_time=start_time,
         end_time=end_time
     ), False)
@@ -780,10 +798,11 @@ def generate_csv_entry_from_model_run_record_with_status(
         job=job
     )
 
+
 def duplicate_headers_in_file(file_contents: str) -> List[str]:
     """
     duplicate_headers_in_file 
-    
+
     Reads file contents (string) as a CSV using the inbuilt CSV reader library
     and checks for duplicates in the header row.
 
@@ -796,7 +815,7 @@ def duplicate_headers_in_file(file_contents: str) -> List[str]:
     -------
     List[str]
         The list of duplicates, if any. 
-        
+
         No duplicates <-> []
     """
 
@@ -805,4 +824,3 @@ def duplicate_headers_in_file(file_contents: str) -> List[str]:
 
 def get_headers_list(file_contents: str) -> List[str]:
     return next(csv.reader(StringIO(file_contents)))
-    

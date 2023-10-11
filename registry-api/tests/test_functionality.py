@@ -284,7 +284,6 @@ def create_dynamodb_table_with_data(model_examples: ModelExamples, ddb_client: A
 def test_create(params: RouteParameters) -> None:
     # Add items to the registry for type and subtype based on file inputs and route params
 
-
     # Override the auth dependency
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
@@ -509,11 +508,23 @@ def test_fetch_invalid_type_for_id(params: RouteParameters) -> None:
 
     # 2. Seed item of other param type
 
-    # Find other item type to seed
-    for param_type in route_params:  # sed an item of each of the other type to ensure the filtering works
-        other_params = param_type
-        if other_params.route != params.route:
+    # find other item type randomly until category and subtype do not match
+    found = False
+    lim = 10
+    count = 0
+    other_params: RouteParameters
+    while not found and count < lim:
+        other = choice(route_params)
+        # make sure it is not a special proxy route, and its category and subtype are different
+        if other.category != params.category and other.subtype != params.subtype and not other.use_special_proxy_modify_routes:
+            found = True
+            other_params = other
             break
+        count += 1
+
+    if not found:
+        assert False, f"Couldn't find a distinct route parameter to compare against for cat/subtype {params.category}/{params.subtype}"
+    assert other_params
 
     seed_route = get_route(action=RouteActions.SEED, params=other_params)
     response = client.post(seed_route)
@@ -601,7 +612,6 @@ def test_delete_seeded_item(params: RouteParameters) -> None:
     To prevent too much re writing/copying code, this delete test relies on (perhaps too many) other endpoints.
     Albeit the other endpoints do have focussed tests enabling failure tracing.
     """
-
 
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
@@ -1047,7 +1057,6 @@ def test_update_seeded_item(params: RouteParameters) -> None:
     1. Seed an update
     2. Update the item with content (and hence complete item creation)
     """
-    
 
     # Override the auth dependency
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
@@ -1860,7 +1869,8 @@ def test_resource_lock(params: RouteParameters) -> None:
 
     item_model = params.typing_information.item_model
 
-    item = item_model.parse_obj(create_one_item_successfully(client=client, params=params))
+    item = item_model.parse_obj(
+        create_one_item_successfully(client=client, params=params))
 
     id = item.id
 
@@ -1895,7 +1905,8 @@ def test_resource_lock(params: RouteParameters) -> None:
     other_params = get_item_subtype_route_params(
         get_other_subtype(params.subtype))
     other_item_model = other_params.typing_information.item_model
-    other_item = other_item_model.parse_obj(create_one_item_successfully(client=client, params=other_params))
+    other_item = other_item_model.parse_obj(
+        create_one_item_successfully(client=client, params=other_params))
 
     with pytest.raises(AssertionError):
         lock_item(client=client, id=other_item.id, params=params)
@@ -1906,14 +1917,15 @@ def test_resource_lock(params: RouteParameters) -> None:
 @mock_dynamodb
 @pytest.mark.parametrize("params", route_params, ids=make_specialised_list("Test Auth"))
 def test_auth(params: RouteParameters) -> None:
-    
+
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
 
     default_table_setup()
 
     item_model = params.typing_information.item_model
-    item = item_model.parse_obj(create_one_item_successfully(client=client, params=params))
+    item = item_model.parse_obj(
+        create_one_item_successfully(client=client, params=params))
     id = item.id
 
     # test evaluate access
@@ -1960,7 +1972,8 @@ def test_auth(params: RouteParameters) -> None:
     other_params = get_item_subtype_route_params(
         get_other_subtype(params.subtype))
     other_item_model = other_params.typing_information.item_model
-    other_item = other_item_model.parse_obj(create_one_item_successfully(client=client, params=other_params))
+    other_item = other_item_model.parse_obj(
+        create_one_item_successfully(client=client, params=other_params))
 
     with pytest.raises(AssertionError):
         get_auth_config(client=client, id=other_item.id, params=params)
@@ -2129,7 +2142,7 @@ def test_history(params: RouteParameters) -> None:
     6. Create item with multiple updates and check export observes
     """
     # Override the auth dependency
-    
+
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
 
@@ -2601,7 +2614,7 @@ def test_history(params: RouteParameters) -> None:
     new_username_2 = "JonoTheJubilantJock"
     user = TestingUser(new_username_2)
     set_active_user(user=user)
-    
+
     # revert back to v1
     response = client.put(
         url=revert_route, json=py_to_dict(v1_revert_payload))
@@ -2613,10 +2626,10 @@ def test_history(params: RouteParameters) -> None:
     check_status_success_true(response)
     returned_item = fetch_response_model.parse_obj(response.json()).item
     assert returned_item
-    
+
     # check item contains vX content
     assert returned_item.display_name.endswith("v1")
-    
+
     history = returned_item.history
     assert len(
         history) == 9, f"After four versions and five updates, we should have 9 updates."
@@ -2624,16 +2637,16 @@ def test_history(params: RouteParameters) -> None:
     # check the v1 revert domain info contents seems reasonable
     # i.e. that the latest version is == v1 domain contents
     check_equal_models(item_1, history[0].item)
-    
+
     entry = history[0]
-    
-    # check username 
+
+    # check username
     assert entry.username == new_username_2, f"Expected username {new_username_2} but had {entry.username}."
-    
-    # check previous update uses other username 
+
+    # check previous update uses other username
     assert history[1].username == test_username, f"Expected username {test_username} but had {history[1].username}."
-    
-    
+
+
 @mock_dynamodb
 def test_create_person_ethics_approved_validation(override_perform_validation_config_dependency: Generator) -> None:
     """Test that a person can be created with ethics approved"""
@@ -2644,23 +2657,25 @@ def test_create_person_ethics_approved_validation(override_perform_validation_co
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
 
     default_table_setup()
-    
-    person_params = get_item_subtype_route_params(item_subtype=ItemSubType.PERSON)
+
+    person_params = get_item_subtype_route_params(
+        item_subtype=ItemSubType.PERSON)
     person_domain_info = person_params.model_examples.domain_info[0]
     person_domain_info.ethics_approved = True
 
-    #should succeed
-    create_item_from_domain_info_successfully(client=client, params=person_params, domain_info=person_domain_info)
-    
+    # should succeed
+    create_item_from_domain_info_successfully(
+        client=client, params=person_params, domain_info=person_domain_info)
+
     # now try create person item without ethics approved
     person_domain_info.ethics_approved = False
-    create_resp = create_item_from_domain_info(client=client, params=person_params, domain_info=person_domain_info)
-    #curr_route = get_route(RouteActions.CREATE, params=person_params)
-    #create_resp = client.post(
+    create_resp = create_item_from_domain_info(
+        client=client, params=person_params, domain_info=person_domain_info)
+    # curr_route = get_route(RouteActions.CREATE, params=person_params)
+    # create_resp = client.post(
     #    curr_route, json=json.loads(person_domain_info.json()))
 
     # assert returns ok but with error
-    assert create_resp.status_code==200
+    assert create_resp.status_code == 200
     created_item = GenericCreateResponse.parse_obj(create_resp.json())
     assert not created_item.status.success, "Item should not have been created as ethics approved was not set to true"
-

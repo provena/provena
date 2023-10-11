@@ -90,11 +90,11 @@ const DatasetList = observer(() => {
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const displayPageSize = 5;
+    const displayPageSize = 10;
 
     // 1) explore view
     // Manage the dataset list using the paginated hook
-    const fetchPageSize = 5;
+    const fetchPageSize = 10;
 
     // Update this function as we increase page count
     const paginatedDatasetList = usePaginatedRecordList({

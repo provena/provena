@@ -41,6 +41,7 @@ class ItemSubType(str, Enum):
     # Activities
     WORKFLOW_RUN = "WORKFLOW_RUN"
     MODEL_RUN = "MODEL_RUN"  # is a WORKFLOW_RUN
+    STUDY = "STUDY"
     CREATE = "CREATE"
     VERSION = "VERSION"
 
@@ -1466,6 +1467,51 @@ class WorkflowRunCompletionStatus(str, Enum):
     COMPLETE = "COMPLETE"
     LODGED = "LODGED"
 
+# =========================
+# Study (Activity <- Study)
+# =========================
+
+
+class StudyDomainInfo(DomainInfoBase):
+    title: str
+    description: str
+
+
+class ItemStudy(ActivityBase, StudyDomainInfo):
+    item_subtype: ItemSubType = ItemSubType.STUDY
+
+    # override history
+    history: List[HistoryEntry[StudyDomainInfo]]  # type: ignore
+
+    _validate_subtype = validate_subtype(
+        'item_subtype', ItemSubType.STUDY)
+
+    def get_search_ready_object(self) -> Dict[str, str]:
+        # no extra searchable info - just return parent
+        item_base = ItemBase.parse_obj(self.dict())
+        base = item_base.get_search_ready_object()
+        extended: Dict[str, str] = {
+            'title': self.title,
+            'description': self.title,
+        }
+        base.update(extended)
+        return base
+
+    @staticmethod
+    def get_searchable_fields() -> List[str]:
+        # no extra searchable info - just return parent
+        return ItemBase.get_searchable_fields() + [
+            'title',
+            'description',
+        ]
+
+    @validator('history')
+    def unique_history(cls: Any, v: List[HistoryEntry[Any]]) -> Any:
+        # validate that the ids are unique in the history
+        unique_history_ids(v)
+        return v
+
+
 # ==========================================
 # Registry Version (Activity <- Registry Version)
 # ==========================================
@@ -1764,6 +1810,7 @@ class ItemOrganisation(AgentBase, OrganisationDomainInfo):
 
 MODEL_TYPE_MAP: Dict[Tuple[ItemCategory, ItemSubType], Type[ItemBase]] = {
     (ItemCategory.ACTIVITY, ItemSubType.MODEL_RUN): ItemModelRun,
+    (ItemCategory.ACTIVITY, ItemSubType.STUDY): ItemStudy,
     (ItemCategory.ACTIVITY, ItemSubType.CREATE): ItemCreate,
     (ItemCategory.ACTIVITY, ItemSubType.VERSION): ItemVersion,
     (ItemCategory.AGENT, ItemSubType.PERSON): ItemPerson,
@@ -1774,6 +1821,7 @@ MODEL_TYPE_MAP: Dict[Tuple[ItemCategory, ItemSubType], Type[ItemBase]] = {
     (ItemCategory.ENTITY, ItemSubType.DATASET): ItemDataset,
 }
 MODEL_DOMAIN_INFO_TYPE_MAP: Dict[Tuple[ItemCategory, ItemSubType], Type[DomainInfoBase]] = {
+    (ItemCategory.ACTIVITY, ItemSubType.STUDY): StudyDomainInfo,
     (ItemCategory.ACTIVITY, ItemSubType.MODEL_RUN): ModelRunDomainInfo,
     (ItemCategory.ACTIVITY, ItemSubType.CREATE): CreateDomainInfo,
     (ItemCategory.ACTIVITY, ItemSubType.VERSION): VersionDomainInfo,

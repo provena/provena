@@ -60,34 +60,66 @@ The [persistent identifier](../digital-object-identifiers) generated when a data
 
 ## Downloading files
 
-Once you select the dataset you want to download, you can click the entry and you will be redirected to a view of the dataset. This view shows five options **overview**, **details**, **download data**, **upload data** and **settings**. After using the overview section to view information about the dataset, you should choose the **download data** option and then click the **request credentials** button.
-The download dataset files page will appear.
+Once you select the dataset you want to download, you can click the entry and you will be redirected to a view of the dataset. This view shows tabs including **overview**, **details**, **download data**, **upload data** and **settings**. After using the overview and/or details section to view information about the dataset, you can choose the **download data** option and then click the **request credentials** button.
 
-|                                   Downloading dataset files                                    |
-| :--------------------------------------------------------------------------------------------: |
-| <img src="../assets/images/data_store/downloadDatasetFiles.png" alt="drawing" width="600"/> |
+Once your temporary credentials have been generated, three options to explore and download files will become available. Each are described below.
 
-You will be able to download individual files (using a GIU) or the whole dataset (using AWS CLI) following the instructions on the screen (also listed below).
+### Using the built-in explorer to discover, download and share files (GUI)
 
-### Using the GUI to download individual files
+{% include notes.html content="Using the built-in file explorer allows you to rapidly explore the contents of a dataset, download individual files in your browser and share files. It is not recommended for downloading a large amount of data, either through many small files, or fewer large files." %}
 
-If you would like to explore the dataset with a GUI and download files individually:
+The Data Store now includes a built in explorer which you can use to rapidly explore the dataset files. After generating credentials, the below view will appear. To enter into a folder, click the folder name (1). If you are inside a folder, a parent folder entry "..." will appear, enabling you to return to the parent folder. If there are more than five entries, you may need to use the page controls in the lower right corner to traverse the pages.
+
+All entries have a set of actions which can be performed (3). To perform an action, click on the entry in the list. Folders (1) support the following actions:
+
+-   Copy S3 URI (4): copies the full path of the file/folder to the system clipboard
+
+Files (2) support additional actions:
+
+-   Copy Presigned URL (5): generates and copies to the clipboard a presigned URL (explained [below](#presigned-urls)) for this file
+-   Download (6): initiates a download of the file in the browser
+
+|                                    File Explorer                                    |
+| :---------------------------------------------------------------------------------: |
+| <img src="../../assets/images/data_store/previewer.png" alt="drawing" width="800"/> |
+
+#### Presigned URLs
+
+The storage service ([AWS S3](https://aws.amazon.com/s3/)) used to store data files in Provena, supports the creation of temporary [Presigned URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html). These URLs embed the authentication required to access a file within the URL. They have a fixed lifespan, defaulting to 3 hours. This can be used in a few ways:
+
+**Sharing Files**
+
+Using presigned URLs, you can easily share dataset files to others without needing them to sign-in and request access using Provena.
+
+
+{% include warning.html content="Please make sure you have the required permission to share the dataset with others. This could potentially result in data being available to users outside of the system." %}
+
+**Interfacing with other systems**
+
+Presigned URLs allow you to interface with other systems which expect a simple HTTP(s) URL to access a file. For example, you could generate a presigned URL for a geospatial file (e.g. a [Cloud Optimised Geotiff](https://www.cogeo.org/)), and use a GIS program such as [QGIS](https://www.qgis.org/en/site/) to view it.
+
+### Using the Amazon S3 GUI to explore and download individual files (GUI)
+
+{% include notes.html content="Using Amazon Web Services S3 console allows you to rapidly explore the contents of a dataset and download individual files in your browser. It is not recommended for downloading a large amount of data, either through many small files, or fewer large files." %}
+
+To access the Amazon Web Services S3 console for your dataset files:
 
 -   Open the link or click the **Click to open storage location** button to login to the AWS system. You will be brought to your storage location automatically.
 -   You can now explore the dataset
 -   To download individual files, check the box next to the file name and click the orange **Download** button.
 
-### Downloading the entire dataset or many files
+### Downloading the entire dataset or many files (CLI)
 
-To download a large number of dataset files, we recommend using the AWS CLI.
+{% include notes.html content="To download a large number of dataset files, or a large volume of data, we recommend using the AWS CLI. This method requires some additional setup, but remains simple to use and works for very large datasets." %}
+
 Please note that you need to have the AWS CLI v2 installed to follow the below steps. For more information on how to prepare your system for CLI upload (and download), visit this [guide](setting-up-the-aws-cli.html){:target="\_blank"}.
+
+To initiate CLI access to your dataset files:
 
 -   Your temporary read-only AWS programmatic access credentials will be shown. Choose the format that you require (Linux, Windows CMD or Windows Powershell) and click the **click to copy** button on the right hand side.
 -   Paste the credentials into your AWS CLI terminal environment, ensuring the pasted commands are executed
 -   Using the terminal, navigate to where you want the data to be downloaded to. Click on the **click to copy** button and paste into the terminal, remembering to change the name `folder` to something meaningful for you.
 -   You can use other AWS CLI commands to explore the directory or you can use the GUI to preview the datasets contents.
-
----
 
 ### First time download (`aws cp` command)
 

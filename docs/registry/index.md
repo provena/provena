@@ -13,9 +13,10 @@ This section will focus on providing information about the registry and it's pur
 
 For detailed information about the types of entities and their metadata, see the relevant sections in the provenance documentation.
 
--   [Model](../registering-model-runs/establishing-required-entities#model)
--   [Person](../registering-model-runs/establishing-required-entities#person)
--   [Organisation](../registering-model-runs/establishing-required-entities#organisation)
--   [Dataset Template](../registering-model-runs/model-workflow-configuration#dataset-template)
--   [Model Run Workflow Template](../registering-model-runs/model-workflow-configuration#model-run-workflow-template)
--   [Model Run](../registering-model-runs/registration-process/overview#model-run-record-fields)
+-   [Model](../provenance/registering-model-runs/establishing-required-entities#model)
+-   [Person](../provenance/registering-model-runs/establishing-required-entities#person)
+-   [Organisation](../provenance/registering-model-runs/establishing-required-entities#organisation)
+-   [Dataset Template](../provenance/registering-model-runs/model-workflow-configuration#dataset-template)
+-   [Model Run Workflow Template](../provenance/registering-model-runs/model-workflow-configuration#model-run-workflow-template)
+-   [Model Run](../provenance/registering-model-runs/registration-process/overview#model-run-record-fields)
+-   [Study](../provenance/registering-model-runs/establishing-required-entities#study)

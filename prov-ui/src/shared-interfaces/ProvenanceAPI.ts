@@ -30,6 +30,7 @@ export interface ModelRunRecord {
   };
   display_name: string;
   description: string;
+  study_id?: string;
   associations: AssociationInfo;
   start_time: number;
   end_time: number;
