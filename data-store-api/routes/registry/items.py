@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from config import get_settings, Config
 from dependencies.dependencies import read_user_protected_role_dependency
 from helpers.auth_helpers import evaluate_user_access
-from helpers.s3_helpers import generate_presigned_url_for_download, get_dataset_files
+from helpers.s3_helpers import check_file_exists, generate_presigned_url_for_download
 from helpers.registry_api_helpers import *
 from helpers.sanitize import sanitize_handle
 import re
@@ -142,11 +142,8 @@ async def generate_presigned_url(
     # create full path to compare with other full paths to items inside dataset_id
     full_file_path = config.DATASET_PATH + '/' + sanitize_handle(dataset_id) + '/' + file_path
 
-    # validate file path exists in dataset
-    # list with entries formatted from root as 'datasets/{dataset_id}/{file_path}' to protect against ../../
-    dataset_file_paths = get_dataset_files(dataset_id, config)
-
-    if full_file_path not in dataset_file_paths:
+    # validate file path exists in dataset    
+    if not check_file_exists(config.S3_STORAGE_BUCKET_NAME, full_file_path):
         raise HTTPException(
             status_code=400,
             detail=f"File path '{file_path}' does not exist in dataset with id {dataset_id}"
