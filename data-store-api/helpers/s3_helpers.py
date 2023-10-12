@@ -1,6 +1,7 @@
 
 from typing import List
 import boto3  # type: ignore
+from botocore.exceptions import ClientError #type: ignore
 from fastapi import HTTPException
 from helpers.sts_helpers import call_sts_oidc_service
 from SharedInterfaces.DataStoreAPI import Credentials
@@ -8,51 +9,41 @@ from .sanitize import *
 from config import Config
 from SharedInterfaces.RegistryModels import *
 
-
-def get_dataset_files(dataset_id: IdentifiedResource, config: Config) -> List[str]:
-    """Given a dataset ID will return a list of all the files in the dataset.
-    NOTE: that, this includes folders as S3 sees them as items. E.g. dataset/test_folder/ 
-    will be returned in the list..
-    List entries are formatted as full paths from bucket root. E.g., "datasets/{dataset_id}/{file_path}". This
-    helps prevent people form ../{other dataset id}{file path} to access other datasets they should not.
+def check_file_exists(bucket_name: str, file_path: str ) -> bool:
+    """Checks if a file exists inside an s3 bucket
 
     Parameters
     ----------
-    dataset_id : IdentifiedResource
-        The dataset ID to source files for.
-    config : Config
-        config object. Used for bucket name of datastore
+    bucket_name : str
+        The s3 bucket name to check for the file in.
+    file_path : str
+        The path to the file inside the bucket to check for existance.
 
     Returns
     -------
-    List[str]
-        List of files (and folders which s3 sees as files)
+    bool
+        True if the file exists, False if it does not.
 
     Raises
     ------
-    HTTPException
-        500 if fails to source objects for dataset with id {dataset_id}
+    e
+        Unexpected error occurred during s3 head operation.
+    Exception
+        Unexpected error occurred during s3 head operation.
     """
+    s3 = boto3.client('s3')
 
-    # The folder path from the bucket root to inside the dataset folder.
-    folder_path = config.DATASET_PATH + '/' + sanitize_handle(dataset_id)
     try:
-        s3 = boto3.client('s3')
-        objects_resp = s3.list_objects_v2(
-            Bucket=config.S3_STORAGE_BUCKET_NAME, Prefix=folder_path)
+        s3.head_object(Bucket=bucket_name, Key=file_path)
+        return True
+    except ClientError as e:
+        # If the exception is due to the file not existing, return False
+        if e.response['Error']['Code'] == '404':
+            return False
+        else:
+            raise e
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to source objects for dataset with id {dataset_id}. Error: {e}"
-        )
-
-    if 'Contents' not in objects_resp:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Dataset {dataset_id} is empty. No content can be downloaded."
-        )
-
-    return [obj['Key'] for obj in objects_resp['Contents']]
+        raise Exception(f"Unexpected error occurred during s3 head operation. Error: {e}")
 
 
 def generate_presigned_url_for_download(path: str, expires_in: int, s3_loc: S3Location, config: Config) -> str:
