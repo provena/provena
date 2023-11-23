@@ -291,7 +291,8 @@ route_params: List[RouteParameters] = [
                         path="example",
                         s3_uri="example"
                     ),
-                    release_status=ReleasedStatus.NOT_RELEASED
+                    release_status=ReleasedStatus.NOT_RELEASED,
+                    access_info_uri="https://fake.url.com/resource",
                 ),
             ]
 

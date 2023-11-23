@@ -1,5 +1,5 @@
 {
-    "python.testing.pytestArgs": ["identity-service"],
+    "python.testing.pytestArgs": ["id-service-api"],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "explorer.compactFolders": false,

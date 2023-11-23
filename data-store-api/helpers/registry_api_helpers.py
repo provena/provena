@@ -44,12 +44,19 @@ def validate_dataset_in_registry(collection_format: CollectionFormat, user: User
     -------
     """
     # wrap the payload
-    payload = DatasetDomainInfo(
-        display_name=collection_format.dataset_info.name,
-        collection_format=collection_format,
-        s3=S3Location(bucket_name="fake", path="fake", s3_uri="fake"),
-        release_status=ReleasedStatus.NOT_RELEASED  # dummy value
-    )
+    try:
+        payload = DatasetDomainInfo(
+            display_name=collection_format.dataset_info.name,
+            collection_format=collection_format,
+            s3=S3Location(bucket_name="fake", path="fake", s3_uri="fake"),
+            release_status=ReleasedStatus.NOT_RELEASED,  # dummy value
+            access_info_uri=collection_format.dataset_info.access_info.uri, # dont use fake, must exactly match
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to wrap the collection format as a DatasetDomainInfo, error: {e}."
+        )
 
     # endpoint
     postfix = "/registry/entity/dataset/validate"
@@ -586,7 +593,7 @@ def user_fetch_dataset_from_registry(id: str, config: Config, user: User) -> Dat
 
         raise HTTPException(
             status_code=500,
-            detail=f"Unexpected non 200 status code in dataset update process. Status code: {response.status_code}. Details: {details}."
+            detail=f"Unexpected non 200 status code in dataset fetch process. Status code: {response.status_code}. Details: {details}."
         )
 
     # 200 response code - parse as the fetch response
@@ -732,7 +739,7 @@ def user_list_datasets_from_registry(config: Config, user: User, list_request: N
 
         raise HTTPException(
             status_code=500,
-            detail=f"Unexpected non 200 status code in dataset update process. Status code: {response.status_code}. Details: {details}."
+            detail=f"Unexpected non 200 status code in dataset list process. Status code: {response.status_code}. Details: {details}."
         )
 
     # 200 response code - parse as the list response

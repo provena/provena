@@ -154,6 +154,7 @@ async def mint_dataset(
         collection_format=collection_format,
         s3=s3_location,
         release_status=ReleasedStatus.NOT_RELEASED,
+        access_info_uri=collection_format.dataset_info.access_info.uri
     )
 
     # now we can update the seeded item to a complete item with the appropriate
@@ -335,6 +336,7 @@ async def update_metadata(
             release_timestamp=registry_item_metadata.release_timestamp,
             release_approver=registry_item_metadata.release_approver,
             release_history=registry_item_metadata.release_history,
+            access_info_uri=collection_format.dataset_info.access_info.uri
         ),
         reason=reason
     )
@@ -464,6 +466,10 @@ async def revert_metadata(
 
     # Update the collection format
     revised_domain_info.collection_format = collection_format
+
+    # Update the uri, if any.
+    revised_domain_info.access_info_uri = collection_format.dataset_info.access_info.uri
+
 
     update_dataset_in_registry(
         proxy_username=protected_roles.user.username,
@@ -601,6 +607,7 @@ async def version_dataset(
         s3=s3_location,
         # new versions automatically unreleased.
         release_status=ReleasedStatus.NOT_RELEASED,
+        access_info_uri=collection_format.dataset_info.access_info.uri
     )
 
     # now we can update the seeded item to a complete item with the appropriate

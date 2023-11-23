@@ -43,11 +43,11 @@ class IdentityService(Construct):
         api_func = DockerImageLambda(
             self,
             'lambda',
-            build_directory="../identity-service",
+            build_directory="../id-service-api",
             dockerfile_path_relative="lambda_dockerfile",
             build_args={
                 "github_token": oauth_token,
-                "repo_string" : repo_string,
+                "repo_string": repo_string,
                 "branch_name": branch_name
             },
             extra_hash_dirs=extra_hash_dirs,
@@ -55,7 +55,7 @@ class IdentityService(Construct):
         )
         api_environment = {
             "KEYCLOAK_ENDPOINT": keycloak_auth_endpoint,
-            "DOMAIN_BASE" : domain_base,
+            "DOMAIN_BASE": domain_base,
             "STAGE": stage,
             "HANDLE_SERVICE_CREDS_ARN": handle_secret_arn,
             "HANDLE_SERVICE_ENDPOINT": handle_endpoint

@@ -203,21 +203,39 @@ In light of the above, we can explain the initial state of the graph as follows:
 
 ### Expanding the graph by exploring
 
-To explore to a greater depth than the initial view, you can request an upstream and downstream query from a specified starting node to be merged into the existing graph.
+To explore to a greater depth than the initial view, you can request an upstream, downstream or bidirectional query from a specified starting node to be merged into the existing graph.
 
-To explore from a node, **double click the node**. A loading icon will appear in the bottom section of the graph while the upstream and downstream queries are made. This query is usually quick and the results will be merged into the existing graph. If there are no new nodes connected to the requested node, the graph will not change.
+To explore from a node, **double click the node**. A loading icon will appear in the bottom section of the graph while the exploration queries are made. This query is usually quick and the results will be merged into the existing graph. If there are no new nodes connected to the requested node, the graph will not change.
 
-In the below _before_ and _after_ graphs, we can see that a model run record is being visualised. The record shows some input and output datasets and associations (i.e. a person and organisation). We may wish to understand the lineage of the dataset being used in this model run. To do so, we double click on it (1).
-
-This results in the _after_ graph. We can see some highlighted new nodes. In particular, there is now a model run which produced the input dataset (2) displayed - this is a good example of upstream lineage. If you wanted to understand more about the history of the item, you could continue exploring, for example, by expanding the model run (2) with a double click.
+In the below _before_ graph, we can see that a model run record is being visualised. The record shows some input and output datasets and associations (i.e. a person). We may wish to understand the lineage of the dataset being used in this model run. To do so, we double click on it (1). 
 
 |                                                  Before                                                  |
 | :------------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/explore_before.png" alt="drawing" width="800"/> |
 
-|                                                  After                                                  |
+This results in the _after - both upstream and downstream_ graph. We can see some highlighted new nodes. In particular, there is now a model run (4) which produced the input dataset (1) displayed - this is a good example of upstream lineage. If you wanted to understand more about the history of the item, you could continue exploring, for example, by expanding the model run (4) with a double click.
+
+|                                  After - Both upstream and downstream                                   |
 | :-----------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/exploring/graph/explore_after.png" alt="drawing" width="800"/> |
+
+The default exploration direction includes both [upstream and downstream directions](#important-terms-and-concepts-for-provenance-exploration) (2) as shown in the _after - both upstream and downstream_ graph above, but you can also choose your desired exploring direction either[upstream only](#important-terms-and-concepts-for-provenance-exploration) or [downstream only](#important-terms-and-concepts-for-provenance-exploration) in the toolbar (3) before double clicking on the node:
+
+**Expanding nodes in upstream direction only**
+
+If you are only interested in the [upstream direction](#important-terms-and-concepts-for-provenance-exploration) of a node, you can click upstream only button (5) before double clicking the node (1). This action results in the _after - upstream only_ graph, which displays only the upstream lineage or the ‘wasGeneratedBy’ relationships of the current dataset (1) in the graph.
+
+|                                              After - Upstream only                                               |
+| :--------------------------------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/provenance/exploring/graph/explore_upstream_after.png" alt="drawing" width="800"/> |
+
+**Expanding nodes in downstream direction only**
+
+If you are only interested in the [downstream direction](#important-terms-and-concepts-for-provenance-exploration) of a node, you can click downstream only button (6) before double clicking the node (1). This action results in the _after - downstream only_ graph, which displays only the downstream lineage or the ‘used’ relationships of the current dataset (1) in the graph.
+
+|                                              After - Downstream only                                               |
+| :----------------------------------------------------------------------------------------------------------------: |
+| <img src="../../assets/images/provenance/exploring/graph/explore_downstream_after.png" alt="drawing" width="800"/> |
 
 ### Resetting the graph
 

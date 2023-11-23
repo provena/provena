@@ -800,3 +800,28 @@ def fail_seed_item(token: str, item_subtype: ItemSubType,  expected_code: Option
         assert raw.status_code != 200, f"200 status code. Expected failure. Res: {raw.text}."
 
     return raw
+
+
+def check_ids_in_list_resp(ids: List[str], list_resp: List[Dict[str, Any]]) -> bool:
+    """Returns true if all id's in ids are found in the list of items.
+
+    Parameters
+    ----------
+    ids : List[str]
+        List of ids to check the presence of in list resp
+    list_resp : List[Dict[str, Any]]
+        
+
+    Returns
+    -------
+    bool
+        True if all ids present.
+    """
+    
+    ids_in_list = set(item['id'] for item in list_resp)
+
+    for id in ids:
+        if id not in ids_in_list:
+            return False
+    
+    return True

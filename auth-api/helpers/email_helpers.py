@@ -49,6 +49,8 @@ async def send_access_diff_email(
         Given the difference report and user information, will send an email 
         to the configured from/to email address which describes the required 
         access changes.
+        
+        Uses the email job system to send this email.
 
         Arguments
         ----------
@@ -63,11 +65,7 @@ async def send_access_diff_email(
         Raises
         ------
         Exception
-            Failure to create SSL context
-        Exception
-            Failure to login to SMTP server 
-        Exception
-            Failure to send email
+            Failure to lodge send email job
 
         See Also (optional)
         --------
