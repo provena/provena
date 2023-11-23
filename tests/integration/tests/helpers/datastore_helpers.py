@@ -3,7 +3,7 @@ from typing import Optional
 import json
 import requests
 from KeycloakRestUtilities.Token import BearerAuth
-from tests.helpers.registry_helpers import fetch_item_successfully_parse, get_item_subtype_domain_info_example
+from tests.helpers.registry_helpers import fetch_item_successfully_parse, general_list_exhaust, get_item_subtype_domain_info_example
 from tests.config import config
 from SharedInterfaces.RegistryModels import ItemSubType, DatasetDomainInfo
 from SharedInterfaces.RegistryAPI import *
@@ -31,7 +31,7 @@ def mint_basic_dataset_successfully(token: str,  author_organisation_id: str, pu
     # use collection format
     dataset_payload = json.loads(
         dataset_domain_info.collection_format.json(exclude_none=True))
-
+    
     response = requests.post(
         config.DATA_STORE_API_ENDPOINT + "/register/mint-dataset",
         auth=BearerAuth(token),
@@ -209,3 +209,18 @@ def fetch_dataset_metadata(dataset_id: str, token: str) -> Dict[str, str]:
     fetched_metadata = py_to_dict(item.collection_format)
 
     return fetched_metadata
+
+# move to general helpers
+def get_starts_withs(starts_with: str, my_list: List[str]) -> List[str]:
+    return [x for x in my_list if x.startswith(starts_with)]
+
+
+def list_by_uri_starts_with(uri: str, token: str) -> List[Dict[str, Any]]:
+
+    return general_list_exhaust(
+        token=token,
+        general_list_request=GeneralListRequest(
+            filter_by=FilterOptions(item_subtype=ItemSubType.DATASET),
+            sort_by=SortOptions(sort_type=SortType.ACCESS_INFO_URI_BEGINS_WITH, begins_with=uri),
+        )
+    )

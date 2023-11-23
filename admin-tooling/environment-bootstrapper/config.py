@@ -28,7 +28,7 @@ API_LOCATIONS_MAP: Dict[str, str] = {
     "prov-api": "prov-api",
     "registry-api": "registry-api",
     "search-api": "search-api",
-    "identity-api": "identity-service",
+    "identity-api": "id-service-api",
     "job-api": "job-api"
 }
 

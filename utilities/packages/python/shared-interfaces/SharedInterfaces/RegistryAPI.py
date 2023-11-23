@@ -93,6 +93,7 @@ class SortType(str, Enum):
     UPDATED_TIME = "UPDATED_TIME"
     DISPLAY_NAME = "DISPLAY_NAME"
     RELEASE_TIMESTAMP = "RELEASE_TIMESTAMP"
+    ACCESS_INFO_URI_BEGINS_WITH = "ACCESS_INFO_URI_BEGINS_WITH"
 
 
 # newest first (assuming timestamp)
@@ -102,6 +103,29 @@ DEFAULT_SORTING_ASCENDING = False
 class SortOptions(BaseModel):
     sort_type: Optional[SortType]
     ascending: bool = DEFAULT_SORTING_ASCENDING
+    begins_with: Optional[str]
+
+    # validate begins_with is only used for certain sort types
+    @root_validator
+    def validate_sort_options(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
+
+        # not all sort keys are 'begins_with' compatible
+        valid_begins_with_sort_types = [SortType.ACCESS_INFO_URI_BEGINS_WITH.name]
+
+        if values.get("begins_with"):
+            if not values.get("sort_type"):
+                raise ValueError(
+                    "Cannot filter by begins_with without specifying sort_type")
+            if values.get("sort_type") not in valid_begins_with_sort_types:
+                raise ValueError(
+                    f"Cannot filter by begins_with without specifying a valid sort_type. Must be one of {valid_begins_with_sort_types}")
+
+        # validate if not begins_with, then sort_type must be not in _valid_begins_with_sort_types
+        if not values.get("begins_with") and values.get("sort_type") in valid_begins_with_sort_types:
+            raise ValueError(
+                f"Cannot filter by begins-with sort_type {values.get('sort_type')} without specifying a begins_with value")
+
+        return values
 
 
 class SubtypeFilterOptions(BaseModel):

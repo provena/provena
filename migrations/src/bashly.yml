@@ -118,3 +118,16 @@ commands:
       flags:
           - long: --reuse_venv
             help: Don't rebuild the python virtual environments
+
+    - name: f1545-migration
+      help: Migrations required for f1545 feature - Access Info URI in non-reposited datasets for fetch
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments

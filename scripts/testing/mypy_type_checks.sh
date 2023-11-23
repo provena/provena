@@ -63,7 +63,7 @@ requirement_files=(
 mypy_check_locations=(
     "tests/integration"
     "data-store-api"
-    "identity-service"
+    "id-service-api"
     "prov-api"
     "registry-api"
     "job-api"

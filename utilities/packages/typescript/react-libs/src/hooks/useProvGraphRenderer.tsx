@@ -1,16 +1,21 @@
+import ArrowCircleDownTwoTone from "@mui/icons-material/ArrowCircleDownTwoTone";
+import ArrowCircleUpTwoTone from "@mui/icons-material/ArrowCircleUpTwoTone";
+import HelpIcon from "@mui/icons-material/Help";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import SwapVerticalCircleTwoTone from "@mui/icons-material/SwapVerticalCircleTwoTone";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import HelpIcon from "@mui/icons-material/Help";
 import {
+    Box,
     Checkbox,
     CircularProgress,
     ClassNameMap,
     FormControlLabel,
     IconButton,
     Stack,
+    Tooltip,
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
@@ -19,14 +24,14 @@ import * as d3 from "d3";
 import debounce from "lodash.debounce";
 import { observer } from "mobx-react-lite";
 import { useEffect, useRef, useState } from "react";
-import { createSubtypeAcronym } from "../util/util";
-import { HoverData, NodeGraphData } from "./useProvGraphData";
-import { ItemSubType } from "../shared-interfaces/AuthAPI";
-import { GraphLink, GraphNode, NodeGraph } from "../util/graphUtils";
-import { getSwatchForSubtype } from "../util";
-import { DOCUMENTATION_BASE_URL } from "../queries";
-import { useObservedRef } from "./useObservedRef";
 import { GraphToolTip } from "../components/GraphToolTip";
+import { DOCUMENTATION_BASE_URL } from "../queries";
+import { ItemSubType } from "../shared-interfaces/AuthAPI";
+import { getSwatchForSubtype } from "../util";
+import { GraphLink, GraphNode, NodeGraph } from "../util/graphUtils";
+import { createSubtypeAcronym } from "../util/util";
+import { useObservedRef } from "./useObservedRef";
+import { HoverData, NodeGraphData } from "./useProvGraphData";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -82,6 +87,14 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         buttonDrawerIcons: {
             fontSize: "30px",
+        },
+        buttonTooltipsEmphasize: {
+            color: theme.palette.info.light,
+            textDecoration: "underline",
+        },
+        iconGroupBox: {
+            border: `1px dotted ${theme.palette.text.secondary}`,
+            borderRadius: "20px",
         },
         loadingIconAbsolute: {
             position: "absolute",
@@ -966,6 +979,10 @@ interface ControlDrawerProps {
     resetGraph: () => void;
     resetPhysicsHandler: () => void;
     setShowLabels: (show: boolean) => void;
+    setUpstreamExpansion: (expandUpstream: boolean) => void;
+    setDownstreamExpansion: (expandDownstream: boolean) => void;
+    expandUpstream: boolean;
+    expandDownstream: boolean;
     loading: boolean;
     showLabels: boolean;
     locked: boolean;
@@ -979,6 +996,45 @@ const ControlDrawer = observer((props: ControlDrawerProps) => {
 
     // CSS styles
     const classes = useStyles();
+
+    const provExplorationDoc =
+        DOCUMENTATION_BASE_URL +
+        "/provenance/exploring-provenance/exploring-record-lineage.html#important-terms-and-concepts-for-provenance-exploration";
+
+    // Expansion tooltips text styles
+    const upstreamTooltipsTitle = (
+        <div>
+            Explore{" "}
+            <a href={provExplorationDoc} target="_blank">
+                <strong className={classes.buttonTooltipsEmphasize}>
+                    upstream
+                </strong>
+            </a>{" "}
+            only.
+        </div>
+    );
+    const downstreamTooltipsTitle = (
+        <div>
+            Explore{" "}
+            <a href={provExplorationDoc} target="_blank">
+                <strong className={classes.buttonTooltipsEmphasize}>
+                    downstream
+                </strong>
+            </a>{" "}
+            only.
+        </div>
+    );
+    const upAndDownTooltipsTitle = (
+        <div>
+            Explore both{" "}
+            <a href={provExplorationDoc} target="_blank">
+                <strong className={classes.buttonTooltipsEmphasize}>
+                    upstream and downstream
+                </strong>
+            </a>
+            .
+        </div>
+    );
 
     return (
         <Stack direction="row" justifyContent="space-between">
@@ -1013,6 +1069,67 @@ const ControlDrawer = observer((props: ControlDrawerProps) => {
                 alignItems="center"
                 spacing={2}
             >
+                <Box className={classes.iconGroupBox}>
+                    <Tooltip title={upstreamTooltipsTitle} arrow>
+                        <IconButton
+                            onClick={() => {
+                                props.setUpstreamExpansion(true);
+                                props.setDownstreamExpansion(false);
+                            }}
+                            color={
+                                props.expandUpstream && !props.expandDownstream
+                                    ? "primary"
+                                    : "inherit"
+                            }
+                        >
+                            <ArrowCircleUpTwoTone
+                                className={classes.buttonDrawerIcons}
+                            />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={downstreamTooltipsTitle} arrow>
+                        <IconButton
+                            onClick={() => {
+                                props.setUpstreamExpansion(false);
+                                props.setDownstreamExpansion(true);
+                            }}
+                            color={
+                                !props.expandUpstream && props.expandDownstream
+                                    ? "primary"
+                                    : "inherit"
+                            }
+                        >
+                            <ArrowCircleDownTwoTone
+                                className={classes.buttonDrawerIcons}
+                            />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={upAndDownTooltipsTitle} arrow>
+                        <IconButton
+                            onClick={() => {
+                                props.setUpstreamExpansion(true);
+                                props.setDownstreamExpansion(true);
+                            }}
+                            color={
+                                props.expandUpstream && props.expandDownstream
+                                    ? "primary"
+                                    : "inherit"
+                            }
+                        >
+                            <SwapVerticalCircleTwoTone
+                                className={classes.buttonDrawerIcons}
+                            />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+                <Box className={classes.iconGroupBox}>
+                    <IconButton onClick={props.zoomOutHandler} title="Zoom Out">
+                        <ZoomOutIcon className={classes.buttonDrawerIcons} />
+                    </IconButton>
+                    <IconButton onClick={props.zoomInHandler} title="Zoom In">
+                        <ZoomInIcon className={classes.buttonDrawerIcons} />
+                    </IconButton>
+                </Box>
                 {props.locked && (
                     <IconButton
                         onClick={props.resetPhysicsHandler}
@@ -1034,12 +1151,6 @@ const ControlDrawer = observer((props: ControlDrawerProps) => {
                     title="Restart Graph"
                 >
                     <RestartAltIcon className={classes.buttonDrawerIcons} />
-                </IconButton>
-                <IconButton onClick={props.zoomOutHandler} title="Zoom Out">
-                    <ZoomOutIcon className={classes.buttonDrawerIcons} />
-                </IconButton>
-                <IconButton onClick={props.zoomInHandler} title="Zoom In">
-                    <ZoomInIcon className={classes.buttonDrawerIcons} />
                 </IconButton>
                 <IconButton
                     onClick={() => {
@@ -1076,6 +1187,11 @@ export interface UseProvGraphRendererControls {
     // Controlling focused node
     selectFocusNode: (id: string) => void;
     deselectFocusNode: () => void;
+
+    // Set upstream expansion and downstream expansion
+    // True for need expand, false for no needs
+    setUpstreamExpansion: (expandUpstream: boolean) => void;
+    setDownstreamExpansion: (expandDownstream: boolean) => void;
 }
 export interface UseProvGraphRendererState {
     // The graph data to render
@@ -1092,6 +1208,10 @@ export interface UseProvGraphRendererState {
 
     // If click and focus on a node, node id
     focusNodeId?: string;
+
+    // For setting double-click exploration direction, true for need expend in this direction
+    expandUpstream: boolean;
+    expandDownstream: boolean;
 }
 
 export interface useProvGraphRendererProps {
@@ -1300,7 +1420,15 @@ export const useProvGraphRenderer = (
             // Redraw but don't reheat graph
             graphModelChangedHandler(graphData, false);
         }
-    }, [showLabels, width, props.state.focusNodeId]);
+    }, [
+        showLabels,
+        width,
+        props.state.focusNodeId,
+        // TODO, Currently use these two dependence to force graph redraw after selecting the exploring directions.
+        // Otherwise the graph uses old states and the double-click won't synchronise the lasted selections in the tool panel.
+        props.state.expandUpstream,
+        props.state.expandDownstream,
+    ]);
 
     return {
         render: () => (
@@ -1325,6 +1453,14 @@ export const useProvGraphRenderer = (
                         zoomInHandler={zoomInHandler}
                         zoomOutHandler={zoomOutHandler}
                         resetGraph={props.controls.resetGraph}
+                        setUpstreamExpansion={
+                            props.controls.setUpstreamExpansion
+                        }
+                        setDownstreamExpansion={
+                            props.controls.setDownstreamExpansion
+                        }
+                        expandUpstream={props.state.expandUpstream}
+                        expandDownstream={props.state.expandDownstream}
                         locked={locked}
                         resetPhysicsHandler={resetPhysicsHandler}
                         setShowLabels={setShowLabels}

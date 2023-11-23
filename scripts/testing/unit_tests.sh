@@ -56,7 +56,7 @@ locations=(
     "utilities/packages/python/shared-interfaces"
     "prov-api"
     "data-store-api"
-    "identity-service"
+    "id-service-api"
     "auth-api"
     "registry-api"
     "job-api"

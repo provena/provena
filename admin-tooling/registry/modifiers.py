@@ -12,6 +12,7 @@ from helpers.migrations.f1339_migration import f1339_migration
 
 
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params
+from helpers.migrations.f1545_migration import f1545_migrator_function
 from helpers.migrations.s3_bucket import update_s3_location
 from helpers.migrations.external_access import external_access
 from helpers.migrations.item_history import add_starting_history
@@ -458,6 +459,38 @@ def f1458_migration(
     # modify the items (f1458)
     input_content = [f1458_migrator_function(
         old_item=item, parse=True) for item in input_content]
+
+    print(f"Writing output to specified output file {output_file.name}.")
+    write_output(
+        file=output_file,
+        content=input_content
+    )
+
+
+@ app.command()
+def f1545_migration(
+    stage: Stage = typer.Argument(
+        # "..."" to specify required option.
+        ...,
+        help=f"The Stage to migrate registry items on. This is not used for any endpoints - just as a check.",
+    ),
+    input_file: typer.FileText = typer.Argument(
+        ..., help="The location of the dump file to process as input. Include file extension."),
+    output_file: typer.FileTextWrite = typer.Argument(
+        ..., help="The location to write the output file to. Include file extension."),
+) -> None:
+    """
+    Adds the access_info_uri top level field to dataset items in registry table by using the pre-existing field value,
+    or setting to None in the event it doesn't exist.
+    """
+
+    # input content
+    print(f"Reading input from specified input file {input_file.name}.")
+    input_content = read_input(input_file)
+
+    # modify the items (f1458)
+    input_content = [f1545_migrator_function(
+        old_item=item, parse=False) for item in input_content]
 
     print(f"Writing output to specified output file {output_file.name}.")
     write_output(

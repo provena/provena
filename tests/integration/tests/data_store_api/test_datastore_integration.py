@@ -61,7 +61,9 @@ def test_integration_mint_and_fetch(linked_person_fixture: ItemPerson, organisat
                 display_name=valid_cf.dataset_info.name,
                 s3=S3Location(
                     bucket_name="", path="", s3_uri=""),
-                release_status=ReleasedStatus.NOT_RELEASED
+                release_status=ReleasedStatus.NOT_RELEASED, 
+                access_info_uri=valid_cf.dataset_info.access_info.uri,
+
             )
         )
 
@@ -406,7 +408,8 @@ def test_mint_and_update_metadata(linked_person_fixture: ItemPerson, organisatio
             display_name=valid_cf.dataset_info.name,
             s3=S3Location(
                 bucket_name="", path="", s3_uri=""),
-            release_status=ReleasedStatus.NOT_RELEASED
+            release_status=ReleasedStatus.NOT_RELEASED,
+            access_info_uri=valid_cf.dataset_info.access_info.uri,
         )
     )
 
@@ -498,7 +501,7 @@ def test_mint_and_update_metadata(linked_person_fixture: ItemPerson, organisatio
         )
 
 
-def test_basic_mint_and_list(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation, dataset_io_fixture: Tuple[str,str]) -> None:
+def test_basic_mint_and_list(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation, dataset_io_fixture: Tuple[str, str]) -> None:
     # pull out prebuilt references from the fixture
     person = linked_person_fixture
     organisation = organisation_fixture
@@ -531,7 +534,6 @@ def test_non_reposited_download_and_upload(linked_person_fixture: ItemPerson, or
         uri="https://fake.url.com"
     )
     collection_format.associations.data_custodian_id = person.id
-
 
     # use these in the dataset
     # cleaned up fully
@@ -585,8 +587,6 @@ def test_non_reposited_download_and_upload(linked_person_fixture: ItemPerson, or
     assert resp.status_code == 400, f"Status code is not 400, response message: {resp.text}"
 
 
-    
-    
 def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation, dataset_io_fixture: Tuple[str, str]) -> None:
     """
     Tests for regression against RRAPIS-1480 
@@ -610,8 +610,8 @@ def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisatio
     revert.
 
     """
-    
-    dataset_id=dataset_io_fixture[0]
+
+    dataset_id = dataset_io_fixture[0]
 
     # Now make a revision
     version_response = ds_parsed_version_item(
@@ -692,18 +692,21 @@ def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisatio
         (ItemSubType.VERSION, version_activity_id))
 
 
-def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_release: Tuple[PersonToken, PersonToken, PersonToken], dataset_io_fixture: Tuple[str, str]) -> None: # , dataset_seed_fixture: SeededItem 
+# , dataset_seed_fixture: SeededItem
+def test_dataset_release_process(dataset_io_fixture: Tuple[str, str], three_person_tokens_fixture_unlinked_for_release: Tuple[PersonToken, PersonToken, PersonToken]) -> None:
 
     # 2 datasets created by user1
-    dataset_id_1, dataset_id_2 = dataset_io_fixture 
+    dataset_id_1, dataset_id_2 = dataset_io_fixture
     # user1 is first, making them the owner
     owner, reviewer, other_person = three_person_tokens_fixture_unlinked_for_release
 
     # generate write creds successfuly as not pending/released
-    generate_write_creds_successfully(dataset_id=dataset_id_1, token=owner.token())
+    generate_write_creds_successfully(
+        dataset_id=dataset_id_1, token=owner.token())
 
-    add_id_to_reviewers_table_and_check(token=Tokens.admin(), id=reviewer.id, config=config)
-    
+    add_id_to_reviewers_table_and_check(
+        token=Tokens.admin(), id=reviewer.id, config=config)
+
     # acceptable release request with correct approver and not pending/release dataset
     # used to test ownership and user checks
     release_request = ReleaseApprovalRequest(
@@ -732,7 +735,6 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         desired_status_code=401,
     )
 
-
     # hit /approval-request using a reviewer who is not a dataset reviewer and ensure 400
     release_request_wrong_reviewer = ReleaseApprovalRequest(
         dataset_id=dataset_id_1,
@@ -746,8 +748,7 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         desired_status_code=400,
     )
 
-
-    # Success Case. ensure item is updated currently by re fetching 
+    # Success Case. ensure item is updated currently by re fetching
     # high level fields (release, status, approver and timestamp) and also in the release history fields. (ReleaseHistoryEntry in release_history)
     request_dataset_review_desired_status_code(
         release_approval_request=release_request,
@@ -755,11 +756,11 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         config=config,
         desired_status_code=200,
     )
-    
-    fetch_and_assert_successful_review_request(release_request=release_request, token=owner.token(), expected_released_status=ReleasedStatus.PENDING)
 
+    fetch_and_assert_successful_review_request(release_request=release_request, token=owner.token(
+    ), expected_released_status=ReleasedStatus.PENDING)
 
-    #hit /approval-request for a dataset that is already pending (now its been requested) and ensure 400
+    # hit /approval-request for a dataset that is already pending (now its been requested) and ensure 400
     # (same request again as previous)
     request_dataset_review_desired_status_code(
         release_approval_request=release_request,
@@ -769,9 +770,9 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
     )
 
     # ensure failure to get creds since dataset is pending
-    generate_write_creds_assert_status_code(dataset_id=dataset_id_1, token=owner.token(), desired_status_code=403)
+    generate_write_creds_assert_status_code(
+        dataset_id=dataset_id_1, token=owner.token(), desired_status_code=403)
 
-    
     # hit /action-approval-request with user who is not linked to a person
     action_request_deny = ActionApprovalRequest(
         dataset_id=dataset_id_1,
@@ -784,22 +785,25 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         token=reviewer.token(),
         config=config,
         desired_status_code=400
-        )
-    
+    )
+
     # Now can link to person to check other cases
     assign_user_user_assert_success(reviewer.token(), reviewer.id)
     # hit /action-approval-request as a non dataset reviewer
-    remove_id_from_reviewers_table_and_check(token=Tokens.admin(), id=reviewer.id, config=config)
+    remove_id_from_reviewers_table_and_check(
+        token=Tokens.admin(), id=reviewer.id, config=config)
     action_review_request_desired_status_code(
         action_request=action_request_deny,
         token=other_person.token(),
         config=config,
         desired_status_code=401
-        )
-    add_id_to_reviewers_table_and_check(token=Tokens.admin(), id=reviewer.id, config=config)
+    )
+    add_id_to_reviewers_table_and_check(
+        token=Tokens.admin(), id=reviewer.id, config=config)
 
     # hit /action-approval-request and ensure 401 for a user who is a reviewer, but not the reviewer for this dataset
-    add_id_to_reviewers_table_and_check(token=Tokens.admin(), id=other_person.id, config=config)
+    add_id_to_reviewers_table_and_check(
+        token=Tokens.admin(), id=other_person.id, config=config)
     action_review_request_desired_status_code(
         action_request=action_request_deny,
         token=other_person.token(),
@@ -807,19 +811,20 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         desired_status_code=401
     )
 
-
-    ## hit /action-approval-request and REJECT, check success update of item
+    # hit /action-approval-request and REJECT, check success update of item
     action_review_request_desired_status_code(
         action_request=action_request_deny,
         token=reviewer.token(),
         config=config,
         desired_status_code=200
-        )
-    
-    fetch_and_assert_successful_action_review_request(action_request=action_request_deny, token=owner.token(), expected_released_status=ReleasedStatus.NOT_RELEASED)
-    
+    )
+
+    fetch_and_assert_successful_action_review_request(
+        action_request=action_request_deny, token=owner.token(), expected_released_status=ReleasedStatus.NOT_RELEASED)
+
     # ensure can make changes to rejected (Release.Status = NOT_RELEASED) dataset
-    generate_write_creds_successfully(dataset_id=dataset_id_1, token=owner.token())
+    generate_write_creds_successfully(
+        dataset_id=dataset_id_1, token=owner.token())
 
     # hit /action-approval-request for a dataset that is not pending review (for the one that was just denied)
     action_review_request_desired_status_code(
@@ -829,9 +834,9 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         desired_status_code=400
     )
 
-
     # hit /action-approval-request for a dataset that is not pending review (a new dataset that hasnt been requested at all)
-    action_request_wrong_dataset = ActionApprovalRequest.parse_obj(action_request_deny.dict())
+    action_request_wrong_dataset = ActionApprovalRequest.parse_obj(
+        action_request_deny.dict())
     action_request_wrong_dataset.dataset_id = dataset_id_2
     action_review_request_desired_status_code(
         action_request=action_request_wrong_dataset,
@@ -839,7 +844,7 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         config=config,
         desired_status_code=400
     )
-    
+
     # re request review successfully, and accept
     request_dataset_review_desired_status_code(
         release_approval_request=release_request,
@@ -848,7 +853,8 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         desired_status_code=200,
     )
 
-    fetch_and_assert_successful_review_request(release_request=release_request, token=owner.token(), expected_released_status=ReleasedStatus.PENDING)
+    fetch_and_assert_successful_review_request(release_request=release_request, token=owner.token(
+    ), expected_released_status=ReleasedStatus.PENDING)
 
     action_request_approve = ActionApprovalRequest(
         dataset_id=dataset_id_1,
@@ -856,7 +862,7 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         notes="Integration Test - Rejection!!"
     )
 
-    # hit /action-approval-request and ensure correctness. (check high level fields and release history fields)   
+    # hit /action-approval-request and ensure correctness. (check high level fields and release history fields)
     action_review_request_desired_status_code(
         action_request=action_request_approve,
         token=reviewer.token(),
@@ -864,8 +870,9 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
         desired_status_code=200
     )
 
-    fetch_and_assert_successful_action_review_request(action_request=action_request_approve, token=owner.token(), expected_released_status=ReleasedStatus.RELEASED)
-    
+    fetch_and_assert_successful_action_review_request(
+        action_request=action_request_approve, token=owner.token(), expected_released_status=ReleasedStatus.RELEASED)
+
     # hit /approval-request for a dataset that is already released and ensure 400
     request_dataset_review_desired_status_code(
         release_approval_request=release_request,
@@ -875,14 +882,15 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
     )
 
     # ensure cannot generate write creds now it is finally released
-    generate_write_creds_assert_status_code(dataset_id=dataset_id_1, token=owner.token(), desired_status_code=403)
+    generate_write_creds_assert_status_code(
+        dataset_id=dataset_id_1, token=owner.token(), desired_status_code=403)
 
-
-    # hit /approval-request for a dataset that the reviewer does not have read access and ensure 400 
+    # hit /approval-request for a dataset that the reviewer does not have read access and ensure 400
     # remove general registry read and write from dataset
     original_auth_config = get_auth_config(
         id=dataset_id_2, item_subtype=ItemSubType.DATASET, token=owner.token())
-    restrictive_auth_config = AccessSettings.parse_obj(original_auth_config.dict())
+    restrictive_auth_config = AccessSettings.parse_obj(
+        original_auth_config.dict())
     restrictive_auth_config.general = []
     put_auth_config(id=dataset_id_2, auth_payload=py_to_dict(restrictive_auth_config),
                     item_subtype=ItemSubType.DATASET, token=owner.token())
@@ -913,17 +921,6 @@ def test_dataset_release_process(three_person_tokens_fixture_unlinked_for_releas
     )
 
 
-#def test_presigned_url()
-    # need two people, owner who removes access for other people. and other person who tries to access
-    # make an owner user fixture.
-
-    # test cases
-    # person has no metadata read access should fails
-    # person has metadata read but not dataset data read should fail
-    # dataset does not exist
-    # file path does not exist
-    # file path has ../..
-
 def test_presigned_url(dataset_io_fixture: Tuple[str, str]) -> None:
 
     # Two datasets owned and created by Tokens.user1()
@@ -932,52 +929,224 @@ def test_presigned_url(dataset_io_fixture: Tuple[str, str]) -> None:
     # Desire to generate presigned url for metadata.json file in the dataset storage loc.
     url_req = PresignedURLRequest(
         dataset_id=dataset_id_1,
-        file_path="metadata.json" 
+        file_path="metadata.json"
     )
 
-    url_resp = get_presigned_url_successfully(pre_signed_url_req=url_req, token=Tokens.user1())
+    url_resp = get_presigned_url_successfully(
+        pre_signed_url_req=url_req, token=Tokens.user1())
 
     # check content matches
     downloaded_metadata = fetch_url_content(url_resp.presigned_url)
-    fetched_metadata = fetch_dataset_metadata(dataset_id=dataset_id_1, token=Tokens.user1())
-    assert downloaded_metadata==fetched_metadata, f"Downloaded metadata does not match fetched metadata"
-
+    fetched_metadata = fetch_dataset_metadata(
+        dataset_id=dataset_id_1, token=Tokens.user1())
+    assert downloaded_metadata == fetched_metadata, f"Downloaded metadata does not match fetched metadata"
 
     # give path that does not exist and check fail
     url_req_wrong_path = PresignedURLRequest(
         dataset_id=dataset_id_1,
-        file_path="fake_path_123456.json" 
+        file_path="fake_path_123456.json"
     )
-    get_presigned_url_status_code(pre_signed_url_req=url_req_wrong_path, token=Tokens.user1(), desired_status_code=400)
+    get_presigned_url_status_code(
+        pre_signed_url_req=url_req_wrong_path, token=Tokens.user1(), desired_status_code=400)
 
     # give path that has ../.. and check fail
     url_req_illegal_path = PresignedURLRequest(
         dataset_id=dataset_id_1,
-        file_path="../../metadata.json" 
+        file_path="../../metadata.json"
     )
-    get_presigned_url_status_code(pre_signed_url_req=url_req_illegal_path, token=Tokens.user1(), desired_status_code=400)
+    get_presigned_url_status_code(
+        pre_signed_url_req=url_req_illegal_path, token=Tokens.user1(), desired_status_code=400)
 
     # remove dataset read and write check fail (401) (attempt as user 2)
-    remove_general_access_from_item(id=dataset_id_1, item_subtype=ItemSubType.DATASET, token=Tokens.user1())
-    get_presigned_url_successfully(pre_signed_url_req=url_req, token=Tokens.user1()) # works for owner
-    resp=get_presigned_url_status_code(pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=401) # not for others
+    remove_general_access_from_item(
+        id=dataset_id_1, item_subtype=ItemSubType.DATASET, token=Tokens.user1())
+    get_presigned_url_successfully(
+        pre_signed_url_req=url_req, token=Tokens.user1())  # works for owner
+    resp = get_presigned_url_status_code(pre_signed_url_req=url_req, token=Tokens.user2(
+    ), desired_status_code=401)  # not for others
     print(resp.text)
 
     # check with metadata read but not dataset read (401) (attemp at user 2)
-    give_general_read_access(id=dataset_id_1, item_subtype=ItemSubType.DATASET, token=Tokens.user1())
-    resp=get_presigned_url_status_code(pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=401) 
+    give_general_read_access(
+        id=dataset_id_1, item_subtype=ItemSubType.DATASET, token=Tokens.user1())
+    resp = get_presigned_url_status_code(
+        pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=401)
     print(resp.text)
 
     # give back both metadata and dataset read, check OK
-    set_general_access_roles(id=dataset_id_1, general_access_roles=['metadata-read','dataset-data-read'],item_subtype=ItemSubType.DATASET, token=Tokens.user1())
-    get_presigned_url_status_code(pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=200)
+    set_general_access_roles(id=dataset_id_1, general_access_roles=[
+                             'metadata-read', 'dataset-data-read'], item_subtype=ItemSubType.DATASET, token=Tokens.user1())
+    get_presigned_url_status_code(
+        pre_signed_url_req=url_req, token=Tokens.user2(), desired_status_code=200)
     # check content matches
     downloaded_metadata = fetch_url_content(url_resp.presigned_url)
-    assert downloaded_metadata==fetched_metadata, f"Downloaded metadata does not match fetched metadata"
+    assert downloaded_metadata == fetched_metadata, f"Downloaded metadata does not match fetched metadata"
 
     # finally, try for a dataset ID that doesn't exist
     url_req_nonexistant_id = PresignedURLRequest(
         dataset_id="1234234344",
-        file_path="metadata.json" 
+        file_path="metadata.json"
     )
-    get_presigned_url_status_code(pre_signed_url_req=url_req_nonexistant_id, token=Tokens.user2(), desired_status_code=400)
+    get_presigned_url_status_code(
+        pre_signed_url_req=url_req_nonexistant_id, token=Tokens.user2(), desired_status_code=400)
+
+
+def test_list_by_access_info_uri(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
+    # Test for RRAPIS-1545 feature. (Enable fetch/list by URI for non-reposited datasets)
+
+    # person ID linked with 2 users names and admin.
+    person = linked_person_fixture
+    organisation = organisation_fixture
+
+    dataset_domain_info = cast(DatasetDomainInfo, get_item_subtype_domain_info_example(
+        item_subtype=ItemSubType.DATASET))
+    collection_format = dataset_domain_info.collection_format
+    collection_format.associations.data_custodian_id = person.id
+
+    base_uri = 'https://access_info_uri_example_test.com/'
+    access_info_URIs = [
+        base_uri + "111",
+        base_uri + "122",
+        base_uri + "333",
+    ]
+    handle_uri_map = {}
+    uri_handle_map = {}
+    for uri in access_info_URIs:
+        # register
+        collection_format.dataset_info.access_info = AccessInfo(
+            reposited=False,
+            description="Fake Description",
+            uri=uri
+        )
+        mint_response = mint_basic_dataset_successfully(
+            token=Tokens.user1(),
+            author_organisation_id=organisation.id,
+            publisher_organisation_id=organisation.id,
+            model=dataset_domain_info
+        )
+        assert mint_response.handle, "Mint response does not contain a handle"
+        cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
+        cleanup_create_activity_from_dataset_mint(
+            mint_response=mint_response, get_token=Tokens.user1)
+        
+        # keep track for fetching later
+        handle_uri_map[mint_response.handle] = uri
+        uri_handle_map[uri] = mint_response.handle
+
+    # register one more as reposited
+    collection_format.dataset_info.access_info = AccessInfo(reposited=True)
+    mint_response = mint_basic_dataset_successfully(
+            token=Tokens.user1(),
+            author_organisation_id=organisation.id,
+            publisher_organisation_id=organisation.id,
+            model=dataset_domain_info
+        )
+    
+    assert mint_response.handle, "Mint response does not contain a handle"
+    cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
+    cleanup_create_activity_from_dataset_mint(
+        mint_response=mint_response, get_token=Tokens.user1)
+    basic_id = mint_response.handle
+    
+    
+    # fetch by full URI, ensure only 1 returned and the correct one
+    uri = access_info_URIs[0]
+    list_resp = list_by_uri_starts_with(uri=uri, token=Tokens.user1())
+    assert check_ids_in_list_resp(ids=[uri_handle_map[uri]], list_resp=list_resp), f"List response does not contain the correct handle for URI: {uri}"
+    
+    # check they all present for the base uri
+    list_resp = list_by_uri_starts_with(uri=base_uri, token=Tokens.user1())
+    assert check_ids_in_list_resp(ids=list(uri_handle_map.values()), list_resp=list_resp)
+    
+    uri_begins_with = base_uri + "1"
+    list_resp = list_by_uri_starts_with(uri=uri_begins_with, token=Tokens.user1())
+    assert check_ids_in_list_resp(ids=[uri_handle_map[uri] for uri in get_starts_withs(uri_begins_with, access_info_URIs)], list_resp=list_resp)
+    
+    # update_metadata_sucessfully(
+    #     dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=token())
+
+    # check that all the other reposited datasets are actually there too.
+    list_resp = general_list_exhaust(
+        token=Tokens.user1(),
+        general_list_request=GeneralListRequest(
+            filter_by=FilterOptions(item_subtype=ItemSubType.DATASET),
+            )
+    )
+    assert check_ids_in_list_resp(ids=list(uri_handle_map.values())+[basic_id], list_resp=list_resp)
+
+
+def test_access_info_uri_field_value_update(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
+    person = linked_person_fixture
+    organisation = organisation_fixture
+
+    dataset_domain_info = cast(DatasetDomainInfo, get_item_subtype_domain_info_example(
+        item_subtype=ItemSubType.DATASET))
+    collection_format = dataset_domain_info.collection_format
+    # make non reposited
+    fake_url = "https://fake.url.com"
+    collection_format.dataset_info.access_info = AccessInfo(
+        reposited=False,
+        description="Fake Description",
+        uri=fake_url
+    )
+    collection_format.associations.data_custodian_id = person.id
+
+    # use these in the dataset
+    # cleaned up fully
+    mint_response = mint_basic_dataset_successfully(
+        token=Tokens.user1(),
+        author_organisation_id=organisation.id,
+        publisher_organisation_id=organisation.id,
+        model=dataset_domain_info
+    )
+
+    assert mint_response.handle, "Mint response does not contain a handle"
+    cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
+
+    cleanup_create_activity_from_dataset_mint(
+        mint_response=mint_response,
+        get_token=Tokens.user1
+    )
+    handle = mint_response.handle
+    # fetch dataset and check ok
+    dataset_item = cast(ItemDataset, cast(DatasetFetchResponse, fetch_item_successfully_parse(
+            item_subtype=ItemSubType.DATASET,
+            id=handle,
+            token=Tokens.user1(),
+            model=DatasetFetchResponse
+        )).item)
+    assert dataset_item.access_info_uri == dataset_item.collection_format.dataset_info.access_info.uri
+    assert dataset_item.access_info_uri == fake_url
+
+    # swap to reposited using update
+    collection_format.dataset_info.access_info = AccessInfo(reposited=True)
+    update_metadata_sucessfully(
+        dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=token())
+
+    dataset_item = cast(ItemDataset, cast(DatasetFetchResponse, fetch_item_successfully_parse(
+            item_subtype=ItemSubType.DATASET,
+            id=handle,
+            token=Tokens.user1(),
+            model=DatasetFetchResponse
+        )).item)
+    assert dataset_item.access_info_uri == dataset_item.collection_format.dataset_info.access_info.uri, f"Expected {dataset_item.access_info_uri}, got {dataset_item.collection_format.dataset_info.access_info.uri}"
+    assert dataset_item.access_info_uri == None, f"Expected None, got {dataset_item.access_info_uri}"
+
+    # swap back
+    # swap to reposited using update
+    collection_format.dataset_info.access_info = AccessInfo(
+        reposited=False,
+        description="Fake Description",
+        uri=fake_url
+    )
+    update_metadata_sucessfully(
+        dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=token())
+
+    dataset_item = cast(ItemDataset, cast(DatasetFetchResponse, fetch_item_successfully_parse(
+            item_subtype=ItemSubType.DATASET,
+            id=handle,
+            token=Tokens.user1(),
+            model=DatasetFetchResponse
+        )).item)
+    assert dataset_item.access_info_uri == dataset_item.collection_format.dataset_info.access_info.uri, f"Expected {dataset_item.access_info_uri}, got {dataset_item.collection_format.dataset_info.access_info.uri}"
+    assert dataset_item.access_info_uri == fake_url, f"Expected {fake_url}, got {dataset_item.access_info_uri}"

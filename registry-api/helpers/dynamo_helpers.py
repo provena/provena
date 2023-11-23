@@ -631,25 +631,27 @@ updated_timestamp_key = "updated_timestamp"
 created_timestamp_key = "created_timestamp"
 display_name_key = "display_name"
 release_timestamp_key = "release_timestamp"
+access_info_uri_key = "access_info_uri"
 
+def sort_filter_to_key_condition(sort_options: Optional[SortOptions], filter_options: Optional[FilterOptions]) -> Any:
 
-def filter_to_key_condition(filter_options: Optional[FilterOptions]) -> Any:
-
-    # TODO put strings into cdk config.
     if filter_options is not None:
 
         # * expand if more filter options are added.
-        # TODO add keys into config.
         if filter_options.item_subtype is not None:
-            return Key('item_subtype').eq(filter_options.item_subtype)
+            condition = Key(subtype_key).eq(filter_options.item_subtype)
+            if sort_options is not None and sort_options.sort_type == SortType.ACCESS_INFO_URI_BEGINS_WITH:
+                condition = condition & Key(access_info_uri_key).begins_with(sort_options.begins_with)
+            return condition
+        
         if filter_options.release_reviewer is not None:
-            return Key('release_approver').eq(filter_options.release_reviewer)
+            return Key(approver_key).eq(filter_options.release_reviewer)
     else:
         # no filter was provided. Use the index we made with primary key that includes all items
-        return Key('universal_partition_key').eq("OK")
+        return Key(universal_key).eq("OK")
 
     # A filter was provided, but it was empty
-    return Key('universal_partition_key').eq("OK")
+    return Key(universal_key).eq("OK")
 
 
 def generate_index_name(partition_key: str, sort_key: str) -> str:
@@ -663,7 +665,8 @@ SORT_TYPE_TO_KEY_MAP: Dict[Optional[SortType], str] = {
     SortType.CREATED_TIME:  created_timestamp_key,
     SortType.UPDATED_TIME:  updated_timestamp_key,
     SortType.DISPLAY_NAME:  display_name_key,
-    SortType.RELEASE_TIMESTAMP: release_timestamp_key
+    SortType.RELEASE_TIMESTAMP: release_timestamp_key,
+    SortType.ACCESS_INFO_URI_BEGINS_WITH: access_info_uri_key
 }
 FILTER_TYPE_TO_KEY_MAP: Dict[Optional[FilterType], str] = {
     # Default = all included
@@ -695,6 +698,10 @@ FILTER_SORT_COMBINATIONS: List[FilterSort] = [
     # Release reviewer based index
     (FilterType.RELEASE_REVIEWER, SortType.RELEASE_TIMESTAMP),
     (FilterType.RELEASE_REVIEWER, None),
+
+    # Access info uri sort only if filtering by subtype == Dataset.
+    (FilterType.ITEM_SUBTYPE, SortType.ACCESS_INFO_URI_BEGINS_WITH),
+    
 ]
 
 
@@ -743,22 +750,12 @@ def sort_filter_to_index_name(
     if sort_by is not None:
         sort_type = sort_by.sort_type
 
-    return FILTER_SORT_TO_INDEX_MAP[(filter_type, sort_type)]
-
-
-def get_query_params(
-    sort_by: Optional[SortOptions],
-    filter_by: Optional[FilterOptions],
-) -> QueryParams:
-    # recieves the sort filter options and returns dataclass of values for the table.query() fields.
-
-    return QueryParams(
-        index_name=sort_filter_to_index_name(
-            sort_by=sort_by, filter_by=filter_by),
-        key_condition_expression=filter_to_key_condition(filter_by),
-        scan_index_forward=sort_by.ascending if sort_by else DEFAULT_SORTING_ASCENDING,
-        filter_expression=filter_to_filter_expression(filter_by)
-    )
+    try:
+        return FILTER_SORT_TO_INDEX_MAP[(filter_type, sort_type)]
+    except Exception as e:
+        raise ValueError(
+            f"Could not derive an index name for filter type {filter_type} and sort type {sort_type}. If attempting to sort items by some field belonging to only" +
+            " particular item subtypes, ensure to provide the item subtype filter to access its index, or utilise the specific list routes for the item subtype.")
 
 
 RECORD_TYPE_TO_FILTER_EXPRESSION_MAP: Dict[Union[QueryRecordTypes, QueryDatasetReleaseStatusType], Optional[Key]] = {
@@ -817,14 +814,25 @@ def query_dbb(
 
     # Use dict method to avoid having multiple if branches (4) for different parameters
     # table.query() doesn't allow parameters set to None if we don't use them.
-    query_params: Dict[str, Any] = {
-        "IndexName": sort_filter_to_index_name(sort_by=sort_by, filter_by=filter_by),
-        "KeyConditionExpression": filter_to_key_condition(filter_by),
-        "ScanIndexForward": sort_by.ascending if sort_by else DEFAULT_SORTING_ASCENDING,
-        "FilterExpression": filter_to_filter_expression(filter_by),
-        "Limit": page_size,
-        "ExclusiveStartKey": pagination_key
-    }
+    try: 
+        query_params: Dict[str, Any] = {
+            "IndexName": sort_filter_to_index_name(sort_by=sort_by, filter_by=filter_by),
+            "KeyConditionExpression": sort_filter_to_key_condition(sort_options=sort_by, filter_options=filter_by),
+            "ScanIndexForward": sort_by.ascending if sort_by else DEFAULT_SORTING_ASCENDING,
+            "FilterExpression": filter_to_filter_expression(filter_by),
+            "Limit": page_size,
+            "ExclusiveStartKey": pagination_key
+        }
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to generate query parameters. Error: {ve}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate query parameters. Error: {e}"
+        )
 
     query_params = remove_none_values(query_params)
 

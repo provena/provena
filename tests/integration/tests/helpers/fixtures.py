@@ -19,7 +19,7 @@ class PersonToken():
         self.id = id
         self.token = token
 
-@pytest.fixture(scope='session', autouse=False)
+@pytest.fixture(scope='function', autouse=False)
 def person_fixture() -> Generator[ItemPerson, None, None]:
     # create person 1 and 2  (user 1 and 2)
     person = create_item_successfully(
@@ -39,7 +39,7 @@ def person_fixture() -> Generator[ItemPerson, None, None]:
 # because they rely on having non setup links
 
 
-@pytest.fixture(scope='module', autouse=False)
+@pytest.fixture(scope='function', autouse=False)
 def manual_link_test_cleanup(person_fixture: ItemPerson) -> Generator[None, None, None]:
     # Retain current state of links
     # Delete links
@@ -61,7 +61,7 @@ def manual_link_test_cleanup(person_fixture: ItemPerson) -> Generator[None, None
     ), person_id=person.id, username=Tokens.admin_username, force=True)
 
 
-@pytest.fixture(scope='session', autouse=False)
+@pytest.fixture(scope='function', autouse=False)
 def linked_person_fixture(person_fixture: ItemPerson) -> Generator[ItemPerson, None, None]:
     person = person_fixture
 
@@ -85,7 +85,7 @@ def linked_person_fixture(person_fixture: ItemPerson) -> Generator[ItemPerson, N
     ], token=Tokens.admin())
 
 
-@pytest.fixture(scope='session', autouse=False)
+@pytest.fixture(scope='function', autouse=False)
 def organisation_fixture() -> Generator[ItemOrganisation, None, None]:
     # create person 1 and 2  (user 1 and 2)
     org = create_item_successfully(
@@ -102,7 +102,7 @@ def organisation_fixture() -> Generator[ItemOrganisation, None, None]:
     ], token=Tokens.admin())
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='function', autouse=True)
 def two_person_fixture() -> Generator[Tuple[str, str], None, None]:
     # create person 1 and 2  (user 1 and 2)
     person_1 = create_item_successfully(
@@ -220,7 +220,7 @@ def entity_cleanup_fixture() -> Generator:
         perform_entity_cleanup(cleanup_items, token=Tokens.admin())
 
 
-@pytest.fixture(scope='session', autouse=False)
+@pytest.fixture(scope='function', autouse=False)
 def dataset_io_fixture(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> Generator[Tuple[str, str], None, None]:
     # Create two datasets where user1 is the owner. test_release_process assumes user1 is owner.
     # pull out prebuilt references from the fixture
@@ -242,7 +242,8 @@ def dataset_io_fixture(linked_person_fixture: ItemPerson, organisation_fixture: 
                 display_name=cf_1.dataset_info.name,
                 s3=S3Location(
                     bucket_name="", path="", s3_uri=""),
-                release_status=ReleasedStatus.NOT_RELEASED
+                release_status=ReleasedStatus.NOT_RELEASED,
+                access_info_uri=cf_1.dataset_info.access_info.uri,
             )
         ),
         mint_basic_dataset_successfully(
@@ -254,10 +255,9 @@ def dataset_io_fixture(linked_person_fixture: ItemPerson, organisation_fixture: 
                 display_name=cf_2.dataset_info.name,
                 s3=S3Location(
                     bucket_name="", path="", s3_uri=""),
-                release_status=ReleasedStatus.NOT_RELEASED
+                release_status=ReleasedStatus.NOT_RELEASED,
+                access_info_uri=cf_2.dataset_info.access_info.uri,
             )
-
-
         )))
 
     dataset_ids = cast(

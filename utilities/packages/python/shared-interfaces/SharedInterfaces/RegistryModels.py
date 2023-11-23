@@ -929,6 +929,16 @@ class AccessInfo(BaseModel):
             if (description is None):
                 raise ValueError(
                     "Must provide a description for external access if data is not reposited in the Data Store.")
+        else:
+            # it is reposited, ensure URI and description are None
+            if uri is not None:
+                raise ValueError(
+                    "Cannot provide a URI for external access if data is reposited in the Data Store.")
+            if description is not None:
+                raise ValueError(
+                    "Cannot provide a description for external access if data is reposited in the Data Store.")
+        
+        
         return values
 
     class Config:
@@ -1319,6 +1329,23 @@ class DatasetDomainInfo(DomainInfoBase):
     release_approver: Optional[IdentifiedResource]
     # timestamp when release status was last updated
     release_timestamp: Optional[int]
+    # collection_format.access_info.uri for non-reposited datasets to enable fetch/list by uri.
+    access_info_uri: Optional[str] 
+
+    # validate access_info_uri and collection_format.dataset_info.access_info.uri are always the same
+    @root_validator(pre=False, skip_on_failure=True)
+    def check_access_info_uri(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
+        access_info_uri: Optional[str] = values.get('access_info_uri')
+        collection_format: Optional[CollectionFormat] = values.get('collection_format')
+        assert collection_format, "collection_format must be present"
+        access_info = collection_format.dataset_info.access_info
+        assert (access_info.uri and access_info_uri) or (not access_info.uri and not access_info_uri), f"access_info_uri must always match collection_format.access_info.uri. Got access_info_uri={access_info_uri} and collection_format.access_info.uri={access_info.uri}"
+
+        if collection_format.dataset_info.access_info.uri != access_info_uri:
+            raise ValueError(
+                f"access_info_uri must always match collection_format.access_info.uri. Got access_info_uri={access_info_uri} and collection_format.access_info.uri={access_info.uri}")
+        
+        return values
 
     # validate release_approver and release_timestamp are both present or both absent
     @root_validator(skip_on_failure=True)

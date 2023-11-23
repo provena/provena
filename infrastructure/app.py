@@ -15,6 +15,8 @@ Specify a PROVENA_CONFIG_ID environment variable which is available in the user
 customised get_bootstrap_config map exported from configs.config_map
 """
 
+app = cdk.App()
+
 from provena.utility_stacks.CodeBuildGithubBootstrap import CodeBuildGithubBootstrap
 from provena.config.config_class import GithubBootstrapConfig
 from configs.config_map import get_bootstrap_config
@@ -37,8 +39,6 @@ assert config_generator is not None
 
 config = config_generator()
 assert config
-
-app = cdk.App()
 
 # Github bootstrap
 

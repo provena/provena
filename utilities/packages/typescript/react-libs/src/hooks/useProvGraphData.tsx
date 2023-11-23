@@ -40,6 +40,7 @@ interface ExpanderQuery {
     queryList: Array<QueryType>;
     run: (id: string) => void;
 }
+
 export interface GraphExploreQueries {
     expandNode: ExpanderQuery;
     special: Array<ExpanderQuery>;
@@ -51,6 +52,9 @@ export interface GraphControls {
     onHoverExit: () => void;
     selectFocusNode: (id: string) => void;
     deselectFocusNode: () => void;
+    setUpstreamExpansion: (expandUpstream: boolean) => void;
+    setDownstreamExpansion: (expandDownstream: boolean) => void;
+
     graphQueries: GraphExploreQueries;
 }
 
@@ -75,7 +79,8 @@ export const QUERY_TYPES = [
     "upstream_dataset",
     "downstream_agent",
     "upstream_agent",
-];
+] as const;
+
 export type QueryType = (typeof QUERY_TYPES)[number];
 
 export interface ExpansionType {
@@ -91,6 +96,8 @@ export interface useProvGraphDataResponse {
     hoverData?: HoverData;
     focusNodeId: string | undefined;
     queriedNodes: ExpansionArray;
+    expandUpstream: boolean;
+    expandDownstream: boolean;
     status: GraphStatus;
 }
 export const useProvGraphData = (
@@ -112,14 +119,32 @@ export const useProvGraphData = (
         { id: rootId, query: "explore_upstream" },
         { id: rootId, query: "explore_downstream" },
     ];
+
+    // Set useState
+
     const [queriedNodes, setQueriedNodes] =
         useState<ExpansionArray>(defaultExpanded);
+
+    // Basic expand query set
+    const [upstreamExpansion, setUpstreamExpansion] = useState<boolean>(true);
+    const [downstreamExpansion, setDownstreamExpansion] =
+        useState<boolean>(true);
+
+    // Hover state
+    const [hoverId, setHoverId] = useState<string | undefined>(undefined);
+
+    // Selected state
+    const [focusNodeId, setFocusNodeId] = useState<string | undefined>(
+        undefined
+    );
 
     // Simple handler to restart - reset all state
     const resetGraph = () => {
         setQueriedNodes(defaultExpanded);
         setFocusNodeId(undefined);
         setHoverId(undefined);
+        setUpstreamExpansion(true);
+        setDownstreamExpansion(true);
     };
 
     // If the root id changes - reset the graph
@@ -136,14 +161,35 @@ export const useProvGraphData = (
         setQueriedNodes(newList);
     };
 
+    // Update basic explore query for the next double-click exploration
+    const updatedDoubleClickExpanded: Array<QueryType> =
+        upstreamExpansion && downstreamExpansion
+            ? ["explore_upstream", "explore_downstream"]
+            : upstreamExpansion
+            ? ["explore_upstream"]
+            : downstreamExpansion
+            ? ["explore_downstream"]
+            : [];
+
+    // For dynamically setting basic node double click exploration based on user's selection, default to both direction
+    const generateBasicDoubleClickExploreFunc = () => {
+        // Return void if expansion query list is empty, just in case
+        if (
+            updatedDoubleClickExpanded.length == 0 ||
+            updatedDoubleClickExpanded === undefined
+        )
+            return (id: string) => {};
+        // Otherwise, add node query
+        return (id: string) => {
+            addNodeQuery(id, updatedDoubleClickExpanded);
+        };
+    };
+
     const generateBasicExploreFunc = (types: Array<QueryType>) => {
         return (id: string) => {
             addNodeQuery(id, types);
         };
     };
-
-    // Hover state
-    const [hoverId, setHoverId] = useState<string | undefined>(undefined);
 
     // If hover Id is defined - load the data for the item
     const loadedHoverItem = useUntypedLoadedItem({
@@ -163,11 +209,6 @@ export const useProvGraphData = (
               errorMessage: loadedHoverItem.errorMessage,
           }
         : undefined;
-
-    // Selected state
-    const [focusNodeId, setFocusNodeId] = useState<string | undefined>(
-        undefined
-    );
 
     // Selected state handlers
     const selectFocusNode = (id: string) => {
@@ -311,22 +352,23 @@ export const useProvGraphData = (
         hoverData: hoverData,
         focusNodeId: focusNodeId,
         queriedNodes: queriedNodes,
+        expandUpstream: upstreamExpansion,
+        expandDownstream: downstreamExpansion,
         controls: {
             resetGraph,
             onHoverEnter: onHoverEnterDebounced,
             onHoverExit: onHoverExitDebounced,
             selectFocusNode,
             deselectFocusNode,
+            setUpstreamExpansion,
+            setDownstreamExpansion,
             graphQueries: {
                 expandNode: {
                     name: "Expand Node",
                     description:
-                        "Expands all node relationships one step in the upstream and downstream direction",
-                    queryList: ["explore_downstream", "explore_upstream"],
-                    run: generateBasicExploreFunc([
-                        "explore_downstream",
-                        "explore_upstream",
-                    ]),
+                        "Explores relationships from a target node in the upstream, downstream or both directions",
+                    queryList: updatedDoubleClickExpanded,
+                    run: generateBasicDoubleClickExploreFunc(),
                 },
                 special: [
                     {

@@ -40,7 +40,8 @@ const ProvGraph = observer((props: ProvGraphProps) => {
     const voidHandler = () => {};
     const { render, height } = useProvGraphRenderer({
         controls: {
-            expandNodeEvent: graphHook.controls?.graphQueries.expandNode.run ?? voidHandler,
+            expandNodeEvent:
+                graphHook.controls?.graphQueries.expandNode.run ?? voidHandler,
             resetGraph: graphHook.controls?.resetGraph ?? voidHandler,
             toggleExpanded: props.toggleExpanded,
             onHoverEnter: graphHook.controls?.onHoverEnter ?? ((id) => {}),
@@ -49,6 +50,12 @@ const ProvGraph = observer((props: ProvGraphProps) => {
                 graphHook.controls?.selectFocusNode ?? ((id) => {}),
             deselectFocusNode:
                 graphHook.controls?.deselectFocusNode ?? voidHandler,
+            setUpstreamExpansion:
+                graphHook.controls?.setUpstreamExpansion ??
+                ((expandUpstream) => {}),
+            setDownstreamExpansion:
+                graphHook.controls?.setDownstreamExpansion ??
+                ((expandDownstream) => {}),
         },
         state: {
             nodeGraphData: graphHook.graph,
@@ -56,6 +63,8 @@ const ProvGraph = observer((props: ProvGraphProps) => {
             hoverData: graphHook.hoverData,
             loading: graphHook.status.fetching,
             focusNodeId: graphHook.focusNodeId,
+            expandUpstream: graphHook.expandUpstream,
+            expandDownstream: graphHook.expandDownstream,
         },
         canvasId: canvasId,
     });
@@ -128,8 +137,12 @@ const ProvGraph = observer((props: ProvGraphProps) => {
                                             graphHook.focusNodeId ===
                                             props.rootId
                                         }
-                                        graphQueries={graphHook.controls?.graphQueries}
-                                        graphQueriesNodes={graphHook.queriedNodes}
+                                        graphQueries={
+                                            graphHook.controls?.graphQueries
+                                        }
+                                        graphQueriesNodes={
+                                            graphHook.queriedNodes
+                                        }
                                     />
                                 </div>
                             </Grid>

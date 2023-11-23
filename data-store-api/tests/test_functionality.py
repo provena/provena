@@ -377,7 +377,8 @@ def end_to_end_mint(
                 updated_timestamp=datetime.now().timestamp(),
                 record_type=RecordType.COMPLETE_ITEM,
                 history=[],
-                release_status=ReleasedStatus.NOT_RELEASED
+                release_status=ReleasedStatus.NOT_RELEASED,
+                access_info_uri=collection_format.dataset_info.access_info.uri,
             ),
             roles=[],
             locked=False,

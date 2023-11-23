@@ -19,6 +19,7 @@ global_secondary_indexes: List[Tuple[str, str]] = [
     ("item_subtype", "updated_timestamp"),
     ("item_subtype", "created_timestamp"),
     ("item_subtype", "display_name"),
+    ("item_subtype", "access_info_uri"),
 
     ("universal_partition_key", "updated_timestamp"),
     ("universal_partition_key", "created_timestamp"),
@@ -30,7 +31,7 @@ global_secondary_indexes: List[Tuple[str, str]] = [
 ]
 
 # list of attribute used for sorting that are of type string
-string_sort_keys: List[str] = ["display_name"]
+string_sort_keys: List[str] = ["display_name", "access_info_uri"]
 
 
 class RegistryTable(Construct):
