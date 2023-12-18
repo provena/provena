@@ -69,7 +69,7 @@ def generate_unit_tests(
         build_environment=build.BuildEnvironment(
             environment_variables=combined_env,
             build_image=build.LinuxBuildImage.from_code_build_image_id(
-                "aws/codebuild/standard:5.0"),
+                "aws/codebuild/standard:7.0"),
             privileged=True
         ),
         install_commands=install_commands
@@ -155,7 +155,7 @@ def generate_integration_tests(
         build_environment=build.BuildEnvironment(
             environment_variables=combined_env,
             build_image=build.LinuxBuildImage.from_code_build_image_id(
-                "aws/codebuild/standard:5.0")
+                "aws/codebuild/standard:7.0")
         ),
         install_commands=install_commands
     )
@@ -231,7 +231,7 @@ def generate_system_tests(
             environment_variables=combined_env,
             # Includes the ubuntu 20.04 chrome install for system tests
             build_image=build.LinuxBuildImage.from_code_build_image_id(
-                "aws/codebuild/standard:5.0")
+                "aws/codebuild/standard:7.0")
         ),
         env_from_cfn_outputs=cfn_env,
         install_commands=install_commands

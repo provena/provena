@@ -232,8 +232,12 @@ route_params: List[RouteParameters] = [
                             purpose="But why, you might ask, was the Test Dataset so important? Well, dear reader, it served as a mirror reflecting the very essence of the software, exposing its vulnerabilities and frailties. It was Testy's trustworthy sidekick, always ready to point out flaws, inconsistencies, and missteps in the code. It was the guardian of reliability, ensuring that the software would perform its duties diligently without crashing or misbehaving. And it was the staunch defender of predictability, making sure that the software would respond consistently to various inputs and scenarios.",
                             usage_limitations="You may not use this dataset while wearing an eyepatch, unless you are an actual pirate sailing the high seas. In that case, a parrot on your shoulder is also required for compliance.",
                             preferred_citation="Testy McTestface, \"The Test Dataset: A Mirror to the Soul of the Software\", Journal of Testy Software, 2021",
-                            formats = ["pdf"],
+                            formats=["pdf"],
                             rights_holder="ME",
+                            user_metadata={
+                                "my custom": "annotation",
+                                "another custom": "annotation"
+                            }
                         )
                     ),
                     s3=S3Location(
@@ -241,7 +245,11 @@ route_params: List[RouteParameters] = [
                         path="example",
                         s3_uri="example"
                     ),
-                    release_status=ReleasedStatus.NOT_RELEASED
+                    release_status=ReleasedStatus.NOT_RELEASED,
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 DatasetDomainInfo(
                     display_name="example dataset 2",
@@ -282,9 +290,11 @@ route_params: List[RouteParameters] = [
                             ),
                             purpose="Explore the intricacies of intergalactic communication with this dataset, which deciphers the meaning behind alien emojis. Learn when it's appropriate to send a cosmic winky face or a UFO thumbs-up in your next close encounter.",
                             usage_limitations=" If you accidentally drop your device while using the dataset, you must perform a ceremonial dance to appease the digital spirits and ensure your files remain unharmed.",
-                            formats = ["png"],
-
-                        )
+                            formats=["png"],
+                            user_metadata={
+                                "my updated custom": "annotation",
+                            }
+                        ),
                     ),
                     s3=S3Location(
                         bucket_name="example",
@@ -293,6 +303,9 @@ route_params: List[RouteParameters] = [
                     ),
                     release_status=ReleasedStatus.NOT_RELEASED,
                     access_info_uri="https://fake.url.com/resource",
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 ),
             ]
 
@@ -324,12 +337,19 @@ route_params: List[RouteParameters] = [
                 OrganisationDomainInfo(
                     display_name="Test org",
                     name="Test org",
-                    ror="http://example.org/test-org"
+                    ror="http://example.org/test-org",
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 OrganisationDomainInfo(
                     display_name="Test org updated",
                     name="Test org updated",
-                    ror="http://example.org/test-org"
+                    ror="http://example.org/test-org",
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 )
             ]
         )
@@ -364,7 +384,11 @@ route_params: List[RouteParameters] = [
                     last_name="Boy",
                     email="test@example.com",
                     orcid="https://orcid.org/0000-1234-1234-1234",
-                    ethics_approved=True
+                    ethics_approved=True,
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 PersonDomainInfo(
                     display_name="Le Test bot updated",
@@ -372,7 +396,10 @@ route_params: List[RouteParameters] = [
                     last_name="Man",
                     email="test@example.com",
                     orcid="https://orcid.org/0000-1234-1234-1234",
-                    ethics_approved=True
+                    ethics_approved=True,
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 )
             ]
         )
@@ -405,14 +432,21 @@ route_params: List[RouteParameters] = [
                     name="Example model",
                     description="This is a fake model",
                     documentation_url="https://example_model.org",
-                    source_url="https://example_model.org"
+                    source_url="https://example_model.org",
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 ModelDomainInfo(
                     display_name="Example model updated",
                     name="Example model updated",
                     description="This is a fake updated model",
                     documentation_url="https://example_model.org",
-                    source_url="https://example_model.org"
+                    source_url="https://example_model.org",
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 )
             ]
         )
@@ -454,7 +488,11 @@ route_params: List[RouteParameters] = [
                     annotations=WorkflowTemplateAnnotations(
                         required=["annotation_key1"],
                         optional=["annotation_key2"]
-                    )
+                    ),
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 ModelRunWorkflowTemplateDomainInfo(
                     display_name="This is an example workflow def'n for a model run",
@@ -463,7 +501,10 @@ route_params: List[RouteParameters] = [
                     annotations=WorkflowTemplateAnnotations(
                         required=["annotation_key1"],
                         optional=["annotation_key2"]
-                    )
+                    ),
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 ),
                 ModelRunWorkflowTemplateDomainInfo(
                     display_name="This is an updated example workflow def'n for a model run",
@@ -478,7 +519,10 @@ route_params: List[RouteParameters] = [
                     annotations=WorkflowTemplateAnnotations(
                         required=["annotation_key3"],
                         optional=["annotation_key4"]
-                    )
+                    ),
+                    user_metadata={
+                        "my updated 2 custom": "annotation",
+                    }
                 ),
             ]
         )
@@ -524,10 +568,17 @@ route_params: List[RouteParameters] = [
                             key="item_key",
                         )
                     ],
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 DatasetTemplateDomainInfo(
                     description="This is an example dataset template",
                     display_name="Example template",
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 ),
                 DatasetTemplateDomainInfo(
                     description="This is an example of an updated dataset template",
@@ -546,6 +597,9 @@ route_params: List[RouteParameters] = [
                             key="item_key",
                         )
                     ],
+                    user_metadata={
+                        "my updated 2 custom": "annotation",
+                    }
                 ),
             ]
         )
@@ -577,12 +631,19 @@ route_params: List[RouteParameters] = [
                 StudyDomainInfo(
                     display_name="Test Study 1",
                     title="Test Study 1",
-                    description="Test Study 1"
+                    description="Test Study 1",
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 StudyDomainInfo(
                     display_name="Test Study 2",
                     title="Test Study 2",
-                    description="Test Study 2"
+                    description="Test Study 2",
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 )
             ]
         )
@@ -620,10 +681,17 @@ non_test_route_params: List[RouteParameters] = [
                 CreateDomainInfo(
                     display_name="Example Registry Create Activity Entity",
                     created_item_id="1234",
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 CreateDomainInfo(
                     display_name="Example Registry Create Activity Entity 2 ",
                     created_item_id="5678",
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 )
             ]
 
@@ -660,14 +728,21 @@ non_test_route_params: List[RouteParameters] = [
                     from_item_id="123",
                     to_item_id="1234",
                     new_version_number=2,
-                    reason="test"
+                    reason="test",
+                    user_metadata={
+                        "my custom": "annotation",
+                        "another custom": "annotation"
+                    }
                 ),
                 VersionDomainInfo(
                     display_name="Example Registry Version Activity Entity 2",
                     from_item_id="1234",
                     to_item_id="12345",
                     new_version_number=3,
-                    reason="test 2"
+                    reason="test 2",
+                    user_metadata={
+                        "my updated custom": "annotation",
+                    }
                 )
             ]
 

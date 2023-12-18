@@ -47,6 +47,7 @@ def validate_dataset_in_registry(collection_format: CollectionFormat, user: User
     try:
         payload = DatasetDomainInfo(
             display_name=collection_format.dataset_info.name,
+            user_metadata=collection_format.dataset_info.user_metadata,
             collection_format=collection_format,
             s3=S3Location(bucket_name="fake", path="fake", s3_uri="fake"),
             release_status=ReleasedStatus.NOT_RELEASED,  # dummy value

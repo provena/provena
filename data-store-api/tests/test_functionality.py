@@ -143,7 +143,6 @@ def test_dataset_schema() -> None:
     assert json_content, "JSON object was none"
 
 
-
 def test_mint_dataset_invalid_schema() -> None:
     # Override the auth dependency
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
@@ -379,6 +378,7 @@ def end_to_end_mint(
                 history=[],
                 release_status=ReleasedStatus.NOT_RELEASED,
                 access_info_uri=collection_format.dataset_info.access_info.uri,
+                user_metadata=collection_format.dataset_info.user_metadata
             ),
             roles=[],
             locked=False,
@@ -536,6 +536,7 @@ def test_validate_fields() -> None:
         data=data
     )
 
+
 @mock_dynamodb
 def test_reviewers_table(test_config: Config) -> None:
 
@@ -543,17 +544,20 @@ def test_reviewers_table(test_config: Config) -> None:
     app.dependency_overrides[admin_user_protected_role_dependency] = user_protected_dependency_override
 
     # connect to dynamodb
-    setup_dynamodb_reviewers_table(client=boto3.client('dynamodb'), table_name=test_config.REVIEWERS_TABLE_NAME)
+    setup_dynamodb_reviewers_table(client=boto3.client(
+        'dynamodb'), table_name=test_config.REVIEWERS_TABLE_NAME)
     # use a UUID for the fake id
     fake_id = "FakePersonID"
-    
+
     add_reviewer(reviewer_id=fake_id, config=test_config)
 
     # check that the id is in the table
-    assert fake_id in get_all_reviewers(config=test_config), f"Fake id {fake_id} was not added to reviewers table"
+    assert fake_id in get_all_reviewers(
+        config=test_config), f"Fake id {fake_id} was not added to reviewers table"
 
     # remove id
     delete_reviewer_by_id(reviewer_id=fake_id, config=test_config)
 
     # check that the id is not in the table
-    assert fake_id not in get_all_reviewers(config=test_config), f"Fake id {fake_id} was not removed from reviewers table"
+    assert fake_id not in get_all_reviewers(
+        config=test_config), f"Fake id {fake_id} was not removed from reviewers table"

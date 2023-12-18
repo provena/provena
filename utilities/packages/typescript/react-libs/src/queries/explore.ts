@@ -11,6 +11,12 @@ const SpecialQueryEndpointMap: Map<QueryType, string> = new Map([
     ["upstream_agent", PROV_API_ENDPOINTS.UPSTREAM_AGENTS],
 ]);
 
+// This is used to ensure that references to query functions don't turn over, so
+// that caching with react-query is handled properly
+
+// Key := QueryType + ID
+var StaticQueryMap: Map<string, Promise<LineageResponse>> = new Map([]);
+
 export const specialExploreGeneric = (id: string, query: QueryType) => {
     // params is the same for upstream and downstream
     const params = {
@@ -119,12 +125,32 @@ const TypeDispatchMap: Map<
 ]);
 
 export const queryDispatcher = (inputs: { id: string; query: QueryType }) => {
+    // Check if there is a static function already resolved
+    const key = inputs.query + inputs.id;
+    const possibleResolvedFunction = StaticQueryMap.get(key);
+
+    if (!!possibleResolvedFunction) {
+        console.log(
+            `Using resolved static function for query ${inputs.id} ${inputs.query}.`
+        );
+        return possibleResolvedFunction;
+    }
+
+    console.log(
+        `No resolved static function for query ${inputs.id} ${inputs.query}.`
+    );
+
     const dispatcher = TypeDispatchMap.get(inputs.query);
     if (dispatcher === undefined) {
         console.error(
             "There is no query dispatcher for the type " + inputs.query
         );
     } else {
-        return dispatcher(inputs.id);
+        const func = dispatcher(inputs.id);
+        console.log(
+            `Storing generated static function for query ${inputs.id} ${inputs.query}.`
+        );
+        StaticQueryMap.set(key, func);
+        return func;
     }
 };

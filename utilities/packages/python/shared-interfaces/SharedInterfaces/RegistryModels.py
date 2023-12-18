@@ -2,7 +2,7 @@ from pydantic import BaseModel, AnyHttpUrl, EmailStr, root_validator, validator,
 from pydantic.fields import ModelField
 from pydantic.generics import GenericModel
 from enum import Enum
-from typing import Optional, List, Tuple, TypeVar, Dict, Type, Any, Set, Generic
+from typing import Optional, List, Tuple, TypeVar, Dict, Type, Any, Set, Generic, Type
 import itertools
 from isodate import parse_duration  # type: ignore
 from datetime import datetime, date
@@ -251,15 +251,31 @@ class DomainInfoBase(BaseModel):
     # for this item
     display_name: str
 
+    # all item types can also contain customised user metadata (optionally)
+    # for datasets - this is kept in sync with the duplicated field in the collection format
+    user_metadata: Optional[Dict[str, str]] = Field(
+        None,
+        title="Custom User Metadata",
+        description="Optionally provide a collection of key value annotations describing this resource."
+    )
+
     @staticmethod
     def get_searchable_fields() -> List[str]:
-        # stub method
-        return ['display_name']
+        return ['display_name', 'user_metadata']
 
     def get_search_ready_object(self) -> Dict[str, str]:
-        return {
+        base = {
             'display_name': self.display_name,
         }
+        if self.user_metadata is not None:
+            compacted = ""
+            for k, v in self.user_metadata.items():
+                compacted += f"{k} {v} "
+            base['user_metadata'] = compacted
+        else:
+            base['user_metadata'] = ""
+
+        return base
 
 
 class RecordType(str, Enum):
@@ -937,8 +953,6 @@ class AccessInfo(BaseModel):
             if description is not None:
                 raise ValueError(
                     "Cannot provide a description for external access if data is reposited in the Data Store.")
-        
-        
         return values
 
     class Config:
@@ -1044,7 +1058,7 @@ class CollectionFormatSpatialInfo(BaseModel):
         # val must be parsable as float
         try:
             val = float(v)
-            assert val>0, f"Spatial resolution must be non-negative and greater than than 0. Got '{val}'."
+            assert val > 0, f"Spatial resolution must be non-negative and greater than than 0. Got '{val}'."
         except Exception as e:
             raise ValueError(
                 f"Invalid spatial resolution. The value must conform to the Decimal Degrees format. Please provide a positive decimal value. Failed to parse the spatial resolution as a positive float. Details: {e}")
@@ -1110,10 +1124,11 @@ class CollectionFormatTemporalInfo(BaseModel):
     )
 
     # validate the temporal resolution conforms to expected format: "P1Y2M10DT2H30M\".
-    @validator('resolution', always=True) # run even for default value.
+    @validator('resolution', always=True)  # run even for default value.
     def validate_temporal_resolution(cls: Any, v: str) -> str:
         try:
-            if v is not None: parse_duration(v)
+            if v is not None:
+                parse_duration(v)
         except Exception as e:
             raise ValueError(
                 f"Invalid temporal resolution. The value must conform to the ISO8601 Time Duration format (e.g.'P1Y2M10DT2H30M'). Details: {e}")
@@ -1221,6 +1236,13 @@ class CollectionFormatDatasetInfo(BaseModel):
         title="Keywords",
         description="Provide a list of keywords which describe your dataset [Optional].",
     )
+
+    # Custom user metadata if desired - this field is kept synchronised with the
+    # base domain info user metadata TODO consider how we can more naturally
+    # include move the dataset collection format into the domain info while
+    # allowing for immutable fields/properties such as s3 location etc
+    user_metadata: Optional[Dict[str, str]] = Field(
+        None, title="Custom User Metadata", description="Optionally provide a collection of key value annotations for this dataset.")
 
     # this is not going to be shown in schema anymore, but will remain in the
     # actual model in case existing versions are relevant
@@ -1330,21 +1352,22 @@ class DatasetDomainInfo(DomainInfoBase):
     # timestamp when release status was last updated
     release_timestamp: Optional[int]
     # collection_format.access_info.uri for non-reposited datasets to enable fetch/list by uri.
-    access_info_uri: Optional[str] 
+    access_info_uri: Optional[str]
 
     # validate access_info_uri and collection_format.dataset_info.access_info.uri are always the same
     @root_validator(pre=False, skip_on_failure=True)
     def check_access_info_uri(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
         access_info_uri: Optional[str] = values.get('access_info_uri')
-        collection_format: Optional[CollectionFormat] = values.get('collection_format')
+        collection_format: Optional[CollectionFormat] = values.get(
+            'collection_format')
         assert collection_format, "collection_format must be present"
         access_info = collection_format.dataset_info.access_info
-        assert (access_info.uri and access_info_uri) or (not access_info.uri and not access_info_uri), f"access_info_uri must always match collection_format.access_info.uri. Got access_info_uri={access_info_uri} and collection_format.access_info.uri={access_info.uri}"
+        assert (access_info.uri and access_info_uri) or (
+            not access_info.uri and not access_info_uri), f"access_info_uri must always match collection_format.access_info.uri. Got access_info_uri={access_info_uri} and collection_format.access_info.uri={access_info.uri}"
 
         if collection_format.dataset_info.access_info.uri != access_info_uri:
             raise ValueError(
                 f"access_info_uri must always match collection_format.access_info.uri. Got access_info_uri={access_info_uri} and collection_format.access_info.uri={access_info.uri}")
-        
         return values
 
     # validate release_approver and release_timestamp are both present or both absent
@@ -1867,3 +1890,33 @@ ALL_SEARCHABLE_FIELDS = list(set(
     itertools.chain(*[model_type.get_searchable_fields()
                     for model_type in MODEL_TYPE_MAP.values()])
 ))
+
+
+# ================
+#  DISPLAY PATCHES
+# ================
+
+# patch to move the custom user metadata field to bottom of pydantic models
+
+# This list includes the objects for which to move
+patched_objects: List[Type[BaseModel]] = [
+    StudyDomainInfo,
+    ModelRunDomainInfo,
+    CreateDomainInfo,
+    VersionDomainInfo,
+    PersonDomainInfo,
+    OrganisationDomainInfo,
+    ModelDomainInfo,
+    ModelRunWorkflowTemplateDomainInfo,
+    DatasetTemplateDomainInfo,
+    DatasetDomainInfo,
+]
+
+for target_model in patched_objects:
+    # this moves the user metadata field to the end of each domain info model so
+    # that it displays last in forms
+    
+    # TODO consider instead spinning off a separate model and inherting it last in the models (bit more repetition)
+    fields = target_model.__fields__.copy()
+    u_data = fields.pop("user_metadata")
+    target_model.__fields__ = {**fields, "user_metadata": u_data}
