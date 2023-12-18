@@ -155,6 +155,12 @@ export interface DatasetInformation {
    * Provide a list of keywords which describe your dataset [Optional].
    */
   keywords?: string[];
+  /**
+   * Optionally provide a collection of key value annotations for this dataset.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 /**
  * Please specify whether data is going to be stored in the Data Store, or referenced from an existing, externally hosted, source.
@@ -254,12 +260,19 @@ export interface InputConvertRocrateCollectionFormat {
 }
 export interface ItemDataset {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   collection_format: DatasetMetadata;
   s3: S3Location;
   release_history?: ReleaseHistoryEntry[];
   release_status: ReleasedStatus;
   release_approver?: string;
   release_timestamp?: number;
+  access_info_uri?: string;
   history: HistoryEntryDatasetDomainInfo[];
   id: string;
   owner_username: string;
@@ -293,6 +306,13 @@ export interface DatasetDomainInfo {
   release_status: ReleasedStatus;
   release_approver?: string;
   release_timestamp?: number;
+  access_info_uri?: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface WorkflowLinks {
   create_activity_workflow_id?: string;
@@ -444,6 +464,12 @@ export interface AccessSettings {
 export interface ActivityBase {
   history: HistoryEntryDomainInfoBase[];
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   id: string;
   owner_username: string;
   created_timestamp: number;
@@ -463,10 +489,22 @@ export interface HistoryEntryDomainInfoBase {
 }
 export interface DomainInfoBase {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface AgentBase {
   history: HistoryEntryDomainInfoBase[];
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   id: string;
   owner_username: string;
   created_timestamp: number;
@@ -485,6 +523,12 @@ export interface AutomationSchedule {}
 export interface CreateDomainInfo {
   display_name: string;
   created_item_id: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface DatasetParameter {
   parameter_name?: string;
@@ -498,6 +542,12 @@ export interface DatasetTemplateDomainInfo {
   description?: string;
   defined_resources?: DefinedResource[];
   deferred_resources?: DeferredResource[];
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface DefinedResource {
   path: string;
@@ -528,6 +578,12 @@ export interface DescribedRole {
 export interface EntityBase {
   history: HistoryEntryDomainInfoBase[];
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   id: string;
   owner_username: string;
   created_timestamp: number;
@@ -551,6 +607,12 @@ export interface HistoryEntryAny {
 export interface ItemBase {
   history: HistoryEntryDomainInfoBase[];
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   id: string;
   owner_username: string;
   created_timestamp: number;
@@ -563,6 +625,12 @@ export interface ItemBase {
 }
 export interface ItemCreate {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   created_item_id: string;
   history: HistoryEntryCreateDomainInfo[];
   id: string;
@@ -584,6 +652,12 @@ export interface HistoryEntryCreateDomainInfo {
 }
 export interface ItemDatasetTemplate {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   description?: string;
   defined_resources?: DefinedResource[];
   deferred_resources?: DeferredResource[];
@@ -607,6 +681,12 @@ export interface HistoryEntryDatasetTemplateDomainInfo {
 }
 export interface ItemModel {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   name: string;
   description: string;
   documentation_url: string;
@@ -635,9 +715,21 @@ export interface ModelDomainInfo {
   description: string;
   documentation_url: string;
   source_url: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface ItemModelRun {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   record_status: WorkflowRunCompletionStatus;
   record: ModelRunRecord;
   prov_serialisation: string;
@@ -664,9 +756,21 @@ export interface ModelRunDomainInfo {
   record_status: WorkflowRunCompletionStatus;
   record: ModelRunRecord;
   prov_serialisation: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface ItemModelRunWorkflowTemplate {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   software_id: string;
   software_version: string;
   input_templates?: TemplateResource[];
@@ -705,9 +809,21 @@ export interface ModelRunWorkflowTemplateDomainInfo {
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface ItemOrganisation {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   name: string;
   ror?: string;
   history: HistoryEntryOrganisationDomainInfo[];
@@ -732,9 +848,21 @@ export interface OrganisationDomainInfo {
   display_name: string;
   name: string;
   ror?: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface ItemPerson {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   email: string;
   first_name: string;
   last_name: string;
@@ -765,9 +893,21 @@ export interface PersonDomainInfo {
   last_name: string;
   orcid?: string;
   ethics_approved?: boolean;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface ItemSoftware {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   name: string;
   description: string;
   documentation_url: string;
@@ -792,6 +932,12 @@ export interface HistoryEntrySoftwareDomainInfo {
 }
 export interface SoftwareDomainInfo {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   name: string;
   description: string;
   documentation_url: string;
@@ -799,6 +945,12 @@ export interface SoftwareDomainInfo {
 }
 export interface ItemStudy {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   title: string;
   description: string;
   history: HistoryEntryStudyDomainInfo[];
@@ -823,9 +975,21 @@ export interface StudyDomainInfo {
   display_name: string;
   title: string;
   description: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface ItemVersion {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   reason: string;
   from_item_id: string;
   to_item_id: string;
@@ -854,9 +1018,21 @@ export interface VersionDomainInfo {
   from_item_id: string;
   to_item_id: string;
   new_version_number: number;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
 }
 export interface ItemWorkflowRun {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   record_status: WorkflowRunCompletionStatus;
   history: HistoryEntryWorkflowRunDomainInfo[];
   id: string;
@@ -878,10 +1054,22 @@ export interface HistoryEntryWorkflowRunDomainInfo {
 }
 export interface WorkflowRunDomainInfo {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   record_status: WorkflowRunCompletionStatus;
 }
 export interface ItemWorkflowTemplate {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   software_id: string;
   software_version: string;
   input_templates?: TemplateResource[];
@@ -907,6 +1095,12 @@ export interface HistoryEntryWorkflowTemplateDomainInfo {
 }
 export interface WorkflowTemplateDomainInfo {
   display_name: string;
+  /**
+   * Optionally provide a collection of key value annotations describing this resource.
+   */
+  user_metadata?: {
+    [k: string]: string;
+  };
   software_id: string;
   software_version: string;
   input_templates?: TemplateResource[];

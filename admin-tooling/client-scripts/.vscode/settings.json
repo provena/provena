@@ -1,0 +1,16 @@
+{
+    "mypy.runUsingActiveInterpreter": true,
+    "jupyter.jupyterServerType": "local",
+    "cSpell.words": [
+        "botocore",
+        "dynamob",
+        "faketoken",
+        "httpx",
+        "KEYCLOAK",
+        "moto",
+        "orcid",
+        "rocrate",
+        "typer",
+        "uvicorn"
+    ],
+}

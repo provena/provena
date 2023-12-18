@@ -151,6 +151,7 @@ async def mint_dataset(
     # we are ready to build the dataset item domain info
     domain_info = DatasetDomainInfo(
         display_name=collection_format.dataset_info.name,
+        user_metadata=collection_format.dataset_info.user_metadata,
         collection_format=collection_format,
         s3=s3_location,
         release_status=ReleasedStatus.NOT_RELEASED,
@@ -328,6 +329,7 @@ async def update_metadata(
         config=config,
         domain_info=DatasetDomainInfo(
             display_name=collection_format.dataset_info.name,
+            user_metadata=collection_format.dataset_info.user_metadata,
             collection_format=collection_format,
             s3=registry_item_metadata.s3,
             # Put existing release status if any here.
@@ -466,6 +468,13 @@ async def revert_metadata(
 
     # Update the collection format
     revised_domain_info.collection_format = collection_format
+    
+    # update the user metadata
+    revised_domain_info.user_metadata = collection_format.dataset_info.user_metadata
+
+    # Update the uri, if any.
+    revised_domain_info.access_info_uri = collection_format.dataset_info.access_info.uri
+
 
     # Update the uri, if any.
     revised_domain_info.access_info_uri = collection_format.dataset_info.access_info.uri

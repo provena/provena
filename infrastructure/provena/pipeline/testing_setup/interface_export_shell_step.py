@@ -13,7 +13,7 @@ def generate_interface_export_step(
         build_environment=build.BuildEnvironment(
             # Includes the ubuntu 20.04 chrome install for python etc
             build_image=build.LinuxBuildImage.from_code_build_image_id(
-                "aws/codebuild/standard:5.0")
+                "aws/codebuild/standard:7.0")
         ),
         commands=[
             f"./{INTERFACE_EXPORT_SCRIPT_LOCATION}"

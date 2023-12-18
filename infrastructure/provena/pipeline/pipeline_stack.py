@@ -490,7 +490,7 @@ class ProvenaPipelineStack(Stack):
                             type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
                         )
                     },
-                    build_image=build.LinuxBuildImage.STANDARD_5_0
+                    build_image=build.LinuxBuildImage.STANDARD_7_0
                 ),
                 build_spec=build.BuildSpec.from_object(
                     {
@@ -544,7 +544,7 @@ class ProvenaPipelineStack(Stack):
 
                 # badge=True,
                 environment=build.BuildEnvironment(
-                    build_image=build.LinuxBuildImage.STANDARD_5_0,
+                    build_image=build.LinuxBuildImage.STANDARD_7_0,
                     environment_variables={
                         "PIPELINE_NAME": build.BuildEnvironmentVariable(
                             value=deployment_pipeline.pipeline.pipeline_name,
@@ -741,7 +741,7 @@ class ProvenaPipelineStack(Stack):
                 ),
                 description="Run mypy type checks triggered by PRs",
                 environment=build.BuildEnvironment(
-                    build_image=build.LinuxBuildImage.STANDARD_5_0
+                    build_image=build.LinuxBuildImage.STANDARD_7_0
                 ),
             )
 
@@ -767,7 +767,7 @@ class ProvenaPipelineStack(Stack):
                 ),
                 description="Run ts type checks on PRs",
                 environment=build.BuildEnvironment(
-                    build_image=build.LinuxBuildImage.STANDARD_5_0
+                    build_image=build.LinuxBuildImage.STANDARD_7_0
                 ),
             )
 
@@ -798,7 +798,7 @@ class ProvenaPipelineStack(Stack):
                         config=config.tests.unit_tests, general_config=config.general),
                     # some unit tests require docker.
                     privileged=True,
-                    build_image=build.LinuxBuildImage.STANDARD_5_0
+                    build_image=build.LinuxBuildImage.STANDARD_7_0
                 ),
             )
 
@@ -1216,7 +1216,7 @@ def generate_codebuild_static_action(
         scope=scope,
         id=id,
         environment=build.BuildEnvironment(
-            build_image=build.LinuxBuildImage.STANDARD_5_0,
+            build_image=build.LinuxBuildImage.STANDARD_7_0,
             environment_variables=env
         ),
         build_spec=build.BuildSpec.from_object(
@@ -1507,7 +1507,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
                         type=build.BuildEnvironmentVariableType.SECRETS_MANAGER
                     )
                 },
-                build_image=build.LinuxBuildImage.STANDARD_5_0
+                build_image=build.LinuxBuildImage.STANDARD_7_0
             ),
             build_spec=build.BuildSpec.from_object(
                 {
@@ -1561,7 +1561,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
 
             # badge=True,
             environment=build.BuildEnvironment(
-                build_image=build.LinuxBuildImage.STANDARD_5_0,
+                build_image=build.LinuxBuildImage.STANDARD_7_0,
                 environment_variables={
                     "PIPELINE_NAME": build.BuildEnvironmentVariable(
                         value=deployment_pipeline.pipeline.pipeline_name,

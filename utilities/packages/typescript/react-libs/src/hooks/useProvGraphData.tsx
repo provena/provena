@@ -1,7 +1,12 @@
-import { useQueries } from "@tanstack/react-query";
+import {
+    UseQueryOptions,
+    UseQueryResult,
+    useQueries,
+} from "@tanstack/react-query";
 import debounce from "lodash.debounce";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { queryDispatcher } from "../queries/explore";
+import { LineageResponse } from "../shared-interfaces/ProvenanceAPI";
 import { ItemBase, ItemSubType } from "../shared-interfaces/RegistryModels";
 import { useUntypedLoadedItem } from "./useLoadedItem";
 
@@ -218,39 +223,43 @@ export const useProvGraphData = (
         setFocusNodeId(undefined);
     };
 
-    // Use react query list to manage list of expanded nodes
-    const expandCacheTime = 60000; // 60s
-
-    // process into list of queries
-    const resolvedQueries = queriedNodes.map((expansion: ExpansionType) => {
-        const resolvedQuery = queryDispatcher({
-            id: expansion.id,
-            query: expansion.query,
+    const filteredQueries = useMemo(() => {
+        // process into list of queries
+        const resolvedQueries = queriedNodes.map((expansion: ExpansionType) => {
+            const resolvedQuery = queryDispatcher({
+                id: expansion.id,
+                query: expansion.query,
+            });
+            return {
+                id: expansion.id,
+                query: expansion.query,
+                resolvedQuery: resolvedQuery,
+            };
         });
-        return {
-            resolvedQuery,
-            ...expansion,
-        };
-    });
 
-    // Filter for only valid expansion types
-    const filteredQueries = resolvedQueries.filter((resolvedExpansion) => {
-        return resolvedExpansion.resolvedQuery !== undefined;
-    });
+        // Filter for only valid expansion types and mark as not containing undefined
+        return resolvedQueries.filter((resolvedExpansion) => {
+            return resolvedExpansion.resolvedQuery !== undefined;
+        }) as {
+            id: string;
+            query: QueryType;
+            resolvedQuery: Promise<LineageResponse>;
+        }[];
+    }, [queriedNodes]);
 
     const expandQueries = useQueries({
         queries: filteredQueries.map((resolvedExpansion) => {
             const { id, query, resolvedQuery } = resolvedExpansion;
             return {
                 // Unique set of node query, type and id
-                queryKey: ["nodequery" + query + id],
-                queryFn: () => {
-                    return resolvedQuery!;
-                },
+                queryKey: ["nodequery", query, id],
+                queryFn: () => resolvedQuery,
                 staleTime: Infinity,
-            };
+            } as UseQueryOptions;
         }),
-    });
+        // Have to type cast this for some reason as use query result not picking up
+        // the type of the query properly
+    }) as UseQueryResult<LineageResponse, unknown>[];
 
     const mergeGraphs = (
         baseG: NodeGraphData,

@@ -1,5 +1,5 @@
 # Includes lambda runtime 
-FROM public.ecr.aws/lambda/python:3.9
+FROM public.ecr.aws/lambda/python:3.11
 
 # Install git for pip install which requires git packages
 RUN yum -y install git

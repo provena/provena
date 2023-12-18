@@ -836,7 +836,7 @@ def test_admin_sync_deletion_allowed() -> None:
         {table_old: num_common_items, table_new: num_new_items}, table_old)
     common_items = table_items[table_old]
     new_items = table_items[table_new]
-    deleted_item_ids = sample(common_items.keys(), num_delete_items)
+    deleted_item_ids = sample(sorted(common_items.keys()), num_delete_items)
 
     # now produce an import payload which is a combination of modified items,
     # new items and deleted items (removed)
