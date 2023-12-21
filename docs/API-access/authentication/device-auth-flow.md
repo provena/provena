@@ -55,7 +55,7 @@ The source code for the tool is available [here](https://github.com/gbrrestorati
 
 Some implementation notes:
 
--   the `DeviceFlowManager` expects a `keycloak_endpoint` as an input argument - use `https://auth.mds.gbrrestoration.org/auth/realms/rrap`.
+-   the `DeviceFlowManager` expects a `keycloak_endpoint` as an input argument - use `https://auth.{YOUR_PROVENA_URL}/auth/realms/{YOUR_REALM_NAME}`.
 -   by default, the access and refresh tokens are cached in a local file called `.tokens.json` - this avoids having to repeatedly login
 -   the class `DeviceFlowManager` exposes a method `get_auth` which can be used directly with the Python `Requests` library - an example of using this method is provided as discussed below
 -   a browser window is automatically opened when possible - otherwise, the user would need to open the link themselves
