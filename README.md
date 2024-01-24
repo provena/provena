@@ -13,7 +13,7 @@ Yu, J., Baker, P., Cox, S.J.D., Petridis, R., Freebairn, A.C., Mirza, F., Thomas
 
 ### Software citation
 
-Yu, Jonathan; Baker, Peter; Petridis, Ross; Freebairn, Andrew; Thomas, Linda; Mirza, Fareed; Tickell, Sharon; Lemon, David; Rezvani, Mojtaba; Hou, Xinyu; Cox, Simon (2023): Provena. v1. CSIRO. Software Collection. http://hdl.handle.net/102.100.100/487364
+Yu, Jonathan; Baker, Peter; Petridis, Ross; Freebairn, Andrew; Thomas, Linda; Mirza, Fareed; Tickell, Sharon; Lemon, David; Rezvani, Mojtaba; Hou, Xinyu; Cox, Simon (2023): Provena. v1. CSIRO. Software Collection. https://doi.org/10.25919/1edm-0612
 
 See also https://data.csiro.au/collection/csiro:59335
 
