@@ -334,7 +334,6 @@ def produce_mocked_validate_workflow(postfix: str) -> Any:
             owner_username="1234",
             display_name="fake",
             software_id=model_id_base + postfix,
-            software_version="v.1.fake",
             input_templates=[
                 TemplateResource(template_id=input_template_id_base + postfix)
             ],
@@ -401,6 +400,7 @@ def make_exploration_request(client: TestClient, method: str, id: str, depth: Op
 def generate_model_run_record(postfix: str, input_override: Optional[str] = None) -> ModelRunRecord:
     return ModelRunRecord(
         workflow_template_id=workflow_defn_id_base + postfix,
+        model_version="1.2",
         inputs=[
             TemplatedDataset(
                 dataset_template_id=input_template_id_base + postfix,

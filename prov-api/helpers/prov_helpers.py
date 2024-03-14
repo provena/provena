@@ -545,7 +545,7 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
     return document
 
 
-def produce_prov_document(model_record: ModelRunRecord, seed_item: SeededItem, workflow_template: ItemModelRunWorkflowTemplate) -> prov.ProvDocument:
+def produce_prov_document(model_record: ModelRunRecord, record_id: str, workflow_template: ItemModelRunWorkflowTemplate) -> prov.ProvDocument:
     """    produce_prov_document
         Given the model record inputted by user and the newly seeded model run
         item, will produce a python-prov prov-o document.
@@ -558,8 +558,8 @@ def produce_prov_document(model_record: ModelRunRecord, seed_item: SeededItem, w
         model_record : ModelRunRecord
             The model run record provided by user which has had the IDs
             validated.
-        seed_item : SeededItem
-            The fresh seed item which includes the handle ID to embed into record.
+        record_id : str
+            Handle ID of the registered model run (can be seed)
 
         Returns
         -------
@@ -572,7 +572,7 @@ def produce_prov_document(model_record: ModelRunRecord, seed_item: SeededItem, w
         Examples (optional)
         --------
     """
-    return produce_prov_document_existing_handle(model_record=model_record, record_id=seed_item.id, workflow_template=workflow_template)
+    return produce_prov_document_existing_handle(model_record=model_record, record_id=record_id, workflow_template=workflow_template)
 
 
 def produce_create_prov_document(created_item_id: str, created_item_subtype: ItemSubType, create_activity_id: str, agent_id: str) -> prov.ProvDocument:

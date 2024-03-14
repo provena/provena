@@ -95,6 +95,7 @@ def dev_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
     http_prefix = "http:\/\/"
     safe_base = base_domain.replace(".", "\.")
     # https://*.base.com OR https://base.com OR http(s)://localhost:port
+    print("Returning DEV Cors")
     return f"({https_prefix}.*\.{safe_base}|{https_prefix}{safe_base}|{https_prefix}localhost:\d*|{http_prefix}localhost:\d*)"
 
 
@@ -125,7 +126,9 @@ CORS_GENERATOR_MAP: Dict[str, CorsGeneratorFunc] = {
 
 
 def dispatch_cors(stage: str, base_domain: str) -> CorsGeneratorReturnType:
+    print("Dispatching CORS")
     generator_func = CORS_GENERATOR_MAP.get(stage)
+    print("Stage : " + stage)
     if generator_func is None:
         raise ValueError(
             "There is no CORS generator for the given stage. Aborting.")

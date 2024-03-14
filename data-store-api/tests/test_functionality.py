@@ -16,6 +16,7 @@ from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from helpers.metadata_helpers import validate_fields
 from helpers.aws_helpers import sanitize_handle
+from helpers.sts_helpers import generate_read_write_paths
 from helpers.util import py_to_dict
 from pydantic import ValidationError
 from fastapi.testclient import TestClient
@@ -561,3 +562,91 @@ def test_reviewers_table(test_config: Config) -> None:
     # check that the id is not in the table
     assert fake_id not in get_all_reviewers(
         config=test_config), f"Fake id {fake_id} was not removed from reviewers table"
+
+
+def test_credential_path_generation() -> None:
+    # tests if the credential path generation is working as expected
+
+    bucket_name = "test"
+    dataset_name = "1234"
+    dataset_prefix = "dataset"
+
+    resource_path = f"{dataset_prefix}/{dataset_name}"
+    s3_location = S3Location(
+        bucket_name=f"{bucket_name}",
+        path=resource_path,
+        s3_uri=f"s3://{bucket_name}/{resource_path}",
+    )
+
+    # test read only
+    result = generate_read_write_paths(
+        s3_location=s3_location,
+        write=False
+    )
+
+    # expected read/write/list paths
+    arn_prefix = "arn:aws:s3:::"
+    good_read_paths = [
+        # read top level bucket
+        f"{arn_prefix}{bucket_name}/{resource_path}",
+        f"{arn_prefix}{bucket_name}/{resource_path}/",
+        f"{arn_prefix}{bucket_name}/{resource_path}/*",
+    ]
+
+    good_write_paths: List[str] = [
+    ]
+
+    good_list_paths = [
+        # read top level bucket
+        f"{arn_prefix}{bucket_name}",
+        f"{arn_prefix}{bucket_name}/*",
+    ]
+
+    def validate_lists(list1: List[str], list2: List[str], context: str) -> None:
+        assert len(list1) == len(
+            list2), f"Compared lists were of different lengths. Context: {context}"
+        assert len(set(list1)) == len(list1) and len(set(list2)) == len(
+            list2), f"Compared lists have non unique elements. Context: {context}"
+
+        for elem in list1:
+            assert elem in list2, f"Element {elem} missing from list 2. Context: {context}."
+
+    validate_lists(result.read_uris, good_read_paths,
+                   "Read resource URIs comparison")
+    validate_lists(result.write_uris, good_write_paths,
+                   "Write resource URIs comparison")
+    validate_lists(result.list_uris, good_list_paths,
+                   "List resource URIs comparison")
+
+    # test write only
+    result = generate_read_write_paths(
+        s3_location=s3_location,
+        write=True
+    )
+
+    # expected read/write/list paths
+    arn_prefix = "arn:aws:s3:::"
+    good_read_paths = [
+        f"{arn_prefix}{bucket_name}/{resource_path}",
+        f"{arn_prefix}{bucket_name}/{resource_path}/",
+        f"{arn_prefix}{bucket_name}/{resource_path}/*",
+    ]
+
+    good_write_paths = [
+        f"{arn_prefix}{bucket_name}/{resource_path}",
+        f"{arn_prefix}{bucket_name}/{resource_path}/",
+        f"{arn_prefix}{bucket_name}/{resource_path}/*",
+    ]
+
+    good_list_paths = [
+        # read top level bucket
+        f"{arn_prefix}{bucket_name}",
+        f"{arn_prefix}{bucket_name}/*",
+    ]
+
+    validate_lists(result.read_uris, good_read_paths,
+                   "Read resource URIs comparison")
+    validate_lists(result.write_uris, good_write_paths,
+                   "Write resource URIs comparison")
+    validate_lists(result.list_uris, good_list_paths,
+                   "List resource URIs comparison")

@@ -157,7 +157,6 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
                 owner_username="1234",
                 display_name="fake",
                 software_id="fake",
-                software_version="v.1.fake",
                 input_templates=input_templates,
                 output_templates=output_templates,
                 id=id,
@@ -240,6 +239,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # produce the model run record payload
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -405,6 +405,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # produce the model run record payload
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -438,6 +439,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now remove an input resource and make sure it fails
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -470,6 +472,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now remove an output resource and make sure it fails
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -502,6 +505,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now remove both resources and make sure it fails
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -533,6 +537,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now add an output key into input and make sure it fails
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -566,6 +571,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now add an unknown key
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -599,6 +605,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now make sure successful lodge still works
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -632,6 +639,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now remove an annotation
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,
@@ -664,6 +672,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
 
     # now add an annotation - this should be okay
     model_run_record = ModelRunRecord(
+        model_version="1.2",
         workflow_template_id="workflowtemplate",
         inputs=[TemplatedDataset(
             dataset_template_id=input_template_id,

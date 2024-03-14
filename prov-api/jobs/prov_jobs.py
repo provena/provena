@@ -3,7 +3,7 @@ from EcsSqsPythonTools.Types import *
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
-from helpers.workflows import lodge_provenance
+from helpers.workflows import register_and_lodge_provenance, lodge_provenance
 from helpers.entity_validators import RequestStyle, ServiceAccountProxy
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.prov_helpers import produce_create_prov_document, produce_version_prov_document
@@ -52,6 +52,107 @@ def wake_up_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> Callba
         info=None,
         result=py_to_dict(
             WakeUpResult(
+            )
+        )
+    )
+
+
+def model_run_lodge_only_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+    """
+    Handles lodging the provenance graph data ONLY
+    into Neo4j for the specified model run record.
+
+    Optionally validates the record as specified in the job payload.
+
+    This involves creating the prov document and lodging the record.
+
+    Parameters
+    ----------
+    payload : JobSnsPayload
+        The payload which validates against subtype payload from map
+    settings : JobBaseSettings
+        The job settings
+
+    Returns
+    -------
+    CallbackResponse
+        The response indicating success/failure and reporting result payload
+    """
+    print(f"Running model run lodge handler.")
+
+    print("Parsing full API config from environment.")
+    try:
+        config = Config()
+    except Exception as e:
+        return CallbackResponse(
+            status=JobStatus.FAILED,
+            info=f"Failed to parse job configuration from the environment. Error: {e}."
+        )
+    print("Successfully parsed environment config.")
+
+    print(f"Parsing job specific payload")
+    try:
+        model_run_lodge_payload = cast(ProvLodgeModelRunLodgeOnlyPayload, parse_job_specific_payload(
+            payload=payload, job_sub_type=JobSubType.MODEL_RUN_LODGE_ONLY))
+    except Exception as e:
+        return generate_failed_job(error=f"Failed to parse job payload from the event. Error: {e}.")
+
+    print(f"Parsed specific payload: {model_run_lodge_payload}")
+
+    # What request style to use for lodge? We want to use the service account +
+    # proxy endpoint on behalf of user
+    request_style = RequestStyle(
+        user_direct=None,
+        service_account=ServiceAccountProxy(
+            on_behalf_username=payload.username,
+            direct_service=False
+        )
+    )
+
+    if model_run_lodge_payload.revalidate:
+        print("Validating record contents as specified in job payload.")
+        # We need to validate here
+        try:
+            valid, error_message = asyncio.run(validate_model_run_record(
+                record=model_run_lodge_payload.record,
+                request_style=request_style,
+                config=config,
+            ))
+        except Exception as e:
+            return generate_failed_job(
+                error=f"Unhandled exception during model run validation. Error: {e}."
+            )
+
+        if not valid:
+            assert error_message
+            return CallbackResponse(
+                status=JobStatus.FAILED,
+                info=f"Failed to validate an entity's ID in the record, error: {error_message}."
+            )
+
+        print("Record validation successful.")
+    else:
+        print("Validation skipped as specified in job payload.")
+
+    print("Starting lodge of provenance payload.")
+    try:
+        record_info = asyncio.run(lodge_provenance(
+            handle_id=model_run_lodge_payload.model_run_record_id,
+            record=model_run_lodge_payload.record,
+            config=config,
+            request_style=request_style
+        ))
+    except Exception as e:
+        return generate_failed_job(
+            error=f"An error occurred while lodging the provenance record. Error: {e}."
+        )
+
+    return CallbackResponse(
+        status=JobStatus.SUCCEEDED,
+        info=None,
+        result=py_to_dict(
+            ProvLodgeModelRunResult(
+                record=record_info
             )
         )
     )
@@ -136,7 +237,7 @@ def model_run_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
 
     print("Starting lodge of provenance payload.")
     try:
-        record_info = asyncio.run(lodge_provenance(
+        record_info = asyncio.run(register_and_lodge_provenance(
             record=model_run_lodge_payload.record,
             config=config,
             request_style=request_style
@@ -410,6 +511,7 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
 PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
     JobSubType.PROV_LODGE_WAKE_UP: wake_up_handler,
     JobSubType.MODEL_RUN_PROV_LODGE: model_run_lodge_handler,
+    JobSubType.MODEL_RUN_LODGE_ONLY: model_run_lodge_only_handler,
     JobSubType.MODEL_RUN_BATCH_SUBMIT: model_run_batch_submit_handler,
     JobSubType.LODGE_CREATE_ACTIVITY: creation_lodge_handler,
     JobSubType.LODGE_VERSION_ACTIVITY: version_lodge_handler

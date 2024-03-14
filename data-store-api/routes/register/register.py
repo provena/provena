@@ -476,10 +476,6 @@ async def revert_metadata(
     revised_domain_info.access_info_uri = collection_format.dataset_info.access_info.uri
 
 
-    # Update the uri, if any.
-    revised_domain_info.access_info_uri = collection_format.dataset_info.access_info.uri
-
-
     update_dataset_in_registry(
         proxy_username=protected_roles.user.username,
         domain_info=revised_domain_info,

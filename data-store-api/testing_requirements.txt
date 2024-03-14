@@ -3,7 +3,7 @@
 pytest
 pytest-depends
 autopep8
-moto[s3, dynamodb]
+moto[s3, dynamodb]==4.2.14
 pytest-dotenv
 mypy
 httpx

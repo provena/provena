@@ -81,6 +81,7 @@ class Config(BaseConfig):
     OUTPUT_TEMPLATE_RESOURCE_PREFIX: str = "Output resource: "
     WORKFLOW_TEMPLATE_MARKER_PREFIX: str = "workflow template id"
     TEMPLATE_DISPLAY_NAME_HEADER: str = "display name"
+    TEMPLATE_MODEL_VERSION_HEADER: str = "model version (optional)"
     TEMPLATE_DESCRIPTION_HEADER: str = "description"
     TEMPLATE_AGENT_HEADER: str = "agent id"
     STUDY_HEADER: str = "study id"

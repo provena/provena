@@ -2,7 +2,6 @@ from __future__ import annotations
 import collections
 from itertools import chain
 from fastapi.responses import FileResponse
-from fastapi import UploadFile
 from fastapi import HTTPException
 from starlette.background import BackgroundTask
 from SharedInterfaces.RegistryModels import ItemModelRunWorkflowTemplate, ItemDatasetTemplate, SeededItem, ItemDataset
@@ -323,6 +322,7 @@ class DatasetTemplateHeaderInfo():
 @dataclass
 class GenericTemplateHeaderInfo():
     display_name_header: str
+    model_version_header: str
     description_header: str
     agent_id_header: str
     study_id_header: str
@@ -336,14 +336,22 @@ class GenericTemplateHeaderInfo():
             assert header in headers, f"Expected header '{header}' not in headers!"
 
     def compile(self) -> List[str]:
+        # order must match fillout order
         return [self.display_name_header,
                 self.description_header,
+                self.model_version_header,
                 self.agent_id_header,
                 self.study_id_header,
-                # Removing requesting organisation for v1
-                # self.requesting_org_id_header,
                 self.start_time_header,
                 self.end_time_header]
+
+    def get_model_version(self, data: Dict[str, str]) -> Optional[str]:
+        val = data.get(self.model_version_header)
+
+        if val == "":
+            return None
+
+        return val
 
     def get_display_name(self, data: Dict[str, str]) -> str:
         val = data[self.display_name_header]
@@ -364,19 +372,12 @@ class GenericTemplateHeaderInfo():
 
     def get_study_id(self, data: Dict[str, str]) -> Optional[str]:
         val = data[self.study_id_header]
-        
+
         if val == "":
             return None
-        
+
         # can be none
         return val
-
-    # Removing requesting organisation for v1
-
-    # def get_requesting_org_id(self, data: Dict[str, str]) -> Optional[str]:
-    #    val = data[self.requesting_org_id_header]
-    #    # can be None
-    #    return val
 
     def get_start_time(self, data: Dict[str, str]) -> int:
         val = data[self.start_time_header]
@@ -391,19 +392,20 @@ class GenericTemplateHeaderInfo():
     def fillout(self, model_run_record: ModelRunRecord) -> List[str]:
         output_entries: List[str] = []
 
+        # Display name
+        output_entries.append(model_run_record.display_name)
+
         # description
         output_entries.append(model_run_record.description or "")
+
+        # model version
+        output_entries.append(model_run_record.model_version or "")
 
         # agent id
         output_entries.append(model_run_record.associations.modeller_id)
 
         # study
         output_entries.append(model_run_record.study_id or "")
-
-        # Removing requesting organisation for v1
-        # requesting org
-        # output_entries.append(
-        #    model_run_record.associations.requesting_organisation_id or "")
 
         # start/end time
         output_entries.append(epoch_to_iso(model_run_record.start_time))
@@ -719,12 +721,11 @@ async def generate_csv_template_header_info(workflow_template_id: str, request_s
 
     # generic headers
     generic = GenericTemplateHeaderInfo(
+        model_version_header=config.TEMPLATE_MODEL_VERSION_HEADER,
         display_name_header=config.TEMPLATE_DISPLAY_NAME_HEADER,
         description_header=config.TEMPLATE_DESCRIPTION_HEADER,
         agent_id_header=config.TEMPLATE_AGENT_HEADER,
         study_id_header=config.STUDY_HEADER,
-        # Removing requesting organisation for v1.
-        # requesting_org_id_header=config.TEMPLATE_ORGANISATION_HEADER,
         start_time_header=config.TEMPLATE_START_TIME_HEADER,
         end_time_header=config.TEMPLATE_END_TIME_HEADER,
     )
@@ -762,6 +763,7 @@ async def generate_model_run_record_from_template(user: User, workflow_template_
     start_time = header_info.generic_headers.get_start_time(data=data)
     end_time = header_info.generic_headers.get_end_time(data=data)
     display_name = header_info.generic_headers.get_display_name(data=data)
+    model_version = header_info.generic_headers.get_model_version(data=data)
     description = header_info.generic_headers.get_description(data=data)
     agent_id = header_info.generic_headers.get_agent_id(data=data)
     study_id = header_info.generic_headers.get_study_id(data=data)
@@ -771,6 +773,7 @@ async def generate_model_run_record_from_template(user: User, workflow_template_
     # the record is new, and it is valid
     return (ModelRunRecord(
         workflow_template_id=workflow_template_id,
+        model_version=model_version,
         inputs=inputs,
         outputs=outputs,
         annotations=annotations,

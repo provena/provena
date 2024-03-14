@@ -109,6 +109,7 @@ route_params: List[RouteParameters] = [
                     prov_serialisation="Blank prov document",
                     record_status=WorkflowRunCompletionStatus.COMPLETE,
                     record=ModelRunRecord(
+                        model_version="1.2",
                         workflow_template_id="1234",
                         inputs=[TemplatedDataset(
                             dataset_template_id="1234",
@@ -478,7 +479,6 @@ route_params: List[RouteParameters] = [
                 ModelRunWorkflowTemplateDomainInfo(
                     display_name="This is an example workflow def'n for a model run",
                     software_id="1234",
-                    software_version="v1.3",
                     input_templates=[
                         TemplateResource(template_id='1234', optional=False)
                     ],
@@ -497,7 +497,6 @@ route_params: List[RouteParameters] = [
                 ModelRunWorkflowTemplateDomainInfo(
                     display_name="This is an example workflow def'n for a model run",
                     software_id="1234",
-                    software_version="v1.3",
                     annotations=WorkflowTemplateAnnotations(
                         required=["annotation_key1"],
                         optional=["annotation_key2"]
@@ -509,7 +508,6 @@ route_params: List[RouteParameters] = [
                 ModelRunWorkflowTemplateDomainInfo(
                     display_name="This is an updated example workflow def'n for a model run",
                     software_id="1234",
-                    software_version="v1.3.3",
                     input_templates=[
                         TemplateResource(template_id='12345', optional=False)
                     ],

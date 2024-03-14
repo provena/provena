@@ -2,8 +2,8 @@ import json
 import typing
 
 # TODO need to update these depending on input/output
-input_filename = "NA"
-output_filename = "NA"
+input_filename = "dumps/TODO"
+output_filename = "dumps/TODO"
 
 
 def read() -> typing.List[typing.Dict[str, typing.Any]]:
@@ -18,7 +18,7 @@ def write(entries: typing.List[typing.Dict[str, typing.Any]]) -> None:
 
 def entry_filter(entry: typing.Dict[str, typing.Any]) -> bool:
     # Can modify this to filter on whatever is useful - in this case username
-    return entry['auth_payload']['access_settings']['owner'] == "fake@gmail.com"
+    return True
 
 
 if __name__ == "__main__":

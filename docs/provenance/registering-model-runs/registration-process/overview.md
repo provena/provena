@@ -49,21 +49,22 @@ The section below will provide a detailed breakdown of a model run record.
 
 The schema which is validated by the provenance API is available [here](https://prov-api.mds.gbrrestoration.org/docs#/Model%20Runs/register_complete_model_run). A summary is provided below:
 
--   **workflow_template_id**\*: The entity registry identifier of the model run workflow template which this model run is using. See [Model Run Workflow Template](../model-workflow-configuration#model-run-workflow-template) for more information.
--   **description**\*: A description of the model run. The text in this field is searchable, and should help yourself and others understand the purpose, inputs and outputs of this model run.
--   **associations**\*:
-    -   **modeller_id**\*: The entity registry identifier of the [Person](../establishing-required-entities#person) who is registering the model run record
-    -   **requesting_organisation_id**\*: The entity registry identifier of the [Organisation](../establishing-required-entities#organisation) responsible for the model run activity.
--   **study**: Optionally provide the registry identifier of the [Study](../establishing-required-entities#study) which informed/necessitated this modelling activity.
--   **start_time**\*: The starting execution time of the model run in [unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) format
--   **end_time**\*: The ending execution time of the model run in [unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) format
--   **annotations**: A map of key value pairs which correspond to either required or optional workflow annotations specified in the model run workflow template. If mandatory annotations specified in the workflow template are not provided here, the model run will be invalid. e.g. `{"key1" : "value", "key2" : "value2}`.
--   **inputs**\*: A model run must specify a dataset and the path of any deferred resources for each of the model run workflow template inputs. Inputs are objects of the following format:
-    -   **dataset_template_id**\*: The entity registry identifier of the [Dataset Template](../model-workflow-configuration#dataset-template) listed as an input in the workflow template.
-    -   **dataset_id**\*: The data store identifier of the dataset satisfying this template used in the model run
-    -   **dataset_type**\*: The type of dataset - currently this has to be set to the only option "DATA_STORE"
-    -   **resources**: A map of key value pairs which specify a file path in the dataset for each of the deferred resources in the dataset template, if any. E.g. `{"configuration_file" : "config/inputs/configuration_file.csv", "geometry_file":"geometries/corals.json"}`.
--   **outputs**\*: A model run must specify a dataset and the path of any deferred resources for each of the model run workflow template outputs. Outputs are specified using the same fields as inputs (above).
+- **workflow_template_id**\*: The entity registry identifier of the model run workflow template which this model run is using. See [Model Run Workflow Template](../model-workflow-configuration#model-run-workflow-template) for more information.
+- **description**\*: A description of the model run. The text in this field is searchable, and should help yourself and others understand the purpose, inputs and outputs of this model run.
+- **model version**: Specify the version of the model software that this model used. This could be a version number, a Git Hash or some other version identifier E.g. "1.0.3".
+- **associations**\*:
+  - **modeller_id**\*: The entity registry identifier of the [Person](../establishing-required-entities#person) who is registering the model run record
+  - **requesting_organisation_id**\*: The entity registry identifier of the [Organisation](../establishing-required-entities#organisation) responsible for the model run activity.
+- **study**: Optionally provide the registry identifier of the [Study](../establishing-required-entities#study) which informed/necessitated this modelling activity.
+- **start_time**\*: The starting execution time of the model run in [unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) format
+- **end_time**\*: The ending execution time of the model run in [unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) format
+- **annotations**: A map of key value pairs which correspond to either required or optional workflow annotations specified in the model run workflow template. If mandatory annotations specified in the workflow template are not provided here, the model run will be invalid. e.g. `{"key1" : "value", "key2" : "value2}`.
+- **inputs**\*: A model run must specify a dataset and the path of any deferred resources for each of the model run workflow template inputs. Inputs are objects of the following format:
+  - **dataset_template_id**\*: The entity registry identifier of the [Dataset Template](../model-workflow-configuration#dataset-template) listed as an input in the workflow template.
+  - **dataset_id**\*: The data store identifier of the dataset satisfying this template used in the model run
+  - **dataset_type**\*: The type of dataset - currently this has to be set to the only option "DATA_STORE"
+  - **resources**: A map of key value pairs which specify a file path in the dataset for each of the deferred resources in the dataset template, if any. E.g. `{"configuration_file" : "config/inputs/configuration_file.csv", "geometry_file":"geometries/corals.json"}`.
+- **outputs**\*: A model run must specify a dataset and the path of any deferred resources for each of the model run workflow template outputs. Outputs are specified using the same fields as inputs (above).
 
 ## Provenance and datasets
 

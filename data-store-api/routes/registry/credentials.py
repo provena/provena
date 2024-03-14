@@ -31,6 +31,8 @@ def allows_credential_generation(dataset: ItemDataset) -> bool:
 
     Ensures that the dataset is reposited before enabling credential generation.
 
+    NOTE: RRAPIS-1581 changed this behaviour to enable storage access even if externally reposited.
+
     Parameters
     ----------
     dataset : ItemDataset
@@ -41,7 +43,11 @@ def allows_credential_generation(dataset: ItemDataset) -> bool:
     bool
         True iff the dataset should enable credential generation
     """
-    return dataset.collection_format.dataset_info.access_info.reposited
+    # NOTE JIRA RRAPIS-1581 re-enabled data storage even for externally reposited datasets
+    # return dataset.collection_format.dataset_info.access_info.reposited
+
+    # Now returns True
+    return True
 
 
 @router.post("/generate-read-access-credentials", response_model=CredentialResponse, operation_id="generate_read_access_credentials")
@@ -131,6 +137,7 @@ async def generate_read_access_credentials(
                             detail=f'The item with id {id} is a SeededItem and cannot have credentials generated.')
 
     # we know the item is a ItemDataset - perform checks to ensure it is reposited
+    # NOTE: RRAPIS-1581 changed this behaviour to enable storage access even if externally reposited.
     allowed = allows_credential_generation(dataset=item)
 
     if not allowed:
@@ -289,6 +296,7 @@ async def generate_write_access_credentials(
         )
 
     # we know the item is a ItemDataset - perform checks to ensure it is reposited
+    # NOTE: RRAPIS-1581 changed this behaviour to enable storage access even if externally reposited.
     allowed = allows_credential_generation(dataset=item)
 
     if not allowed:

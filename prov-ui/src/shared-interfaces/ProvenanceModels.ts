@@ -13,6 +13,7 @@ export interface AssociationInfo {
 }
 export interface ModelRunRecord {
   workflow_template_id: string;
+  model_version?: string;
   inputs: TemplatedDataset[];
   outputs: TemplatedDataset[];
   annotations?: {

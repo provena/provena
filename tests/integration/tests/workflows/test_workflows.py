@@ -104,7 +104,6 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     mrwt_domain_info = ModelRunWorkflowTemplateDomainInfo(
         display_name="IntegrationTestMRWT",
         software_id=model.id,  # model is software
-        software_version="v1.17",
         input_templates=[TemplateResource(
             template_id=input_template.id, optional=False)],
         output_templates=[TemplateResource(

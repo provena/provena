@@ -82,8 +82,8 @@ def render_annotations(annotations: Dict[str, str]) -> str:
     return ", ".join([f"{key} : {value}" for key, value in annotations.items()])
 
 
-def render_model_info(model: ItemModel, template: ItemModelRunWorkflowTemplate) -> str:
-    return f"{model.display_name} ({model.id}) (Version: {template.software_version})"
+def render_model_info(model: ItemModel) -> str:
+    return f"{model.display_name} ({model.id})"
 
 
 def render_timestamp(timestamp: int, timezone: Timezone) -> str:
@@ -172,7 +172,7 @@ def create_row_entry_from_record(
                                for k, v in (record.annotations or {}).items()],
         model_combined=render_model_info(model=model, template=template),
         model_name=model.display_name,
-        model_version=template.software_version,
+        model_version=model_run_record.model_version or "",
         model_id=model.id,
         input_ids=input_ids,
         output_ids=output_ids,

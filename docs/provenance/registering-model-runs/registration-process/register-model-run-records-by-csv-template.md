@@ -61,15 +61,17 @@ Opening the template, we see the fields to be filled in listed across the top as
 
 The following provides a brief description on the default fields required by the Provenance System:
 
--   **Display Name**: This name will be displayed in the Registry and other system views. Choose a short descriptive title for this model run.
+- **Display Name**: This name will be displayed in the Registry and other system views. Choose a short descriptive title for this model run.
 
--   **Description**: A brief description of the Model Run.
+- **Description**: A brief description of the Model Run.
 
--   **Agent ID**: The ID of the agent responsible for running the model run. This is the ID of the person/organisation in the entity registry. To obtain an ID for a person, first try [searching](../../../registry/exploring_the_registry) for them in the registry, if they don't exist, they will need to be registered to create an ID for them. See [here](../establishing-required-entities.md#what-entities-are-required-to-register-provenance) for help on establishing the required entities and [How do I register a model run workflow template?](../../registering-model-runs/model-workflow-configuration#how-do-i-register-a-model-run-workflow-template).
+- **Model Version**: Specify the version of the model software that this model used. This could be a version number, a Git Hash or some other version identifier E.g. "1.0.3".
 
--   **Study ID**: (Optional) The ID of the [Study](../establishing-required-entities#study) which informed or necessitated this Model Run. You can leave this field blank to exclude this link.
+- **Agent ID**: The ID of the agent responsible for running the model run. This is the ID of the person/organisation in the entity registry. To obtain an ID for a person, first try [searching](../../../registry/exploring_the_registry) for them in the registry, if they don't exist, they will need to be registered to create an ID for them. See [here](../establishing-required-entities.md#what-entities-are-required-to-register-provenance) for help on establishing the required entities and [How do I register a model run workflow template?](../../registering-model-runs/model-workflow-configuration#how-do-i-register-a-model-run-workflow-template).
 
--   **Execution Start/End Time**: The respective start and end time of the model run execution.
+- **Study ID**: (Optional) The ID of the [Study](../establishing-required-entities#study) which informed or necessitated this Model Run. You can leave this field blank to exclude this link.
+
+- **Execution Start/End Time**: The respective start and end time of the model run execution.
 
 <td>{% include notes.html content="The format for the start and end time is a profile of ISO8601 (called RFC 3339) in which a space is optionally allowed to separate the date and time instead of a \"T\". Additionally, the IS will also accept \"/\" in the date section, and will allow for the timezone and seconds to be omitted. If the timezone is omitted, UTC will be assumed by the system. If seconds, are omitted, the IS will record 00 for this value. E.g. inputting 2022-11-28 12:23 will go be assumed to equal 2022-11-28 12:23:00+00:00.
 
@@ -85,11 +87,11 @@ Some example formats (for which a 'T' can also be used to separate the date and 
 </ul>
 "%}</td>
 
--   **Input/Output Dataset ID for Template: (display name) XXXXX.X/XXXXXXX**: This refers to the ID of the Dataset being used to fill the template. This requires input and output datasets to be registered in the datastore to obtain an ID for them. See [registering a dataset](../../../data-store/registering-a-dataset) for help.
+- **Input/Output Dataset ID for Template: (display name) XXXXX.X/XXXXXXX**: This refers to the ID of the Dataset being used to fill the template. This requires input and output datasets to be registered in the datastore to obtain an ID for them. See [registering a dataset](../../../data-store/registering-a-dataset) for help.
 
--   **Annotation: (annotation_key)**: A collection of required or optional annotation keys provided at model run time. See [model workflow configuration](../../registering-model-runs/model-workflow-configuration#model-run-workflow-template) for more info.
+- **Annotation: (annotation_key)**: A collection of required or optional annotation keys provided at model run time. See [model workflow configuration](../../registering-model-runs/model-workflow-configuration#model-run-workflow-template) for more info.
 
--   **Input/Output Resources**: This refers to the path to the deferred resource from within the dataset. E.g., "data/connectivity/file.txt". Please see [How do I register a dataset template?](../../registering-model-runs/model-workflow-configuration#how-do-i-register-a-dataset-template) for information on resources.
+- **Input/Output Resources**: This refers to the path to the deferred resource from within the dataset. E.g., "data/connectivity/file.txt". Please see [How do I register a dataset template?](../../registering-model-runs/model-workflow-configuration#how-do-i-register-a-dataset-template) for information on resources.
 
 ### Uploading the CSV (Step 4)
 

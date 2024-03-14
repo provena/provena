@@ -6,6 +6,6 @@ pytest-depends
 requests
 types-requests
 setuptools
-moto
+moto==4.2.14
 smtpdfix
 httpx

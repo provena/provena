@@ -143,3 +143,5 @@ thunder-tests
 
 # dump outputs 
 dumps
+
+restore-errors.json

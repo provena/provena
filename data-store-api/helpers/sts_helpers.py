@@ -1,54 +1,54 @@
-from distutils.command.config import config
 from helpers.keycloak_helpers import get_oidc_service_token
 import json
 from dependencies.secret_cache import secret_cache
 from SharedInterfaces.DataStoreAPI import *
 import boto3  # type: ignore
-from helpers.aws_helpers import create_policy_document
+from helpers.aws_helpers import create_policy_document, S3CredentialPaths
 import urllib
 import requests
 from config import Config
 
 
-def call_sts_service(session_name: str, s3_location: S3Location, write: bool, config: Config) -> Credentials:
-    """    call_sts_service
-        This function calls the AWS STS service and generates temporary
-        credentials for the specific location within the S3 bucket.
-
-        The session name is provided to identify the user.
-
-        Arguments
-        ----------
-        session_name : str
-            The identifiable name of the session e.g. email and purpose
-        s3_location : S3Location
-            The s3 location object- will provide access to the location
-            specified by the s3_uri and any children of it
-        write : bool
-            Whether to include write permissions for this bucket location
-
-        Returns
-        -------
-         : Credentials
-            The credentials returned from the STS service.
-
-        Raises
-        ------
-        Exception
-            AWS STS call failed
-        Exception
-            AWS STS call succeeded but credentials weren't present
-
-        See Also (optional)
-        --------
-
-        Examples (optional)
-        --------
+def generate_read_write_paths(s3_location: S3Location, write: bool) -> S3CredentialPaths:
     """
+    
+    Generates a set of resource paths at different access levels suitable for inclusion in an IAM S3 policy.
+    
+    Requires knowing the base location of the dataset and the bucket name (in the S3Location object).
+    
+    If write is True, additional actions are allowed in the resource list to allow writing bucket files.
+     
+    read/write access to be granted.
+    
+    Returns a collection of 
+    
+    - read
+    - write 
+    - list
+    
+    Resource URI paths suitable for direct inclusion in a IAM policy document as
+    s3 resource paths.
+    
+    NOTE noting that list access is provided for the whole bucket - this is so
+    that the sync operation works in the AWS CLI.
 
+    Args:
+        s3_location (S3Location): The dataset location in bucket
+        write (bool): Write access? else read only
+
+    Returns:
+        S3CredentialPaths: Collection of resource URIs at read/write/list level
+    """
     # Generate the resource URIs required for read and write
-    base_path = f"arn:aws:s3:::{s3_location.bucket_name}/{s3_location.path}".rstrip(
+    base_dataset_path = f"arn:aws:s3:::{s3_location.bucket_name}/{s3_location.path}".rstrip(
         '/')
+
+    # This enables downloading of specific bucket files
+    read_resource_uris = [
+        base_dataset_path,
+        base_dataset_path + "/",
+        base_dataset_path + "/*"
+    ]
 
     # Which resources to grant read/write to
     write_resource_uris = []
@@ -56,63 +56,26 @@ def call_sts_service(session_name: str, s3_location: S3Location, write: bool, co
     if write:
         write_resource_uris.extend(
             [
-                base_path,
-                base_path + "/",
-                base_path + "/*"
+                base_dataset_path,
+                base_dataset_path + "/",
+                base_dataset_path + "/*"
             ])
 
-    # and bucket wide list operations for syncing
-    # note this means that someone can list all files
-    # but they can't download them
-    base_path = f"arn:aws:s3:::{s3_location.bucket_name}"
+    # and bucket wide list operations for syncing note this means that someone
+    # can list all files but they can't download them
+
+    # NOTE this is required because using the S3 CLI will fail if the user
+    # cannot list files across the whole bucket during SYNC operation
+    bucket_path = f"arn:aws:s3:::{s3_location.bucket_name}"
     list_resource_uris = [
-        base_path,
-        base_path + "/*"
+        bucket_path,
+        bucket_path + "/*"
     ]
 
-    # This enables downloading of specific bucket files
-    base_path = f"arn:aws:s3:::{s3_location.bucket_name}/{s3_location.path}".rstrip(
-        '/')
-    read_resource_uris = [
-        base_path,
-        base_path + "/",
-        base_path + "/*"
-    ]
-
-    # Create AWS client
-    client = boto3.client('sts')
-
-    # Try to call assume role
-    # this relies on a Role existing on IAM
-    # infrastructure which has the principal set as the
-    # fargate service role that this service is running on
-    try:
-        response = client.assume_role(
-            RoleArn=config.BUCKET_ROLE_ARN,
-            RoleSessionName=session_name,
-            Policy=create_policy_document(
-                write_resource_uris=write_resource_uris,
-                read_resource_uris=read_resource_uris,
-                list_resource_uris=list_resource_uris
-            ),
-            DurationSeconds=config.SESSION_DURATION_SECONDS
-        )
-    except Exception as e:
-        raise Exception(f"AWS STS call failed - error: {e}")
-
-    try:
-        assert response['Credentials']['SecretAccessKey']
-    except:
-        raise Exception(
-            f"STS call succeeded but no credentials were present. Response: {response}")
-
-    # assuming everything went well, unpack and return the credentials
-    creds = response['Credentials']
-    return Credentials(
-        aws_access_key_id=creds['AccessKeyId'],
-        aws_secret_access_key=creds['SecretAccessKey'],
-        aws_session_token=creds['SessionToken'],
-        expiry=creds['Expiration']
+    return S3CredentialPaths(
+        read_uris=read_resource_uris,
+        write_uris=write_resource_uris,
+        list_uris=list_resource_uris
     )
 
 
@@ -149,38 +112,13 @@ def call_sts_oidc_service(session_name: str, s3_location: S3Location, write: boo
         Examples (optional)
         --------
     """
-    # Generate the resource URIs required for read and write
-    base_path = f"arn:aws:s3:::{s3_location.bucket_name}/{s3_location.path}".rstrip(
-        '/')
 
-    # Which resources to grant read/write to
-    write_resource_uris = []
+    resource_paths = generate_read_write_paths(
+        s3_location=s3_location, write=write)
 
-    if write:
-        write_resource_uris.extend(
-            [
-                base_path,
-                base_path + "/",
-                base_path + "/*"
-            ])
-
-    # and bucket wide list operations for syncing
-    # note this means that someone can list all files
-    # but they can't download them
-    base_path = f"arn:aws:s3:::{s3_location.bucket_name}"
-    list_resource_uris = [
-        base_path,
-        base_path + "/*"
-    ]
-
-    # This enables downloading of specific bucket files
-    base_path = f"arn:aws:s3:::{s3_location.bucket_name}/{s3_location.path}".rstrip(
-        '/')
-    read_resource_uris = [
-        base_path,
-        base_path + "/",
-        base_path + "/*"
-    ]
+    policy_document = create_policy_document(
+        s3_paths=resource_paths
+    )
 
     # Get OIDC compatible token from keycloak
     token = get_oidc_service_token(
@@ -199,11 +137,7 @@ def call_sts_oidc_service(session_name: str, s3_location: S3Location, write: boo
             RoleArn=config.OIDC_SERVICE_ROLE_ARN,
             RoleSessionName=session_name,
             WebIdentityToken=token,
-            Policy=create_policy_document(
-                write_resource_uris=write_resource_uris,
-                read_resource_uris=read_resource_uris,
-                list_resource_uris=list_resource_uris
-            ),
+            Policy=policy_document,
             DurationSeconds=config.SERVICE_SESSION_DURATION_SECONDS
         )
     except Exception as e:
