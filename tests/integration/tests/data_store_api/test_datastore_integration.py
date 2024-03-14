@@ -555,10 +555,12 @@ def test_non_reposited_download_and_upload(linked_person_fixture: ItemPerson, or
     # try generate read and write creds and fail
     handle = mint_response.handle
 
-    read_creds_resp = generate_read_creds(dataset_id=handle, token=token())
-    assert read_creds_resp.status_code == 400, f"Status code is not 400, response message: {read_creds_resp.text}"
-    write_creds_resp = generate_write_creds(dataset_id=handle, token=token())
-    assert write_creds_resp.status_code == 400, f"Status code is not 400, response message: {write_creds_resp.text}"
+    # this should now succeed
+    # NOTE: RRAPIS-1581 changed this behaviour to enable storage access even if externally reposited.
+    read_creds_resp = generate_read_creds_successfully(
+        dataset_id=handle, token=token())
+    write_creds_resp = generate_write_creds_successfully(
+        dataset_id=handle, token=token())
 
     # swap to reposited using update
     collection_format.dataset_info.access_info = AccessInfo(reposited=True)
@@ -581,10 +583,10 @@ def test_non_reposited_download_and_upload(linked_person_fixture: ItemPerson, or
     update_metadata_sucessfully(
         dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=token())
 
-    resp = generate_read_creds(dataset_id=handle, token=token())
-    assert resp.status_code == 400, f"Status code is not 400, response message: {resp.text}"
-    resp = generate_write_creds(dataset_id=handle, token=token())
-    assert resp.status_code == 400, f"Status code is not 400, response message: {resp.text}"
+    read_creds_resp = generate_read_creds_successfully(
+        dataset_id=handle, token=token())
+    write_creds_resp = generate_write_creds_successfully(
+        dataset_id=handle, token=token())
 
 
 def test_revision_access_backdoor(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation, dataset_io_fixture: Tuple[str, str]) -> None:

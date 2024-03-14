@@ -1,6 +1,8 @@
 import LaunchIcon from "@mui/icons-material/Launch";
 import LockIcon from "@mui/icons-material/Lock";
 import {
+    Alert,
+    AlertTitle,
     Backdrop,
     Box,
     Button,
@@ -671,10 +673,26 @@ const DownloadGuidance = observer((props: DownloadGuidanceProps) => {
         "/data-store/downloading-datasets.html#downloading-and-synchronising-datasets";
     const creds = datasetDetailStore.read_aws_creds;
     const consoleURL = datasetDetailStore.read_console_url;
+    // Defaults to not external - test if external
+    const isExternal = !(
+        props.dataset.collection_format.dataset_info.access_info.reposited ??
+        true
+    );
 
     return (
         <div>
             <h2>Download Dataset Files</h2>
+            {isExternal && (
+                <div style={{ marginBottom: "20px" }}>
+                    <Alert variant="outlined" severity="warning">
+                        <AlertTitle>Externally Reposited Data</AlertTitle>
+                        This dataset has been marked as having files stored
+                        externally. You may still use the provided storage to
+                        host attachments or other data associated with the
+                        primary dataset files.
+                    </Alert>
+                </div>
+            )}
             <div>
                 You can download files from this dataset using the methods
                 below. For more information visit{" "}
@@ -927,6 +945,11 @@ const UploadGuidance = observer((props: UploadGuidanceProps) => {
         DOCUMENTATION_BASE_URL + "/data-store/uploading-dataset-files.html";
     const creds = datasetDetailStore.read_write_aws_creds;
     const consoleURL = datasetDetailStore.read_write_console_url;
+    // Defaults to not external - test if external
+    const isExternal = !(
+        props.dataset.collection_format.dataset_info.access_info.reposited ??
+        true
+    );
 
     if (props.locked) {
         return (
@@ -961,6 +984,17 @@ const UploadGuidance = observer((props: UploadGuidanceProps) => {
         return (
             <div>
                 <h2>Upload Dataset Files</h2>
+                {isExternal && (
+                    <div style={{ marginBottom: "20px" }}>
+                        <Alert variant="outlined" severity="warning">
+                            <AlertTitle>Externally Reposited Data</AlertTitle>
+                            This dataset has been marked as having files stored
+                            externally. You may still use the provided storage
+                            to host attachments or other data associated with
+                            the primary dataset files.
+                        </Alert>
+                    </div>
+                )}
                 <div>
                     Your dataset was minted successfully, you can now upload the
                     dataset files. For more information about this process,
@@ -1260,30 +1294,24 @@ const MetadataSummary = observer((props: MetadataSummaryProps) => {
                     </p>
                 </Grid>
             </Grid>
-            {reposited && (
-                <React.Fragment>
-                    <h3>Storage Location</h3>
-                    <div style={{ wordWrap: "break-word" }}>
-                        <Grid
-                            container
-                            xs={12}
-                            justifyContent="center"
-                            rowGap={2}
-                        >
-                            <Grid item xs={12}>
-                                <b>URI</b>: {dataset.s3.s3_uri}
-                            </Grid>
-                            <Grid item>
-                                <CopyButton
-                                    clipboardText={dataset.s3.s3_uri}
-                                    readyToCopyText={"Click to copy S3 URI"}
-                                    copiedText={"URI copied"}
-                                ></CopyButton>
-                            </Grid>
-                        </Grid>
-                    </div>
-                </React.Fragment>
-            )}
+            {
+                // We always show this now - as storage always accessible see RRAPIS-1581
+            }
+            <h3>Storage Location</h3>
+            <div style={{ wordWrap: "break-word" }}>
+                <Grid container xs={12} justifyContent="center" rowGap={2}>
+                    <Grid item xs={12}>
+                        <b>URI</b>: {dataset.s3.s3_uri}
+                    </Grid>
+                    <Grid item>
+                        <CopyButton
+                            clipboardText={dataset.s3.s3_uri}
+                            readyToCopyText={"Click to copy S3 URI"}
+                            copiedText={"URI copied"}
+                        ></CopyButton>
+                    </Grid>
+                </Grid>
+            </div>
             <h3>Record Information</h3>
             <h4>Created time</h4>
             <div>{createdTime}</div>
@@ -1427,8 +1455,15 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
     const reposited =
         datasetDetailStore.datasetDetail?.collection_format.dataset_info
             .access_info.reposited ?? false;
-    const seeDownload = !!datasetAccess?.readData && reposited;
-    const seeUpload = !!datasetAccess?.writeData && reposited;
+
+    // We always show this as long as access sufficient now - as storage always accessible see RRAPIS-1581
+
+    // prev
+    //const seeDownload = !!datasetAccess?.readData && reposited;
+    //const seeUpload = !!datasetAccess?.writeData && reposited;
+
+    const seeDownload = !!datasetAccess?.readData;
+    const seeUpload = !!datasetAccess?.writeData;
     const seeExternalAccess =
         readCheck.fallbackGranted &&
         datasetAccess?.readData &&

@@ -59,8 +59,8 @@ def render_annotations(annotations: Dict[str, str]) -> str:
     return ", ".join([f"{key} : {value}" for key, value in annotations.items()])
 
 
-def render_model_info(model: ItemModel, template: ItemModelRunWorkflowTemplate) -> str:
-    return f"{model.display_name} ({model.id}) (Version: {template.software_version})"
+def render_model_info(model: ItemModel) -> str:
+    return f"{model.display_name} ({model.id})"
 
 
 def render_timestamp(timestamp: int, timezone: Timezone) -> str:

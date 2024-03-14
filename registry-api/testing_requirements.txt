@@ -2,7 +2,7 @@
 -r job_requirements/dev.txt
 
 # aws mocking framework
-moto[s3, dynamodb]
+moto[s3, dynamodb]==4.2.14
 
 # pytest
 pytest

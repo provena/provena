@@ -2,7 +2,7 @@ from dependencies.dependencies import read_write_user_protected_role_dependency,
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException
 from SharedInterfaces.ProvenanceAPI import *
-from helpers.workflows import lodge_provenance
+from helpers.workflows import register_and_lodge_provenance
 from helpers.entity_validators import RequestStyle
 from SharedInterfaces.SharedTypes import Status
 from helpers.validate_model_run_record import validate_model_run_record
@@ -153,7 +153,7 @@ async def register_model_run_sync(
         )
 
     # lodge the provenance in sync mode
-    result = await lodge_provenance(
+    result = await register_and_lodge_provenance(
         record=record,
         config=config,
         request_style=request_style

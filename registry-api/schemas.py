@@ -90,9 +90,6 @@ UI_SCHEMA_OVERRIDES: Dict[ItemModelTypeVar, Dict[str, Any]] = {  # type: ignore
             "ui:description": "Select a registered model from the search tool below.",
             "ui:field": "autoCompleteModelLookup"
         },
-        "software_version": {
-            "ui:description": "What version of the software does this workflow template refer to? e.g. '1.0.3'",
-        },
         "input_templates": {
             "ui:title": "Input Dataset Templates",
             "ui:description": "Provide a list of the model's expected inputs.",

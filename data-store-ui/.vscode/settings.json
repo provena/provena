@@ -28,5 +28,6 @@
         "package-lock.json": true,
         "yarn.lock": true
     },
-    "workbench.editor.enablePreview": false
+    "workbench.editor.enablePreview": false,
+    "prettier.tabWidth": 4
 }

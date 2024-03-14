@@ -25,6 +25,7 @@ class JobSubType(str, Enum):
     # PROV LODGE
     PROV_LODGE_WAKE_UP = "PROV_LODGE_WAKE_UP"
     MODEL_RUN_PROV_LODGE = "MODEL_RUN_PROV_LODGE"
+    MODEL_RUN_LODGE_ONLY = "MODEL_RUN_LODGE_ONLY"
     MODEL_RUN_BATCH_SUBMIT = "MODEL_RUN_BATCH_SUBMIT"
     LODGE_CREATE_ACTIVITY = "LODGE_CREATE_ACTIVITY"
     LODGE_VERSION_ACTIVITY = "LODGE_VERSION_ACTIVITY"
@@ -117,6 +118,18 @@ class ProvLodgeModelRunPayload(BaseModel):
 
 
 class ProvLodgeModelRunResult(BaseModel):
+    record: ProvenanceRecordInfo
+
+# PROV LODGE ONLY MODEL RUN
+
+
+class ProvLodgeModelRunLodgeOnlyPayload(BaseModel):
+    model_run_record_id: str
+    record: ModelRunRecord
+    revalidate: bool
+
+
+class ProvLodgeModelRunLodgeOnlyResult(BaseModel):
     record: ProvenanceRecordInfo
 
 # PROV LODGE BATCH SUBMIT
@@ -230,6 +243,7 @@ JOB_TYPE_PAYLOAD_MAP: Dict[JobSubType, Type[BaseModel]] = {
     # Prov Lodge
     JobSubType.PROV_LODGE_WAKE_UP: WakeUpPayload,
     JobSubType.MODEL_RUN_PROV_LODGE: ProvLodgeModelRunPayload,
+    JobSubType.MODEL_RUN_LODGE_ONLY: ProvLodgeModelRunLodgeOnlyPayload,
     JobSubType.MODEL_RUN_BATCH_SUBMIT: ProvLodgeBatchSubmitPayload,
     JobSubType.LODGE_CREATE_ACTIVITY: ProvLodgeCreationPayload,
     JobSubType.LODGE_VERSION_ACTIVITY: ProvLodgeVersionPayload,
@@ -252,6 +266,7 @@ JOB_TYPE_RESULT_MAP: Dict[JobSubType, Type[BaseModel]] = {
     # Prov Lodge
     JobSubType.PROV_LODGE_WAKE_UP: WakeUpResult,
     JobSubType.MODEL_RUN_PROV_LODGE: ProvLodgeModelRunResult,
+    JobSubType.MODEL_RUN_LODGE_ONLY: ProvLodgeModelRunLodgeOnlyResult,
     JobSubType.MODEL_RUN_BATCH_SUBMIT: ProvLodgeBatchSubmitResult,
     JobSubType.LODGE_CREATE_ACTIVITY: ProvLodgeCreationResult,
     JobSubType.LODGE_VERSION_ACTIVITY: ProvLodgeVersionResult,

@@ -2,19 +2,28 @@ import json
 from typing import List, Any
 import boto3  # type: ignore
 import botocore.session  # type: ignore
-from aws_secretsmanager_caching import SecretCache, SecretCacheConfig #type: ignore
-
-#from helpers.sts_helpers import call_sts_oidc_service
-#from SharedInterfaces.DataStoreAPI import Credentials 
+from aws_secretsmanager_caching import SecretCache, SecretCacheConfig  # type: ignore
 from .sanitize import *
 from config import Config
 from SharedInterfaces.RegistryModels import *
 from SharedInterfaces.DataStoreAPI import ROCrate
+from dataclasses import dataclass
 
 """    
     Defines helper functions which relate to aws functions such as secret manager,
     s3, sts etc
 """
+
+
+@dataclass
+class S3CredentialPaths:
+    """
+    Contains read/write/list resource URIs suitable for inclusion in IAM S3
+    Policy documents
+    """
+    read_uris: List[str]
+    write_uris: List[str]
+    list_uris: List[str]
 
 
 def setup_secret_cache() -> SecretCache:
@@ -333,7 +342,7 @@ def update_metadata_at_s3(s3_location: S3Location, metadata: Dict[str, Any], con
     )
 
 
-def create_policy_document(write_resource_uris: List[str], read_resource_uris: List[str], list_resource_uris: List[str]) -> str:
+def create_policy_document(s3_paths: S3CredentialPaths) -> str:
     """    create_policy_document
         Given the required write access URIs and read access URIS
         will produce an inline policy document which give access to this.
@@ -364,7 +373,7 @@ def create_policy_document(write_resource_uris: List[str], read_resource_uris: L
     """
     statements = []
 
-    if len(write_resource_uris) > 0:
+    if len(s3_paths.write_uris) > 0:
         statements.append(
             {
                 "Action": [
@@ -377,25 +386,25 @@ def create_policy_document(write_resource_uris: List[str], read_resource_uris: L
                     "s3:PutObjectVersionTagging",
                     "s3:Abort*"
                 ],
-                "Resource": write_resource_uris,
+                "Resource": s3_paths.write_uris,
                 "Effect": "Allow"
             }
         )
 
-    if len(read_resource_uris) > 0:
+    if len(s3_paths.read_uris) > 0:
         statements.append(
 
             {
                 "Action": [
                     "s3:GetObject*"
                 ],
-                "Resource": read_resource_uris,
+                "Resource": s3_paths.read_uris,
                 "Effect": "Allow"
             }
 
         )
 
-    if len(list_resource_uris) > 0:
+    if len(s3_paths.list_uris) > 0:
         statements.append(
             {
                 "Action": [
@@ -405,7 +414,7 @@ def create_policy_document(write_resource_uris: List[str], read_resource_uris: L
                     "s3:ListBucket"
 
                 ],
-                "Resource": list_resource_uris,
+                "Resource": s3_paths.list_uris,
                 "Effect": "Allow"
             }
         )
@@ -416,4 +425,3 @@ def create_policy_document(write_resource_uris: List[str], read_resource_uris: L
 
     }
     return json.dumps(policy_document)
-

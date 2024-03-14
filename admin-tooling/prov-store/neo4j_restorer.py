@@ -227,6 +227,13 @@ def restore_all_model_runs(
     environment, you should include the --continue-by-default flag. 
     """
 
+    print("WARNING: This function is deprecated! Use the registry graph restore located in admin-tooling/registry instead. This method will only restore model runs and not create/version activities. It will also perform this task locally instead of using the standardised job system.")
+
+    res = yes_or_no("Do you want to continue anyway?")
+    if not res:
+        print("Aborting as requested.")
+        exit(1)
+
     # Process optional environment replacement parameters
     params = process_params(param)
     env = env_manager.get_environment(name=env_name, params=params)

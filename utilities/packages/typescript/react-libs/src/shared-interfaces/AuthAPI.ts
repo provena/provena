@@ -287,6 +287,7 @@ export interface AssociationInfo {
 }
 export interface ModelRunRecord {
   workflow_template_id: string;
+  model_version?: string;
   inputs: TemplatedDataset[];
   outputs: TemplatedDataset[];
   annotations?: {
@@ -877,7 +878,6 @@ export interface ItemModelRunWorkflowTemplate {
     [k: string]: string;
   };
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
@@ -910,7 +910,6 @@ export interface HistoryEntryModelRunWorkflowTemplateDomainInfo {
 export interface ModelRunWorkflowTemplateDomainInfo {
   display_name: string;
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
@@ -1176,7 +1175,6 @@ export interface ItemWorkflowTemplate {
     [k: string]: string;
   };
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
@@ -1207,7 +1205,6 @@ export interface WorkflowTemplateDomainInfo {
     [k: string]: string;
   };
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;

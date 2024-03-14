@@ -73,6 +73,11 @@ class AssociationInfo(BaseModel):
 class ModelRunRecord(BaseModel):
     # What workflow template does this model run fulfil?
     workflow_template_id: ModelRunWorkflowTemplateResource
+    
+    # RRAPIS-1580 - move this to the run itself to avoid weird churn on template
+    # Optional to specify but first class - allows for whatever scheme makes
+    # sense for user e.g. git hash
+    model_version: Optional[str] = None
 
     # inputs (datasets, config, param files) - must fulfil template
     inputs: List[TemplatedDataset]
@@ -133,6 +138,7 @@ class ModelRunRecord(BaseModel):
     def get_searchable_fields() -> List[str]:
         return [
             "workflow_template_id",
+            "model_version",
             "display_name",
             "description",
             "inputs",
@@ -148,6 +154,7 @@ class ModelRunRecord(BaseModel):
         fields: Dict[str, str] = {
             "workflow_template_id": self.workflow_template_id,
             "display_name": self.display_name,
+            "model_version": self.model_version or "",
             "description": self.description or "",
             "inputs": " ".join([i.make_searchable() for i in self.inputs]),
             "outputs": " ".join([o.make_searchable() for o in self.outputs]),

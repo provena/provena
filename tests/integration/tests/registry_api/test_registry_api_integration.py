@@ -390,7 +390,6 @@ def test_invalid_mrwt_update(linked_person_fixture: ItemPerson) -> None:
     mrwt_domain_info = ModelRunWorkflowTemplateDomainInfo(
         display_name="IntegrationTestMRWT",
         software_id=model.id,  # model is software
-        software_version="v1.17",
         input_templates=[TemplateResource(
             template_id=input_template.id, optional=False)],
         output_templates=[TemplateResource(

@@ -9,6 +9,7 @@ export type JobType = "PROV_LODGE" | "REGISTRY" | "EMAIL";
 export type JobSubType =
   | "PROV_LODGE_WAKE_UP"
   | "MODEL_RUN_PROV_LODGE"
+  | "MODEL_RUN_LODGE_ONLY"
   | "MODEL_RUN_BATCH_SUBMIT"
   | "LODGE_CREATE_ACTIVITY"
   | "LODGE_VERSION_ACTIVITY"
@@ -91,6 +92,7 @@ export interface JobTableBase {
 }
 export interface ModelRunRecord {
   workflow_template_id: string;
+  model_version?: string;
   inputs: TemplatedDataset[];
   outputs: TemplatedDataset[];
   annotations?: {
@@ -128,17 +130,25 @@ export interface ProvLodgeCreationPayload {
   created_item_subtype: ItemSubType;
 }
 export interface ProvLodgeCreationResult {}
-export interface ProvLodgeModelRunPayload {
+export interface ProvLodgeModelRunLodgeOnlyPayload {
+  model_run_record_id: string;
   record: ModelRunRecord;
   revalidate: boolean;
 }
-export interface ProvLodgeModelRunResult {
+export interface ProvLodgeModelRunLodgeOnlyResult {
   record: ProvenanceRecordInfo;
 }
 export interface ProvenanceRecordInfo {
   id: string;
   prov_json: string;
   record: ModelRunRecord;
+}
+export interface ProvLodgeModelRunPayload {
+  record: ModelRunRecord;
+  revalidate: boolean;
+}
+export interface ProvLodgeModelRunResult {
+  record: ProvenanceRecordInfo;
 }
 export interface ProvLodgeVersionPayload {
   from_version_id: string;
@@ -778,7 +788,6 @@ export interface ItemModelRunWorkflowTemplate {
     [k: string]: string;
   };
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
@@ -811,7 +820,6 @@ export interface HistoryEntryModelRunWorkflowTemplateDomainInfo {
 export interface ModelRunWorkflowTemplateDomainInfo {
   display_name: string;
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
@@ -1077,7 +1085,6 @@ export interface ItemWorkflowTemplate {
     [k: string]: string;
   };
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
@@ -1108,7 +1115,6 @@ export interface WorkflowTemplateDomainInfo {
     [k: string]: string;
   };
   software_id: string;
-  software_version: string;
   input_templates?: TemplateResource[];
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;

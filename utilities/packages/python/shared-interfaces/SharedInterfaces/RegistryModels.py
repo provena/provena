@@ -803,7 +803,9 @@ class WorkflowTemplateDomainInfo(DomainInfoBase):
     # Specify the software ID and version at time of template the validity of a
     # definition is tied to the lifecycle of the software
     software_id: IdentifiedResource
-    software_version: str
+
+    # RRAPIS-1580 - move this to the run itself to avoid weird churn on template
+    # software_version: str
 
     # inputs? List of dataset templates
     input_templates: List[TemplateResource] = []
@@ -838,7 +840,8 @@ class ItemWorkflowTemplate(EntityBase, WorkflowTemplateDomainInfo):
         base = item_base.get_search_ready_object()
         extended: Dict[str, str] = {
             "software_id": self.software_id,
-            "software_version": self.software_version,
+            # RRAPIS-1580 moves this to model run payload
+            #"software_version": self.software_version,
             "input_templates": " ".join([t.template_id for t in self.input_templates]),
             "output_templates": " ".join([t.template_id for t in self.output_templates]),
             "annotations": self.annotations.make_searchable() if self.annotations else ""
@@ -850,7 +853,8 @@ class ItemWorkflowTemplate(EntityBase, WorkflowTemplateDomainInfo):
     def get_searchable_fields() -> List[str]:
         return ItemBase.get_searchable_fields() + [
             "software_id",
-            "software_version",
+            # RRAPIS-1580 moves this to model run payload
+            #"software_version",
             "input_templates",
             "output_templates",
             "annotations"
@@ -1472,7 +1476,6 @@ class ItemModelRunWorkflowTemplate(EntityBase, ModelRunWorkflowTemplateDomainInf
         base = item_base.get_search_ready_object()
         extended: Dict[str, str] = {
             "software_id": self.software_id,
-            "software_version": self.software_version,
             "input_templates": " ".join([t.template_id for t in self.input_templates]),
             "output_templates": " ".join([t.template_id for t in self.output_templates]),
             "annotations": self.annotations.make_searchable() if self.annotations else ""
@@ -1484,7 +1487,6 @@ class ItemModelRunWorkflowTemplate(EntityBase, ModelRunWorkflowTemplateDomainInf
     def get_searchable_fields() -> List[str]:
         return ItemBase.get_searchable_fields() + [
             "software_id",
-            "software_version",
             "input_templates",
             "output_templates",
             "annotations"

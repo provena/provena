@@ -56,6 +56,7 @@ The IDs and values used in these records are not real.
 ```json
 {
     "workflow_template_id": "1234",
+    "model_version": "1.2",
     "inputs": [
         {
             "dataset_template_id": "1234",
