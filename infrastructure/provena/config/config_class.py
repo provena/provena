@@ -80,6 +80,27 @@ class FeatName:
     description: str
 
 
+@dataclass
+class SentryConfig:
+    """
+    A class used to represent the configuration for application monitoring via Sentry.
+
+    Attributes
+    ----------
+    sentry_dsn_back_end : str, optional
+        The Data Source Name (DSN) for the back-end Sentry service. If not provided, not events can be logged
+    sentry_dsn_front_end : str, optional
+        The Data Source Name (DSN) for the front-end Sentry service. If not provided, not events can be logged
+    monitoring_enabled : bool, default=False
+        A flag indicating whether monitoring is enabled for the entire application. If False, no events are logged.
+
+    """
+
+    sentry_dsn_back_end: Optional[str]
+    sentry_dsn_front_end: Optional[str]
+    monitoring_enabled: bool = False
+
+
 """
 ======
 STAGES
@@ -437,6 +458,9 @@ class DeploymentConfig():
     # The name of the cdk python app
     cdk_app_name: str
 
+    # Sentry API monitoring?
+    sentry_config: SentryConfig
+
     # Is this a feature branch deployment?
     feature_deployment: bool = False
     # If so - provide the ticket number
@@ -475,15 +499,32 @@ class DeploymentConfig():
     # synth command (generated from app name and output path)
     @property
     def cdk_synth_command(self) -> str:
-        if not self.feature_deployment:
-            return f'export PROVENA_CONFIG_ID="{self.config_id}" && npx cdk synth {self.cdk_input_output_subcommand}'
-        else:
+
+        env_vars: Dict[str, str] = {
+            'PROVENA_CONFIG_ID': self.config_id,
+        }
+
+        if self.feature_deployment:
             if self.ticket_no is None:
                 raise ValueError(
-                    "Cannot deploy a feature stack without specifying the ticket number.")
+                    "Cannot deploy a feature stack without specifying the ticket number."
+                )
+            # TODO, this supposed to have email (pipeline) allerts activated as well?
+            env_vars['TICKET_NO'] = str(self.ticket_no)
+            env_vars['BRANCH_NAME'] = self.git_branch_name
 
-            return f'export BRANCH_NAME="{self.git_branch_name}" && export TICKET_NO="{self.ticket_no}" && export PROVENA_CONFIG_ID="{self.config_id}" && npx cdk synth {self.cdk_input_output_subcommand}'
+        if self.email_alerts_activated:
+            env_vars['PIPELINE_ALERTS'] = "true"
+        
+        if self.sentry_config.monitoring_enabled:
+            # note that because of how the config is set up,
+            # the infra will interpret any non None value to be true
+            env_vars['ENABLE_API_MONITORING'] = "true"
 
+        export_string = " && ".join(
+            [f'export {k}="{v}"' for k, v in env_vars.items()]
+        )
+        return f'{export_string} && npx cdk synth {self.cdk_input_output_subcommand}'
 
 """
 ==============
@@ -501,9 +542,22 @@ class KeycloakEndpoints():
 
 
 @dataclass
+class APIGatewayRateLimitingSettings():
+    # Maximum number of concurrent requests which API gateway
+    # can handle during immediate high traffic time periods 
+    throttling_burst_limit: int = 20
+
+    # Rate limit controls the steady-state request rate, i.e., the
+    # long-term average number of requests per second (RPS), which
+    # API Gateway can handle. For example, if a rate limit of 500 is
+    # set, it means API Gateway will be able to process 500 requests
+    # per second on an average over a long period. 
+    throttling_rate_limit: int = 10
+
+@dataclass
 class GeneralConfig():
     email_connection_secret_arn: str
-    
+
     # used for authenticating docker pulls  
     dockerhub_creds_arn: str
 
@@ -521,6 +575,9 @@ class GeneralConfig():
     # Links for deployment specific documentation/contact us links
     documentation_base_link: str
     contact_us_link: str
+
+    # Rate limiting setup for API Gateways
+    rate_limiting: Optional[APIGatewayRateLimitingSettings] = None
 
     # if keycloak is not deployed, ensure these are present
     keycloak_endpoints: Optional[KeycloakEndpoints] = None
@@ -679,13 +736,14 @@ class ProvenaUIOnlyConfig():
     deployment_stack_id: str
 
     github_token_arn: str
-    
-    # used for authenticating docker pulls  
+
+    # used for authenticating docker pulls
     dockerhub_creds_arn: str
 
     git_repo_name: str
     git_owner_org: str
     git_branch_name: str
+    git_commit_id: Optional[str]
 
     # git repo string = owner_org/repo_name
     @property
@@ -703,18 +761,45 @@ class ProvenaUIOnlyConfig():
     cdk_out_path: str
     cdk_app_name: str
     ticket_no: int
+
+    sentry_config: SentryConfig
+
     email_alerts_activated: bool
     pipeline_alert_email: Optional[str] = None
+
+
 
     # synth command (generated from app name and output path)
     @property
     def cdk_input_output_subcommand(self) -> str:
         return f'--app "python {self.cdk_app_name}" --output "{self.cdk_out_path}"'
 
+    
+
+
     # synth command (generated from app name and output path)
     @property
     def cdk_synth_command(self) -> str:
-        return f'{"export PIPELINE_ALERTS=true && " if self.email_alerts_activated else ""}export BRANCH_NAME="{self.git_branch_name}" && export TICKET_NO="{self.ticket_no}" && export PROVENA_CONFIG_ID="{self.config_id}" && npx cdk synth {self.cdk_input_output_subcommand}'
+
+        env_vars: Dict[str, str] = {
+            'PROVENA_CONFIG_ID': self.config_id,
+            'TICKET_NO': str(self.ticket_no),
+            'BRANCH_NAME': self.git_branch_name
+        }
+
+        if self.sentry_config.monitoring_enabled:
+            # note that because of how the config is set up,
+            # the infra will interpret any non None value to be true
+            env_vars['ENABLE_API_MONITORING'] = "true"
+        
+        if self.email_alerts_activated:
+            env_vars['PIPELINE_ALERTS'] = "true"
+
+        export_string = " && ".join(
+            [f'export {k}="{v}"' for k, v in env_vars.items()]
+        )
+
+        return f'{export_string} && npx cdk synth {self.cdk_input_output_subcommand}'
 
 
 @dataclass

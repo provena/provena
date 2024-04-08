@@ -20,6 +20,7 @@ git+https://github.com/gbrrestoration/prov-db-connector#egg=prov-db-connector
 neo4j
 networkx
 python-dotenv
+sentry-sdk[fastapi]
 
 # this links to the utilities package deployed as part of 
 # this provena repo - ensure this is correct in your 

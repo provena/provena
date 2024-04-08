@@ -510,7 +510,7 @@ def test_fetch_invalid_type_for_id(params: RouteParameters) -> None:
 
     # find other item type randomly until category and subtype do not match
     found = False
-    lim = 10
+    lim = 20
     count = 0
     other_params: RouteParameters
     while not found and count < lim:
@@ -523,7 +523,7 @@ def test_fetch_invalid_type_for_id(params: RouteParameters) -> None:
         count += 1
 
     if not found:
-        assert False, f"Couldn't find a distinct route parameter to compare against for cat/subtype {params.category}/{params.subtype}"
+        assert False, f"Couldn't find a distinct route parameter to compare against for cat/subtype {params.category}/{params.subtype} in {lim} random attempts."
     assert other_params
 
     seed_route = get_route(action=RouteActions.SEED, params=other_params)

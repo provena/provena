@@ -12,6 +12,7 @@ from constructs import Construct
 from provena.custom_constructs.DNS_allocator import DNSAllocator
 from provena.utility.direct_secret_import import direct_import
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
+from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
 from typing import Any, Optional, List
 
 # increased over default 20 seconds because of chained cold starts and neo4j
@@ -36,6 +37,10 @@ class ProvAPI(Construct):
                  registry_api_endpoint: str,
                  data_store_api_endpoint: str,
                  cert_arn: str,
+                 api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
+                 git_commit_id: Optional[str],
+                 sentry_config: SentryConfig,
+                 feature_number: Optional[int],
                  function_timeout: Duration = DEFAULT_PROV_API_TIMEOUT,
                  extra_hash_dirs: List[str] = [],
                  **kwargs: Any) -> None:
@@ -100,9 +105,15 @@ class ProvAPI(Construct):
             "NEO4J_HOST": neo4j_host,
             "NEO4J_PORT": neo4j_port,
             "NEO4J_AUTH_ARN": neo4j_auth_arn,
+            "GIT_COMMIT_ID": git_commit_id,
             "REGISTRY_API_ENDPOINT": registry_api_endpoint,
-            "DATA_STORE_API_ENDPOINT": data_store_api_endpoint
+            "DATA_STORE_API_ENDPOINT": data_store_api_endpoint,
+            "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
+            "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
+            "FEATURE_NUMBER": str(feature_number)
         }
+        api_environment = {k: v for k,
+                           v in api_environment.items() if v is not None}
 
         for key, val in api_environment.items():
             api_func.function.add_environment(key, val)
@@ -124,6 +135,11 @@ class ProvAPI(Construct):
             domain_name=api_gw.DomainNameOptions(
                 domain_name=f"{domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
+            ),
+            deploy_options=api_gw.StageOptions(
+                description="Prov API Docker Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
             )
         )
         # API is non stateful - clean up
@@ -153,5 +169,5 @@ class ProvAPI(Construct):
 
             # Grant read to data store api role
             neo4j_auth_secret.grant_read(entity)
-            
+
         self.grant_equivalent_permissions = grant_equivalent_permissions

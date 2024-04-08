@@ -214,7 +214,11 @@ class ProvenaStack(Stack):
                 cert_arn=cert_arn,
                 domain=id_config.domain_name,
                 allocator=dns_allocator,
-                extra_hash_dirs=id_config.extra_hash_dirs
+                extra_hash_dirs=id_config.extra_hash_dirs,
+                git_commit_id=config.deployment.git_commit_id,
+                sentry_config=config.deployment.sentry_config,
+                feature_number=config.deployment.ticket_no,
+                api_rate_limiting=config.general.rate_limiting,
             )
 
         # ========
@@ -243,13 +247,17 @@ class ProvenaStack(Stack):
                 allocator=dns_allocator,
                 cert_arn=cert_arn,
                 request_table_pitr=auth_config.pitr_request_table,
+                api_rate_limiting=config.general.rate_limiting,
                 access_alerts_email_address=auth_config.access_alerts_email_address,
                 user_groups_table_pitr=auth_config.pitr_groups_table,
                 request_table_removal_policy=auth_config.request_table_removal_policy,
                 groups_table_removal_policy=auth_config.groups_table_removal_policy,
                 # since we have a circular dependency here we need to resolve
                 # the registry endpoint manually
-                registry_api_endpoint=resolved_endpoints.registry_api
+                registry_api_endpoint=resolved_endpoints.registry_api,
+                git_commit_id=config.deployment.git_commit_id,
+                sentry_config=config.deployment.sentry_config,
+                feature_number=config.deployment.ticket_no,
             )
 
             # Expose the endpoint
@@ -322,9 +330,13 @@ class ProvenaStack(Stack):
                 keycloak_endpoint=keycloak_auth_endpoint_full,
                 allocator=dns_allocator,
                 cert_arn=cert_arn,
+                api_rate_limiting=config.general.rate_limiting,
                 unqualified_search_domain=open_search_infra.unqualified_domain_endpoint,
                 registry_index=search_config.registry_index_name,
-                global_index=search_config.global_index_name
+                global_index=search_config.global_index_name,
+                git_commit_id=config.deployment.git_commit_id,
+                sentry_config=config.deployment.sentry_config,
+                feature_number=config.deployment.ticket_no,
             )
 
             # Expose the endpoint
@@ -379,7 +391,6 @@ class ProvenaStack(Stack):
                 writers=[],
                 removal_policy=reg_config.tables_removal_policy
             )
-
             # Create lambda API for registry
             registry_api = RegistryAPI(
                 scope=self,
@@ -400,11 +411,14 @@ class ProvenaStack(Stack):
                 lock_table=lock_table,
                 cert_arn=cert_arn,
                 auth_api_endpoint=auth_api.endpoint,
+                api_rate_limiting=config.general.rate_limiting,
                 git_commit_id=config.deployment.git_commit_id,
                 git_commit_url=config.deployment.git_commit_url,
                 git_tag_name=config.deployment.git_tag_name,
                 git_release_title=config.deployment.git_release_title,
                 git_release_url=config.deployment.git_release_url,
+                sentry_config=config.deployment.sentry_config,
+                feature_number=config.deployment.ticket_no,
             )
 
             self.registry_api_endpoint = CfnOutput(
@@ -490,6 +504,7 @@ class ProvenaStack(Stack):
                 registry_api_endpoint=registry_api.endpoint,
                 api_service_account_secret_arn=ds_config.service_account_arn,
                 oidc_service_account_secret_arn=ds_config.oidc_service_account_arn,
+                api_rate_limiting=config.general.rate_limiting,
                 oidc_service_role_arn=oidc_service_role_arn,
                 storage_bucket_arn=config.general.storage_bucket_arn,
                 allocator=dns_allocator,
@@ -497,6 +512,9 @@ class ProvenaStack(Stack):
                 # Include registry for permissions and
                 # env variable injection
                 cert_arn=cert_arn,
+                git_commit_id=config.deployment.git_commit_id,
+                sentry_config=config.deployment.sentry_config,
+                feature_number=config.deployment.ticket_no,
             )
 
             # Expose the endpoint
@@ -555,10 +573,14 @@ class ProvenaStack(Stack):
                 allocator=dns_allocator,
                 cert_arn=cert_arn,
                 neo4j_host=neo4j_ecs.neo4j_bolt_host,
+                api_rate_limiting=config.general.rate_limiting,
                 neo4j_port=str(neo4j_ecs.neo4j_bolt_port),
                 neo4j_auth_arn=prov_config.neo4j_auth_arn,
                 registry_api_endpoint=registry_api.endpoint,
-                data_store_api_endpoint=data_api.endpoint
+                data_store_api_endpoint=data_api.endpoint,
+                git_commit_id=config.deployment.git_commit_id,
+                sentry_config=config.deployment.sentry_config,
+                feature_number=config.deployment.ticket_no,
             )
 
             self.prov_api_endpoint = CfnOutput(
@@ -637,7 +659,8 @@ class ProvenaStack(Stack):
                     HANDLE_API_ENDPOINT=id_service.handle_endpoint if id_service else None,
                     AUTH_API_ENDPOINT=auth_api.endpoint if auth_api else None,
                     SEARCH_API_ENDPOINT=search_api.endpoint if search_api else None,
-                )
+                ),
+                api_rate_limiting=config.general.rate_limiting,
             )
             # Expose the endpoint
             self.warmer_api_endpoint = CfnOutput(
@@ -763,10 +786,14 @@ class ProvenaStack(Stack):
             github_build_token_arn=config.deployment.github_token_arn,
             repo_string=config.deployment.git_repo_string,
             branch_name=config.deployment.git_branch_name,
+            api_rate_limiting=config.general.rate_limiting,
             vpc=network.vpc,
             job_api_extra_hash_dirs=async_config.job_api_extra_hash_dirs,
             invoker_extra_hash_dirs=async_config.invoker_extra_hash_dirs,
-            connector_extra_hash_dirs=async_config.connector_extra_hash_dirs
+            connector_extra_hash_dirs=async_config.connector_extra_hash_dirs,
+            git_commit_id=config.deployment.git_commit_id,
+            sentry_config=config.deployment.sentry_config,
+            feature_number=config.deployment.ticket_no,
         )
 
         # Expose the endpoint

@@ -13,6 +13,7 @@ from provena.custom_constructs.DNS_allocator import DNSAllocator
 from provena.utility.direct_secret_import import direct_import
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
 from provena.component_constructs.registry_table import RegistryTable, IdIndexTable
+from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
 from typing import Any, List, Optional
 
 
@@ -36,11 +37,14 @@ class RegistryAPI(Construct):
                  registry_table: RegistryTable,
                  auth_table: IdIndexTable,
                  lock_table: IdIndexTable,
+                 api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
                  git_commit_id: Optional[str],
                  git_commit_url: Optional[str],
                  git_tag_name: Optional[str],
                  git_release_title: Optional[str],
                  git_release_url: Optional[str],
+                 sentry_config: SentryConfig,
+                 feature_number: Optional[int],
                  extra_hash_dirs: List[str] = [],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -58,7 +62,7 @@ class RegistryAPI(Construct):
             dockerfile_path_relative="lambda_dockerfile",
             build_args={
                 "github_token": oauth_token,
-                "repo_string" : repo_string,
+                "repo_string": repo_string,
                 "branch_name": branch_name
             },
             extra_hash_dirs=extra_hash_dirs,
@@ -77,13 +81,13 @@ class RegistryAPI(Construct):
             secret_complete_arn=api_service_account_secret_arn
         )
 
-
         # Environment
 
         # Make sure these parameters match deployment
         # requirements
-
-
+        # There are two synths that occur, one to deploy the pipeline, and one
+        # to deploy the app (that happens in the pipeline).
+        # You need to export export ENABLE_API_MONITORING = "true" in pipeline
         api_environment = {
             "KEYCLOAK_ENDPOINT": keycloak_endpoint,
             "DOMAIN_BASE": domain_base,
@@ -99,6 +103,9 @@ class RegistryAPI(Construct):
             "GIT_TAG_NAME": git_tag_name,
             "GIT_RELEASE_TITLE": git_release_title,
             "GIT_RELEASE_URL": git_release_url,
+            "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
+            "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
+            "FEATURE_NUMBER": str(feature_number)
         }
 
         for key, val in api_environment.items():
@@ -122,6 +129,11 @@ class RegistryAPI(Construct):
             domain_name=api_gw.DomainNameOptions(
                 domain_name=f"{domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
+            ),
+            deploy_options=api_gw.StageOptions(
+                description="Registry API Docker Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
             )
         )
         # API is non stateful - clean up
@@ -140,7 +152,6 @@ class RegistryAPI(Construct):
         # expose endpoint
         self.endpoint = f"https://{target_host}"
 
-        
         def grant_api_equivalent_permissions(grantee: iam.IGrantable) -> None:
             # let api r/w registry table
             registry_table.table.grant_read_write_data(grantee)
@@ -153,7 +164,7 @@ class RegistryAPI(Construct):
 
         # grant permissions to registry api
         grant_api_equivalent_permissions(api_func.function)
-        
+
         self.registry_api_environment = api_environment
         self.grant_api_equivalent_permissions = grant_api_equivalent_permissions
         self.add_to_environment = api_func.function.add_environment

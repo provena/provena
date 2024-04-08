@@ -9,8 +9,9 @@ from aws_cdk import (
 from constructs import Construct
 from provena.custom_constructs.DNS_allocator import DNSAllocator
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
+from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
 from provena.utility.direct_secret_import import direct_import
-from typing import Any, List
+from typing import Any, List, Optional
 
 IDENTITY_API_TIMEOUT = 60  # seconds
 
@@ -29,6 +30,10 @@ class IdentityService(Construct):
                  domain: str,
                  build_github_token_arn: str,
                  allocator: DNSAllocator,
+                 api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
+                 git_commit_id: Optional[str],
+                 sentry_config: SentryConfig,
+                 feature_number: Optional[int],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -53,12 +58,19 @@ class IdentityService(Construct):
             extra_hash_dirs=extra_hash_dirs,
             timeout=Duration.seconds(IDENTITY_API_TIMEOUT)
         )
+
+        assert api_func.function.role
+
         api_environment = {
             "KEYCLOAK_ENDPOINT": keycloak_auth_endpoint,
             "DOMAIN_BASE": domain_base,
             "STAGE": stage,
             "HANDLE_SERVICE_CREDS_ARN": handle_secret_arn,
-            "HANDLE_SERVICE_ENDPOINT": handle_endpoint
+            "HANDLE_SERVICE_ENDPOINT": handle_endpoint,
+            "GIT_COMMIT_ID": git_commit_id,
+            "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
+            "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
+            "FEATURE_NUMBER": str(feature_number)
         }
 
         # Get the secret and grant read
@@ -72,7 +84,8 @@ class IdentityService(Construct):
         service_secret.grant_read(api_func.function.role)
 
         for key, val in api_environment.items():
-            api_func.function.add_environment(key, val)
+            if val is not None:
+                api_func.function.add_environment(key, val)
 
         # Setup api gw integration
         # retrieve certificate
@@ -91,6 +104,11 @@ class IdentityService(Construct):
             domain_name=api_gw.DomainNameOptions(
                 domain_name=f"{domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
+            ),
+            deploy_options=api_gw.StageOptions(
+                description="Identity Service API Docker Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
             )
         )
         # API is non stateful - clean up

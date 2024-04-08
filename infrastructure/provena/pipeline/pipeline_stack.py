@@ -156,8 +156,8 @@ class ProvenaPipelineStack(Stack):
 
             deployment_pipeline = pipelines.CodePipeline(
                 self, "fullpipe",
-                
-                # Tell pipeline to use docker login 
+
+                # Tell pipeline to use docker login
                 docker_credentials=[dh_login],
 
                 # Is this a cross account deployment?
@@ -209,8 +209,8 @@ class ProvenaPipelineStack(Stack):
 
             deployment_pipeline = pipelines.CodePipeline(
                 self, "fullpipe",
-                
-                # Tell pipeline to use docker login 
+
+                # Tell pipeline to use docker login
                 docker_credentials=[dh_login],
 
                 # use a base pipeline so we have an artifact bucket
@@ -278,8 +278,21 @@ class ProvenaPipelineStack(Stack):
             "VITE_CONTACT_US_LINK":  config.general.contact_us_link,
 
             "VITE_KEYCLOAK_AUTH_ENDPOINT": self.endpoints.keycloak_minimal,
-            "VITE_KEYCLOAK_REALM": self.endpoints.keycloak_realm_name
+            "VITE_KEYCLOAK_REALM": self.endpoints.keycloak_realm_name,
+            "VITE_MONITORING_ENABLED": str(config.deployment.sentry_config.monitoring_enabled),
+            "VITE_FEATURE_NUMBER": str(config.deployment.ticket_no)
         }
+
+        optional_shared_lib_env_variables: Dict[str, Optional[str]] = {
+            "VITE_SENTRY_DSN": config.deployment.sentry_config.sentry_dsn_front_end,
+            "VITE_GIT_COMMIT_ID": config.deployment.git_commit_id,
+        }
+
+        # add optional env vars only if they are non None
+        shared_lib_env_variables.update(
+            {k: v for k, v in optional_shared_lib_env_variables.items()
+             if v is not None}
+        )
 
         # Create the static website build steps
         static_shell_steps = self.create_static_build_list(
@@ -400,8 +413,8 @@ class ProvenaPipelineStack(Stack):
 
             quick_deploy_pipeline = pipelines.CodePipeline(
                 self, "quickpipe",
-                
-                # Tell pipeline to use docker login 
+
+                # Tell pipeline to use docker login
                 docker_credentials=[dh_login],
 
                 # use a base pipeline so we have an artifact bucket
@@ -1314,7 +1327,6 @@ class ProvenaUIOnlyPipelineStack(Stack):
             "n 18"
         ]
 
-
         # Dockerhub creds setup for pipeline asset publishing
         dh_secret = sm.Secret.from_secret_complete_arn(
             scope=self,
@@ -1331,7 +1343,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
         deployment_pipeline = pipelines.CodePipeline(
             self, "fullpipe",
 
-            # Tell pipeline to use docker login 
+            # Tell pipeline to use docker login
             docker_credentials=[dh_login],
 
             # use a base pipeline so we have an artifact bucket
@@ -1425,8 +1437,22 @@ class ProvenaUIOnlyPipelineStack(Stack):
             "VITE_CONTACT_US_LINK":  self.config.domains.contact_us_link,
 
             "VITE_KEYCLOAK_AUTH_ENDPOINT": self.config.domains.keycloak_minimal_endpoint,
-            "VITE_KEYCLOAK_REALM": self.config.domains.keycloak_realm_name
+            "VITE_KEYCLOAK_REALM": self.config.domains.keycloak_realm_name,
+
+            "VITE_MONITORING_ENABLED": str(self.config.sentry_config.monitoring_enabled),
+            "VITE_FEATURE_NUMBER": str(self.config.ticket_no)
         }
+
+        optional_shared_lib_env_variables: Dict[str, Optional[str]] = {
+            "VITE_SENTRY_DSN": self.config.sentry_config.sentry_dsn_front_end,
+            "VITE_GIT_COMMIT_ID": self.config.git_commit_id,
+        }
+
+        # add optional env vars only if they are non None
+        shared_lib_env_variables.update(
+            {k: v for k, v in optional_shared_lib_env_variables.items()
+             if v is not None}
+        )
 
         # Create the static website build steps
         static_shell_steps = self.create_static_build_list(

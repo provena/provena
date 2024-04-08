@@ -4,13 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 import uvicorn  # type: ignore
-from dataclasses import dataclass
 from SharedInterfaces.RegistryModels import *
 from SharedInterfaces.RegistryAPI import *
 from helpers.item_type_route_generator import *
 from routes.check_access import checks
 from routes.dataset import dataset
-from routes.registry_general import registry_general
+from routes.registry_general import registry_general    
 from routes.admin import import_export_restore, general_admin
 from typing import Dict, Type, List, Generic
 from config import base_config, dispatch_cors
@@ -19,10 +18,17 @@ import warnings
 from schemas import UI_SCHEMA_OVERRIDES, JSON_SCHEMA_OVERRIDES
 from RegistrySharedFunctionality.RegistryRouteActions import RouteActions, PROXY_EDIT_ROUTE_ACTIONS, STANDARD_ROUTE_ACTIONS, DATASET_ROUTE_ACTIONS, MODEL_RUN_ROUTE_ACTIONS
 from route_models import RouteConfig
+from SharedInterfaces.SentryMonitoring import init_sentry
+import sentry_sdk
 
-# Setup app
 app = FastAPI()
-
+init_sentry(
+    dsn=base_config.sentry_dsn if base_config.monitoring_enabled else None,
+    environment=base_config.sentry_environment,
+    release=base_config.git_commit_id,
+)
+sentry_sdk.set_tag("API", "registry")
+sentry_sdk.set_tag("Environment", base_config.sentry_environment)
 
 # Get CORS middleware established
 
@@ -319,7 +325,7 @@ route_configs: List[RouteConfig] = [
         available_roles=ENTITY_BASE_ROLE_LIST,
         default_roles=normal_default_roles,
         enforce_username_person_link=True,
-        provenance_enabled_versioning=False,
+        provenance_enabled_versioning=False
     ),
     # Activity: Registry VERSION
     RouteConfig(
@@ -340,7 +346,7 @@ route_configs: List[RouteConfig] = [
         available_roles=ENTITY_BASE_ROLE_LIST,
         default_roles=normal_default_roles,
         enforce_username_person_link=True,
-        provenance_enabled_versioning=False,
+        provenance_enabled_versioning=False
     ),
     # model run
     RouteConfig(

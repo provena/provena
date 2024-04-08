@@ -8,3 +8,4 @@ export * from "./graphUtils";
 export * from "./themeValidation";
 export * from "./DataGridHelpers";
 export * from "./releaseStateStylePicker";
+export * from "./sentryMonitoringHelper";

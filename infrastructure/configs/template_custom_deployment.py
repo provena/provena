@@ -335,6 +335,22 @@ register_checker(name="git_repo_name", var=git_repo_name)
 branch_name = "TODO"
 register_checker(name="branch_name", var=branch_name)
 
+
+# ====================
+# SENTRY CONFIGURATION
+# ====================
+
+# Is API monitoring enabled? If so, what is the sentry DSN for the back end and front end?
+api_monitoring_enabled: bool = False
+sentry_dsn_back_end: Optional[str] = None
+sentry_dsn_front_end: Optional[str] = None
+
+sentry_config: SentryConfig = SentryConfig(
+    monitoring_enabled=api_monitoring_enabled,
+    sentry_dsn_back_end=sentry_dsn_back_end,
+    sentry_dsn_front_end=sentry_dsn_front_end,
+)
+
 # ====================
 # BACKUP CONFIGURATION
 # ====================
@@ -348,6 +364,29 @@ s3_storage_backup_policy: BackupType = BackupType.NONE
 # system deployments e.g. ProvenaBackupVault
 backup_vault_name = "TODO"
 register_checker(name="backup_vault_name", var=backup_vault_name)
+
+
+# ========================
+# Throttling configuration
+# ========================
+
+# Do you want rate limiting on the API Gateways? If so you can uncomment the
+# below line to use default settings, or override as needed
+
+rate_limiting: Optional[APIGatewayRateLimitingSettings] = None
+
+#rate_limiting = APIGatewayRateLimitingSettings(
+#    # Maximum number of concurrent requests which API gateway
+#    # can handle during immediate high traffic time periods 
+#    #throttling_burst_limit = 20,
+#
+#    # Rate limit controls the steady-state request rate, i.e., the
+#    # long-term average number of requests per second (RPS), which
+#    # API Gateway can handle. For example, if a rate limit of 500 is
+#    # set, it means API Gateway will be able to process 500 requests
+#    # per second on an average over a long period. 
+#    #throttling_rate_limit = 10
+#)
 
 # ===============================================================
 # DEPLOYMENT (NO NEED TO MODIFY BELOW UNLESS IT REQUIRES CHANGES)
@@ -381,6 +420,7 @@ static_config = ProvenaConfig(
         git_tag_name=get_tag_name_from_env(),
         git_release_title=get_release_title_from_env(),
         git_release_url=get_release_url_from_env(),
+        sentry_config=sentry_config,
         main_pipeline_trigger=aws_codepipeline_actions.GitHubTrigger.NONE,
         deployment_environment=account_env,
         pipeline_environment=account_env,
@@ -517,7 +557,8 @@ static_config = ProvenaConfig(
         keycloak_endpoints=None,
         extra_name_prefix=None,
         documentation_base_link=documentation_base_url,
-        contact_us_link=contact_us_link
+        contact_us_link=contact_us_link,
+        rate_limiting=rate_limiting
     ),
     dns=DNSConfig(
         root_domain=hz_root_domain,

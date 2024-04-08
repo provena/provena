@@ -12,7 +12,8 @@ from provena.utility.direct_secret_import import direct_import
 from provena.custom_constructs.access_request_table import AccessRequestTable
 from provena.custom_constructs.user_groups_table import UserGroupsTable
 from provena.custom_constructs.username_person_link_table import UsernamePersonLinkTable
-from typing import Any, List
+from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
+from typing import Any, List, Optional
 
 
 class LambdaAuthApi(Construct):
@@ -32,8 +33,12 @@ class LambdaAuthApi(Construct):
                  cert_arn: str,
                  request_table_pitr: bool,
                  user_groups_table_pitr: bool,
+                 api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
                  request_table_removal_policy: RemovalPolicy,
                  groups_table_removal_policy: RemovalPolicy,
+                 git_commit_id: Optional[str],
+                 sentry_config: SentryConfig,
+                 feature_number: Optional[int],
                  extra_hash_dirs: List[str] = [],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -108,11 +113,16 @@ class LambdaAuthApi(Construct):
             "SERVICE_ACCOUNT_SECRET_ARN": api_service_account_secret_arn,
             "USERNAME_PERSON_LINK_TABLE_NAME": username_person_link_table.table.table_name,
             "USERNAME_PERSON_LINK_TABLE_PERSON_INDEX_NAME": username_person_link_table.person_gsi_index_name,
-            "ACCESS_REQUEST_EMAIL_ADDRESS": access_alerts_email_address
+            "ACCESS_REQUEST_EMAIL_ADDRESS": access_alerts_email_address,
+            "GIT_COMMIT_ID": git_commit_id,
+            "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
+            "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
+            "FEATURE_NUMBER": str(feature_number)
         }
 
         for key, val in api_environment.items():
-            api_func.function.add_environment(key, val)
+            if val is not None:
+                api_func.function.add_environment(key, val)
 
         # Setup api gw integration
         # retrieve certificate
@@ -132,6 +142,11 @@ class LambdaAuthApi(Construct):
                 domain_name=f"{domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
             ),
+            deploy_options=api_gw.StageOptions(
+                description="Auth API Docker Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
+            )
         )
         # API is non stateful - clean up
         api.apply_removal_policy(RemovalPolicy.DESTROY)

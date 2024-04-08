@@ -1,18 +1,16 @@
-import ReactDOM from "react-dom";
-import { BrowserRouter } from "react-router-dom";
 import {
-    ThemeProvider,
-    Theme,
     StyledEngineProvider,
-    createTheme,
+    Theme,
+    ThemeProvider,
     Typography,
 } from "@mui/material";
-import App from "./App";
 import { createContext } from "react";
+import ReactDOM from "react-dom";
+import { Warmer, sentryInit } from "react-libs";
 import CustomThemeStore from "react-libs/stores/customThemeStore";
 import { PageThemeConfig } from "react-libs/util/themeValidation";
-import { Warmer } from "react-libs";
-
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
 
 // Setup warmer
 console.log("Initiating lambda warmer.");
@@ -48,6 +46,10 @@ appleTouchFaviconElement.href = themeStoreConfig.appleTouchIconURL;
 // Setup a theme config provider
 export const ThemeConfigContext =
     createContext<PageThemeConfig>(themeStoreConfig);
+
+// Sentry init
+sentryInit({ currentUI: "registry" });
+
 ReactDOM.render(
     <BrowserRouter>
         <ThemeConfigContext.Provider value={themeStoreConfig}>

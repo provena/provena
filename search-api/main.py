@@ -6,7 +6,9 @@ from config import base_config, dispatch_cors
 from routes.admin import general_admin
 from routes.check_access import checks
 import routes.search.entity_registry as entity_registry
-
+from SharedInterfaces.SentryMonitoring import init_sentry
+import sentry_sdk
+import json
 # Deprecated as of merge
 
 # import routes.search.data_store as data_store
@@ -16,7 +18,13 @@ from typing import Dict
 
 # Setup app
 app = FastAPI()
-
+init_sentry(
+    dsn=base_config.sentry_dsn if base_config.monitoring_enabled else None,
+    environment=base_config.sentry_environment,
+    release=base_config.git_commit_id,
+)
+sentry_sdk.set_tag("API", "search")
+sentry_sdk.set_tag("Environment", base_config.sentry_environment)
 
 # Get CORS middleware established
 

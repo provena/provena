@@ -12,6 +12,7 @@ pydantic[email]==1.10.12
 python-dotenv
 shapely
 pyproj
+sentry-sdk[fastapi]
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package

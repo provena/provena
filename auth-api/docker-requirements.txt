@@ -10,6 +10,7 @@ mangum
 pydantic==1.10.12
 python-dotenv
 aws_secretsmanager_caching
+sentry-sdk[fastapi]
 
 # Keycloak auth test package
 # requires GITHUB_TOKEN as environment variable 

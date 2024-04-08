@@ -1,6 +1,6 @@
 from functools import lru_cache
-from pydantic import BaseSettings
-from typing import List, Union, Callable, Dict
+from pydantic import BaseSettings, root_validator
+from typing import List, Union, Callable, Dict, Optional, Any
 
 HDL_PREFIX = "https://hdl.handle.net/"
 
@@ -32,6 +32,26 @@ class BaseConfig(BaseSettings):
     # Is this a test mode? override in unit tests - turns off signature
     # enforcement in keycloak token validation
     test_mode: bool = False
+
+   # commit hash
+    git_commit_id: Optional[str]
+    feature_number: Optional[str]
+
+    # monitoring via sentry
+    monitoring_enabled: Optional[bool] = False 
+    sentry_dsn: Optional[str] = None
+
+    @property
+    def sentry_environment(self) -> str:
+        return f"{self.stage}:{self.feature_number}" if self.feature_number else self.stage
+
+    # validate sentry dsn is provided if monitoring is enabled
+    @root_validator
+    def valide_sentry_config(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if values.get("monitoring_enabled")==True and values.get("sentry_dsn") is None:
+            raise ValueError(
+                "Sentry DSN is required if monitoring is enabled.")
+        return values
 
     # use .env file
     class Config:

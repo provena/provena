@@ -13,6 +13,7 @@ pydantic[email]==1.10.12
 python-dotenv
 shapely
 pyproj
+sentry-sdk[fastapi]
 
 # this links to the utilities package deployed as part of 
 # this provena repo - ensure this is correct in your 

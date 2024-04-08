@@ -10,7 +10,7 @@ import App from "./App";
 import { createContext } from "react";
 import CustomThemeStore from "react-libs/stores/customThemeStore";
 import { PageThemeConfig } from "react-libs/util/themeValidation";
-import { Warmer } from "react-libs";
+import { Warmer, sentryInit } from "react-libs";
 
 // Initiate warmer
 console.log("Initiating lambda warmer.");
@@ -46,6 +46,9 @@ appleTouchFaviconElement.href = themeStoreConfig.appleTouchIconURL;
 // Setup a theme config provider
 export const ThemeConfigContext =
     createContext<PageThemeConfig>(themeStoreConfig);
+
+// Sentry init
+sentryInit({ currentUI: "datastore" });
 
 ReactDOM.render(
     <BrowserRouter>

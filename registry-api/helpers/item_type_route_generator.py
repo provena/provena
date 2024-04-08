@@ -11,7 +11,6 @@ from RegistrySharedFunctionality.RegistryRouteActions import *
 from helpers.workflow_helpers import *
 from route_models import *
 
-
 def get_correct_dependency(level: RouteAccessLevel) -> Any:
     if level == RouteAccessLevel.READ:
         return read_user_protected_role_dependency
@@ -26,8 +25,9 @@ def get_correct_dependency(level: RouteAccessLevel) -> Any:
 def generate_router(
         route_config: RouteConfig,
 ) -> APIRouter:
+    
     router = APIRouter()
-
+    
     action: RouteActions
     action_config: RouteActionConfig
 

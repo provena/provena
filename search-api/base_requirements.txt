@@ -12,3 +12,4 @@ requests_aws4auth
 cachetools
 aws_secretsmanager_caching
 opensearch-py
+sentry-sdk[fastapi]

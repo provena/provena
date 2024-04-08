@@ -229,7 +229,7 @@ def bootstrap_stage(
         False,
         help="Optionally suppress all warnings to proceed in a headless environment."),
     param: ParametersType = typer.Option(
-        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
+        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
     """
     bootstrap_stage 
