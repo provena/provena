@@ -59,3 +59,11 @@ There are some pre-requisites to using the Provena system APIs:
 -   You need to be an authorised user - see [logging in](../getting-started-is/logging-in) and [requesting access](../getting-started-is/requesting-access-is).
 -   You need to be in a programmatic environment where you can make HTTPS REST API calls - we use Python for all of our examples though the implementation in other programming or scripting languages would be very similar
 -   You need to establish an API authentication workflow - see [API Authentication](./authentication) for detailed instructions
+
+## API Rate Limits
+
+Production Provena deployments can be configured to utilise a rate limiting web application firewall.
+
+If you are receiving `429 Too Many Requests` errors during intensive utilisation of system APIs, you should apply a backoff policy, such as [exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff) to your API usage.
+
+For the exact configuration of this rate limit, contact your system custodian. You may also apply for an exemption with specific IP address(s) when you have reasonable purpose to be doing so.

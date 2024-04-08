@@ -53,22 +53,25 @@ working_dir="${PWD}"
 
 # Array of locations and corresponding requirement files
 locations=(
-    "utilities/packages/python/shared-interfaces"
+    # "search-api" # needs config work / injection to tests. spin out new task to fix.
     "prov-api"
     "data-store-api"
     "id-service-api"
     "auth-api"
     "registry-api"
+    "utilities/packages/python/shared-interfaces"
     "job-api"
+
 )
 
 requirement_files=(
+    # "testing_requirements.txt"
+    "testing_requirements.txt"
+    "testing_requirements.txt"
+    "testing_requirements.txt"
+    "testing_requirements.txt"
+    "testing_requirements.txt"
     "testing-requirements.txt"
-    "testing_requirements.txt"
-    "testing_requirements.txt"
-    "testing_requirements.txt"
-    "testing_requirements.txt"
-    "testing_requirements.txt"
     "dev-requirements.txt"
 )
 

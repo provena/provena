@@ -2,13 +2,15 @@ from aws_cdk import (
     Stack,
     aws_certificatemanager as aws_cm,
     aws_apigateway as api_gw,
-    RemovalPolicy
+    RemovalPolicy,
+    aws_secretsmanager as sm,
 )
 from constructs import Construct
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
 from provena.custom_constructs.DNS_allocator import DNSAllocator
 from provena.utility.direct_secret_import import direct_import
-from typing import Any, List
+from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
+from typing import Any, List, Optional
 
 
 class LambdaSearchAPI(Construct):
@@ -26,6 +28,10 @@ class LambdaSearchAPI(Construct):
                  registry_index: str,
                  global_index: str,
                  linearised_field_name: str,
+                 api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
+                 git_commit_id: Optional[str],
+                 sentry_config: SentryConfig,
+                 feature_number: Optional[int],
                  extra_hash_dirs: List[str] = [],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -43,11 +49,13 @@ class LambdaSearchAPI(Construct):
             dockerfile_path_relative="lambda_dockerfile",
             build_args={
                 "github_token": oauth_token,
-                "repo_string" : repo_string,
+                "repo_string": repo_string,
                 "branch_name": branch_name
             },
             extra_hash_dirs=extra_hash_dirs
         )
+        
+        assert api_func.function.role
 
         # Environment
 
@@ -60,11 +68,16 @@ class LambdaSearchAPI(Construct):
             "SEARCH_DOMAIN": unqualified_search_domain,
             "REGISTRY_INDEX": registry_index,
             "GLOBAL_INDEX": global_index,
-            "LINEARISED_FIELD": linearised_field_name
+            "LINEARISED_FIELD": linearised_field_name,
+            "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
+            "GIT_COMMIT_ID": git_commit_id,
+            "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
+            "FEATURE_NUMBER": str(feature_number)
         }
 
         for key, val in api_environment.items():
-            api_func.function.add_environment(key, val)
+            if val is not None:
+                api_func.function.add_environment(key, val)
 
         # Setup api gw integration
         # retrieve certificate
@@ -83,6 +96,11 @@ class LambdaSearchAPI(Construct):
             domain_name=api_gw.DomainNameOptions(
                 domain_name=f"{domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
+            ),
+            deploy_options=api_gw.StageOptions(
+                description="Search API Docker Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
             )
         )
         # API is non stateful - clean up

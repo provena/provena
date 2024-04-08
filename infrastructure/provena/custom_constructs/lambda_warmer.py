@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any, Optional, Dict
 from provena.custom_constructs.docker_bundled_lambda import DockerizedLambda
 from provena.custom_constructs.DNS_allocator import DNSAllocator
+from provena.config.config_class import APIGatewayRateLimitingSettings
 
 
 @dataclass
@@ -47,6 +48,7 @@ class LambdaWarmer(Construct):
             sub_domain: str,
             allocator: DNSAllocator,
             endpoints: WarmerEndpoints,
+            api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
             cert_arn: str,
             **kwargs: Any) -> None:
         super().__init__(scope, id, **kwargs)
@@ -81,6 +83,11 @@ class LambdaWarmer(Construct):
                 domain_name=f"{sub_domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
             ),
+            deploy_options=api_gw.StageOptions(
+                description="Warmer Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
+            )
         )
         # API is non stateful - clean up
         api.apply_removal_policy(RemovalPolicy.DESTROY)

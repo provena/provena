@@ -38,6 +38,8 @@ ${python_command} --version
 
 # Array of requirement files
 requirement_files=(
+    # search api
+    "testing_requirements.txt"
     # integration
     "requirements.txt"
     # data store, identity service, prov api, registry api
@@ -61,6 +63,7 @@ requirement_files=(
 
 # List of type checking locations
 mypy_check_locations=(
+    "search-api"
     "tests/integration"
     "data-store-api"
     "id-service-api"

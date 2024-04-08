@@ -14,7 +14,8 @@ setup(
         'fastapi==0.88.0',
         'pydantic[email]==1.10.12',
         'email-validator',
-        'isodate',        
+        'isodate',
+        'sentry-sdk[fastapi]',        
     ],
     package_data={
         'SharedInterfaces': ['py.typed']

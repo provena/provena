@@ -11,6 +11,8 @@ from routes.admin import admin as general_admin
 from routes.groups import admin as group_admin, user as group_users, import_export_restore
 from routes.identity import user as link_user
 from routes.identity import admin as link_admin
+from SharedInterfaces.SentryMonitoring import init_sentry
+import sentry_sdk
 
 # App runner
 from mangum import Mangum  # type: ignore
@@ -18,6 +20,13 @@ import uvicorn  # type: ignore
 
 # Setup app
 app = FastAPI()
+init_sentry(
+    dsn=base_config.sentry_dsn if base_config.monitoring_enabled else None,
+    environment=base_config.sentry_environment,
+    release=base_config.git_commit_id,
+)
+sentry_sdk.set_tag("API", "auth")
+sentry_sdk.set_tag("Environment", base_config.sentry_environment)
 
 # Get CORS middleware established
 

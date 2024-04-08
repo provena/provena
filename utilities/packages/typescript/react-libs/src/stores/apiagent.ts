@@ -1,5 +1,6 @@
 import axios from "axios";
 import { keycloak } from "./keycloak";
+import * as Sentry from "@sentry/react";
 
 //@ts-ignore
 export const apiagent = (options) => {
@@ -42,6 +43,10 @@ export const apiagent = (options) => {
             // triggered the error
             console.error("Error Message:", error.message);
         }
+
+        // Sentry monitoring: capture and pass the caught Axios Error object as an event to Sentry.
+        // This will log all errors from any API utilizing this apiagent.
+        Sentry.captureException(error);
 
         return Promise.reject(error.response);
     };

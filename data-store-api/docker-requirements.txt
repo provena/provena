@@ -11,6 +11,7 @@ aws-secretsmanager-caching
 pydantic==1.10.12
 python-dotenv
 aiocache
+sentry-sdk[fastapi]
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package

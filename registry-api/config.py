@@ -1,6 +1,6 @@
 from SharedInterfaces.RegistryModels import *
 from SharedInterfaces.SharedTypes import VersionDetails
-from pydantic import BaseSettings
+from pydantic import BaseSettings, validator
 from functools import lru_cache
 from typing import List, Union, Callable, Dict
 import os
@@ -34,6 +34,26 @@ class BaseConfig(BaseSettings):
     # Is this a test mode? override in unit tests - turns off signature
     # enforcement in keycloak token validation
     test_mode: bool = False
+
+    # commit hash
+    git_commit_id: Optional[str]
+    feature_number: Optional[str]
+
+    # monitoring via sentry
+    monitoring_enabled: Optional[bool] = False 
+    sentry_dsn: Optional[str] = None
+
+    @property
+    def sentry_environment(self) -> str:
+        return f"{self.stage}:{self.feature_number}" if self.feature_number else self.stage
+
+    # validate sentry dsn is provided if monitoring is enabled
+    @root_validator
+    def valide_sentry_config(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if values.get("monitoring_enabled")==True and values.get("sentry_dsn") is None:
+            raise ValueError(
+                "Sentry DSN is required if monitoring is enabled.")
+        return values
 
     # use .env file
     class Config:
@@ -93,8 +113,8 @@ class Config(BaseConfig):
     # should user links be enforced (disable for testing only!)
     enforce_user_links: bool = True
 
-    # version private primitives
-    git_commit_id: Optional[str]
+    # moved into base config
+    # git_commit_id: Optional[str]
     git_commit_url: Optional[str]
     git_tag_name: Optional[str]
     git_release_title: Optional[str]
@@ -173,7 +193,7 @@ def dispatch_cors(stage: str, base_domain: str) -> CorsGeneratorReturnType:
     generator_func = CORS_GENERATOR_MAP.get(stage)
     if generator_func is None:
         raise ValueError(
-            "There is no CORS generator for the given stage. Aborting.")
+            f"There is no CORS generator for the given stage: {stage}. Aborting.")
     return generator_func(base_domain)
 
 

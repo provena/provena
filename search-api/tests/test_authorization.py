@@ -6,7 +6,7 @@ from SharedInterfaces.DataStoreAPI import *
 from dependencies.dependencies import user_general_dependency, sys_admin_admin_user_protected_role_dependency, sys_admin_read_user_protected_role_dependency, sys_admin_read_write_user_protected_role_dependency
 from main import app
 from fastapi.testclient import TestClient
-from typing import Tuple, Generator
+from typing import Tuple, Generator, Any, Dict
 import pytest
 
 

@@ -10,3 +10,4 @@ os.environ['STAGE'] = "DEV"
 os.environ['DOMAIN_BASE'] = "www.google.com"
 os.environ['TEST_MODE'] = "true"
 os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-2'
+os.environ['monitoring_enabled'] = 'False'

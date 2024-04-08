@@ -3,6 +3,7 @@ import { createStyles, makeStyles } from "@mui/styles";
 import { useKeycloak } from "@react-keycloak/web";
 import { Route, RouteProps } from "react-router-dom";
 import { BoundedContainer } from "../components";
+import * as Sentry from "@sentry/react";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -35,6 +36,11 @@ export const ProtectedRoute: React.FC<RouteProps> = ({
     const { keycloak } = useKeycloak();
     if (keycloak.authenticated !== undefined) {
         if (keycloak.authenticated) {
+            // Init Sentry monitoring user info
+            Sentry.setUser({
+                // sub: keycloak user id, can be found in keycloak admin console -> Users
+                id: keycloak.tokenParsed?.sub,
+            });
             return <Route {...props}>{children}</Route>;
         } else {
             return (

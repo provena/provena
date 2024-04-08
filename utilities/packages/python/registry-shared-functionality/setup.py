@@ -10,8 +10,7 @@ setup(
             'RegistrySharedFunctionality.*.*',
         ]
     ),
-    install_requires=[
-    ],
+    install_requires=[],
     package_data={
         'RegistrySharedFunctionality': ['py.typed']
     }

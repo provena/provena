@@ -10,16 +10,19 @@ from aws_cdk import (
     aws_ecs as ecs,
     aws_iam as iam,
     aws_apigateway as api_gw,
+    aws_secretsmanager as sm,
     aws_certificatemanager as aws_cm
 )
 from constructs import Construct
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
 from provena.utility.direct_secret_import import direct_import
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
 from provena.custom_constructs.docker_bundled_lambda import create_lambda
 from provena.custom_constructs.DNS_allocator import DNSAllocator
+from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
+from typing import Optional
 
 INDEX_NAME_POSTFIX = "-index"
 
@@ -54,9 +57,13 @@ class AsyncJobInfra(Construct):
                  repo_string: str,
                  branch_name: str,
                  vpc: ec2.Vpc,
+                 api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
                  job_api_extra_hash_dirs: List[str],
                  invoker_extra_hash_dirs: List[str],
                  connector_extra_hash_dirs: List[str],
+                 git_commit_id: Optional[str],
+                 sentry_config: SentryConfig,
+                 feature_number: Optional[int],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -72,7 +79,11 @@ class AsyncJobInfra(Construct):
         api_environment = {
             "KEYCLOAK_ENDPOINT": keycloak_endpoint,
             "DOMAIN_BASE": domain_base,
-            "STAGE": stage
+            "STAGE": stage,
+            "GIT_COMMIT_ID": git_commit_id,
+            "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
+            "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
+            "FEATURE_NUMBER": str(feature_number)
         }
 
         # Create the function
@@ -90,8 +101,11 @@ class AsyncJobInfra(Construct):
             memory_size=1024
         )
 
+        assert job_api.function.role
+
         for key, val in api_environment.items():
-            job_api.function.add_environment(key, val)
+            if val is not None:
+                job_api.function.add_environment(key, val)
 
         # Setup api gw integration
         # retrieve certificate
@@ -111,6 +125,11 @@ class AsyncJobInfra(Construct):
                 domain_name=f"{domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
             ),
+            deploy_options=api_gw.StageOptions(
+                description="Async Job API Docker Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
+            )
         )
         # API is non stateful - clean up
         api.apply_removal_policy(RemovalPolicy.DESTROY)

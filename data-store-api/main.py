@@ -4,6 +4,11 @@ from mangum import Mangum
 import uvicorn  # type: ignore
 from typing import Dict
 from config import base_config, dispatch_cors
+from SharedInterfaces.SentryMonitoring import init_sentry
+from dependencies.secret_cache import secret_cache
+from helpers.aws_helpers import retrieve_secret_value
+import sentry_sdk
+import json
 
 # Routes
 from routes.metadata import metadata
@@ -17,7 +22,13 @@ from routes.release import release
 
 # Setup app
 app = FastAPI()
-
+init_sentry(
+    dsn=base_config.sentry_dsn if base_config.monitoring_enabled else None,
+    environment=base_config.sentry_environment,
+    release=base_config.git_commit_id,
+)
+sentry_sdk.set_tag("API", "data-store")
+sentry_sdk.set_tag("Environment", base_config.sentry_environment)
 
 # Get CORS middleware established
 

@@ -1,12 +1,15 @@
 from SharedInterfaces.AuthAPI import AccessLevel, JOB_COMPONENT
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config
+from helpers.keycloak_helpers import setup_secret_cache
 
 # Setup auth -> test mode means no sig enforcement on validation
 kc_auth = build_keycloak_auth(
     keycloak_endpoint=base_config.keycloak_endpoint) if not base_config.test_mode else build_test_keycloak_auth()
 
 auth_component = JOB_COMPONENT
+
+secret_cache = setup_secret_cache()
 
 # Create dependencies
 # This is from the shared authorisation model

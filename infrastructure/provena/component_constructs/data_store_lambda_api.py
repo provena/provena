@@ -14,7 +14,8 @@ from provena.utility.direct_secret_import import direct_import
 from provena.custom_constructs.docker_lambda_function import DockerImageLambda
 from provena.component_constructs.data_registry import DataRegistry
 from provena.component_constructs.registry_table import IdIndexTable
-from typing import Any, List
+from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
+from typing import Any, List, Optional
 
 
 class LambdaDataStoreAPI(Construct):
@@ -38,6 +39,10 @@ class LambdaDataStoreAPI(Construct):
                  reviewers_table: IdIndexTable,
                  github_build_token_arn: str,
                  cert_arn: str,
+                 api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
+                 git_commit_id: Optional[str],
+                 sentry_config: SentryConfig,
+                 feature_number: Optional[int],
                  extra_hash_dirs: List[str] = [],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -119,10 +124,15 @@ class LambdaDataStoreAPI(Construct):
             "SERVICE_ACCOUNT_SECRET_ARN": api_service_account_secret_arn,
             "OIDC_SERVICE_ACCOUNT_SECRET_ARN": oidc_service_account_secret_arn,
             "OIDC_SERVICE_ROLE_ARN": oidc_service_role_arn,
+            "GIT_COMMIT_ID": git_commit_id,
+            "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
+            "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
+            "FEATURE_NUMBER": str(feature_number)
         }
 
         for key, val in api_environment.items():
-            api_func.function.add_environment(key, val)
+            if val is not None:
+                api_func.function.add_environment(key, val)
 
         # Allow service to read/write to bucket
         bucket.grant_read_write(api_func.function.role)
@@ -144,6 +154,11 @@ class LambdaDataStoreAPI(Construct):
             domain_name=api_gw.DomainNameOptions(
                 domain_name=f"{domain}.{allocator.zone_domain_name}",
                 certificate=acm_cert
+            ),
+            deploy_options=api_gw.StageOptions(
+                description="Data Store API Docker Lambda FastAPI API Gateway",
+                throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
+                throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
             )
         )
         # API is non stateful - clean up
