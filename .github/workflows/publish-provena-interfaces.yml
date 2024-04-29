@@ -1,0 +1,81 @@
+name: Publish Python Provena Interfaces
+
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+
+    
+    steps:
+    - name: Check tag format
+      run: |
+        if [[ ! $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ && ! $TAG_NAME =~ ^v[0-9]+\.[0-9]+$ && ! $TAG_NAME =~ ^v[0-9]+$ ]]; then
+          echo "Tag format is incorrect. Expecting vX.X.X or vX.X or Vx. Please create a new release with the correct tag format."
+          exit 1
+        fi
+    
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.10.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.10.13
+
+    - name: Install dependencies
+      working-directory: utilities/packages/python/provena-interfaces
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r testing-requirements.txt
+
+    - name: Run tests
+      working-directory: utilities/packages/python/provena-interfaces
+      run: |
+        mypy .
+        pytest
+
+    - name: Build package
+      working-directory: utilities/packages/python/provena-interfaces
+      run: |
+        pip install wheel twine
+        python setup.py sdist bdist_wheel
+
+    # Upload the distribution for acces in seperate job
+    - name: Upload distribution as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-artifact
+        path: utilities/packages/python/provena-interfaces/dist
+
+
+  
+  pypi-publish:
+    needs: test-and-build
+    name: upload release to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      # retrieve package from the previous job
+    - name: Download distribution from artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: dist-artifact
+        path: dist # download into dist, the (default) directory used by the pypi publish action
+
+    - name: Test Publish package distributions to TEST PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+    - name: TEST install package from TEST PyPI
+      run: |
+        pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ provena-interfaces
+
+    - name: Publish package distributions to PROD PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

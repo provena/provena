@@ -1,11 +1,11 @@
 import {
-    Stack,
-    Autocomplete,
-    Box,
-    TextField,
-    Button,
-    FormGroup,
-    Typography,
+  Stack,
+  Autocomplete,
+  Box,
+  TextField,
+  Button,
+  FormGroup,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
@@ -22,30 +22,30 @@ will be used as the default selection where possible.
 
 // Theme to align helper text properly
 const useStyles = makeStyles((theme) => ({
-    helperText: {
-        marginLeft: 0,
-    },
-    clearButton: {
-        "margin-bottom": 3,
-    },
+  helperText: {
+    marginLeft: 0,
+  },
+  clearButton: {
+    "margin-bottom": 3,
+  },
 }));
 
 interface RORResponseItem {
-    name: string;
-    id: string;
-    country: {
-        country_name: string;
-    };
-    acronyms: string[];
+  name: string;
+  id: string;
+  country: {
+    country_name: string;
+  };
+  acronyms: string[];
 }
 
 // Definition of an option item in the options list
 interface OptionsType {
-    name: string;
-    id?: string;
-    country?: string;
-    acronyms?: string[];
-    error: boolean;
+  name: string;
+  id?: string;
+  country?: string;
+  acronyms?: string[];
+  error: boolean;
 }
 
 // Definition of the current selection/value
@@ -54,315 +54,315 @@ type SelectionValue = string | undefined;
 // Definition of the fields from the generated props
 // that we are interested in
 interface AutoCompletePublisherPropType {
-    // Provides the current value
-    // of the form - displays as selection
-    // if present
-    formData: SelectionValue;
+  // Provides the current value
+  // of the form - displays as selection
+  // if present
+  formData: SelectionValue;
 
-    // Function to be called when changed
-    onChange: (data: SelectionValue) => void;
-    // Schema description for this sub component
-    schema: {
-        title: string;
-        description: string;
-    };
-    // Does this need to be displayed?
-    required: boolean;
+  // Function to be called when changed
+  onChange: (data: SelectionValue) => void;
+  // Schema description for this sub component
+  schema: {
+    title: string;
+    description: string;
+  };
+  // Does this need to be displayed?
+  required: boolean;
 
-    // ui schema in case overrided
-    uiSchema: {
-        "ui:description"?: string;
-        "ui:title"?: string;
-    };
+  // ui schema in case overrided
+  uiSchema: {
+    "ui:description"?: string;
+    "ui:title"?: string;
+  };
 }
 
 export const AutoCompletePublisher = (props: AutoCompletePublisherPropType) => {
-    const classes = useStyles();
+  const classes = useStyles();
 
-    // link to ROR
-    const rorLink = "https://ror.org/";
+  // link to ROR
+  const rorLink = "https://ror.org/";
 
-    // has the user requested to manually enter ROR/name?
-    const [manualOverride, setManualOverride] = useState<boolean>(false);
+  // has the user requested to manually enter ROR/name?
+  const [manualOverride, setManualOverride] = useState<boolean>(false);
 
-    // Pickup the input value from the props
-    // if provided
-    const [searchInput, setSearchInput] = useState<string>("");
+  // Pickup the input value from the props
+  // if provided
+  const [searchInput, setSearchInput] = useState<string>("");
 
-    const [manualROR, setManualROR] = useState<string | undefined>(
-        props.formData
-    );
+  const [manualROR, setManualROR] = useState<string | undefined>(
+    props.formData,
+  );
 
-    // Run the props on change when the component updates
-    useEffect(() => {
-        // If ROR is not filled out meaningfully, then don't include at all
-        var rorValue = manualROR;
-        if (!rorValue || rorValue === "") {
-            // Undefined means it won't be included in the form
-            rorValue = undefined;
-        }
-        props.onChange(rorValue);
-    }, [manualROR]);
-
-    // debounce the input
-    const debounceTimeout = 300;
-    const debouncedSetSearchInput = debounce(setSearchInput, debounceTimeout);
-
-    // fetch cache
-    const cacheTime = 60000;
-
-    // This is used to let the form know that a selection was made
-    // This is made from the list of options
-    const submitChanges = (selectedOption: OptionsType) => {
-        if (!selectedOption.error) {
-            if (!selectedOption.id) {
-                console.log("Selected option had no id!");
-            }
-            let selectedValue: SelectionValue = selectedOption.id ?? "";
-            props.onChange(selectedValue);
-        }
-    };
-
-    // This is used to update the list of options as the API requests are made
-    // based on the inputted string
-    const queryRor = (query: string): Promise<OptionsType[]> => {
-        let encodedSearchInput = encodeURIComponent(query);
-        return fetch(
-            `https://api.ror.org/organizations?query=${encodedSearchInput}&page=1&filter=country.country_code:AU`
-        )
-            .then((res) => res.json())
-            .then((json) => {
-                // Parse the response as list of
-                // ROR responses
-                let items = json["items"] as RORResponseItem[];
-
-                return items.map((ele: RORResponseItem) => {
-                    return {
-                        name: ele.name,
-                        id: ele.id,
-                        country: ele.country.country_name,
-                        acronyms: ele.acronyms,
-                        error: false,
-                    } as OptionsType;
-                });
-            })
-            .catch((e) => {
-                return [
-                    {
-                        name: "Experienced an error while loading ...",
-                        error: true,
-                    },
-                ];
-            });
-    };
-
-    const { isFetching, isSuccess, data } = useQuery({
-        queryKey: ["ror", searchInput],
-        queryFn: () => {
-            return queryRor(searchInput);
-        },
-        // only run search if non zero input + not in manual override mode
-        enabled: searchInput.length > 0 && !manualOverride,
-        staleTime: cacheTime,
-    });
-
-    const renderLabel = (option: OptionsType) => {
-        // Error label
-        if (option.error) {
-            return option.name;
-        }
-        // Otherwise - render properly
-        return `${option.country ?? "Unknown Country"} - ${option.name} ${
-            (option.acronyms &&
-                option.acronyms.length > 0 &&
-                "(" + option.acronyms.join(",") + ")") ||
-            ""
-        } : ${option.id ?? ""}`;
-    };
-
-    // Use the latest retrieved data from react query as the options type
-    var options: OptionsType[] = [];
-
-    if (isSuccess) {
-        options = data ?? ([] as OptionsType[]);
+  // Run the props on change when the component updates
+  useEffect(() => {
+    // If ROR is not filled out meaningfully, then don't include at all
+    var rorValue = manualROR;
+    if (!rorValue || rorValue === "") {
+      // Undefined means it won't be included in the form
+      rorValue = undefined;
     }
+    props.onChange(rorValue);
+  }, [manualROR]);
 
-    // This defines the viewed input component
-    return (
-        <div className="">
+  // debounce the input
+  const debounceTimeout = 300;
+  const debouncedSetSearchInput = debounce(setSearchInput, debounceTimeout);
+
+  // fetch cache
+  const cacheTime = 60000;
+
+  // This is used to let the form know that a selection was made
+  // This is made from the list of options
+  const submitChanges = (selectedOption: OptionsType) => {
+    if (!selectedOption.error) {
+      if (!selectedOption.id) {
+        console.log("Selected option had no id!");
+      }
+      let selectedValue: SelectionValue = selectedOption.id ?? "";
+      props.onChange(selectedValue);
+    }
+  };
+
+  // This is used to update the list of options as the API requests are made
+  // based on the inputted string
+  const queryRor = (query: string): Promise<OptionsType[]> => {
+    let encodedSearchInput = encodeURIComponent(query);
+    return fetch(
+      `https://api.ror.org/organizations?query=${encodedSearchInput}&page=1&filter=country.country_code:AU`,
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        // Parse the response as list of
+        // ROR responses
+        let items = json["items"] as RORResponseItem[];
+
+        return items.map((ele: RORResponseItem) => {
+          return {
+            name: ele.name,
+            id: ele.id,
+            country: ele.country.country_name,
+            acronyms: ele.acronyms,
+            error: false,
+          } as OptionsType;
+        });
+      })
+      .catch((e) => {
+        return [
+          {
+            name: "Experienced an error while loading ...",
+            error: true,
+          },
+        ];
+      });
+  };
+
+  const { isFetching, isSuccess, data } = useQuery({
+    queryKey: ["ror", searchInput],
+    queryFn: () => {
+      return queryRor(searchInput);
+    },
+    // only run search if non zero input + not in manual override mode
+    enabled: searchInput.length > 0 && !manualOverride,
+    staleTime: cacheTime,
+  });
+
+  const renderLabel = (option: OptionsType) => {
+    // Error label
+    if (option.error) {
+      return option.name;
+    }
+    // Otherwise - render properly
+    return `${option.country ?? "Unknown Country"} - ${option.name} ${
+      (option.acronyms &&
+        option.acronyms.length > 0 &&
+        "(" + option.acronyms.join(",") + ")") ||
+      ""
+    } : ${option.id ?? ""}`;
+  };
+
+  // Use the latest retrieved data from react query as the options type
+  var options: OptionsType[] = [];
+
+  if (isSuccess) {
+    options = data ?? ([] as OptionsType[]);
+  }
+
+  // This defines the viewed input component
+  return (
+    <div className="">
+      {
+        // If there is existing formData include here
+      }
+      {props.formData && !manualOverride ? (
+        <React.Fragment>
+          <p>
+            {" "}
+            Selected Organisation{" "}
+            <a href={rorLink} target="_blank">
+              ROR
+            </a>
+            : {props.formData}
+          </p>
+          <Button
+            className={classes.clearButton}
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              const clearValue: SelectionValue = undefined;
+              // Clear the selection
+              props.onChange(clearValue);
+            }}
+          >
+            Clear Selection
+          </Button>
+          <br />
+        </React.Fragment>
+      ) : (
+        // Otherwise include a mention here that the publisher needs to be selected
+        <React.Fragment>
+          <Stack
+            style={{ width: "100%" }}
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            {manualOverride ? (
+              <p>
+                <b>
+                  Manually enter the{" "}
+                  <a href={rorLink} target="_blank">
+                    ROR
+                  </a>{" "}
+                  of the desired organisation.
+                  {props.required ? "*" : ""}
+                </b>
+              </p>
+            ) : (
+              <p>
+                <b>
+                  Use the search tool below to select a Research Organisation
+                  Registry (
+                  <a href={rorLink} target="_blank">
+                    ROR
+                  </a>
+                  ) ID. {props.required ? "*" : ""}
+                </b>
+              </p>
+            )}
+            {manualOverride ? (
+              <Button
+                onClick={() => {
+                  setManualOverride(false);
+                }}
+                variant="contained"
+                color="success"
+              >
+                Return to search
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setManualOverride(true);
+                }}
+                variant="contained"
+                color="warning"
+              >
+                Manual Override
+              </Button>
+            )}
+          </Stack>
+        </React.Fragment>
+      )}
+      {!manualOverride ? (
+        <Stack spacing={2}>
+          {
+            // Show the auto complete if manual override is disabled
+          }
+          <Typography variant="subtitle1">
+            {props.schema.description}
+          </Typography>
+          <Autocomplete
+            filterOptions={(optionsList: OptionsType[]) => {
+              return optionsList;
+            }}
+            clearOnBlur={false}
+            clearOnEscape={false}
+            loading={isFetching}
+            // List of options
+            options={options}
+            // What happens when you select an option
+            onChange={(ele, value: OptionsType | null) => {
+              if (value) {
+                submitChanges(value);
+              }
+            }}
+            getOptionLabel={(option) => {
+              return renderLabel(option);
+            }}
+            renderOption={(props, option) => {
+              return (
+                <Box component="li" {...props}>
+                  {renderLabel(option)}
+                </Box>
+              );
+            }}
+            renderInput={(params) => (
+              <TextField
+                // This refers to the field as a UI element
+                // not the data itself and is therefore not required
+                // The underlying data fields are required though
+                // and this does not overwrite it
+                required={false}
+                onChange={(e) => {
+                  debouncedSetSearchInput(e.target.value);
+                }}
+                value={searchInput}
+                {...params}
+                label="Search for and select an organisation"
+                helperText={
+                  props.uiSchema["ui:description"] ??
+                  props.schema.description ??
+                  "Select an organisation using the search tool above."
+                }
+                FormHelperTextProps={{
+                  className: classes.helperText,
+                }}
+              />
+            )}
+          />
+        </Stack>
+      ) : (
+        // Show the manual form entry if manual input is requested
+        <FormGroup>
+          <Stack spacing={2}>
             {
-                // If there is existing formData include here
+              // Name
             }
-            {props.formData && !manualOverride ? (
-                <React.Fragment>
-                    <p>
-                        {" "}
-                        Selected Organisation{" "}
-                        <a href={rorLink} target="_blank">
-                            ROR
-                        </a>
-                        : {props.formData}
-                    </p>
-                    <Button
-                        className={classes.clearButton}
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() => {
-                            const clearValue: SelectionValue = undefined;
-                            // Clear the selection
-                            props.onChange(clearValue);
-                        }}
-                    >
-                        Clear Selection
-                    </Button>
-                    <br />
-                </React.Fragment>
-            ) : (
-                // Otherwise include a mention here that the publisher needs to be selected
-                <React.Fragment>
-                    <Stack
-                        style={{ width: "100%" }}
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                    >
-                        {manualOverride ? (
-                            <p>
-                                <b>
-                                    Manually enter the{" "}
-                                    <a href={rorLink} target="_blank">
-                                        ROR
-                                    </a>{" "}
-                                    of the desired organisation.
-                                    {props.required ? "*" : ""}
-                                </b>
-                            </p>
-                        ) : (
-                            <p>
-                                <b>
-                                    Use the search tool below to select a
-                                    Research Organisation Registry (
-                                    <a href={rorLink} target="_blank">
-                                        ROR
-                                    </a>
-                                    ) ID. {props.required ? "*" : ""}
-                                </b>
-                            </p>
-                        )}
-                        {manualOverride ? (
-                            <Button
-                                onClick={() => {
-                                    setManualOverride(false);
-                                }}
-                                variant="contained"
-                                color="success"
-                            >
-                                Return to search
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={() => {
-                                    setManualOverride(true);
-                                }}
-                                variant="contained"
-                                color="warning"
-                            >
-                                Manual Override
-                            </Button>
-                        )}
-                    </Stack>
-                </React.Fragment>
-            )}
-            {!manualOverride ? (
-                <Stack spacing={2}>
-                    {
-                        // Show the auto complete if manual override is disabled
-                    }
-                    <Typography variant="subtitle1">
-                        {props.schema.description}
-                    </Typography>
-                    <Autocomplete
-                        filterOptions={(optionsList: OptionsType[]) => {
-                            return optionsList;
-                        }}
-                        clearOnBlur={false}
-                        clearOnEscape={false}
-                        loading={isFetching}
-                        // List of options
-                        options={options}
-                        // What happens when you select an option
-                        onChange={(ele, value: OptionsType | null) => {
-                            if (value) {
-                                submitChanges(value);
-                            }
-                        }}
-                        getOptionLabel={(option) => {
-                            return renderLabel(option);
-                        }}
-                        renderOption={(props, option) => {
-                            return (
-                                <Box component="li" {...props}>
-                                    {renderLabel(option)}
-                                </Box>
-                            );
-                        }}
-                        renderInput={(params) => (
-                            <TextField
-                                // This refers to the field as a UI element
-                                // not the data itself and is therefore not required
-                                // The underlying data fields are required though
-                                // and this does not overwrite it
-                                required={false}
-                                onChange={(e) => {
-                                    debouncedSetSearchInput(e.target.value);
-                                }}
-                                value={searchInput}
-                                {...params}
-                                label="Search for and select an organisation"
-                                helperText={
-                                    props.uiSchema["ui:description"] ??
-                                    props.schema.description ??
-                                    "Select an organisation using the search tool above."
-                                }
-                                FormHelperTextProps={{
-                                    className: classes.helperText,
-                                }}
-                            />
-                        )}
-                    />
-                </Stack>
-            ) : (
-                // Show the manual form entry if manual input is requested
-                <FormGroup>
-                    <Stack spacing={2}>
-                        {
-                            // Name
-                        }
-                        <Typography variant="subtitle1">
-                            {props.schema.description}
-                        </Typography>
-                        {
-                            // ROR
-                        }
-                        <TextField
-                            required={props.required}
-                            onChange={(e) => {
-                                setManualROR(e.target.value);
-                            }}
-                            value={manualROR ?? ""}
-                            label={"Enter the ROR of the organisation as a URL"}
-                            helperText={
-                                props.uiSchema["ui:description"] ??
-                                props.schema.description ??
-                                "Select the desired organisation by entering the ROR URL."
-                            }
-                            FormHelperTextProps={{
-                                className: classes.helperText,
-                            }}
-                        />
-                    </Stack>
-                </FormGroup>
-            )}
-        </div>
-    );
+            <Typography variant="subtitle1">
+              {props.schema.description}
+            </Typography>
+            {
+              // ROR
+            }
+            <TextField
+              required={props.required}
+              onChange={(e) => {
+                setManualROR(e.target.value);
+              }}
+              value={manualROR ?? ""}
+              label={"Enter the ROR of the organisation as a URL"}
+              helperText={
+                props.uiSchema["ui:description"] ??
+                props.schema.description ??
+                "Select the desired organisation by entering the ROR URL."
+              }
+              FormHelperTextProps={{
+                className: classes.helperText,
+              }}
+            />
+          </Stack>
+        </FormGroup>
+      )}
+    </div>
+  );
 };

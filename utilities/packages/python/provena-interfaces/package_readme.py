@@ -1,0 +1,3 @@
+long_description = """
+Provena-Interfaces is a Python package that provides interfaces for the Provena Application. It includes a set of interfaces that are used to interact with the Provena system. The interfaces are especially useful for parsing response payloads from the API, and for creating requests to the API. The interfaces will sit adjacent to (and be consumed by) a ProvenaClient library which is a work in progress.
+"""

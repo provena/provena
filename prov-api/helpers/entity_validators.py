@@ -1,7 +1,7 @@
 from typing import TypeVar, Type, Union
 from fastapi import HTTPException
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
 from dependencies.dependencies import secret_cache, User
 from helpers.keycloak_helpers import get_service_token
 from helpers.async_requests import async_get_request

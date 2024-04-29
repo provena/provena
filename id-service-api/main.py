@@ -10,7 +10,7 @@ import random
 import string
 import logging
 import time
-from SharedInterfaces.SentryMonitoring import init_sentry
+from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 import sentry_sdk
 
 # Setup app

@@ -1,4 +1,4 @@
-from SharedInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, AccessLevel
+from ProvenaInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, AccessLevel
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config
 from helpers.keycloak_helpers import setup_secret_cache

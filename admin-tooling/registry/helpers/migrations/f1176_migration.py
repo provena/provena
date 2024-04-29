@@ -1,6 +1,6 @@
 from typing import Dict, Any, Callable, List, Optional, Dict, Tuple
-from SharedInterfaces.RegistryModels import OptionallyRequiredCheck, ItemSubType, RecordInfo, MODEL_TYPE_MAP
-from SharedInterfaces.RegistryAPI import BundledItem, AuthTableEntry, CollectionFormatAssociations, RecordType
+from ProvenaInterfaces.RegistryModels import OptionallyRequiredCheck, ItemSubType, RecordInfo, MODEL_TYPE_MAP
+from ProvenaInterfaces.RegistryAPI import BundledItem, AuthTableEntry, CollectionFormatAssociations, RecordType
 from helpers.util import py_to_dict
 
 

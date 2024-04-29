@@ -1,7 +1,7 @@
 from typing import TypeVar, List, Optional, Generic
 from dataclasses import dataclass
-from SharedInterfaces.RegistryAPI import *
-from RegistrySharedFunctionality.RegistryRouteActions import RouteActions
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import RouteActions
 
 SeedResponseTypeVar = TypeVar('SeedResponseTypeVar', bound=GenericSeedResponse)
 FetchResponseTypeVar = TypeVar(

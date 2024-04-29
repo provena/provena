@@ -1,6 +1,6 @@
 
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from config import base_config
 from helpers.keycloak_helpers import setup_secret_cache
 

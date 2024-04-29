@@ -1,7 +1,7 @@
 import tests.env_setup
 import pytest
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from main import app
 from dependencies.dependencies import user_general_dependency
 from config import Config, get_settings, base_config

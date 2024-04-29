@@ -1,0 +1,6 @@
+-e .
+mypy
+pytest
+
+# Provena Shared Functionality package
+../provena-shared-functionality

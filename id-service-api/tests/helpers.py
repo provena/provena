@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Dict, Any
 import json
 from httpx._models import Response
-from SharedInterfaces.HandleModels import *
+from ProvenaInterfaces.HandleModels import *
 
 
 def py_to_dict(model: BaseModel) -> Dict[str, Any]:

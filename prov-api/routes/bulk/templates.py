@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from config import get_settings, Config
 from helpers.template_helpers import *
-from SharedInterfaces.SharedTypes import Status
-from SharedInterfaces.AsyncJobModels import *
-from SharedInterfaces.ProvenanceAPI import ConvertModelRunsResponse
+from ProvenaInterfaces.SharedTypes import Status
+from ProvenaInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.ProvenanceAPI import ConvertModelRunsResponse
 from csv import DictReader
 from helpers.job_api_helpers import fetch_all_jobs_by_batch_id
 

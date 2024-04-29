@@ -5,9 +5,9 @@ from helpers.auth_helpers import evaluate_user_access
 from helpers.keycloak_helpers import get_service_token
 from aws_secretsmanager_caching import SecretCache  # type: ignore
 from fastapi import HTTPException
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.RegistryModels import ReleasedStatus
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import ReleasedStatus
+from ProvenaInterfaces.DataStoreAPI import *
 from typing import Dict
 from dependencies.dependencies import User
 from helpers.util import py_to_dict

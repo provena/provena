@@ -1,5 +1,5 @@
 from typing import TypeAlias, Callable, Any, Optional, Dict, List
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from ToolingEnvironmentManager.Management import PopulatedToolingEnvironment
 import math
 import time

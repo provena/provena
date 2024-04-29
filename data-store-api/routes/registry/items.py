@@ -1,5 +1,5 @@
-from SharedInterfaces.DataStoreAPI import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException
 from config import get_settings, Config

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from config import get_settings, Config
 from KeycloakFastAPI.Dependencies import User
 from dependencies.dependencies import user_general_dependency
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from service.jobs.user import *
 
 # setup logger

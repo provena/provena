@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
 from fastapi import HTTPException
 import boto3  # type: ignore
 from config import Config
@@ -480,6 +480,8 @@ def get_entry_raw(id: str, config: Config) -> Dict[str, Any]:
         ------
         Exception
             If fails to read table or if fails to find an item associated with the handle.
+        KeyError
+            If the handle is empty
 
         See Also (optional)
         --------
@@ -487,6 +489,9 @@ def get_entry_raw(id: str, config: Config) -> Dict[str, Any]:
         Examples (optional)
         --------
     """
+    
+    if id == "":
+        raise ValueError("ID cannot be empty")
     # get the table
     table = get_registry_table(config=config)
     return get_generic_entry(

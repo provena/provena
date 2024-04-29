@@ -1,6 +1,6 @@
 import requests
 from KeycloakRestUtilities.Token import BearerAuth
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from tests.helpers.registry_helpers import *
 from tests.helpers.auth_helpers import *
 from tests.config import Tokens, config
@@ -8,7 +8,7 @@ from tests.helpers.link_helpers import *
 from resources.example_models import *
 from typing import cast
 from tests.helpers.async_job_helpers import *
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from tests.helpers.fixtures import *
 from tests.helpers.prov_api_helpers import *
 

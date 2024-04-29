@@ -1,9 +1,9 @@
 import { OverrideDetector, OverrideDetectorList } from "./JsonDetailView";
 import {
-    TRUNCATION_LIMIT,
-    truncationOverride,
-    uriOverride,
-    urlOverride,
+  TRUNCATION_LIMIT,
+  truncationOverride,
+  uriOverride,
+  urlOverride,
 } from "./JsonRendererOverrides";
 
 /**
@@ -17,45 +17,45 @@ import {
  */
 
 const urlDetector: OverrideDetector<string> = (name: string, value: string) => {
-    /**
+  /**
         Detects if there is a URL by looking for HTTP
      */
-    if (value.startsWith("http")) {
-        return urlOverride;
-    }
-    return undefined;
+  if (value.startsWith("http")) {
+    return urlOverride;
+  }
+  return undefined;
 };
 
 const truncationDetector: OverrideDetector<string> = (
-    name: string,
-    value: string
+  name: string,
+  value: string,
 ) => {
-    /**
+  /**
         Detects if truncation is required by checking for length > limit
      */
-    if (value.length > TRUNCATION_LIMIT) {
-        return truncationOverride;
-    }
-    return undefined;
+  if (value.length > TRUNCATION_LIMIT) {
+    return truncationOverride;
+  }
+  return undefined;
 };
 
 const uriNameDetector: OverrideDetector<string> = (
-    name: string,
-    value: string
+  name: string,
+  value: string,
 ) => {
-    /**
+  /**
         Detects if uri -> URI rename required by checking for substring
      */
-    if (name.indexOf("uri") !== -1) {
-        return uriOverride;
-    }
-    return undefined;
+  if (name.indexOf("uri") !== -1) {
+    return uriOverride;
+  }
+  return undefined;
 };
 
 export const STRING_AUTO_DETECTORS: OverrideDetectorList<string> = [
-    urlDetector,
-    uriNameDetector,
-    truncationDetector,
+  urlDetector,
+  uriNameDetector,
+  truncationDetector,
 ];
 export const NUMBER_AUTO_DETECTORS: OverrideDetectorList<number> = [];
 export const BOOLEAN_AUTO_DETECTORS: OverrideDetectorList<boolean> = [];

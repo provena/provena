@@ -1,9 +1,9 @@
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, user_general_dependency, admin_user_protected_role_dependency
 from KeycloakFastAPI.Dependencies import User
 from fastapi import APIRouter, Depends, HTTPException
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.ProvenanceModels import *
-from SharedInterfaces.SharedTypes import Status
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.ProvenanceModels import *
+from ProvenaInterfaces.SharedTypes import Status
 from helpers.entity_validators import unknown_validator, RequestStyle, ServiceAccountProxy
 import helpers.neo4j_helpers as neo4j_helpers
 from typing import Dict, Any

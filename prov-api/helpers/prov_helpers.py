@@ -1,6 +1,6 @@
 import prov.model as prov  # type: ignore
-from SharedInterfaces.ProvenanceModels import *
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.ProvenanceModels import *
+from ProvenaInterfaces.RegistryModels import *
 from typing import List, Any, Dict
 
 

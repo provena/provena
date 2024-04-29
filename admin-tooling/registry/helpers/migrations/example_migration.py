@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from SharedInterfaces.RegistryAPI import BundledItem
+from ProvenaInterfaces.RegistryAPI import BundledItem
 
 
 def example_migration(old_item: Dict[str, Any]) -> Dict[str, Any]:

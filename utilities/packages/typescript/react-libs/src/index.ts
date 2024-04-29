@@ -2,9 +2,9 @@ import { Theme } from "@mui/material";
 
 // Override typing of default style
 declare module "@mui/styles" {
-    interface DefaultTheme extends Theme {
-        backgroundImgURL?: string;
-    }
+  interface DefaultTheme extends Theme {
+    backgroundImgURL?: string;
+  }
 }
 
 export * from "./components";

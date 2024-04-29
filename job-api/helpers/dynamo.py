@@ -1,5 +1,5 @@
-from SharedInterfaces.AsyncJobAPI import *
-from SharedInterfaces.AsyncJobModels import GSI_FIELD_NAME, GSI_VALUE
+from ProvenaInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobModels import GSI_FIELD_NAME, GSI_VALUE
 import boto3  # type: ignore
 from typing import List, Dict, Any, Optional, Tuple
 from boto3.dynamodb.conditions import Key  # type: ignore

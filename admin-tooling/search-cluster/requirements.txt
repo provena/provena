@@ -12,7 +12,7 @@ botocore
 requests_aws4auth
 
 # shared interfaces
-../../utilities/packages/python/shared-interfaces
+../../utilities/packages/python/provena-interfaces
 
 # Tooling environment manager 
 ../tooling-environment-manager

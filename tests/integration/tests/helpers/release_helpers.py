@@ -3,9 +3,9 @@ from tests.config import Config
 import requests
 from requests import Response
 from KeycloakRestUtilities.Token import BearerAuth
-from SharedInterfaces.DataStoreAPI import *
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
 from tests.helpers.general_helpers import py_to_dict
 from tests.helpers.general_helpers import assert_200_ok, assert_x_ok
 from tests.helpers.registry_helpers import fetch_item_successfully_parse

@@ -1,4 +1,4 @@
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from typing import Set
 
 def produce_username_set(group: UserGroup) -> Set[str]:

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from SharedInterfaces.SharedTypes import StatusResponse, Status
+from ProvenaInterfaces.SharedTypes import StatusResponse, Status
 from KeycloakFastAPI.Dependencies import User
 from dependencies.dependencies import admin_user_protected_role_dependency
 from config import Config, get_settings

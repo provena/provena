@@ -1,5 +1,5 @@
 from EcsSqsPythonTools.Settings import JobBaseSettings
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from EcsSqsPythonTools.Workflow import *
 from datetime import datetime
 from time import sleep

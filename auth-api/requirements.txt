@@ -15,4 +15,5 @@ sentry-sdk[fastapi]
 # this provena repo - ensure this is correct in your 
 # fast api application
 ../utilities/packages/python/fast-api-keycloak-auth
-../utilities/packages/python/shared-interfaces
+../utilities/packages/python/provena-interfaces
+../utilities/packages/python/provena-shared-functionality

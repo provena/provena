@@ -4,4 +4,7 @@
 ../utilities/packages/python/fast-api-keycloak-auth
 
 # Shared interfaces
-../utilities/packages/python/shared-interfaces
+../utilities/packages/python/provena-interfaces
+
+# Provena Shared Functionality
+../utilities/packages/python/provena-shared-functionality

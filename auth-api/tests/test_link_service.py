@@ -2,8 +2,8 @@ import tests.env_setup
 from config import Config, get_settings, base_config
 from dataclasses import dataclass
 from KeycloakFastAPI.Dependencies import User
-from SharedInterfaces.AuthAPI import *
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.AuthAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 from main import app
 from dependencies.dependencies import sys_admin_write_dependency, sys_admin_read_dependency, sys_admin_admin_dependency, user_general_dependency
 from fastapi.testclient import TestClient

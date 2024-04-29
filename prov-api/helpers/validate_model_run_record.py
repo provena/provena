@@ -1,5 +1,5 @@
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.ProvenanceModels import *
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.ProvenanceModels import *
 from helpers.entity_validators import *
 from typing import Optional, Tuple, Callable, Coroutine
 

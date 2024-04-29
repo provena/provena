@@ -1,6 +1,6 @@
 from typing import Dict, Any, Dict
-from SharedInterfaces.RegistryModels import RecordInfo, MODEL_TYPE_MAP, VersioningInfo
-from SharedInterfaces.RegistryAPI import BundledItem, AuthTableEntry, RecordType, ItemCategory
+from ProvenaInterfaces.RegistryModels import RecordInfo, MODEL_TYPE_MAP, VersioningInfo
+from ProvenaInterfaces.RegistryAPI import BundledItem, AuthTableEntry, RecordType, ItemCategory
 
 
 def f1442_migrator_function(old_item: Dict[str, Any], parse: bool = True) -> Dict[str, Any]:

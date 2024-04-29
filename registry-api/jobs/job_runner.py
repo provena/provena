@@ -2,7 +2,7 @@ from EcsSqsPythonTools.JobRunner import ecs_job_worker
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Types import CallbackResponse
 from jobs.registry_jobs import job_dispatcher
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 
 
 def worker_callback(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:

@@ -1,5 +1,5 @@
 from typing import List, Callable, Dict
-from SharedInterfaces.RegistryModels import ItemModelRun
+from ProvenaInterfaces.RegistryModels import ItemModelRun
 from dataclasses import dataclass
 from helpers.type_aliases import GetAuthFunction
 

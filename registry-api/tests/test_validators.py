@@ -1,4 +1,4 @@
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from tests.helpers import get_item_subtype_route_params
 import pytest
 import pydantic

@@ -1,55 +1,55 @@
 import { Alert, AlertTitle } from "@mui/material";
 import { useUserLinkServiceLookup } from "./useUserLinkServiceLookup";
 import {
-    DOCUMENTATION_BASE_URL,
-    LANDING_PAGE_LINK,
+  DOCUMENTATION_BASE_URL,
+  LANDING_PAGE_LINK,
 } from "../queries/endpoints";
 
 export const userLinkEnforcerDocumentationLink =
-    DOCUMENTATION_BASE_URL + "/getting-started-is/linking-identity.html";
+  DOCUMENTATION_BASE_URL + "/getting-started-is/linking-identity.html";
 export const userLinkEnforcerProfileLink =
-    LANDING_PAGE_LINK + "/profile?function=identity";
+  LANDING_PAGE_LINK + "/profile?function=identity";
 
 const defaultMissingLinkMessage = (
-    <p>
-        You cannot perform this operation without linking your user account to a
-        registered Person in the Registry. For more information, visit{" "}
-        <a
-            href={userLinkEnforcerDocumentationLink}
-            target="_blank"
-            rel="noreferrer"
-        >
-            our documentation
-        </a>
-        . You can link your user account to a Person by visiting your{" "}
-        <a href={userLinkEnforcerProfileLink} target="_blank" rel="noreferrer">
-            user profile
-        </a>
-        .
-    </p>
+  <p>
+    You cannot perform this operation without linking your user account to a
+    registered Person in the Registry. For more information, visit{" "}
+    <a
+      href={userLinkEnforcerDocumentationLink}
+      target="_blank"
+      rel="noreferrer"
+    >
+      our documentation
+    </a>
+    . You can link your user account to a Person by visiting your{" "}
+    <a href={userLinkEnforcerProfileLink} target="_blank" rel="noreferrer">
+      user profile
+    </a>
+    .
+  </p>
 );
 const defaultMissingLinkTitle =
-    "This operation is not permitted without linking your account to a Person in the Registry";
+  "This operation is not permitted without linking your account to a Person in the Registry";
 
 export interface UseUserLinkEnforcerProps {
-    blockEnabled: boolean;
-    blockOnError: boolean;
+  blockEnabled: boolean;
+  blockOnError: boolean;
 
-    // override default message/title
-    missingLinkMessage?: JSX.Element;
-    missingLinkTitle?: JSX.Element;
+  // override default message/title
+  missingLinkMessage?: JSX.Element;
+  missingLinkTitle?: JSX.Element;
 }
 export interface UseUserLinkEnforcerOutput {
-    blocked: boolean;
-    render: JSX.Element | null;
+  blocked: boolean;
+  render: JSX.Element | null;
 
-    // T/F once loaded, undefined otherwise or in error case
-    validLink: boolean | undefined;
+  // T/F once loaded, undefined otherwise or in error case
+  validLink: boolean | undefined;
 }
 export const useUserLinkEnforcer = (
-    props: UseUserLinkEnforcerProps
+  props: UseUserLinkEnforcerProps,
 ): UseUserLinkEnforcerOutput => {
-    /**
+  /**
     Hook: useUserLinkEnforcer
 
     Handles three things
@@ -59,43 +59,41 @@ export const useUserLinkEnforcer = (
        specified
     */
 
-    // Need to check user is linked as above
-    const link = useUserLinkServiceLookup({});
-    const validLink = !link.loading && !link.error ? !!link.data : undefined;
-    const missingLink = !link.loading && !link.data;
-    const error = link.error;
+  // Need to check user is linked as above
+  const link = useUserLinkServiceLookup({});
+  const validLink = !link.loading && !link.error ? !!link.data : undefined;
+  const missingLink = !link.loading && !link.data;
+  const error = link.error;
 
-    var render: JSX.Element | null = null;
+  var render: JSX.Element | null = null;
 
-    if (missingLink) {
-        render = (
-            <Alert variant="outlined" severity="warning">
-                <AlertTitle>
-                    {props.missingLinkTitle ?? defaultMissingLinkTitle}
-                </AlertTitle>
-                {props.missingLinkMessage ?? defaultMissingLinkMessage}
-            </Alert>
-        );
-    }
-    if (error) {
-        render = (
-            <Alert variant="outlined" severity="error">
-                <AlertTitle>
-                    An unexpected error occurred while fetching linked Person
-                    identity
-                </AlertTitle>
-                The system failed to determine if your user account is linked to
-                a Person. Try refreshing. If the error persists, contact an
-                administrator. Error: {link.errorMessage ?? "Unknown"}.
-            </Alert>
-        );
-    }
+  if (missingLink) {
+    render = (
+      <Alert variant="outlined" severity="warning">
+        <AlertTitle>
+          {props.missingLinkTitle ?? defaultMissingLinkTitle}
+        </AlertTitle>
+        {props.missingLinkMessage ?? defaultMissingLinkMessage}
+      </Alert>
+    );
+  }
+  if (error) {
+    render = (
+      <Alert variant="outlined" severity="error">
+        <AlertTitle>
+          An unexpected error occurred while fetching linked Person identity
+        </AlertTitle>
+        The system failed to determine if your user account is linked to a
+        Person. Try refreshing. If the error persists, contact an administrator.
+        Error: {link.errorMessage ?? "Unknown"}.
+      </Alert>
+    );
+  }
 
-    return {
-        blocked:
-            props.blockEnabled &&
-            (missingLink || (props.blockOnError && error)),
-        render,
-        validLink,
-    };
+  return {
+    blocked:
+      props.blockEnabled && (missingLink || (props.blockOnError && error)),
+    render,
+    validLink,
+  };
 };

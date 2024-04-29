@@ -11,7 +11,7 @@ from routes.admin import admin as general_admin
 from routes.groups import admin as group_admin, user as group_users, import_export_restore
 from routes.identity import user as link_user
 from routes.identity import admin as link_admin
-from SharedInterfaces.SentryMonitoring import init_sentry
+from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 import sentry_sdk
 
 # App runner

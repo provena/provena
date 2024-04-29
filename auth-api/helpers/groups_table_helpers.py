@@ -2,7 +2,7 @@ import json
 from fastapi import HTTPException
 from KeycloakFastAPI.Dependencies import *
 from config import Config
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 import boto3  # type: ignore
 from helpers.groups_helpers import *
 

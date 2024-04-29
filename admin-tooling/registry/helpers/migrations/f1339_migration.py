@@ -1,6 +1,6 @@
 from typing import Any, Dict
-from SharedInterfaces.RegistryAPI import BundledItem
-from SharedInterfaces.RegistryModels import ItemSubType, RecordType
+from ProvenaInterfaces.RegistryAPI import BundledItem
+from ProvenaInterfaces.RegistryModels import ItemSubType, RecordType
 
 
 def f1339_migration(old_item: Dict[str, Any]) -> Dict[str, Any]:

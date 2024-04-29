@@ -1,7 +1,7 @@
 import uuid
 import helpers.dynamo as dynamo
 import helpers.sns as sns
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from helpers.time import get_timestamp
 from config import Config
 from dataclasses import dataclass

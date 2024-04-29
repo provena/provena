@@ -1,13 +1,13 @@
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 from typing import Optional
 import json
 import requests
 from KeycloakRestUtilities.Token import BearerAuth
 from tests.helpers.registry_helpers import fetch_item_successfully_parse, general_list_exhaust, get_item_subtype_domain_info_example
 from tests.config import config
-from SharedInterfaces.RegistryModels import ItemSubType, DatasetDomainInfo
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryModels import ItemSubType, DatasetDomainInfo
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 from requests import Response
 from tests.helpers.general_helpers import py_to_dict
 

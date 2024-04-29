@@ -1,5 +1,5 @@
 from typing import Type, Dict, TypeVar, Any, Tuple, Union
-from SharedInterfaces.RegistryModels import ItemCategory, ItemSubType, ItemBase, RecordType, SeededItem, RecordInfo
+from ProvenaInterfaces.RegistryModels import ItemCategory, ItemSubType, ItemBase, RecordType, SeededItem, RecordInfo
 from fastapi import HTTPException
 from config import Config
 from helpers.dynamo_helpers import get_entry_raw

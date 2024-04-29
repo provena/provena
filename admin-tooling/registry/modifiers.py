@@ -1,5 +1,5 @@
 import json
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from typing import Dict, Any
 from KeycloakRestUtilities.TokenManager import Stage
 import typer

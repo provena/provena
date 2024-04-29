@@ -1,4 +1,4 @@
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from EcsSqsPythonTools.Types import *
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
@@ -9,7 +9,7 @@ from helpers.validate_model_run_record import validate_model_run_record
 from helpers.prov_helpers import produce_create_prov_document, produce_version_prov_document
 from helpers.job_api_helpers import launch_generic_job
 from helpers.graph_db_helpers import upload_prov_document
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
 import asyncio

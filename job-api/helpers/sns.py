@@ -1,4 +1,4 @@
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 import boto3  # type: ignore
 import logging
 from pydantic import BaseModel

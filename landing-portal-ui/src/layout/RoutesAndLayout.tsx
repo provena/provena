@@ -105,7 +105,7 @@ const useStyles = makeStyles((theme: Theme) =>
     listItem: {
       color: "white",
     },
-  })
+  }),
 );
 
 function RoutesAndLayout() {

@@ -11,16 +11,16 @@ interface Props {}
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
 export const LogoutView = observer((props: Props) => {
-    // Setup theming
-    const classes = useStyles();
-    const { keycloak } = useKeycloak();
+  // Setup theming
+  const classes = useStyles();
+  const { keycloak } = useKeycloak();
 
-    return (
-        <React.Fragment>
-            <h3>Logout</h3>
-            <Button variant="outlined" onClick={() => keycloak.logout()}>
-                Logout
-            </Button>
-        </React.Fragment>
-    );
+  return (
+    <React.Fragment>
+      <h3>Logout</h3>
+      <Button variant="outlined" onClick={() => keycloak.logout()}>
+        Logout
+      </Button>
+    </React.Fragment>
+  );
 });

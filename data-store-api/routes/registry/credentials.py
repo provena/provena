@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from SharedInterfaces.DataStoreAPI import *
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryModels import *
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, user_is_admin
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from helpers.sts_helpers import call_sts_oidc_service, create_console_session

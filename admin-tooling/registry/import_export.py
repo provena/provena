@@ -4,9 +4,9 @@ import json
 import requests as rq
 from config import *
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params, PopulatedToolingEnvironment, PopulatedToolingEnvironment
-from SharedInterfaces.DataStoreAPI import *
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from KeycloakRestUtilities.TokenManager import DeviceFlowManager
 from typing import List, Any, Callable, Awaitable
 from helpers.import_export_helpers import yes_or_no

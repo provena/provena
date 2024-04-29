@@ -28,7 +28,7 @@ interface OptionalIncludeProps {
 export default function ObjectFieldTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
-  F extends FormContextType = any
+  F extends FormContextType = any,
 >(props: ObjectFieldTemplateProps<T, S, F>) {
   const {
     description,
@@ -56,7 +56,7 @@ export default function ObjectFieldTemplate<
   const TitleFieldTemplate = getTemplate<"TitleFieldTemplate", T, S, F>(
     "TitleFieldTemplate",
     registry,
-    uiOptions
+    uiOptions,
   );
   const DescriptionFieldTemplate = getTemplate<
     "DescriptionFieldTemplate",
@@ -140,7 +140,7 @@ export default function ObjectFieldTemplate<
             >
               {element.content}
             </Grid>
-          )
+          ),
         )}
 
         {showAddMoreFields && (

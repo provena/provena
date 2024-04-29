@@ -1,4 +1,4 @@
-from SharedInterfaces.HandleModels import ValueType
+from ProvenaInterfaces.HandleModels import ValueType
 
 test_email = "fake@gmail.com"
 stage = "DEV"

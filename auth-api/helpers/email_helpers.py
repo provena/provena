@@ -2,8 +2,8 @@
 from KeycloakFastAPI.Dependencies import *
 from config import Config
 from helpers.request_table_helpers import generate_status_change_email_text
-from SharedInterfaces.AuthAPI import *
-from SharedInterfaces.AsyncJobModels import EmailSendEmailPayload
+from ProvenaInterfaces.AuthAPI import *
+from ProvenaInterfaces.AsyncJobModels import EmailSendEmailPayload
 from helpers.job_api_helpers import submit_send_email_job
 import re
 

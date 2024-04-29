@@ -1,6 +1,6 @@
 from typing import Dict, Any, Callable, Optional, cast, Tuple
-from SharedInterfaces.AsyncJobModels import JobStatusTable
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobModels import JobStatusTable
+from ProvenaInterfaces.AsyncJobAPI import *
 from KeycloakRestUtilities.Token import BearerAuth
 import requests
 from requests import Response
@@ -8,8 +8,8 @@ from datetime import datetime
 from time import sleep
 from tests.config import config, TokenGenerator
 from tests.helpers.shared_lists import cleanup_items
-from SharedInterfaces.RegistryModels import ItemBase, ItemCategory
-from SharedInterfaces.DataStoreAPI import MintResponse
+from ProvenaInterfaces.RegistryModels import ItemBase, ItemCategory
+from ProvenaInterfaces.DataStoreAPI import MintResponse
 
 # How long to wait for various states
 JOB_POLLING_INTERVAL = 2  # poll every 2 seconds

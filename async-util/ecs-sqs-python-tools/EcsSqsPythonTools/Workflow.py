@@ -1,4 +1,4 @@
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from EcsSqsPythonTools.SqsTools import *
 import json
 from typing import Type, cast

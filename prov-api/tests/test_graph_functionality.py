@@ -12,10 +12,10 @@ from main import app
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 import json
 from helpers.entity_validators import RequestStyle
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.ProvenanceModels import *
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.ProvenanceModels import *
+from ProvenaInterfaces.DataStoreAPI import *
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from config import Config, get_settings, base_config
 from tests.test_config import *

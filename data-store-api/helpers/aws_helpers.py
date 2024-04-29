@@ -5,8 +5,8 @@ import botocore.session  # type: ignore
 from aws_secretsmanager_caching import SecretCache, SecretCacheConfig  # type: ignore
 from .sanitize import *
 from config import Config
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.DataStoreAPI import ROCrate
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.DataStoreAPI import ROCrate
 from dataclasses import dataclass
 
 """    

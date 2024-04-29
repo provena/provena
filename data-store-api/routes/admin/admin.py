@@ -1,4 +1,4 @@
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends
 from dependencies.dependencies import admin_user_protected_role_dependency

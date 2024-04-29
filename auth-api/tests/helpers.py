@@ -6,9 +6,9 @@ from httpx import Response
 from random import choice
 import json
 from pydantic import BaseModel
-from SharedInterfaces.SharedTypes import StatusResponse
-from SharedInterfaces.AuthAPI import *
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.SharedTypes import StatusResponse
+from ProvenaInterfaces.AuthAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 import random
 
 

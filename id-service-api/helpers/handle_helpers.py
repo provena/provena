@@ -1,5 +1,5 @@
 from config import Config
-from SharedInterfaces.HandleModels import *
+from ProvenaInterfaces.HandleModels import *
 from typing import Dict, Optional
 from enum import Enum
 from helpers.handle_templates import template_handle_request

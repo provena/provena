@@ -3,7 +3,7 @@ import requests
 from typing import Dict, Any
 from config import SearchableObject, LINEARISED_FIELD
 import json
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 
 
 def get_index_endpoint(search_domain_name: str, search_index: str) -> str:

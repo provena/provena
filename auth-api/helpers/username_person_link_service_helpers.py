@@ -3,8 +3,8 @@ from fastapi import HTTPException
 from config import Config
 import boto3  # type: ignore
 from typing import Optional
-from SharedInterfaces.AuthAPI import *
-from SharedInterfaces.RegistryAPI import AccessSettings
+from ProvenaInterfaces.AuthAPI import *
+from ProvenaInterfaces.RegistryAPI import AccessSettings
 from helpers.util import py_to_dict
 from boto3.dynamodb.conditions import Key  # type: ignore
 

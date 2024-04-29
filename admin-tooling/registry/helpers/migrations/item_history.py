@@ -1,6 +1,6 @@
 from typing import Dict, Any, List, Type, Optional
-from SharedInterfaces.RegistryModels import AccessInfo, ItemDataset, HistoryEntry, HistoryBase, RecordInfo, AuthTableEntry, MODEL_DOMAIN_INFO_TYPE_MAP, DomainInfoBase, RecordType
-from SharedInterfaces.RegistryAPI import BundledItem
+from ProvenaInterfaces.RegistryModels import AccessInfo, ItemDataset, HistoryEntry, HistoryBase, RecordInfo, AuthTableEntry, MODEL_DOMAIN_INFO_TYPE_MAP, DomainInfoBase, RecordType
+from ProvenaInterfaces.RegistryAPI import BundledItem
 from pydantic import BaseModel
 import json
 from helpers.util import py_to_dict

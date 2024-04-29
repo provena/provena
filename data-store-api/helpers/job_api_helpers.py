@@ -1,5 +1,5 @@
-from SharedInterfaces.AsyncJobModels import *
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from helpers.util import py_to_dict
 from helpers.keycloak_helpers import get_service_token

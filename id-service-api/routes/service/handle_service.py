@@ -1,6 +1,6 @@
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency
 from KeycloakFastAPI.Dependencies import User
-from SharedInterfaces.HandleAPI import *
+from ProvenaInterfaces.HandleAPI import *
 from fastapi import APIRouter, Depends
 from helpers.handle_helpers import *
 import logging

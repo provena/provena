@@ -59,7 +59,7 @@ locations=(
     "id-service-api"
     "auth-api"
     "registry-api"
-    "utilities/packages/python/shared-interfaces"
+    "utilities/packages/python/provena-interfaces"
     "job-api"
 
 )

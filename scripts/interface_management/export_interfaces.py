@@ -22,9 +22,10 @@ def delete_files_in_folder(folder_path: str) -> None:
     else:
         raise ValueError(f"'{folder_path}' is not a directory.")
 
-SHARED_INTERFACES_LOCATION = "../../utilities/packages/python/shared-interfaces/SharedInterfaces"
+
+SHARED_INTERFACES_LOCATION = "../../utilities/packages/python/provena-interfaces/ProvenaInterfaces"
 UI_RELATIVE_BASE = "../.."
-POSTFIX = "src/shared-interfaces"
+POSTFIX = "src/provena-interfaces"
 
 
 class UI(str, Enum):

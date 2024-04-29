@@ -1,5 +1,5 @@
 from config import *
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 from mdsisclienttools.auth.TokenManager import DeviceFlowManager, Stage, BearerAuth  # type: ignore
 from ToolingEnvironmentManager.EnvironmentTypes import PopulatedToolingEnvironment
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params

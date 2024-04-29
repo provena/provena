@@ -1,6 +1,6 @@
 from typing import Dict, Any
-from SharedInterfaces.RegistryModels import AccessInfo, ItemDataset
-from SharedInterfaces.RegistryAPI import BundledItem
+from ProvenaInterfaces.RegistryModels import AccessInfo, ItemDataset
+from ProvenaInterfaces.RegistryAPI import BundledItem
 import json
 
 default_info = json.loads(AccessInfo(

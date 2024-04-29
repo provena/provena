@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from KeycloakFastAPI.Dependencies import ProtectedRole
-from SharedInterfaces.DataStoreAPI import *
-from SharedInterfaces.RegistryAPI import DatasetDomainInfo, ItemRevertRequest, ItemRevertResponse
-from SharedInterfaces.RegistryModels import METADATA_WRITE_ROLE, ADMIN_ROLE, DATASET_WRITE_ROLE
+from ProvenaInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryAPI import DatasetDomainInfo, ItemRevertRequest, ItemRevertResponse
+from ProvenaInterfaces.RegistryModels import METADATA_WRITE_ROLE, ADMIN_ROLE, DATASET_WRITE_ROLE
 from config import get_settings, Config
 from typing import cast
 from dependencies.dependencies import read_write_user_protected_role_dependency

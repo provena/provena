@@ -1,4 +1,4 @@
-from SharedInterfaces.RegistryModels import ItemSubType, IdentifiedResource
+from ProvenaInterfaces.RegistryModels import ItemSubType, IdentifiedResource
 from typing import List, Tuple
 
 cleanup_items: List[Tuple[ItemSubType, IdentifiedResource]] = []

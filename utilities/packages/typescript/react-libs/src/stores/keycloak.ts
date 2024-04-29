@@ -6,9 +6,9 @@ import { KEYCLOAK_CLIENT_ID, KEYCLOAK_REALM } from "../config";
 // Pass initialization options as required or leave blank to load from 'keycloak.json'
 
 const keycloakConfig = {
-    realm: KEYCLOAK_REALM,
-    url: KEYCLOAK_AUTH_ENDPOINT,
-    clientId: KEYCLOAK_CLIENT_ID,
+  realm: KEYCLOAK_REALM,
+  url: KEYCLOAK_AUTH_ENDPOINT,
+  clientId: KEYCLOAK_CLIENT_ID,
 };
 
 export const keycloak = new Keycloak(keycloakConfig);

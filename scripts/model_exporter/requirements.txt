@@ -1,5 +1,5 @@
 # Shared interfaces
-../../utilities/packages/python/shared-interfaces
+../../utilities/packages/python/provena-interfaces
 
 # Mypy for type checking
 mypy

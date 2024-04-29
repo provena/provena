@@ -1,7 +1,7 @@
 import boto3  # type: ignore
 from pydantic import BaseModel
 from typing import Dict, Optional
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 import json
 
 

@@ -1,14 +1,14 @@
 from dependencies.dependencies import read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException
-from SharedInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.ProvenanceAPI import *
 from helpers.workflows import register_and_lodge_provenance
 from helpers.entity_validators import RequestStyle
-from SharedInterfaces.SharedTypes import Status
+from ProvenaInterfaces.SharedTypes import Status
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.auth_helpers import *
 from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job
-from SharedInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload
+from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload
 from config import get_settings, Config
 
 router = APIRouter()

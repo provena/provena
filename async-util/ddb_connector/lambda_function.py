@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from config import Settings
 import json
 import boto3  # type: ignore

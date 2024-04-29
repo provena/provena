@@ -11,5 +11,5 @@ networkx==3.*
 
 # from utilities packages.
 ../../utilities/packages/python/keycloak-utils
-../../utilities/packages/python/shared-interfaces
-../../utilities/packages/python/registry-shared-functionality
+../../utilities/packages/python/provena-interfaces
+../../utilities/packages/python/provena-shared-functionality

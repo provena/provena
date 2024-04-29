@@ -1,6 +1,6 @@
 from typing import Dict, Any, Dict, List, Callable
-from SharedInterfaces.RegistryModels import RecordInfo
-from SharedInterfaces.RegistryAPI import BundledItem, RecordType, ItemDataset, ReleasedStatus, ItemSubType, ItemModelRunWorkflowTemplate, ItemModelRun
+from ProvenaInterfaces.RegistryModels import RecordInfo
+from ProvenaInterfaces.RegistryAPI import BundledItem, RecordType, ItemDataset, ReleasedStatus, ItemSubType, ItemModelRunWorkflowTemplate, ItemModelRun
 
 
 def f1580_migrator_function(all_items: List[Dict[str, Any]], parse: bool = True) -> List[Dict[str, Any]]:

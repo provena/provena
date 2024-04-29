@@ -3,7 +3,7 @@ from typing import Callable, Set, Dict, List
 from helpers.dynamo_helpers import *
 from config import Config
 from fastapi import HTTPException
-from SharedInterfaces.SharedTypes import ImportMode
+from ProvenaInterfaces.SharedTypes import ImportMode
 
 # action types
 

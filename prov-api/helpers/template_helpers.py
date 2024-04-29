@@ -4,10 +4,10 @@ from itertools import chain
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
 from starlette.background import BackgroundTask
-from SharedInterfaces.RegistryModels import ItemModelRunWorkflowTemplate, ItemDatasetTemplate, SeededItem, ItemDataset
-from SharedInterfaces.ProvenanceModels import ModelRunRecord, TemplatedDataset, DatasetType, AssociationInfo
-# from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.RegistryModels import ItemModelRunWorkflowTemplate, ItemDatasetTemplate, SeededItem, ItemDataset
+from ProvenaInterfaces.ProvenanceModels import ModelRunRecord, TemplatedDataset, DatasetType, AssociationInfo
+# from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.AsyncJobModels import *
 from dataclasses import dataclass
 from dependencies.dependencies import User
 from helpers.entity_validators import validate_model_run_workflow_template, validate_dataset_template_id, validate_datastore_id, RequestStyle

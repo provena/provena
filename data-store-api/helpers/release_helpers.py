@@ -1,6 +1,6 @@
 from fastapi import HTTPException
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.DataStoreAPI import *
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from config import Config
 import boto3  # type: ignore

@@ -18,7 +18,7 @@ export const validateScssColorFormat = (color: string | undefined): boolean => {
 
 export const validatePaletteColor = (
   defaultScssMainColor: string,
-  customScssMainColor: string
+  customScssMainColor: string,
 ): PaletteColorOptions | undefined => {
   // Validate palette main colors, which cannot be undefined
   return validateScssColorFormat(customScssMainColor)
@@ -109,7 +109,7 @@ export interface PageThemeConfig {
 
 export const getThemeConfig = (
   themeConfig: CompleteThemeConfig,
-  currentPage: CurrentPage
+  currentPage: CurrentPage,
 ): PageThemeConfig => {
   // For setting page title, app bar title and background image and UIs text content. -> themeCustomConfig.tsx / defaultThemeConfig
 
@@ -128,7 +128,7 @@ export const getThemeConfig = (
 
 export const getScssDefaultTheme = (
   themeConfig: Theme,
-  backgroundImgURL: string | undefined
+  backgroundImgURL: string | undefined,
 ): DefaultTheme => {
   // For setting @mui/styles DefaultTheme, with our override properties.
   return {
@@ -144,11 +144,11 @@ export const generateTheme = (scssModule: CSSModuleClasses): Theme =>
     palette: {
       primary: validatePaletteColor(
         defaultScssTheme.palette.primary.main,
-        scssModule.palettePrimaryMainColor
+        scssModule.palettePrimaryMainColor,
       ),
       secondary: validatePaletteColor(
         defaultScssTheme.palette.secondary.main,
-        scssModule.paletteSecondaryMainColor
+        scssModule.paletteSecondaryMainColor,
       ),
     },
     typography: {
@@ -221,7 +221,7 @@ export interface ThemeConfigMapType {
 }
 
 export const getCurrentThemeConfig = (
-  currentPage: CurrentPage
+  currentPage: CurrentPage,
 ): PageThemeConfig => {
   if (THEME_ID === "default" || themeConfigMap[THEME_ID] === undefined) {
     // return default theme config
@@ -232,7 +232,7 @@ export const getCurrentThemeConfig = (
 };
 
 export const getCurrentScssTheme = (
-  backgroundImgURL: string | undefined
+  backgroundImgURL: string | undefined,
 ): DefaultTheme => {
   if (THEME_ID === "default" || themeConfigMap[THEME_ID] === undefined) {
     // return default scss config as DefaultTheme
