@@ -1,5 +1,5 @@
 from interfaces.EmailClient import EmailContent
-from SharedInterfaces.RegistryModels import ReleaseAction
+from ProvenaInterfaces.RegistryModels import ReleaseAction
 from config import HDL_PREFIX
 
 

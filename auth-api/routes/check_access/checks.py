@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from KeycloakFastAPI.Dependencies import User
 from dependencies.dependencies import *
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 
 router = APIRouter()
 

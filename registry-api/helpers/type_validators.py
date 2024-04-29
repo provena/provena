@@ -1,5 +1,5 @@
 from typing import Callable, Dict, List
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 from config import Config
 from pydantic import BaseModel
 from helpers.id_fetch_helpers import validate_id_helper

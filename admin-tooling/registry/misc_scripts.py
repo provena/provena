@@ -1,4 +1,4 @@
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 import typer
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params
 from KeycloakRestUtilities.TokenManager import DeviceFlowManager

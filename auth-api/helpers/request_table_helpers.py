@@ -2,7 +2,7 @@ import json
 from fastapi import HTTPException
 from KeycloakFastAPI.Dependencies import *
 from config import Config
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 import boto3  # type: ignore
 from boto3.dynamodb.conditions import Key  # type: ignore
 from typing import Optional, Tuple

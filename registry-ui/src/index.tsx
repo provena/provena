@@ -1,8 +1,8 @@
 import {
-    StyledEngineProvider,
-    Theme,
-    ThemeProvider,
-    Typography,
+  StyledEngineProvider,
+  Theme,
+  ThemeProvider,
+  Typography,
 } from "@mui/material";
 import { createContext } from "react";
 import ReactDOM from "react-dom";
@@ -17,14 +17,14 @@ console.log("Initiating lambda warmer.");
 const warmer = new Warmer();
 
 declare module "@mui/styles" {
-    interface DefaultTheme extends Theme {
-        backgroundImgURL?: string;
-    }
+  interface DefaultTheme extends Theme {
+    backgroundImgURL?: string;
+  }
 }
 
 // false for using default scss theme, titles and backgrounds, true for using customized ones.
 const themeStore = new CustomThemeStore({
-    currentPage: "registry",
+  currentPage: "registry",
 });
 
 // for exporting other custom theme config only
@@ -34,33 +34,33 @@ export const themeStoreConfig = themeStore.currentThemeConfig;
 document.title = themeStoreConfig.currentPageThemeConfig.pageTitle;
 // Set page favicon
 const faviconElement = document.querySelector(
-    "link[rel=icon]"
+  "link[rel=icon]",
 ) as HTMLLinkElement;
 faviconElement.href = themeStoreConfig.faviconURL;
 // Set apple touch favicon
 const appleTouchFaviconElement = document.querySelector(
-    "link[rel=apple-touch-icon]"
+  "link[rel=apple-touch-icon]",
 ) as HTMLLinkElement;
 appleTouchFaviconElement.href = themeStoreConfig.appleTouchIconURL;
 
 // Setup a theme config provider
 export const ThemeConfigContext =
-    createContext<PageThemeConfig>(themeStoreConfig);
+  createContext<PageThemeConfig>(themeStoreConfig);
 
 // Sentry init
 sentryInit({ currentUI: "registry" });
 
 ReactDOM.render(
-    <BrowserRouter>
-        <ThemeConfigContext.Provider value={themeStoreConfig}>
-            <StyledEngineProvider injectFirst>
-                <ThemeProvider theme={themeStore.currentTheme}>
-                    <Typography>
-                        <App />
-                    </Typography>
-                </ThemeProvider>
-            </StyledEngineProvider>
-        </ThemeConfigContext.Provider>
-    </BrowserRouter>,
-    document.getElementById("root")
+  <BrowserRouter>
+    <ThemeConfigContext.Provider value={themeStoreConfig}>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={themeStore.currentTheme}>
+          <Typography>
+            <App />
+          </Typography>
+        </ThemeProvider>
+      </StyledEngineProvider>
+    </ThemeConfigContext.Provider>
+  </BrowserRouter>,
+  document.getElementById("root"),
 );

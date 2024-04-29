@@ -19,3 +19,4 @@ export * from "./useJobSessionWatcher";
 export * from "./useQString";
 export * from "./useCreateNewVersion";
 export * from "./useLoadedVersionList";
+export * from "./useValidateAndAssignLink";

@@ -6,7 +6,7 @@ from typing import Dict, Any
 from config import config, SearchableObject
 from requests_aws4auth import AWS4Auth  # type: ignore
 import json
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 
 # setup credentials for https requests to the search domain
 region = config.aws_region

@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 import uvicorn  # type: ignore
 from config import base_config, dispatch_cors
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
 from typing import Dict
 import logging
 import random
@@ -14,8 +14,8 @@ from routes.admin import general_admin
 from routes.check_access import checks
 from routes.jobs.user import router as user_router
 from routes.jobs.admin import router as admin_router
-from SharedInterfaces.AsyncJobAPI import JOBS_USER_PREFIX, JOBS_ADMIN_PREFIX
-from SharedInterfaces.SentryMonitoring import init_sentry
+from ProvenaInterfaces.AsyncJobAPI import JOBS_USER_PREFIX, JOBS_ADMIN_PREFIX
+from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 import sentry_sdk
 
 # Setup app

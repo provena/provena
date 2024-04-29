@@ -2,8 +2,8 @@ import typer
 from config import VALIDATE_BY_DEFAULT
 from KeycloakRestUtilities.TokenManager import DeviceFlowManager, Stage
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from helpers.prov_helpers import relodge_model_run_record
 from helpers.registry_helpers import get_model_run_by_handle, list_model_run_records_from_registry
 from helpers.utils import yes_or_no

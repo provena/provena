@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from SharedInterfaces.SharedTypes import ImportMode
+from ProvenaInterfaces.SharedTypes import ImportMode
 from typing import List
 
 default_user_count = 3

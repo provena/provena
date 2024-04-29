@@ -3,7 +3,7 @@ pydantic==1.10.12
 typer[all]
 
 # Shared interfaces
-../../utilities/packages/python/shared-interfaces
+../../utilities/packages/python/provena-interfaces
 # Keycloak utilities
 ../../utilities/packages/python/keycloak-utils
 # Environment manager

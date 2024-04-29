@@ -2,4 +2,4 @@
 git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=ecs-sqs-python-tools&subdirectory=async-util/ecs-sqs-python-tools
 
 # Shared interfaces
-git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=shared-interfaces&subdirectory=utilities/packages/python/shared-interfaces
+git+https://${GITHUB_TOKEN}@github.com/${REPO_STRING}@${BRANCH_NAME}#egg=provena-interfaces&subdirectory=utilities/packages/python/provena-interfaces

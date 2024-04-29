@@ -18,9 +18,10 @@ HANDLE_DEFAULT_DOMAIN = "handle"
 DATA_DEFAULT_API_DOMAIN = "data-api"
 DATA_DEFAULT_UI_DOMAIN = "data"
 
-SHARED_INTERFACES_PATH = "../utilities/packages/python/shared-interfaces"
+SHARED_INTERFACES_PATH = "../utilities/packages/python/provena-interfaces"
 FAST_API_KEYCLOAK_AUTH_PATH = "../utilities/packages/python/fast-api-keycloak-auth"
-SHARED_REGISTRY_PATH = "../utilities/packages/python/registry-shared-functionality"
+# todo this var change tro provena_shared_path
+SHARED_REGISTRY_PATH = "../utilities/packages/python/provena-shared-functionality"
 ECS_SQS_SHARED_UTILS_PATH = "../async-util/ecs-sqs-python-tools"
 
 DEFAULT_EXTRA_HASH_DIRS = [SHARED_INTERFACES_PATH]

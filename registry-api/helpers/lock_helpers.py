@@ -1,5 +1,5 @@
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
 from fastapi import HTTPException
 from KeycloakFastAPI.Dependencies import User
 from helpers.dynamo_helpers import get_lock_entry, write_lock_table_entry

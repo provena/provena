@@ -1,7 +1,7 @@
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 import helpers.dynamo as dynamo
 from typing import Tuple, Optional
-from SharedInterfaces.AsyncJobAPI import PaginationKey
+from ProvenaInterfaces.AsyncJobAPI import PaginationKey
 
 
 def get_job_by_session_id(session_id: str, table_name: str) -> Optional[JobStatusTable]:

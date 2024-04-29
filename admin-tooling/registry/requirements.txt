@@ -9,7 +9,7 @@ tqdm
 types-tqdm
 
 # Shared interfaces
-../../utilities/packages/python/shared-interfaces
+../../utilities/packages/python/provena-interfaces
 # Keycloak utilities
 ../../utilities/packages/python/keycloak-utils
 # Tooling environment manager 

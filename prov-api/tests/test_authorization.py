@@ -4,7 +4,7 @@ from typing import Tuple, Generator
 from fastapi.testclient import TestClient
 from main import app
 from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from config import Config, get_settings, base_config
 from tests.test_config import *

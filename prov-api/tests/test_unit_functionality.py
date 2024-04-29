@@ -3,9 +3,9 @@ from datetime import datetime, date
 from typing import Any
 from config import Config, base_config
 from helpers.entity_validators import RequestStyle
-from SharedInterfaces.DataStoreAPI import *
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 import pytest
 from helpers.template_helpers import get_headers_list
 from tests.test_config import *
@@ -133,6 +133,7 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
     async def validate_study_id_mock(id: str, config: Config, request_style: RequestStyle) -> Union[ItemStudy, SeededItem, str]:
         return ItemStudy(
             id=id,
+            study_alternative_id="1234",
             owner_username="1234",
             created_timestamp=int(datetime.now().timestamp()),
             updated_timestamp=int(datetime.now().timestamp()),

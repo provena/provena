@@ -6,7 +6,7 @@ from config import base_config, dispatch_cors
 from routes.admin import general_admin
 from routes.check_access import checks
 import routes.search.entity_registry as entity_registry
-from SharedInterfaces.SentryMonitoring import init_sentry
+from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 import sentry_sdk
 import json
 # Deprecated as of merge

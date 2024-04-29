@@ -8,9 +8,9 @@ from main import app
 from config import Config, get_settings
 from datetime import datetime
 from typing import List, Generator
-from SharedInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck, UpdateResponse
-from SharedInterfaces.RegistryModels import ReleasedStatus
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck, UpdateResponse
+from ProvenaInterfaces.RegistryModels import ReleasedStatus
+from ProvenaInterfaces.DataStoreAPI import *
 from tests.config import test_bucket_name, test_email
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency

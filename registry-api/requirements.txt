@@ -21,7 +21,7 @@ sentry-sdk[fastapi]
 ../utilities/packages/python/fast-api-keycloak-auth
 
 # Shared interfaces
-../utilities/packages/python/shared-interfaces
+../utilities/packages/python/provena-interfaces
 
-# Shared Registry Functionality package
-../utilities/packages/python/registry-shared-functionality
+# Provena Shared Functionality package
+../utilities/packages/python/provena-shared-functionality

@@ -3,7 +3,7 @@ from tests.config import config
 import requests
 from KeycloakRestUtilities.Token import BearerAuth
 from typing import Dict
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from requests import Response
 from tests.helpers.general_helpers import display_failed_cleanups, py_to_dict
 

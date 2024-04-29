@@ -6,21 +6,21 @@ import checker from "vite-plugin-checker";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    resolve: { preserveSymlinks: true },
-    plugins: [
-        react(),
-        viteTsconfigPaths(),
-        svgrPlugin(),
-        checker({
-            typescript: true,
-        }),
-    ],
-    build: {
-        outDir: "build",
-    },
-    server: {
-        open: true,
-        port: 3000,
-    },
-    optimizeDeps: { esbuildOptions: { preserveSymlinks: true } },
+  resolve: { preserveSymlinks: true },
+  plugins: [
+    react(),
+    viteTsconfigPaths(),
+    svgrPlugin(),
+    checker({
+      typescript: true,
+    }),
+  ],
+  build: {
+    outDir: "build",
+  },
+  server: {
+    open: true,
+    port: 3000,
+  },
+  optimizeDeps: { esbuildOptions: { preserveSymlinks: true } },
 });

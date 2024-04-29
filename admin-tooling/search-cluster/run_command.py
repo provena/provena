@@ -78,7 +78,10 @@ def manual_command(
         try:
             print(response.json())
         except:
-            print(response)
+            try:
+                print(response.text)
+            except:
+                print(response)
     except requests.exceptions.HTTPError as he:
         print(f"Error occurred: {he}.")
 
@@ -218,6 +221,10 @@ def create_body_field_ngram_registry_index(
         ...,
         help=f"The tooling environment to target. Options: {valid_env_str}."
     ),
+    index_name_override: Optional[str] = typer.Option(
+        None,
+        help=f"If the name of the index is not the default registry, can provide an override."
+    ),
     param: ParametersType = typer.Option(
         [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
 ) -> None:
@@ -229,8 +236,6 @@ def create_body_field_ngram_registry_index(
     params = process_params(param)
     env = env_manager.get_environment(name=env_name, params=params)
 
-    # setup tooling environment
-    env = env_manager.get_environment(env_name)
     if env is None:
         raise ValueError("Inappropriate environment name provided")
 
@@ -238,7 +243,7 @@ def create_body_field_ngram_registry_index(
 
     registry_index = Indexes.REGISTRY
     registry_index_name = INDEX_MAP[registry_index]
-    endpoint = f"{env.search_service_endpoint}/{registry_index_name}"
+    endpoint = f"{env.search_service_endpoint}/{index_name_override or registry_index_name}"
 
     # see https://opensearch.org/docs/latest/search-plugins/searching-data/autocomplete/
     method = HTTPMethods.PUT

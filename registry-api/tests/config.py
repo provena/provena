@@ -1,6 +1,6 @@
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.ProvenanceModels import *
-from RegistrySharedFunctionality.RegistryRouteActions import RouteActions
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.ProvenanceModels import *
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import RouteActions
 
 test_resource_table_name = "testregistryresource"
 test_lock_table_name = "testregistrylock"
@@ -14,7 +14,7 @@ admin_import_endpoint = "/admin/import"
 admin_export_endpoint = "/admin/export"
 admin_restore_endpoint = "/admin/restore_from_table"
 
-# Type vars, dataclasses, route params have been moved into registry shared functionality package
+# Type vars, dataclasses, route params have been moved into provena shared functionality package
 
 # tests are pararmetrised for all endpoints,
 # not all entities implement all endpoints (actions)

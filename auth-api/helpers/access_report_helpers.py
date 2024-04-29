@@ -1,5 +1,5 @@
 from config import Config
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from KeycloakFastAPI.Dependencies import *
 from dataclasses import dataclass 
 

@@ -13,8 +13,8 @@ import json
 from main import route_configs, ITEM_CATEGORY_ROUTE_MAP, ITEM_SUB_TYPE_ROUTE_MAP
 from pydantic import BaseModel
 import boto3  # type:ignore
-from RegistrySharedFunctionality.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
-from RegistrySharedFunctionality.TestConfig import route_params, RouteParameters
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
+from ProvenaSharedFunctionality.Registry.TestConfig import route_params, RouteParameters
 
 # Which subtypes are excluded from regular comprehensive testing
 route_config_exclusions: List[ItemSubType] = [
@@ -361,7 +361,7 @@ def standard_post_item(app_client: TestClient, route_param: RouteParameters) -> 
     response = app_client.post(create_route, json=serialised)
 
     # check success
-    assert response.status_code == 200
+    assert response.status_code == 200, f"Non 200 response code: {response.status_code}. Details: {response.text}"
     create_resp_model = route_param.typing_information.create_response
     assert create_resp_model, f"Create response model not defined for {route_param.route}"
     create_response = create_resp_model.parse_obj(
@@ -386,7 +386,7 @@ def proxy_post_item(app_client: TestClient, route_param: RouteParameters) -> Ite
     response = app_client.post(create_route, json=serialised)
 
     # check success
-    assert response.status_code == 200
+    assert response.status_code == 200, f"Non 200 response code: {response.status_code}. Details: {response.text}"
     create_resp_model = route_param.typing_information.create_response
     assert create_resp_model, f"Create response model not defined for {route_param.route}"
     create_response = create_resp_model.parse_obj(

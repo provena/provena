@@ -4,7 +4,7 @@ from mangum import Mangum
 import uvicorn  # type: ignore
 from typing import Dict
 from config import base_config, dispatch_cors
-from SharedInterfaces.SentryMonitoring import init_sentry
+from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 from dependencies.secret_cache import secret_cache
 from helpers.aws_helpers import retrieve_secret_value
 import sentry_sdk

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from typing import Callable
 from EcsSqsPythonTools.Settings import JobBaseSettings
 

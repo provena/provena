@@ -26,12 +26,12 @@ we can directly use "default" in UI's index.tsx
 */
 
 export const themeConfigMap: ThemeConfigMapType = {
-    rrap: {
-        scssConfig: rrapScssTheme,
-        themeConfig: rrapThemeConfig,
-    },
-    example: {
-        scssConfig: exampleScssTheme,
-        themeConfig: exampleThemeConfig,
-    },
+  rrap: {
+    scssConfig: rrapScssTheme,
+    themeConfig: rrapThemeConfig,
+  },
+  example: {
+    scssConfig: exampleScssTheme,
+    themeConfig: exampleThemeConfig,
+  },
 };

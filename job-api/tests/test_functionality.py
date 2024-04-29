@@ -10,7 +10,7 @@ from config import Config, get_settings, base_config
 from main import app
 from typing import Generator, Any
 import service.jobs.admin as admin_service
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from tests.api_helpers import *

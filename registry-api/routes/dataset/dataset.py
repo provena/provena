@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from dependencies.dependencies import read_user_protected_role_dependency
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from helpers.action_helpers import *
 from config import Config, get_settings
 

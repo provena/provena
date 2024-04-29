@@ -7,24 +7,24 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Create a client
 const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            refetchOnWindowFocus: false,
-            retry: false,
-        },
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
     },
+  },
 });
 
 function App() {
-    return (
-        <div>
-            <QueryClientProvider client={queryClient}>
-                <ReactKeycloakProvider authClient={keycloak}>
-                    <RoutesAndLayout />
-                </ReactKeycloakProvider>
-            </QueryClientProvider>
-        </div>
-    );
+  return (
+    <div>
+      <QueryClientProvider client={queryClient}>
+        <ReactKeycloakProvider authClient={keycloak}>
+          <RoutesAndLayout />
+        </ReactKeycloakProvider>
+      </QueryClientProvider>
+    </div>
+  );
 }
 
 export default observer(App);

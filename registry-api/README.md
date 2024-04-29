@@ -15,9 +15,8 @@ The Registry API has been designed to balance modularity/extensibility (quickly 
 This was achieved through the dynamic generation of subroutes based on:
 
 -   a set of required Pydantic models for each subtype
--   configuration of subtype routes based on desired behavioural overrides
-
-These models are defined in the repo's `SharedInterfaces` python package and are configured in the `RegistrySharedFunctionality` python package and the `main.py` file in this folder.
+-   configuration of subtype routes based on desired behavioural overrides. 
+These models are defined in the repo's `ProvenaInterfaces` python package and are configured in the `ProvenaSharedFunctionality.Registry` python package and the `main.py` file in this folder.
 
 The core of the Registry API is the `item_type_route_generator.py` in `helpers`. This file handles the creation of the routes based on the route config and other options.
 

@@ -1,8 +1,8 @@
 from time import sleep, time
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.AsyncJobModels import JobStatusTable, ProvLodgeModelRunResult, JobStatus
-from SharedInterfaces.ProvenanceModels import *
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.AsyncJobModels import JobStatusTable, ProvLodgeModelRunResult, JobStatus
+from ProvenaInterfaces.ProvenanceModels import *
 import requests
 import json
 from KeycloakRestUtilities.Token import BearerAuth

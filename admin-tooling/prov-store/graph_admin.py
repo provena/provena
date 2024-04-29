@@ -1,6 +1,6 @@
 import typer
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params
-from SharedInterfaces.SharedTypes import StatusResponse
+from ProvenaInterfaces.SharedTypes import StatusResponse
 from helpers.utils import yes_or_no
 from rich import print
 from rich.console import Console

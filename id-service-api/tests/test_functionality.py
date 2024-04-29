@@ -7,8 +7,8 @@ import pytest
 from typing import Generator
 from KeycloakFastAPI.Dependencies import ProtectedRole, User
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency
-from SharedInterfaces.HandleAPI import *
-from SharedInterfaces.HandleModels import *
+from ProvenaInterfaces.HandleAPI import *
+from ProvenaInterfaces.HandleModels import *
 from tests.helpers import *
 
 

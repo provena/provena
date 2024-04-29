@@ -1,9 +1,9 @@
-from SharedInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobModels import *
 from EcsSqsPythonTools.Types import *
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
 from helpers.handle_helpers import mint_self_describing_handle
@@ -13,7 +13,7 @@ from helpers.action_helpers import create_seed_history
 from helpers.lock_helpers import seed_lock_configuration
 from helpers.time_helpers import get_timestamp
 from helpers.dynamo_helpers import *
-from SharedInterfaces.RegistryModels import METADATA_READ_ROLE, ItemCreate, CreateDomainInfo, RecordType
+from ProvenaInterfaces.RegistryModels import METADATA_READ_ROLE, ItemCreate, CreateDomainInfo, RecordType
 import json
 import asyncio
 

@@ -1,4 +1,4 @@
-from SharedInterfaces.RegistryModels import CollectionFormat, CollectionFormatAssociations, CollectionFormatApprovals, CollectionFormatDatasetInfo, OptionallyRequiredCheck, AccessInfo
+from ProvenaInterfaces.RegistryModels import CollectionFormat, CollectionFormatAssociations, CollectionFormatApprovals, CollectionFormatDatasetInfo, OptionallyRequiredCheck, AccessInfo
 
 valid_collection_format1 = CollectionFormat(
     associations=CollectionFormatAssociations(

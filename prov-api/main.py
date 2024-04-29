@@ -3,15 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 import uvicorn  # type: ignore
 from config import base_config, dispatch_cors
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
 from routes.check_access import checks
 from routes.model_run import model_run
 from routes.explore import explore
 from routes.admin import general_admin, restore_from_registry, graph_admin
 from routes.bulk import templates
 from typing import Dict
-from SharedInterfaces.SentryMonitoring import init_sentry
+from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 import sentry_sdk
 
 # Setup app

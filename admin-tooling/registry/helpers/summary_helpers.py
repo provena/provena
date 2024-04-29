@@ -1,6 +1,6 @@
 
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.AuthAPI import AdminLinkUserLookupResponse
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.AuthAPI import AdminLinkUserLookupResponse
 from typing import Dict, Any
 import typer
 from rich import print

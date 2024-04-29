@@ -1,5 +1,5 @@
 from prov.model import ProvDocument  # type: ignore
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 from fastapi import HTTPException, Depends
 from random import randint
 from config import Config, get_settings

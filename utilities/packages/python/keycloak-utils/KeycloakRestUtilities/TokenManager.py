@@ -1,5 +1,5 @@
 import webbrowser
-from SharedInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.DataStoreAPI import *
 import requests as rq
 import time
 from jose import jwt  # type: ignore

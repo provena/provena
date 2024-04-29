@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 import uvicorn  # type: ignore
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
 from helpers.item_type_route_generator import *
 from routes.check_access import checks
 from routes.dataset import dataset
@@ -13,12 +13,12 @@ from routes.registry_general import registry_general
 from routes.admin import import_export_restore, general_admin
 from typing import Dict, Type, List, Generic
 from config import base_config, dispatch_cors
-from RegistrySharedFunctionality.RegistryRouteActions import DATA_STORE_SERVICE_ROLE_NAME, PROV_SERVICE_ROLE_NAME
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import DATA_STORE_SERVICE_ROLE_NAME, PROV_SERVICE_ROLE_NAME
 import warnings
 from schemas import UI_SCHEMA_OVERRIDES, JSON_SCHEMA_OVERRIDES
-from RegistrySharedFunctionality.RegistryRouteActions import RouteActions, PROXY_EDIT_ROUTE_ACTIONS, STANDARD_ROUTE_ACTIONS, DATASET_ROUTE_ACTIONS, MODEL_RUN_ROUTE_ACTIONS
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import RouteActions, PROXY_EDIT_ROUTE_ACTIONS, STANDARD_ROUTE_ACTIONS, DATASET_ROUTE_ACTIONS, MODEL_RUN_ROUTE_ACTIONS
 from route_models import RouteConfig
-from SharedInterfaces.SentryMonitoring import init_sentry
+from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 import sentry_sdk
 
 app = FastAPI()
@@ -81,7 +81,7 @@ ITEM_SUB_TYPE_ROUTE_MAP: Dict[ItemSubType, str] = {
 
 
 # Can add more registry sub routes by adding to this config
-# list - might need to add more models in the SharedInterfaces
+# list - might need to add more models in the ProvenaInterfaces
 # RegistryModels file.
 normal_default_roles: Roles = [METADATA_READ_ROLE]
 dataset_default_roles: Roles = [METADATA_READ_ROLE, DATASET_READ_ROLE]

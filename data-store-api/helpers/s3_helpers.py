@@ -4,10 +4,10 @@ import boto3  # type: ignore
 from botocore.exceptions import ClientError #type: ignore
 from fastapi import HTTPException
 from helpers.sts_helpers import call_sts_oidc_service
-from SharedInterfaces.DataStoreAPI import Credentials
+from ProvenaInterfaces.DataStoreAPI import Credentials
 from .sanitize import *
 from config import Config
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 
 def check_file_exists(bucket_name: str, file_path: str ) -> bool:
     """Checks if a file exists inside an s3 bucket

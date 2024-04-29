@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from config import get_settings, Config
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from dependencies.dependencies import admin_user_protected_role_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 import logging
 import service.jobs.admin as admin_service
 import service.jobs.user as user_service

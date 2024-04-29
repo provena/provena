@@ -2,13 +2,13 @@ import tests.env_setup
 from tests.config import test_resource_table_name, test_email, test_stage
 from typing import Dict, Generator
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from main import app, route_configs, ITEM_CATEGORY_ROUTE_MAP, ITEM_SUB_TYPE_ROUTE_MAP
 from fastapi.testclient import TestClient
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 from config import Config, get_settings, base_config
-from RegistrySharedFunctionality.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteAccessLevel
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteAccessLevel
 import pytest
 
 client = TestClient(app)

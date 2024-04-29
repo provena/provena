@@ -5,8 +5,8 @@ import httpx
 from random import randint
 from helpers.keycloak_helpers import get_service_token
 from dependencies.dependencies import secret_cache
-from SharedInterfaces.HandleModels import *
-from SharedInterfaces.HandleAPI import MintRequest, MintResponse, ModifyRequest
+from ProvenaInterfaces.HandleModels import *
+from ProvenaInterfaces.HandleAPI import MintRequest, MintResponse, ModifyRequest
 
 
 def process_handle_error(status_code: int, handle_message: str) -> None:

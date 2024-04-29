@@ -1,4 +1,4 @@
-from SharedInterfaces.AuthAPI import AccessLevel, HANDLE_SERVICE_COMPONENT
+from ProvenaInterfaces.AuthAPI import AccessLevel, HANDLE_SERVICE_COMPONENT
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config
 from helpers.keycloak_helpers import setup_secret_cache

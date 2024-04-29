@@ -1,5 +1,5 @@
 from KeycloakFastAPI.Dependencies import User
-from SharedInterfaces.RegistryAPI import Roles
+from ProvenaInterfaces.RegistryAPI import Roles
 from dependencies.dependencies import user_is_admin
 
 def special_permission_check(user: User, special_roles: Roles) -> bool:

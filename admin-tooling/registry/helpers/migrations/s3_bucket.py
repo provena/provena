@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from SharedInterfaces.RegistryAPI import BundledItem, ItemDataset, S3Location
+from ProvenaInterfaces.RegistryAPI import BundledItem, ItemDataset, S3Location
 import json
 
 

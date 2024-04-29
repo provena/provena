@@ -2,7 +2,7 @@ from helpers.generator_types import *
 from dataclasses import dataclass
 from helpers.time_helpers import timestamp_to_string
 from helpers.registry_helpers import fetch_from_registry_typed
-from SharedInterfaces.RegistryModels import ItemPerson, ItemSubType, ItemDataset, ItemOrganisation, ItemModelRunWorkflowTemplate, ItemModel
+from ProvenaInterfaces.RegistryModels import ItemPerson, ItemSubType, ItemDataset, ItemOrganisation, ItemModelRunWorkflowTemplate, ItemModel
 import itertools
 from typing import TypedDict, cast, Optional, Dict, Tuple, Set
 

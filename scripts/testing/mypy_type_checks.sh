@@ -73,8 +73,8 @@ mypy_check_locations=(
     "async-util/ddb_connector"
     "async-util/ecs-sqs-python-tools"
     "async-util/lambda_invoker"
-    "utilities/packages/python/registry-shared-functionality"
-    "utilities/packages/python/shared-interfaces"
+    "utilities/packages/python/provena-shared-functionality"
+    "utilities/packages/python/provena-interfaces"
 )
 
 # Loop through the arrays and call the function

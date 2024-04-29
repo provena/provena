@@ -1,4 +1,4 @@
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 from route_models import ItemModelTypeVar
 
 DISPLAY_NAME_LABEL = "Enter a brief name, label or title for this resource."
@@ -19,6 +19,9 @@ UI_SCHEMA_OVERRIDES: Dict[ItemModelTypeVar, Dict[str, Any]] = {  # type: ignore
         },
         'description': {
             'ui:description': "Please provide any additional relevant description about this Study activity."
+        },
+        'study_alternative_id': {
+            'ui:description': "If relevant, you can record an additional identifier for this study.",
         },
     },
     ItemOrganisation: {

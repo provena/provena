@@ -4,9 +4,9 @@ from typing import Generator, cast
 import pytest
 import json
 from KeycloakRestUtilities.Token import BearerAuth
-from SharedInterfaces.DataStoreAPI import *
-from SharedInterfaces.RegistryAPI import DatasetListResponse, ItemSubType, IdentifiedResource, OptionallyRequiredCheck, ItemPerson, ItemOrganisation
-from SharedInterfaces.RegistryAPI import AccessInfo
+from ProvenaInterfaces.DataStoreAPI import *
+from ProvenaInterfaces.RegistryAPI import DatasetListResponse, ItemSubType, IdentifiedResource, OptionallyRequiredCheck, ItemPerson, ItemOrganisation
+from ProvenaInterfaces.RegistryAPI import AccessInfo
 from tests.config import config, Tokens
 from tests.helpers.datastore_helpers import *
 from tests.helpers.general_helpers import py_to_dict

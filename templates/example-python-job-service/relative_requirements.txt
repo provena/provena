@@ -1,4 +1,4 @@
 # Ecs worker tooling
 ../../async-util/ecs-sqs-python-tools
 # Shared interfaces
-../../utilities/packages/python/shared-interfaces
+../../utilities/packages/python/provena-interfaces

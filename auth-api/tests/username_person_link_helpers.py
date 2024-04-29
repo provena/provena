@@ -2,7 +2,7 @@ from typing import Optional, Any, Dict
 from fastapi.testclient import TestClient
 from httpx import Response
 from tests.config import *
-from SharedInterfaces.AuthAPI import UserLinkUserLookupResponse, UserLinkReverseLookupResponse
+from ProvenaInterfaces.AuthAPI import UserLinkUserLookupResponse, UserLinkReverseLookupResponse
 
 
 def assert_x_ok(res: Response, desired_status_code: int = 200) -> None:

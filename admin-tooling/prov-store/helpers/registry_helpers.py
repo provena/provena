@@ -1,4 +1,4 @@
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 import requests
 from helpers.type_aliases import GetAuthFunction
 from rich import print

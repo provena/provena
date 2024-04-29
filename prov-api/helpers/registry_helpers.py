@@ -1,4 +1,4 @@
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from helpers.async_requests import *
 from config import Config, get_settings
 from helpers.keycloak_helpers import get_service_token

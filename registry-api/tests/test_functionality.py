@@ -6,9 +6,9 @@ import pydantic
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from fastapi.testclient import TestClient
 from main import app, UI_SCHEMA_OVERRIDES
-from RegistrySharedFunctionality.TestConfig import ModelExamples
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaSharedFunctionality.Registry.TestConfig import ModelExamples
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from config import Config, base_config, get_settings
 from typing import Generator, Any, Dict
@@ -1774,7 +1774,7 @@ def create_items(param_type: RouteParameters, just_one: bool = False) -> None:
         curr_route = get_route(action=RouteActions.CREATE, params=param_type)
         response = client.post(
             curr_route, json=json.loads(domain_info.json()))
-        assert response.status_code == 200, f"Status code was {response.status_code}."
+        assert response.status_code == 200, f"Status code was {response.status_code}. Details {response.json()}"
 
         if just_one:
             return

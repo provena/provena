@@ -4,7 +4,7 @@
     ],
     "project": [
         "src/**/*.{ts,tsx}",
-        "!**/shared-interfaces/**",
+        "!**/provena-interfaces/**",
         "!**/vite-env.d.ts"
     ]
 }

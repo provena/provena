@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import *
 from dependencies.dependencies import *
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from helpers.groups_table_helpers import *
 from helpers.groups_helpers import *
 from config import Config, get_settings

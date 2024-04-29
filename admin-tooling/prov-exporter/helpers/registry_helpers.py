@@ -1,9 +1,9 @@
 from helpers.type_aliases import GetAuthFunction
-from SharedInterfaces.RegistryModels import ItemModelRun, ItemBase, ItemSubType, MODEL_TYPE_MAP
-from SharedInterfaces.RegistryAPI import SubtypeListRequest, PaginationKey, ModelRunListResponse
-from SharedInterfaces.SharedTypes import StatusResponse
-from RegistrySharedFunctionality.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
-from RegistrySharedFunctionality.TestConfig import route_params, RouteParameters
+from ProvenaInterfaces.RegistryModels import ItemModelRun, ItemBase, ItemSubType, MODEL_TYPE_MAP
+from ProvenaInterfaces.RegistryAPI import SubtypeListRequest, PaginationKey, ModelRunListResponse
+from ProvenaInterfaces.SharedTypes import StatusResponse
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
+from ProvenaSharedFunctionality.Registry.TestConfig import route_params, RouteParameters
 from typing import Optional, List, Type
 import requests
 import json

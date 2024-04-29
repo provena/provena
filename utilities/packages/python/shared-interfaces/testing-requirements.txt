@@ -1,6 +1,0 @@
--e .
-mypy
-pytest
-
-# Shared Registry Functionality package
-../registry-shared-functionality

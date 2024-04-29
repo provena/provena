@@ -1,5 +1,5 @@
-from SharedInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, SYS_ADMIN_COMPONENT, AccessLevel
-from SharedInterfaces.AsyncJobModels import EmailSendEmailPayload
+from ProvenaInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, SYS_ADMIN_COMPONENT, AccessLevel
+from ProvenaInterfaces.AsyncJobModels import EmailSendEmailPayload
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config, Config, get_settings
 from interfaces.EmailClient import EmailClient, EmailContent

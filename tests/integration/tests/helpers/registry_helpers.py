@@ -1,10 +1,10 @@
 import os
 from requests import Response
 from tests.helpers.general_helpers import display_failed_cleanups
-from RegistrySharedFunctionality.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
-from RegistrySharedFunctionality.TestConfig import RouteParameters, route_params, non_test_route_params
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
+from ProvenaSharedFunctionality.Registry.TestConfig import RouteParameters, route_params, non_test_route_params
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
 import requests
 import json
 from KeycloakRestUtilities.Token import BearerAuth

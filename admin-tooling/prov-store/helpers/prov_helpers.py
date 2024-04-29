@@ -1,5 +1,5 @@
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 import requests
 from helpers.type_aliases import GetAuthFunction
 import json

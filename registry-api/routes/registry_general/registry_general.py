@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.SharedTypes import VersionDetails
-from RegistrySharedFunctionality.RegistryRouteActions import PROV_SERVICE_ROLE_NAME, DATA_STORE_SERVICE_ROLE_NAME
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.SharedTypes import VersionDetails
+from ProvenaSharedFunctionality.Registry.RegistryRouteActions import PROV_SERVICE_ROLE_NAME, DATA_STORE_SERVICE_ROLE_NAME
 from helpers.action_helpers import *
 from helpers.action_helpers import list_items_paginated
 from helpers.dynamo_helpers import get_entry_raw

@@ -1,5 +1,5 @@
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.SharedTypes import VersionDetails
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.SharedTypes import VersionDetails
 from pydantic import BaseSettings, validator
 from functools import lru_cache
 from typing import List, Union, Callable, Dict

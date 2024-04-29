@@ -1,7 +1,7 @@
 from fastapi import HTTPException
-from SharedInterfaces.ProvenanceAPI import *
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.SharedTypes import Status
+from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.SharedTypes import Status
 from config import Config
 from helpers.validate_model_run_record import validate_model_run_record, validate_model_run_workflow_template, RequestStyle
 from helpers.prov_helpers import produce_prov_document_existing_handle

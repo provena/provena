@@ -2,10 +2,10 @@ import json
 from jsonschema import validate  # type: ignore
 from typing import Tuple
 from constants import RO_CRATE_URI
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryModels import *
 from datetime import datetime
 from config import Config
-from SharedInterfaces.DataStoreAPI import Schema
+from ProvenaInterfaces.DataStoreAPI import Schema
 
 
 def validate_against_schema(json_object: Dict[Any, Any], config: Config) -> Tuple[bool, Optional[Exception]]:

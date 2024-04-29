@@ -1,5 +1,5 @@
 from pydantic import BaseSettings
-from SharedInterfaces.AsyncJobModels import JobType
+from ProvenaInterfaces.AsyncJobModels import JobType
 
 
 class JobBaseSettings(BaseSettings):

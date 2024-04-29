@@ -1,5 +1,5 @@
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.ProvenanceAPI import *
 from tests.helpers.general_helpers import *
 from tests.helpers.datastore_helpers import *
 from tests.helpers.prov_helpers import *

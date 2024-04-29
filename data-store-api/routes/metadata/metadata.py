@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from KeycloakFastAPI.Dependencies import ProtectedRole
-from SharedInterfaces.RegistryModels import *
-from SharedInterfaces.DataStoreAPI import Schema
-from SharedInterfaces.SharedTypes import Status
+from ProvenaInterfaces.RegistryModels import *
+from ProvenaInterfaces.DataStoreAPI import Schema
+from ProvenaInterfaces.SharedTypes import Status
 from dependencies.dependencies import read_user_protected_role_dependency
 from helpers.metadata_helpers import validate_against_schema, get_schema, validate_fields
 from helpers.registry_api_helpers import validate_dataset_in_registry

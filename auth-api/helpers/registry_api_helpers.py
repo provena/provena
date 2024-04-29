@@ -2,7 +2,7 @@ from config import Config
 import requests
 import json
 from fastapi import HTTPException
-from SharedInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryAPI import *
 from typing import Dict
 from KeycloakFastAPI.Dependencies import User
 

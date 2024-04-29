@@ -4,9 +4,9 @@ from config import Config, get_settings
 from opensearchpy import OpenSearch
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException
-from SharedInterfaces.SearchAPI import *
-from SharedInterfaces.SharedTypes import Status
-from SharedInterfaces.RegistryModels import ALL_SEARCHABLE_FIELDS, ItemSubType
+from ProvenaInterfaces.SearchAPI import *
+from ProvenaInterfaces.SharedTypes import Status
+from ProvenaInterfaces.RegistryModels import ALL_SEARCHABLE_FIELDS, ItemSubType
 from helpers.search_helpers import *
 from typing import Optional
 

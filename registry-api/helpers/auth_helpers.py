@@ -1,5 +1,5 @@
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from KeycloakFastAPI.Dependencies import User
 from dependencies.dependencies import user_is_admin
 from config import Config

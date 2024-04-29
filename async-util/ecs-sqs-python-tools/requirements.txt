@@ -1,2 +1,2 @@
-../../utilities/packages/python/shared-interfaces
+../../utilities/packages/python/provena-interfaces
 -e .

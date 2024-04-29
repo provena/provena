@@ -1,0 +1,14 @@
+{
+    "name": "formatting",
+    "version": "1.0.0",
+    "description": "Formatting script to help unify indent across project.",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "prettier": "^3.2.5"
+    },
+    "prettier": {
+        "tabWidth": 2
+    }
+}

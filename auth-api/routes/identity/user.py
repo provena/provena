@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import *
 from dependencies.dependencies import *
-from SharedInterfaces.AuthAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from config import Config, get_settings
 from helpers.username_person_link_service_helpers import *
 from helpers.registry_api_helpers import user_fetch_person_auth_config_from_registry

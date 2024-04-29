@@ -1,5 +1,5 @@
-from SharedInterfaces.AuthAPI import *
-from SharedInterfaces.RegistryModels import IdentifiedResource
+from ProvenaInterfaces.AuthAPI import *
+from ProvenaInterfaces.RegistryModels import IdentifiedResource
 from KeycloakFastAPI.Dependencies import User
 from config import Config
 import requests

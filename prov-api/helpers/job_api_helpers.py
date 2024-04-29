@@ -1,4 +1,4 @@
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from helpers.util import py_to_dict
 import httpx

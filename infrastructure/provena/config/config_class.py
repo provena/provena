@@ -509,7 +509,6 @@ class DeploymentConfig():
                 raise ValueError(
                     "Cannot deploy a feature stack without specifying the ticket number."
                 )
-            # TODO, this supposed to have email (pipeline) allerts activated as well?
             env_vars['TICKET_NO'] = str(self.ticket_no)
             env_vars['BRANCH_NAME'] = self.git_branch_name
 

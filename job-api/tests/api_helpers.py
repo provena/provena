@@ -1,7 +1,7 @@
 import tests.env_setup
 from fastapi.testclient import TestClient
-from SharedInterfaces.AsyncJobModels import *
-from SharedInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.AsyncJobModels import *
+from ProvenaInterfaces.AsyncJobAPI import *
 from typing import Tuple
 from httpx import Response
 import json

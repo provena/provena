@@ -1,5 +1,5 @@
-from SharedInterfaces.RegistryAPI import *
-from SharedInterfaces.RegistryModels import *
+from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.RegistryModels import *
 from dependencies.dependencies import user_is_admin
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from helpers.dynamo_helpers import *
@@ -270,7 +270,13 @@ def fetch_helper(
     except KeyError as e:
         return GenericFetchResponse(
             status=Status(
-                success=False, details=f"Could not find the given key ({id}) in the registry.")
+                success=False, details=f"Could not find the given key ({id}) in the registry. Details {e}.")
+        )
+    
+    except ValueError as e:
+        return GenericFetchResponse(
+            status=Status(
+                success=False, details=f"Value error. Details {e}.")
         )
 
     # Error occurred which was caught and handled in fastAPI format

@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme: DefaultTheme) =>
         backgroundColor: `rgba(255,255,255,0.1)`,
       },
     },
-  })
+  }),
 );
 
 function RoutesAndLayout() {

@@ -1,6 +1,6 @@
 from enum import Enum
 from tests.config import config
-from SharedInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.ProvenanceAPI import *
 from KeycloakRestUtilities.Token import BearerAuth
 import requests
 

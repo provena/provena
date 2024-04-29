@@ -2,7 +2,7 @@ from typing import Optional, Any, Dict, List
 from requests import Response
 import requests
 from tests.config import *
-from SharedInterfaces.AuthAPI import UserLinkUserLookupResponse, UserLinkReverseLookupResponse
+from ProvenaInterfaces.AuthAPI import UserLinkUserLookupResponse, UserLinkReverseLookupResponse
 from KeycloakRestUtilities.Token import BearerAuth
 from dataclasses import dataclass
 from tests.helpers.general_helpers import display_failed_cleanups
