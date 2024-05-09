@@ -32,9 +32,11 @@ def init_sentry(
         dsn=dsn,
         environment=environment,
         release=release,
-        # Other default params we like
+        # 100% of errors https://docs.sentry.io/platforms/python/configuration/sampling/
         sample_rate=1.0,
-        traces_sample_rate=1.0,
+        # 2.5% of transactions (for performance monitoring) https://docs.sentry.io/platforms/python/performance/
+        traces_sample_rate=0.025, 
+        # set relative to traces_sample_rate https://docs.sentry.io/platforms/python/profiling/
         profiles_sample_rate=1.0,
         # sending PII "enables certain features of sentry"
         # https://docs.sentry.io/platforms/python/data-management/sensitive-data/#personally-identifiable-information-pii

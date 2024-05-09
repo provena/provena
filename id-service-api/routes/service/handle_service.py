@@ -41,7 +41,7 @@ async def mint(
     """
     logging.info("Starting mint handle operation.")
 
-    return mint_handle(
+    return await mint_handle(
         value=mint_request.value,
         value_type=mint_request.value_type,
         config=config
@@ -71,7 +71,7 @@ async def add_handle_value(
     """
     logging.info("Starting add value handle operation.")
 
-    return add_value(
+    return await add_value(
         id=add_value_request.id,
         value=add_value_request.value,
         value_type=add_value_request.value_type,
@@ -102,7 +102,7 @@ async def add_handle_value_by_index(
     """
     logging.info("Starting add value by index handle operation.")
 
-    return add_value_by_index(
+    return await add_value_by_index(
         id=add_value_request.id,
         index=add_value_request.index,
         value=add_value_request.value,
@@ -133,7 +133,7 @@ async def get_handle(
         Handle object
     """
     logging.info(f"Fetching handle with ID {id}.")
-    return fetch_handle(
+    return await fetch_handle(
         id=id,
         config=config
     )
@@ -185,7 +185,7 @@ async def modify_by_index_handler(
         Handle object
     """
     logging.info(f"Modifying by index")
-    return modify_value_by_index(
+    return await modify_value_by_index(
         id=modify_request.id,
         value=modify_request.value,
         index=modify_request.index,
@@ -215,7 +215,7 @@ async def remove_by_index_handler(
         The handle object
     """
     logging.info(f"Removing by index")
-    return remove_value_by_index(
+    return await remove_value_by_index(
         id=remove_request.id,
         index=remove_request.index,
         config=config

@@ -7,7 +7,7 @@ Provena-Interfaces is a Python package that provides interfaces for the Provena 
 Services defined in this repo build/install directly from this directory. Developing outside of the repo, you can install the package using pip:
 
 ```bash
-pip install ProvenaInterfaces
+pip install provena-interfaces
 ```
 
 ## Building and Publishing
