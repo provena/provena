@@ -1,5 +1,5 @@
 # handle ardc endpoint
-TEST_ARDC_SERVICE_ENDPOINT = "https://demo.identifiers.ardc.edu.au/pids/"
+TEST_ARDC_SERVICE_ENDPOINT = "https://demo.identifiers.ardc.edu.au/pids"
 PROD_ARDC_SERVICE_ENDPOINT = "https://identifiers.ardc.edu.au/pids"
 
 

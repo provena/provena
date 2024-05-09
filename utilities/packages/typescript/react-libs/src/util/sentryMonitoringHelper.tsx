@@ -59,7 +59,7 @@ export const sentryInit = (props: SentryInitProps) => {
     // total amount of breadcrumbs that should be captured
     maxBreadcrumbs: 30,
     sampleRate: 1.0,
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 0.025,
     // A list of regex patterns that match error messages that shouldn't be sent to Sentry
     // exclude "Warning:" error messages
     ignoreErrors: [/Warning:/],

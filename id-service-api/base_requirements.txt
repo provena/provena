@@ -11,4 +11,5 @@ boto3
 cachetools
 aws_secretsmanager_caching
 xmltodict
+httpx~=0.27.0
 sentry-sdk[fastapi]

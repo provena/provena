@@ -3,7 +3,7 @@ from ProvenaInterfaces.HandleModels import *
 from typing import Dict, Optional
 from enum import Enum
 from helpers.handle_templates import template_handle_request
-import requests
+import httpx
 import logging
 from fastapi import HTTPException
 import xmltodict
@@ -14,6 +14,23 @@ logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
 # get logger for this module
 logger_key = "handle_service"
 logger = logging.getLogger(logger_key)
+
+# 20 second timeout (instead of default 5) - this is very generous, test service
+# seems to cold start/have very long response times sometimes
+async_timeout = 20.0
+
+
+def get_async_client() -> httpx.AsyncClient:
+    """
+
+    Sets up an async http client using httpx.
+
+    Uses timeout from above configuration.
+
+    Returns:
+        httpx.AsyncClient: The client ready for async with context
+    """
+    return httpx.AsyncClient(timeout=async_timeout)
 
 
 class HandleOperation(str, Enum):
@@ -48,7 +65,7 @@ for handle_op in HandleOperation:
     assert handle_op in HANDLE_OP_POSTFIX_MAP.keys()
 
 
-def parse_error(response: requests.Response) -> str:
+def parse_error(response: httpx.Response) -> str:
     """
     parse_error 
 
@@ -57,7 +74,7 @@ def parse_error(response: requests.Response) -> str:
 
     Parameters
     ----------
-    response : requests.Response
+    response : httpx.Response
         The requests response
 
     Returns
@@ -229,20 +246,20 @@ def parse_xml(text: str) -> Handle:
     return Handle(id=id, properties=properties)
 
 
-def parse_handle_response(response: requests.Response) -> Handle:
+def parse_handle_response(response: httpx.Response) -> Handle:
     """
     parse_handle_response 
-    
+
     Wrapper function which decodes the response and ensures the status is 200 OK 
-    
+
     Returns the parsed handle response
-    
+
     Used for all methods except List
 
     Parameters
     ----------
-    response : requests.Response
-        The requests response
+    response : httpx.Response
+        The httpx response
 
     Returns
     -------
@@ -269,20 +286,20 @@ def parse_handle_response(response: requests.Response) -> Handle:
     return parse_xml(text=text)
 
 
-def parse_handle_list_response(response: requests.Response) -> List[str]:
+def parse_handle_list_response(response: httpx.Response) -> List[str]:
     """
     parse_handle_list_response 
-    
+
     Wrapper function which decodes the response and ensures the status is 200 OK 
-    
+
     Returns the parsed list of handle IDs
-    
+
     Used only for the listHandles endpoint
 
     Parameters
     ----------
-    response : requests.Response
-        The requests response
+    response : httpx.Response
+        The httpx response
 
     Returns
     -------
@@ -312,9 +329,9 @@ def parse_handle_list_response(response: requests.Response) -> List[str]:
 def get_postfix(handle_op: HandleOperation) -> str:
     """
     get_postfix 
-    
+
     Reads the handle operation post fix map to find the handle route postfix
-    
+
     NOTE that the map is interrogated for missing entries prior to running this
     hence no runtime check
 
@@ -334,9 +351,9 @@ def get_postfix(handle_op: HandleOperation) -> str:
 def get_route(op: HandleOperation, config: Config) -> str:
     """
     get_route 
-    
+
     Formats the base endpoint + operation dependent postfix into a URL
-    
+
     Used for all methods to simplify managing the endpoints
 
     Parameters
@@ -354,10 +371,10 @@ def get_route(op: HandleOperation, config: Config) -> str:
     return f"{config.handle_service_endpoint}/{get_postfix(handle_op=op)}"
 
 
-def post_and_parse(url: str, params: Dict[str, str], request: str) -> Handle:
+async def post_and_parse(url: str, params: Dict[str, str], request: str) -> Handle:
     """
     post_and_parse 
-    
+
     Wrapper function which runs a POST at the specified endpoint with specified
     params then parses into the Handle object
 
@@ -375,18 +392,22 @@ def post_and_parse(url: str, params: Dict[str, str], request: str) -> Handle:
     Handle
         The decoded handle object iff successful
     """
-    logger.info(f"Making handle response to {url}.")
-    response = requests.post(url=url, params=params, data=request)
-    logger.info(f"Completed making handle response.")
+    logger.info(f"Making handle request to {url}.")
+
+    async with get_async_client() as client:
+        response = await client.post(url=url, params=params, content=request)
+
+    logger.info(f"Completed making handle request.")
 
     logger.debug("Parsing response")
+
     return parse_handle_response(response=response)
 
 
-def mint_handle(value: str, value_type: ValueType, config: Config) -> Handle:
+async def mint_handle(value: str, value_type: ValueType, config: Config) -> Handle:
     """
     mint_handle 
-    
+
     Mints a handle using the ARDC handle service
 
     Parameters
@@ -408,20 +429,20 @@ def mint_handle(value: str, value_type: ValueType, config: Config) -> Handle:
 
     logger.debug("Determining params")
     params = {
-        'type': value_type,
+        'type': value_type.value,
         'value': value
     }
 
     logger.debug("Filling out PID service template")
     request = template_handle_request(config=config)
 
-    return post_and_parse(url=route, params=params, request=request)
+    return await post_and_parse(url=route, params=params, request=request)
 
 
-def add_value(id: str, value: str, value_type: ValueType, config: Config) -> Handle:
+async def add_value(id: str, value: str, value_type: ValueType, config: Config) -> Handle:
     """
     add_value
-    
+
     Adds a value to existing handle using ARDC handle service
 
     Parameters
@@ -445,7 +466,7 @@ def add_value(id: str, value: str, value_type: ValueType, config: Config) -> Han
 
     logger.debug("Determining params")
     params = {
-        'type': value_type,
+        'type': value_type.value,
         'value': value,
         'handle': id,
     }
@@ -453,13 +474,13 @@ def add_value(id: str, value: str, value_type: ValueType, config: Config) -> Han
     logger.debug("Filling out PID service template")
     request = template_handle_request(config=config)
 
-    return post_and_parse(url=route, params=params, request=request)
+    return await post_and_parse(url=route, params=params, request=request)
 
 
-def add_value_by_index(id: str, index: int, value: str, value_type: ValueType, config: Config) -> Handle:
+async def add_value_by_index(id: str, index: int, value: str, value_type: ValueType, config: Config) -> Handle:
     """
     add_value_by_index
-    
+
     Adds a new value to existing handle at specified index
 
     Parameters
@@ -485,7 +506,7 @@ def add_value_by_index(id: str, index: int, value: str, value_type: ValueType, c
 
     logger.debug("Determining params")
     params = {
-        'type': value_type,
+        'type': value_type.value,
         'index': str(index),
         'value': value,
         'handle': id,
@@ -494,13 +515,13 @@ def add_value_by_index(id: str, index: int, value: str, value_type: ValueType, c
     logger.debug("Filling out PID service template")
     request = template_handle_request(config=config)
 
-    return post_and_parse(url=route, params=params, request=request)
+    return await post_and_parse(url=route, params=params, request=request)
 
 
-def fetch_handle(id: str, config: Config) -> Handle:
+async def fetch_handle(id: str, config: Config) -> Handle:
     """
     fetch_handle
-    
+
     Fetches an existing handle
 
     Parameters
@@ -526,13 +547,13 @@ def fetch_handle(id: str, config: Config) -> Handle:
     logger.debug("Filling out PID service template")
     request = template_handle_request(config=config)
 
-    return post_and_parse(url=route, params=params, request=request)
+    return await post_and_parse(url=route, params=params, request=request)
 
 
-def list_handles(config: Config) -> List[str]:
+async def list_handles(config: Config) -> List[str]:
     """
     list_handles 
-    
+
     Lists all handles on the config specified domain
 
     Parameters
@@ -551,18 +572,19 @@ def list_handles(config: Config) -> List[str]:
     logger.debug("Filling out PID service template")
     request = template_handle_request(config=config)
 
-    logger.info(f"Making handle response to {route}.")
-    response = requests.post(url=route, data=request)
-    logger.info(f"Completed making handle response.")
+    logger.info(f"Making handle request to {route}.")
+    async with get_async_client() as client:
+        response = await client.post(url=route, content=request)
+    logger.info(f"Completed making handle request.")
 
     logger.info("Parsing and validating response.")
     return parse_handle_list_response(response=response)
 
 
-def modify_value_by_index(id: str, index: int, value: str, config: Config) -> Handle:
+async def modify_value_by_index(id: str, index: int, value: str, config: Config) -> Handle:
     """
     modify_value_by_index 
-    
+
     Modifies an existing handle's value at the specified index
 
     Parameters
@@ -594,13 +616,13 @@ def modify_value_by_index(id: str, index: int, value: str, config: Config) -> Ha
     logger.debug("Filling out PID service template")
     request = template_handle_request(config=config)
 
-    return post_and_parse(url=route, params=params, request=request)
+    return await post_and_parse(url=route, params=params, request=request)
 
 
-def remove_value_by_index(id: str, index: int, config: Config) -> Handle:
+async def remove_value_by_index(id: str, index: int, config: Config) -> Handle:
     """
     remove_value_by_index
-    
+
     Removes a value at a given index if it exists
 
     Parameters
@@ -629,4 +651,4 @@ def remove_value_by_index(id: str, index: int, config: Config) -> Handle:
     logger.debug("Filling out PID service template")
     request = template_handle_request(config=config)
 
-    return post_and_parse(url=route, params=params, request=request)
+    return await post_and_parse(url=route, params=params, request=request)
