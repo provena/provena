@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-from ProvenaInterfaces.RegistryModels import CollectionFormat, CollectionFormatAssociations, CollectionFormatApprovals, CollectionFormatDatasetInfo, OptionallyRequiredCheck, AccessInfo
-=======
 from ProvenaInterfaces.RegistryModels import *
->>>>>>> main
 
 valid_collection_format1 = CollectionFormat(
     associations=CollectionFormatAssociations(
