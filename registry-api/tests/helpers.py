@@ -14,7 +14,11 @@ from main import route_configs, ITEM_CATEGORY_ROUTE_MAP, ITEM_SUB_TYPE_ROUTE_MAP
 from pydantic import BaseModel
 import boto3  # type:ignore
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
+<<<<<<< HEAD
 from ProvenaSharedFunctionality.Registry.TestConfig import route_params, RouteParameters
+=======
+from ProvenaInterfaces.TestConfig import route_params, RouteParameters
+>>>>>>> main
 
 # Which subtypes are excluded from regular comprehensive testing
 route_config_exclusions: List[ItemSubType] = [

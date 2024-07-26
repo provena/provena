@@ -31,7 +31,7 @@ class APIAction<T> {
     setError: (error: boolean) => void,
     setLoading: (loading: boolean) => void,
     setErrorMessage: (message: string | undefined) => void,
-    setContent: (content: T) => void,
+    setContent: (content: T) => void
   ) => Promise<T>;
 
   constructor(
@@ -41,8 +41,8 @@ class APIAction<T> {
       setError: (error: boolean) => void,
       setLoading: (loading: boolean) => void,
       setErrorMessage: (message: string | undefined) => void,
-      setContent: (content: T) => void,
-    ) => Promise<T>,
+      setContent: (content: T) => void
+    ) => Promise<T>
   ) {
     makeAutoObservable(this);
     this.getActionPromise = action;
@@ -67,7 +67,7 @@ class APIAction<T> {
       }),
       action((content: T) => {
         this.content = content;
-      }),
+      })
     );
   }
 
@@ -101,7 +101,7 @@ class APIAction<T> {
 }
 
 function generateLockAction<T extends StatusResponse>(
-  actionName: string,
+  actionName: string
 ): APIAction<T> {
   return new APIAction<T>(
     (
@@ -110,7 +110,7 @@ function generateLockAction<T extends StatusResponse>(
       setError: (error: boolean) => void,
       setLoading: (loading: boolean) => void,
       setErrorMessage: (message: string | undefined) => void,
-      setContent: (content: T) => void,
+      setContent: (content: T) => void
     ) => {
       return new Promise((resolve, reject) => {
         setLoading(true);
@@ -163,7 +163,7 @@ function generateLockAction<T extends StatusResponse>(
             setLoading(false);
           });
       });
-    },
+    }
   );
 }
 
@@ -174,16 +174,16 @@ export class GroupStore {
     generateLockAction<DescribeGroupResponse>("describe group");
   listMembersAction = generateLockAction<ListMembersResponse>("list members");
   listUserMembershipAction = generateLockAction<ListUserMembershipResponse>(
-    "list user membership",
+    "list user membership"
   );
   addMemberAction = generateLockAction<AddMemberResponse>(
-    "add member to group",
+    "add member to group"
   );
   removeMemberAction = generateLockAction<RemoveMemberResponse>(
-    "remove member from group",
+    "remove member from group"
   );
   removeMembersAction = generateLockAction<RemoveMemberResponse>(
-    "remove members from group",
+    "remove members from group"
   );
   addGroupAction = generateLockAction<AddGroupResponse>("create group");
   removeGroupAction = generateLockAction<RemoveGroupResponse>("remove group");
@@ -247,19 +247,19 @@ export class GroupStore {
         {
           group_id: groupId,
           user_email: email,
-        },
+        }
       );
     });
   }
   removeMembers(usernames: Array<string>, groupId: string) {
     return this.removeMembersAction.runAction(() => {
-      return requests.delete(
+      return requests.post(
         AUTH_API_ENDPOINTS.ADMIN_REMOVE_MEMBERS,
         {
           member_usernames: usernames,
           group_id: groupId,
         } as RemoveMembersRequest,
-        {},
+        {}
       );
     });
   }
@@ -276,7 +276,7 @@ export class GroupStore {
         {},
         {
           id: groupId,
-        },
+        }
       );
     });
   }

@@ -43,8 +43,12 @@ async def test_validate_model_run_record(monkeypatch: Any) -> None:
                     name="test",
                     description="test",
                     publisher_id="1234",
-                    created_date=date.today(),
-                    published_date=date.today(),
+                    created_date=CreatedDate(
+                        relevant=True,
+                        value=date.today()),
+                    published_date=PublishedDate(
+                        relevant=True,
+                        value=date.today()),
                     license="http://fake.com",
                     access_info=AccessInfo(reposited=True),
                 )

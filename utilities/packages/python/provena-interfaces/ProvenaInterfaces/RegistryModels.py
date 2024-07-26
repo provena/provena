@@ -1147,6 +1147,50 @@ class CollectionFormatTemporalInfo(BaseModel):
         title = "Dataset Temporal Information"
 
 
+class OptionallyRequiredDate(BaseModel):
+    relevant: bool = False
+    value: Optional[date] = None
+
+    @root_validator(pre=False, skip_on_failure=True)
+    def check_value_provided(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
+        relevant: Optional[bool] = values.get('relevant')
+        value: Optional[date] = values.get('value')
+
+        assert relevant is not None
+
+        if relevant == True:
+            if value is None:
+                raise ValueError(
+                    "Must provide a date if the relevant field is set to True.")
+        else:
+            if value is not None:
+                raise ValueError(
+                    "Cannot provide a date if the relevant field is set to False.")
+        return values
+
+
+class PublishedDate(OptionallyRequiredDate):
+    """
+    Has the dataset been published? If so, please provide the date on which this version of the dataset was first published.
+    """
+    class Config:
+        # disallow extra fields
+        extra = Extra.forbid
+
+        title = "Dataset Publication Date"
+
+
+class CreatedDate(OptionallyRequiredDate):
+    """
+    Has the dataset been created? If so, please provide the date on which this version of the dataset was produced or generated.
+    """
+    class Config:
+        # disallow extra fields
+        extra = Extra.forbid
+
+        title = "Dataset Creation Date"
+
+
 class CollectionFormatDatasetInfo(BaseModel):
     """
     Please provide information about this dataset, including the name, description, creation date and publisher information.
@@ -1173,16 +1217,9 @@ class CollectionFormatDatasetInfo(BaseModel):
     )
 
     # created/published dates
-    created_date: date = Field(
-        ...,
-        title="Dataset Creation Date",
-        description="The date on which this version of the dataset was produced or generated.",
-    )
-    published_date: date = Field(
-        ...,
-        title="Dataset Publish Date",
-        description="The date on which this version of the dataset was first published. If the data has never been published before - please use today's date.",
-    )
+    created_date: CreatedDate
+
+    published_date: PublishedDate
 
     # License field - selected by drop down
     license: AnyHttpUrl = Field(

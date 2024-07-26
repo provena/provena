@@ -21,6 +21,7 @@ class WarmerEndpoints:
     HANDLE_API_ENDPOINT: Optional[str]
     AUTH_API_ENDPOINT: Optional[str]
     SEARCH_API_ENDPOINT: Optional[str]
+    JOB_API_ENDPOINT: Optional[str]
 
 
 def warmer_endpoints_to_env_map(endpoints: WarmerEndpoints) -> Dict[str, str]:
@@ -37,6 +38,8 @@ def warmer_endpoints_to_env_map(endpoints: WarmerEndpoints) -> Dict[str, str]:
         env["AUTH_API_ENDPOINT"] = endpoints.AUTH_API_ENDPOINT
     if endpoints.SEARCH_API_ENDPOINT:
         env["SEARCH_API_ENDPOINT"] = endpoints.SEARCH_API_ENDPOINT
+    if endpoints.JOB_API_ENDPOINT:
+        env["JOB_API_ENDPOINT"] = endpoints.JOB_API_ENDPOINT
     return env
 
 

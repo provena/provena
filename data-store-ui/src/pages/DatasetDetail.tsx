@@ -139,7 +139,7 @@ const useStyles = makeStyles((theme: Theme) =>
     fullWidth: {
       width: "100%",
     },
-  }),
+  })
 );
 
 interface DatasetApprovalsComponentProps {
@@ -190,7 +190,7 @@ interface WorkflowViewComponentProps {
 }
 
 const WorkflowViewComponent = (
-  props: WorkflowViewComponentProps,
+  props: WorkflowViewComponentProps
 ): JSX.Element => {
   return (
     <Box paddingTop={8}>
@@ -245,7 +245,7 @@ const PreviewDataset = observer((props: PreviewProps) => {
     props.dataset.release_history.length > 0
   ) {
     const releaseHistoryCopy: ReleaseHistoryEntry[] = JSON.parse(
-      JSON.stringify(props.dataset.release_history),
+      JSON.stringify(props.dataset.release_history)
     ) as ReleaseHistoryEntry[];
 
     const latestFirstReleaseHistory = releaseHistoryCopy.reverse();
@@ -253,8 +253,8 @@ const PreviewDataset = observer((props: PreviewProps) => {
       latestFirstReleaseHistory[0].action === "REJECT"
         ? ("REJECT" as ReleaseAction)
         : latestFirstReleaseHistory[0].action === "APPROVE"
-          ? ("APPROVE" as ReleaseAction)
-          : props.dataset.release_status;
+        ? ("APPROVE" as ReleaseAction)
+        : props.dataset.release_status;
 
     // Update Styles
     // Set colour for approval status
@@ -282,8 +282,48 @@ const PreviewDataset = observer((props: PreviewProps) => {
             text={props.dataset.collection_format.dataset_info.description}
             initialCharNum={descriptionInitialCharNum}
           />
+          {collectionFormat.dataset_info.created_date.relevant && (
+            <>
+              <Grid
+                container
+                direction="row"
+                justifyContent={"flex-start"}
+                alignItems={"center"}
+                spacing={1}
+              >
+                <Grid item>
+                  <h3>Date created:</h3>
+                </Grid>
+                <Grid item>
+                  {collectionFormat.dataset_info.created_date.value}
+                </Grid>
+              </Grid>
+            </>
+          )}
+          {collectionFormat.dataset_info.published_date.relevant && (
+            <>
+              <Grid
+                container
+                direction="row"
+                justifyContent={"flex-start"}
+                alignItems={"center"}
+                spacing={1}
+              >
+                <Grid item>
+                  <h3>Date published:</h3>
+                </Grid>
+                <Grid item>
+                  {collectionFormat.dataset_info.published_date.value}
+                </Grid>
+              </Grid>
+            </>
+          )}
+
+          {/*
           <h3>Date created:</h3>
-          {collectionFormat.dataset_info.created_date}
+          {collectionFormat.dataset_info.created_date.value ?? "Not yet created."}
+
+          */}
           <h3>Approval status:</h3>
           <Typography sx={{ color: approvalStateColour }}>
             {approvalStateText}
@@ -1238,7 +1278,7 @@ interface MetadataSummaryWorkflowComponentProps {
   };
 }
 const MetadataSummaryWorkflowComponent = (
-  props: MetadataSummaryWorkflowComponentProps,
+  props: MetadataSummaryWorkflowComponentProps
 ) => {
   /**
     Component: MetadataSummaryWorkflowComponent
@@ -1341,7 +1381,7 @@ const DatasetDetail = observer((props: DatasetDetailProps) => {
   const desiredView = rawDesiredView ?? defaultView;
 
   const [datasetAccess, setDatasetAccess] = useState<DatasetAccess | undefined>(
-    undefined,
+    undefined
   );
 
   // Keycloak

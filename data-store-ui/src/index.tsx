@@ -50,9 +50,6 @@ export const ThemeConfigContext =
 // Sentry init
 sentryInit({ currentUI: "datastore" });
 
-// Sentry init
-sentryInit({ currentUI: "datastore" });
-
 ReactDOM.render(
   <BrowserRouter>
     <ThemeConfigContext.Provider value={themeStoreConfig}>

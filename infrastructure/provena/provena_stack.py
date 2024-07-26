@@ -643,30 +643,6 @@ class ProvenaStack(Stack):
                 extra_hash_dirs=search_config.streamer_extra_hash_dirs
             )
 
-        # Lambda integrated warmer API
-        if config.components.warmer is not None:
-            warmer_config = config.components.warmer
-            warmer = LambdaWarmer(
-                scope=self,
-                id='warmer',
-                sub_domain=warmer_config.domain,
-                cert_arn=config.dns.domain_certificate_arn,
-                allocator=dns_allocator,
-                endpoints=WarmerEndpoints(
-                    DATA_STORE_API_ENDPOINT=data_api.endpoint if data_api else None,
-                    REGISTRY_API_ENDPOINT=registry_api.endpoint if registry_api else None,
-                    PROV_API_ENDPOINT=prov_api.endpoint if prov_api else None,
-                    HANDLE_API_ENDPOINT=id_service.handle_endpoint if id_service else None,
-                    AUTH_API_ENDPOINT=auth_api.endpoint if auth_api else None,
-                    SEARCH_API_ENDPOINT=search_api.endpoint if search_api else None,
-                ),
-                api_rate_limiting=config.general.rate_limiting,
-            )
-            # Expose the endpoint
-            self.warmer_api_endpoint = CfnOutput(
-                self, 'warmer-api-endpoint-output',
-                value=warmer.endpoint
-            )
 
         # Job Infrastructure
         assert prov_api
@@ -795,6 +771,32 @@ class ProvenaStack(Stack):
             sentry_config=config.deployment.sentry_config,
             feature_number=config.deployment.ticket_no,
         )
+        
+        # Lambda integrated warmer API
+        if config.components.warmer is not None:
+            warmer_config = config.components.warmer
+            warmer = LambdaWarmer(
+                scope=self,
+                id='warmer',
+                sub_domain=warmer_config.domain,
+                cert_arn=config.dns.domain_certificate_arn,
+                allocator=dns_allocator,
+                endpoints=WarmerEndpoints(
+                    DATA_STORE_API_ENDPOINT=data_api.endpoint if data_api else None,
+                    REGISTRY_API_ENDPOINT=registry_api.endpoint if registry_api else None,
+                    PROV_API_ENDPOINT=prov_api.endpoint if prov_api else None,
+                    HANDLE_API_ENDPOINT=id_service.handle_endpoint if id_service else None,
+                    AUTH_API_ENDPOINT=auth_api.endpoint if auth_api else None,
+                    SEARCH_API_ENDPOINT=search_api.endpoint if search_api else None,
+                    JOB_API_ENDPOINT=async_infra.job_api_endpoint if async_infra else None
+                ),
+                api_rate_limiting=config.general.rate_limiting,
+            )
+            # Expose the endpoint
+            self.warmer_api_endpoint = CfnOutput(
+                self, 'warmer-api-endpoint-output',
+                value=warmer.endpoint
+            )
 
         # Expose the endpoint
         self.job_api_endpoint = CfnOutput(

@@ -17,7 +17,14 @@
     }
   },
   "dataset_info": {
-    "published_date": "2021-12-25",
+    "created_date": {
+      "relevant": true,
+      "value": "2021-12-25"
+    },
+    "published_date": {
+        "relevant": true,
+        "value": "2021-12-25"
+    },
     "access_info": {
       "reposited": false,
       "description": "Fake",
@@ -27,9 +34,6 @@
     "license": "https://creativecommons.org/licenses/by/4.0/",
     "name": "Coral results 2021-02-30",
     "description": "Results of counterfactual model run",
-    "keywords": [
-      "keyword1",
-      "keyword2"
-    ]
+    "custom_field": "Additional info"
   }
 }

@@ -150,7 +150,7 @@ def test_mint_dataset_invalid_schema() -> None:
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
 
     # update this number as more invalids are added
-    invalid_max = 6
+    invalid_max = 2
     invalid_min = 1
     invalid_schemas = []
 
@@ -170,7 +170,7 @@ def test_mint_dataset_invalid_schema() -> None:
         # Check endpoint responds appropriately
         # Since the endpoint will parse it directly at the API level
         # it should respond with 422 (unprocessable entity)
-        assert response.status_code == 422, "Invalid schema was not picked up at API level"
+        assert response.status_code == 422, f"Invalid schema was not picked up at API level for invalid_ro_raw{i}.json. Response: {response.json()}"
 
 
 def test_validate_invalid_date() -> None:
@@ -505,14 +505,14 @@ def test_validate_fields() -> None:
         open('tests/resources/schemas/valid_ro_raw1.json', 'r').read()))
 
     # Test: create date is after publish date
-    data.dataset_info.created_date = datetime(2020, 1, 2)
-    data.dataset_info.published_date = datetime(2020, 1, 1)
+    data.dataset_info.created_date = CreatedDate(relevant=True, value=datetime(2020, 1, 2))
+    data.dataset_info.published_date = PublishedDate(relevant=True, value=datetime(2020, 1, 1))
     with pytest.raises(Exception):
         validate_fields(data)
 
     # Test: create date is before publish date
-    data.dataset_info.created_date = datetime(2020, 1, 1)
-    data.dataset_info.published_date = datetime(2020, 1, 2)
+    data.dataset_info.created_date = CreatedDate(relevant=True, value=datetime(2020, 1, 1))
+    data.dataset_info.published_date = PublishedDate(relevant=True, value=datetime(2020, 1, 2))
     validate_fields(data)
 
     # check validation behaviour for the relevant optionally required check

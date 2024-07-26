@@ -50,7 +50,7 @@ def export_items(
         " your token permissions and don't want to use an out-dated access token."
     ),
     param: ParametersType = typer.Option(
-        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
+        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
     """
     Provides functionality to export a stage's registry contents. Allows
@@ -129,7 +129,7 @@ def import_items(
              Include flag for fully automated processes."""
     ),
     param: ParametersType = typer.Option(
-        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
+        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
     """
     Provides import functionality to stage's data registry table.
@@ -188,7 +188,7 @@ def restore_graph(
         help="By default, will fetch all information to build jobs, but not actually submit jobs. Use --apply to deploy jobs.",
     ),
     param: ParametersType = typer.Option(
-        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
+        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
     """
     Restores the provenance entities in the specified input file (in standard
@@ -265,7 +265,7 @@ def import_items_from_tables(
              Include flag for fully automated processes."""
     ),
     param: ParametersType = typer.Option(
-        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
+        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
     """
     A basic wrapper of the external table import function of the registry.
@@ -888,7 +888,7 @@ def clear_items(
              Include flag for fully automated processes."""
     ),
     param: ParametersType = typer.Option(
-        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
+        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
     """
     Same as import items but defaults to an empty list and allows deletion. 
@@ -938,7 +938,7 @@ def clear_and_init(
              Include flag for fully automated processes."""
     ),
     param: ParametersType = typer.Option(
-        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_num:1234'. Specify multiple times if required.")
+        [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
     """
     Same as import items but defaults to an empty list and allows deletion. 
