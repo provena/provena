@@ -108,6 +108,7 @@ route_params: List[RouteParameters] = [
                     display_name="Example model run",
                     prov_serialisation="Blank prov document",
                     record_status=WorkflowRunCompletionStatus.COMPLETE,
+                    user_metadata=None,
                     record=ModelRunRecord(
                         model_version="1.2",
                         workflow_template_id="1234",
@@ -131,8 +132,8 @@ route_params: List[RouteParameters] = [
                             modeller_id="3247uy82",
                             requesting_organisation_id="58493058"
                         ),
-                        start_time=(datetime.now().timestamp()),
-                        end_time=(datetime.now().timestamp()),
+                        start_time=int((datetime.now().timestamp())),
+                        end_time=int((datetime.now().timestamp())),
                         display_name="Example model run",
                         description="This is a fake model run",
                         annotations={
@@ -144,6 +145,7 @@ route_params: List[RouteParameters] = [
                     display_name="Example model run 2",
                     prov_serialisation="Blank prov document 2",
                     record_status=WorkflowRunCompletionStatus.COMPLETE,
+                    user_metadata=None,
                     record=ModelRunRecord(
                         workflow_template_id="12345",
                         inputs=[TemplatedDataset(
@@ -161,8 +163,8 @@ route_params: List[RouteParameters] = [
                         ),
                         display_name="Example model run 2",
                         description="This is a fake model run 2",
-                        start_time=(datetime.now().timestamp()),
-                        end_time=(datetime.now().timestamp()),
+                        start_time=int((datetime.now().timestamp())),
+                        end_time=int((datetime.now().timestamp())),
                     )
                 )
             ]
@@ -195,6 +197,9 @@ route_params: List[RouteParameters] = [
             domain_info=[
                 DatasetDomainInfo(
                     display_name="example dataset 1",
+                    release_approver=None,
+                    release_timestamp=None,
+                    access_info_uri=None,
                     collection_format=CollectionFormat(
                         associations=CollectionFormatAssociations(
                             organisation_id="1234",
@@ -212,10 +217,18 @@ route_params: List[RouteParameters] = [
                         dataset_info=CollectionFormatDatasetInfo(
                             name='test dataset 1',
                             description='test dataset 1',
-                            access_info=AccessInfo(reposited=True),
+                            access_info=AccessInfo(
+                                reposited=True, uri=None, description=None),
+                            version=None,
                             publisher_id="1234",
-                            created_date=date.today(),
-                            published_date=date.today(),
+                            created_date=CreatedDate(
+                                relevant=True,
+                                value=date.today()
+                            ),
+                            published_date=PublishedDate(
+                                relevant=True,
+                                value=date.today()
+                            ),
                             license="https://example.com",
                             keywords=["a", "b"],
                             spatial_info=CollectionFormatSpatialInfo(
@@ -254,9 +267,13 @@ route_params: List[RouteParameters] = [
                 ),
                 DatasetDomainInfo(
                     display_name="example dataset 2",
+                    release_approver=None,
+                    release_timestamp=None,
                     collection_format=CollectionFormat(
                         associations=CollectionFormatAssociations(
                             organisation_id="12345",
+                            data_custodian_id=None,
+                            point_of_contact=None
                         ),
                         approvals=CollectionFormatApprovals(
                             ethics_registration=DatasetEthicsRegistrationCheck(),
@@ -268,6 +285,10 @@ route_params: List[RouteParameters] = [
                         ),
                         dataset_info=CollectionFormatDatasetInfo(
                             name='test dataset 2',
+                            rights_holder=None,
+                            preferred_citation=None,
+                            keywords=None,
+                            version=None,
                             description='test dataset 2',
                             access_info=AccessInfo(
                                 reposited=False,
@@ -275,12 +296,19 @@ route_params: List[RouteParameters] = [
                                 description="You can access this fake dataset by doing nothing at all!"
                             ),
                             publisher_id="1234",
-                            created_date=date.today(),
-                            published_date=date.today(),
+                            created_date=CreatedDate(
+                                relevant=True,
+                                value=date.today()
+                            ),
+                            published_date=PublishedDate(
+                                relevant=True,
+                                value=date.today()
+                            ),
                             license="https://example.com",
                             spatial_info=CollectionFormatSpatialInfo(
                                 coverage="SRID=4326;POLYGON ((20 10, 40 40, 20 40, 10 20, 30 10))",
                                 resolution="1.23456",
+                                extent=None
                             ),
                             temporal_info=CollectionFormatTemporalInfo(
                                 duration=TemporalDurationInfo(

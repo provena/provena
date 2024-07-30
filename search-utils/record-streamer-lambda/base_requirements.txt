@@ -1,5 +1,5 @@
 # normal requirements
-pydantic[email]==1.10.12
+pydantic[email]==1.10.17
 requests
 boto3
 botocore

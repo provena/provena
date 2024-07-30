@@ -256,7 +256,7 @@ async def remove_member(
     )
 
 
-@router.delete("/remove_members", response_model=RemoveMemberResponse, operation_id="admin_remove_members")
+@router.post("/remove_members", response_model=RemoveMemberResponse, operation_id="admin_remove_members")
 async def remove_members(
     remove_request: RemoveMembersRequest,
     config: Config = Depends(get_settings),

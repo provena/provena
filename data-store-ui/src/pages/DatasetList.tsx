@@ -33,6 +33,9 @@ import { SortType } from "../provena-interfaces/RegistryAPI";
 import { ItemDataset } from "../provena-interfaces/DataStoreAPI";
 import accessStore from "../stores/accessStore";
 
+// Number of results max in search query
+const SEARCH_LIMIT = 50;
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -58,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) =>
     gridMargin: {
       marginTop: theme.spacing(4),
     },
-  }),
+  })
 );
 
 const getPageCount = (items: number, pageSize: number): number => {
@@ -119,6 +122,8 @@ const DatasetList = observer(() => {
   const searchResults = useLoadedSearch({
     searchQuery: searchQuery,
     subtype: "DATASET",
+    // Increased search limit from default 10 up to 25
+    searchLimit: SEARCH_LIMIT,
   });
 
   // Using search?
@@ -177,7 +182,7 @@ const DatasetList = observer(() => {
 
   const splicedDatasets = filteredDatasets.slice(
     (currentPage - 1) * displayPageSize,
-    displayPageSize * currentPage,
+    displayPageSize * currentPage
   );
 
   // Define the error dialog fragment in case something goes wrong with the

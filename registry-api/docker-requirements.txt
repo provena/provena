@@ -8,7 +8,7 @@ jsonschema
 httpx
 mangum
 aws-secretsmanager-caching
-pydantic[email]==1.10.12
+pydantic[email]==1.10.17
 python-dotenv
 shapely
 pyproj

@@ -22,7 +22,7 @@ setup(
     ),
     install_requires=[
         'fastapi==0.88.0',
-        'pydantic[email]==1.10.12',
+        'pydantic[email]==1.10.17',
         'email-validator',
         'isodate',
     ],

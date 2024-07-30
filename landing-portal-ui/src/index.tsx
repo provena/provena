@@ -50,9 +50,6 @@ export const ThemeConfigContext =
 // Sentry init
 sentryInit({ currentUI: "landingPortal" });
 
-// Sentry init
-sentryInit({ currentUI: "landingPortal" });
-
 ReactDOM.render(
   <BrowserRouter>
     <ThemeConfigContext.Provider value={themeStoreConfig}>

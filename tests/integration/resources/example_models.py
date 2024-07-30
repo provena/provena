@@ -1,4 +1,4 @@
-from ProvenaInterfaces.RegistryModels import CollectionFormat, CollectionFormatAssociations, CollectionFormatApprovals, CollectionFormatDatasetInfo, OptionallyRequiredCheck, AccessInfo
+from ProvenaInterfaces.RegistryModels import *
 
 valid_collection_format1 = CollectionFormat(
     associations=CollectionFormatAssociations(
@@ -17,8 +17,14 @@ valid_collection_format1 = CollectionFormat(
             reposited=True
         ),
         publisher_id="1234",
-        created_date="2021-12-25",
-        published_date="2021-12-25",
+        created_date=CreatedDate(
+            relevant=True,
+            value="2021-12-25",
+        ),
+        published_date=PublishedDate(
+            relevant=True,
+            value="2021-12-25",
+        ),
         license="https://creativecommons.org/licenses/by/4.0/",
         keywords=["keyword1", "keyword2"]
     )
@@ -43,8 +49,14 @@ valid_collection_format2 = CollectionFormat(
             uri="https://fake.url.com"
         ),
         publisher_id="1234",
-        created_date="2021-12-25",
-        published_date="2021-12-25",
+        created_date=CreatedDate(
+            relevant=True,
+            value="2021-12-25",
+        ),
+        published_date=PublishedDate(
+            relevant=True,
+            value="2021-12-25",
+        ),
         license="https://creativecommons.org/licenses/by/4.0/",
         keywords=["keyword1", "keyword2"]
     )
@@ -69,8 +81,14 @@ valid_collection_format3 = CollectionFormat(
             uri="https://fake.url.com"
         ),
         publisher_id="1234",
-        created_date="2021-12-25",
-        published_date="2021-12-25",
+        created_date=CreatedDate(
+            relevant=True,
+            value="2021-12-25",
+        ),
+        published_date=PublishedDate(
+            relevant=True,
+            value="2021-12-25",
+        ),
         license="https://creativecommons.org/licenses/by/4.0/",
         keywords=["keyword1", "keyword2", "coralLover"]
     )

@@ -8,20 +8,14 @@ import { UntypedFetchResponse } from "../provena-interfaces/RegistryAPI";
 import { ItemSubType } from "../provena-interfaces/RegistryModels";
 import { requestErrToMsg } from "../util";
 
-export const searchRegistry = (query: string, subtypeFilter?: ItemSubType) => {
+export const searchRegistry = (query: string, searchResultsLimit?: number, subtypeFilter?: ItemSubType) => {
   const endpoint = SEARCH_API_ENDPOINTS.SEARCH_REGISTRY;
 
-  var params;
-  if (subtypeFilter === undefined) {
-    params = {
-      query: query,
-    };
-  } else {
-    params = {
-      query: query,
-      subtype_filter: subtypeFilter,
-    };
-  }
+  var params = {
+    query: query,
+    ...(subtypeFilter && {subtype_filter: subtypeFilter}),
+    ...(searchResultsLimit && {record_limit: searchResultsLimit}),
+  };
 
   return requests
     .get(endpoint, params)

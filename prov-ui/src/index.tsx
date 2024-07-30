@@ -56,9 +56,6 @@ export const ThemeConfigContext =
 // Sentry init
 sentryInit({ currentUI: "prov" });
 
-// Sentry init
-sentryInit({ currentUI: "prov" });
-
 ReactDOM.render(
   <BrowserRouter>
     <ThemeConfigContext.Provider value={themeStoreConfig}>

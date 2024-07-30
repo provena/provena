@@ -43,6 +43,9 @@ import { SortOptions, SortType } from "../provena-interfaces/RegistryAPI";
 import { ItemBase, ItemSubType } from "../provena-interfaces/RegistryModels";
 import accessStore from "../stores/accessStore";
 
+// Number of results max in search query
+const SEARCH_LIMIT = 50;
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     topPanel: {
@@ -85,7 +88,7 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "start",
       padding: theme.spacing(5),
     },
-  }),
+  })
 );
 
 const displayNameMap: Map<string, SortOptions> = new Map([
@@ -159,7 +162,7 @@ const SortOptionsSelector = observer((props: SortOptionsSelectorProps) => {
   };
 
   const displayNameToSortOptions = (
-    displayName: string,
+    displayName: string
   ): SortOptions | undefined => {
     return displayNameMap.get(displayName);
   };
@@ -180,12 +183,12 @@ const SortOptionsSelector = observer((props: SortOptionsSelectorProps) => {
       fullWidth={true}
       onChange={(event) => {
         const selectedSortOptions = displayNameToSortOptions(
-          event.target.value,
+          event.target.value
         );
         if (selectedSortOptions === undefined) {
           console.log(
             "User clicked on unexpected displayname in sort type selector: " +
-              event.target.value,
+              event.target.value
           );
         } else {
           props.setSelectedType(selectedSortOptions.sort_type!);
@@ -236,7 +239,7 @@ const FilterAndSearchPanel = observer((props: FilterPanelProps) => {
     useState<string>("");
   // Handle id save for query, undefined for not querying on mount
   const [queryHandleId, setQueryHandleId] = useState<string | undefined>(
-    undefined,
+    undefined
   );
 
   // Check item id is valid before go to the new page
@@ -249,7 +252,7 @@ const FilterAndSearchPanel = observer((props: FilterPanelProps) => {
   const debounceTimeout = 500;
   const debouncedSetQueryHandleId = useCallback(
     debounce(setQueryHandleId, debounceTimeout),
-    [],
+    []
   );
 
   // Validate input handle id with debounced setting
@@ -264,7 +267,7 @@ const FilterAndSearchPanel = observer((props: FilterPanelProps) => {
   // Handlers
 
   const onOpenNewPageClick = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
     // Open item page if id is valid
@@ -272,11 +275,11 @@ const FilterAndSearchPanel = observer((props: FilterPanelProps) => {
       window.open(
         registryItemIdHdlLinkResolver(untypedLoadedItem.data.id),
         "_blank",
-        "noopener,noreferrer",
+        "noopener,noreferrer"
       );
     } else {
       console.error(
-        "Error: Handle id is undefined. No handle id returned from validation.",
+        "Error: Handle id is undefined. No handle id returned from validation."
       );
     }
   };
@@ -291,10 +294,10 @@ const FilterAndSearchPanel = observer((props: FilterPanelProps) => {
           untypedLoadedItem.loading
             ? "Validating input handle id..."
             : untypedLoadedItem.success
-              ? "Click to open the item page based on the entered ID."
-              : untypedLoadedItem.error
-                ? untypedLoadedItem.errorMessage ?? "No error message provided."
-                : false
+            ? "Click to open the item page based on the entered ID."
+            : untypedLoadedItem.error
+            ? untypedLoadedItem.errorMessage ?? "No error message provided."
+            : false
         }
       >
         <Box>
@@ -495,6 +498,7 @@ const Records = observer(() => {
     searchQuery: searchQuery,
     enabled: accessReady,
     subtype: filterSubtype ? selectedSubtype : undefined,
+    searchLimit: SEARCH_LIMIT,
   });
 
   // Use a list of paginated records

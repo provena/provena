@@ -6,7 +6,7 @@ import pydantic
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from fastapi.testclient import TestClient
 from main import app, UI_SCHEMA_OVERRIDES
-from ProvenaSharedFunctionality.Registry.TestConfig import ModelExamples
+from ProvenaInterfaces.TestConfig import ModelExamples
 from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.RegistryAPI import *
 from KeycloakFastAPI.Dependencies import User, ProtectedRole

@@ -3,7 +3,8 @@ from ProvenaInterfaces.RegistryModels import ItemModelRun, ItemBase, ItemSubType
 from ProvenaInterfaces.RegistryAPI import SubtypeListRequest, PaginationKey, ModelRunListResponse
 from ProvenaInterfaces.SharedTypes import StatusResponse
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
-from ProvenaSharedFunctionality.Registry.TestConfig import route_params, RouteParameters
+from ProvenaInterfaces.TestConfig import route_params, RouteParameters
+
 from typing import Optional, List, Type
 import requests
 import json

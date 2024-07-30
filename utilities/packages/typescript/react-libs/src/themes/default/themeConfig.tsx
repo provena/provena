@@ -56,7 +56,7 @@ export const defaultThemeConfig: CompleteThemeConfig = {
           </li>
           <li>Provision of information to support management decisions.</li>
         </ul>
-        Learn more about in the Provena Documentation.
+        Learn more about the system in the Provena Documentation.
       </React.Fragment>
     ),
     lhCardActionsHtml: (
