@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
 import os
-from provena.config.config_class import ProvenaConfig
 from provena.pipeline.pipeline_stack import ProvenaPipelineStack
 from provena.config.config_helpers import validate_config
-from configs.config_map import get_app_config
+from configs.config_loader import get_app_config
 from typing import Optional
 
 """
@@ -25,16 +24,7 @@ config_id = os.getenv("PROVENA_CONFIG_ID")
 if config_id is None:
     raise ValueError("No PROVENA_CONFIG_ID environment variable provided.")
 
-get_config = get_app_config(config_id)
-
-if get_config is None:
-    raise ValueError(
-        f"{config_id = } is not a valid config option according to the specified config map.")
-
-assert get_config is not None
-
-config = get_config()
-assert config
+config = get_app_config(config_id)
 
 # Validate imported config
 # =========================

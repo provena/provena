@@ -312,6 +312,8 @@ infrastructure/provena/keycloak/themes/*
 # CDK configs
 infrastructure/configs/*
 !infrastructure/configs/sample.json
+!infrastructure/configs/config_loader.py
+!infrastructure/configs/version_helpers.py
 
 # cdk context
 infrastructure/cdk.context.json
