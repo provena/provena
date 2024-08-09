@@ -6,6 +6,7 @@ initialize() {
   # Initialize variables
   TEMP_DIR=""
   ENV_FILE="env.json"
+  BASE_STAGE="base"
   
   # Ensure jq is installed
   if ! command -v jq &> /dev/null; then
@@ -45,8 +46,27 @@ clone_repo() {
 # Copy files from the cloned repository to the local workspace
 copy_files() {
   local source_dir="$1"
-  echo "Copying files from $source_dir to current directory"
-  cp -R "$source_dir/$NAMESPACE/$STAGE"/* .
+  local stage="$2"
+  
+  if [[ -d "$source_dir/$NAMESPACE/$stage" ]]; then
+    echo "Copying files from $source_dir/$NAMESPACE/$stage to current directory"
+    cp -R "$source_dir/$NAMESPACE/$stage"/* .
+  else
+    echo "Warning: Directory $source_dir/$NAMESPACE/$stage does not exist. Skipping."
+  fi
+}
+
+# Copy both base and specified stage files
+copy_all_files() {
+  local source_dir="$1"
+  
+  # Copy base files first
+  copy_files "$source_dir" "$BASE_STAGE"
+  
+  # Copy specified stage files, potentially overwriting base files
+  if [[ "$STAGE" != "$BASE_STAGE" ]]; then
+    copy_files "$source_dir" "$STAGE"
+  fi
 }
 
 # Clean up temporary directory
@@ -87,6 +107,7 @@ validate_args() {
   fi
 }
 
+# Main execution
 initialize
 validate_args
 
@@ -96,11 +117,11 @@ if [[ -n "$REPO_DIR" ]]; then
     echo "Error: Specified repo directory does not exist: $REPO_DIR"
     exit 1
   fi
-  copy_files "$REPO_DIR"
+  copy_all_files "$REPO_DIR"
 else
   # Use target repository (either specified or from env.json)
   clone_repo
-  copy_files "$TEMP_DIR"
+  copy_all_files "$TEMP_DIR"
   update_env_file "$TARGET_REPO"
   cleanup
 fi
