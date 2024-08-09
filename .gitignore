@@ -302,3 +302,10 @@ dist
 # thunderclient environments
 *tc_env_*
 *.aider*
+
+
+# configuration 
+infrastructure/provena/keycloak/themes/*
+!infrastructure/provena/keycloak/themes/default
+
+env.json
