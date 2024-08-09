@@ -396,6 +396,15 @@ class DeploymentConfig(BaseModel):
     # What is the Provena config ID of this config?
     config_id: str
 
+    # config source repo that defined this config
+    config_source_repo_clone_string: str
+    # The name space for the config
+    config_source_name_space: str
+    # The stage for the config
+    config_source_stage: str
+    # The secret ARN which contains the username/token combination to use for cloning the repo
+    config_repo_oauth_token_secret_arn: str
+
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
     deployment_stack_id: str
