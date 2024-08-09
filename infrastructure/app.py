@@ -19,7 +19,7 @@ app = cdk.App()
 
 from provena.utility_stacks.CodeBuildGithubBootstrap import CodeBuildGithubBootstrap
 from provena.config.config_class import GithubBootstrapConfig
-from configs.config_map import get_bootstrap_config
+from configs.config_loader import get_bootstrap_config
 
 # Dispatch from config ID
 # =========================
@@ -29,16 +29,7 @@ config_id = os.getenv("PROVENA_CONFIG_ID")
 if config_id is None:
     raise ValueError("No PROVENA_CONFIG_ID environment variable provided.")
 
-config_generator = get_bootstrap_config(config_id)
-
-if config_generator is None:
-    raise ValueError(
-        f"{config_id = } is not a valid config option according to the specified config map.")
-
-assert config_generator is not None
-
-config = config_generator()
-assert config
+config = get_bootstrap_config(config_id)
 
 # Github bootstrap
 

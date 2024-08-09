@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
 import os
-from provena.config.config_class import ProvenaUIOnlyConfig
 from provena.pipeline.pipeline_stack import ProvenaUIOnlyPipelineStack
-from configs.config_map import get_ui_only_config
-from typing import Optional
+from configs.config_loader import get_ui_only_config
 
 """
 This manages a provena app deployment. The config is dispatched based on the
@@ -24,16 +22,7 @@ config_id = os.getenv("PROVENA_CONFIG_ID")
 if config_id is None:
     raise ValueError("No PROVENA_CONFIG_ID environment variable provided.")
 
-get_config = get_ui_only_config(config_id)
-
-if get_config is None:
-    raise ValueError(
-        f"{config_id = } is not a valid config option according to the specified config map.")
-
-assert get_config is not None
-
-config = get_config()
-assert config
+config = get_ui_only_config(config_id)
 
 app = cdk.App()
 
@@ -48,7 +37,7 @@ ProvenaUIOnlyPipelineStack(
     scope=app,
     id=config.pipeline_stack_id,
     config=config,
-    env=config.aws_environment,
+    env=config.aws_environment.env,
 )
 
 """
