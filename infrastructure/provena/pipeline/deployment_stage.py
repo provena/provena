@@ -6,6 +6,7 @@ from aws_cdk import (
 from provena.provena_stack import ProvenaStack
 from provena.ui_only_provena_stack import ProvenaUIStack
 from provena.config.config_class import *
+from typing import Any
 
 
 class ProvenaDeploymentStage(CdkStage):
@@ -55,7 +56,7 @@ class ProvenaDeploymentStage(CdkStage):
         self.infra = ProvenaStack(
             scope=self,
             id=config.deployment.deployment_stack_id,
-            env=config.deployment.deployment_environment,
+            env=config.deployment.deployment_environment.env,
             config=config
         )
 

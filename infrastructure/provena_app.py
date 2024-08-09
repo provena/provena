@@ -60,7 +60,7 @@ ProvenaPipelineStack(
     scope=app,
     id=config.deployment.pipeline_stack_id,
     config=config,
-    env=config.deployment.pipeline_environment
+    env=config.deployment.pipeline_environment.env
 )
 
 """

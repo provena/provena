@@ -24,7 +24,7 @@ from provena.pipeline.testing_setup.type_checking_shell_step import generate_typ
 from provena.config.config_class import *
 from provena.config.config_helpers import resolve_endpoints
 from provena.utility.cfn_output_helpers import get_output_name, get_stack_name
-from typing import List, Dict
+from typing import List, Dict, Any
 
 VERSION_INFO_FILE_PATH = "../repo-tools/github-version/version_info.json"
 

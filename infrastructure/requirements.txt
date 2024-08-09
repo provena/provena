@@ -4,3 +4,4 @@ boto3
 aws-cron-expression-validator==1.0.4
 checksumdir==1.2.0
 typer
+pydantic==1.10.17

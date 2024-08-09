@@ -65,7 +65,7 @@ class ProvenaStack(Stack):
         Aspects.of(self).add(ddb_on_demand.DynamoDBOnDemandOnly())
 
         # add tags for all child components where tagging is possible
-        tags: Dict[str, str] = config.general.tags
+        tags: Dict[str, str] = config.general.tags or {}
 
         # Add tags
         for k, v in tags.items():
@@ -848,7 +848,8 @@ class ProvenaStack(Stack):
                 data_storage_plan_name=f"{extra_name_prefix + '-' if extra_name_prefix else ''}{stage}-data-storage-backup-plan",
                 trusted_copy_source_account_ids=backup_config.trusted_copy_source_account_ids,
                 trusted_copy_destination_account_ids=backup_config.trusted_copy_destination_account_ids,
-                key_admins=backup_config.key_admins
+                # convert to ArnPrincipals if provided
+                key_admins=[iam.ArnPrincipal(arn) for arn in (backup_config.key_admins or [])]
             )
 
             def backup_helper(id: str, type: BackupType, resource: backup.BackupResource) -> None:
