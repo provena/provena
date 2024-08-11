@@ -88,7 +88,7 @@ def substitute_env_vars(input_string: str) -> str:
 def get_app_config(config_id: str) -> AppConfigType:
     def func() -> ProvenaConfig:
         # load config file
-        file_name = f"{CONFIGS_FILE_PREFIX}/{config_id}.json"
+        file_name = f"{CONFIGS_FILE_PREFIX}/{config_id.lower()}.json"
         try:
             with open(file_name, "r") as f:
                 content = f.read()
@@ -110,7 +110,7 @@ def get_app_config(config_id: str) -> AppConfigType:
 def get_ui_only_config(config_id: str) -> UIConfigType:
     def func() -> ProvenaUIOnlyConfig:
         # load config file
-        file_name = f"{CONFIGS_FILE_PREFIX}/{config_id}-ui.json"
+        file_name = f"{CONFIGS_FILE_PREFIX}/{config_id.lower()}-ui.json"
         try:
             with open(file_name, "r") as f:
                 content = f.read()
@@ -124,7 +124,8 @@ def get_ui_only_config(config_id: str) -> UIConfigType:
         # perform variable replacement
         replaced = substitute_env_vars(content)
         # parse as model
-        return ProvenaUIOnlyConfig.parse_raw(replaced)
+        output = ProvenaUIOnlyConfig.parse_raw(replaced)
+        return output
 
     return func
 
@@ -132,7 +133,7 @@ def get_ui_only_config(config_id: str) -> UIConfigType:
 def get_bootstrap_config(config_id: str) -> BootstrapConfigType:
     def func() -> GithubBootstrapConfig:
         # load config file
-        file_name = f"{CONFIGS_FILE_PREFIX}/{config_id}-github.json"
+        file_name = f"{CONFIGS_FILE_PREFIX}/{config_id.lower()}-github.json"
         try:
             with open(file_name, "r") as f:
                 content = f.read()

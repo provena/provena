@@ -98,7 +98,7 @@ class ProvenaUIOnlyStage(CdkStage):
         self.infra = ProvenaUIStack(
             scope=self,
             construct_id=config.deployment_stack_id,
-            env=config.aws_environment,
+            env=config.aws_environment.env,
             config=config
         )
 

@@ -151,6 +151,11 @@ fb_deploy_usage() {
     printf "    Enables pipeline alerts on Teams channel\n"
     echo
 
+    # :flag.usage
+    printf "  %s\n" "--monitoring, -m"
+    printf "    Enables sentry monitoring\n"
+    echo
+
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
@@ -1300,6 +1305,14 @@ fb_deploy_parse_requirements() {
 
         # :flag.case_no_arg
         args['--notify']=1
+        shift
+        ;;
+
+      # :flag.case
+      --monitoring | -m)
+
+        # :flag.case_no_arg
+        args['--monitoring']=1
         shift
         ;;
 

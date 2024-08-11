@@ -34,6 +34,9 @@ commands:
   - long: --notify
     short: -n
     help: Enables pipeline alerts on Teams channel
+  - long: --monitoring
+    short: -m
+    help: Enables sentry monitoring
 
   examples:
   - fb d

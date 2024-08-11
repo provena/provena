@@ -577,11 +577,11 @@ class GeneralConfig(BaseModel):
 
 
 class TestType(str, Enum):
-    TS_TYPE_CHECK = auto()
-    MYPY_TYPE_CHECK = auto()
-    UNIT = auto()
-    INTEGRATION = auto()
-    SYSTEM = auto()
+    TS_TYPE_CHECK = "TS_TYPE_CHECK"
+    MYPY_TYPE_CHECK = "MYPY_TYPE_CHECK"
+    UNIT = "UNIT"
+    INTEGRATION = "INTEGRATION"
+    SYSTEM = "SYSTEM"
 
 
 class UnitTestConfig(BaseModel):
