@@ -24,13 +24,14 @@ config_id = os.getenv("PROVENA_CONFIG_ID")
 if config_id is None:
     raise ValueError("No PROVENA_CONFIG_ID environment variable provided.")
 
-config = get_app_config(config_id)
+config_loader = get_app_config(config_id)
+config = config_loader()
 
 # Validate imported config
 # =========================
 
 # Validate config
-validate_config(config)
+validate_config(config_loader())
 
 print(
     f"Config ID identified and validated successfully - deploying against {config_id = }.")

@@ -53,7 +53,8 @@ def run(
     if not ui_only:
         # get the app config
         try:
-            app_config = get_app_config(config_id)
+            app_config_loader = get_app_config(config_id)
+            app_config = app_config_loader()
         except Exception as e:
             raise Exception(f"Failed to load config with config ID {config_id}. Error.") from e
 
@@ -66,7 +67,8 @@ def run(
     else:
         # get the app config
         try:
-            ui_config = get_ui_only_config(config_id)
+            ui_config_loader = get_ui_only_config(config_id)
+            ui_config = ui_config_loader()
         except Exception as e:
             raise Exception(f"Failed to load ui only config with config ID {config_id}. Error.") from e
 

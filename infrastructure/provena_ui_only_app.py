@@ -22,7 +22,8 @@ config_id = os.getenv("PROVENA_CONFIG_ID")
 if config_id is None:
     raise ValueError("No PROVENA_CONFIG_ID environment variable provided.")
 
-config = get_ui_only_config(config_id)
+config_loader = get_ui_only_config(config_id)
+config = config_loader()
 
 app = cdk.App()
 

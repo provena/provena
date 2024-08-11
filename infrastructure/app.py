@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
-from typing import Optional
 import os
 
 """
@@ -18,7 +17,6 @@ customised get_bootstrap_config map exported from configs.config_map
 app = cdk.App()
 
 from provena.utility_stacks.CodeBuildGithubBootstrap import CodeBuildGithubBootstrap
-from provena.config.config_class import GithubBootstrapConfig
 from configs.config_loader import get_bootstrap_config
 
 # Dispatch from config ID
@@ -29,7 +27,8 @@ config_id = os.getenv("PROVENA_CONFIG_ID")
 if config_id is None:
     raise ValueError("No PROVENA_CONFIG_ID environment variable provided.")
 
-config = get_bootstrap_config(config_id)
+config_loader = get_bootstrap_config(config_id)
+config = config_loader()
 
 # Github bootstrap
 
