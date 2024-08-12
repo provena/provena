@@ -1,7 +1,7 @@
 {
     "env": {
-        "account": "239021088610",
-        "region": "ap-southeast-2"
+        "account": "your-account-id",
+        "region": "your-region"
     },
-    "github_token_arn": ""
+    "github_token_arn": "arn:aws:secretsmanager:your-github-token-secret-arn"
 }
