@@ -19,56 +19,25 @@ SELF_REFERENCE_MARKER = "!!"
 def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]] = None) -> str:
     """
     Perform case-insensitive, bash-style variable substitution on the input string with extended functionality.
-    The function supports the following patterns:
-    1. ${VARIABLE_NAME} - Basic substitution
-    2. ${VARIABLE_NAME:-default_value} - Substitution with default value
-    3. ${VARIABLE_NAME?true_value||false_value} - Conditional substitution with else value
-    4. ${VARIABLE_NAME?true_value} - Conditional substitution without else value (returns empty string if falsey)
-    5. ${VARIABLE_NAME?"!!":null} - Conditional substitution with self-reference
 
-    Variable names are case-insensitive. For conditional substitution, a value is considered
-    truthy if it exists and is not explicitly set to "false" (case-insensitive).
-
-    The self-reference marker (default: "!!") can be used in conditional replacements to refer
-    to the value of the variable itself. This marker is configurable via the global variable
-    SELF_REFERENCE_MARKER.
+    The function supports the following patterns (in order of precedence):
+    1. "${VARIABLE_NAME?true_value||false_value}" - Quoted conditional substitution with else value
+    2. "${VARIABLE_NAME?true_value}" - Quoted conditional substitution without else value
+    3. ${VARIABLE_NAME?true_value||false_value} - Unquoted conditional substitution with else value
+    4. ${VARIABLE_NAME?true_value} - Unquoted conditional substitution without else value
+    5. ${VARIABLE_NAME:-default_value} - Substitution with default value
+    6. ${VARIABLE_NAME} - Basic substitution
 
     Args:
         input_string (str): The input string containing variables to be substituted.
         replacements (Optional[Dict[str, str]]): An optional dictionary of replacement keys -> values
-            to be used if the environment variable isn't available. Environment variables always
-            take precedence over the replacements dictionary.
+            to be used if the environment variable isn't available.
 
     Returns:
         str: The input string with all variables substituted.
-
-    Example:
-        >>> os.environ['NAME'] = 'John'
-        >>> os.environ['DEBUG'] = '0'
-        >>> os.environ['LEVEL'] = '5'
-        >>> substitute_env_vars('Hello, ${name}!')
-        'Hello, John!'
-        >>> substitute_env_vars('Mode: ${DEBUG?Debug}')
-        'Mode: Debug'
-        >>> substitute_env_vars('Admin: ${IS_ADMIN?Administrator}')
-        'Admin: '
-        >>> substitute_env_vars('Color: ${COLOR:-Blue}')
-        'Color: Blue'
-        >>> substitute_env_vars('Color: ${COLOR:-Blue}', {'COLOR': 'Red'})
-        'Color: Red'
-        >>> os.environ['COLOR'] = 'Yellow'
-        >>> substitute_env_vars('Color: ${COLOR:-Blue}', {'COLOR': 'Red'})
-        'Color: Yellow'
-        >>> substitute_env_vars('Level: ${LEVEL?"!!":Not set}')
-        'Level: 5'
-        >>> substitute_env_vars('Status: ${STATUS?"!!":Not set}')
-        'Status: Not set'
     """
     def get_replacement(var_name: str) -> Optional[str]:
-        """
-        Get environment variable value case-insensitively.
-        If not found in environment, check the replacements dictionary.
-        """
+        """Get environment variable value case-insensitively."""
         for key, value in os.environ.items():
             if key.lower() == var_name.lower():
                 return value
@@ -82,41 +51,49 @@ def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]
         """Determine if a value is truthy."""
         return value is not None and value.lower() != "false"
 
-    def replace_var(match: re.Match[str]) -> str:
-        full_match = match.group(0)
-        var_content = match.group(1)
+    def replace_quotes(s: str) -> str:
+        """Replace single quotes with double quotes, except for 'null'."""
+        return 'null' if s.strip() == 'null' else s.replace("'", '"')
 
-        # Check for conditional pattern
-        if '?' in var_content:
-            var_name, rest = var_content.split('?', 1)
-            var_value = get_replacement(var_name)
-            if '||' in rest:
-                true_value, false_value = rest.split('||', 1)
-                result = true_value if is_truthy(var_value) else false_value
-            else:
-                true_value = rest
-                result = true_value if is_truthy(var_value) else ''
-            
-            # Handle self-reference
-            return result.replace(SELF_REFERENCE_MARKER, str(var_value) if var_value is not None else '')
-
-        # Check for default value pattern
-        if ':-' in var_content:
-            var_name, default_value = var_content.split(':-', 1)
-            return get_replacement(var_name) or default_value
-
-        # Basic substitution
-        var_name = var_content
+    def basic_substitution(match: re.Match) -> str:
+        var_name = match.group(1)
         value = get_replacement(var_name)
-        
         if value is None:
-            print(f"Warning: Variable '{var_name}' not found in environment or replacements dictionary, and no default provided.")
-            return full_match  # Return the original ${VARIABLE_NAME} unchanged
-        
-        return value
+            print(f"Warning: Variable '{var_name}' not found and no default provided.")
+            return match.group(0)  # Return the original ${VARIABLE_NAME} unchanged
+        return replace_quotes(value)
 
-    pattern = r'\$\{([^}]+)\}'
-    return re.sub(pattern, replace_var, input_string)
+    def default_value_substitution(match: re.Match) -> str:
+        var_name, default_value = match.group(1, 2)
+        value = get_replacement(var_name) or default_value
+        return replace_quotes(value)
+
+    def conditional_substitution(match: re.Match) -> str:
+        var_name, true_value = match.group(1, 2)
+        false_value = match.group(3) if match.lastindex == 3 else ''
+        var_value = get_replacement(var_name)
+        result = true_value if is_truthy(var_value) else false_value
+        result = result.replace(SELF_REFERENCE_MARKER, str(var_value) if var_value is not None else '')
+        return replace_quotes(result)
+
+    # Define regex patterns for each substitution type
+
+    # e.g. "${VAR?'!!'||null}"
+    quoted_conditional_pattern = r'"\$\{([^:?}]+)\?([^}|]+)(?:\|\|([^}]+))?\}"'
+    # e.g. ${VAR?!!||null}
+    unquoted_conditional_pattern = r'\$\{([^:?}]+)\?([^}|]+)(?:\|\|([^}]+))?\}'
+    # e.g. ${VAR:-default value}
+    default_value_pattern = r'\$\{([^:?}]+):-([^}]+)\}'
+    # e.g. ${VAR}
+    basic_pattern = r'\$\{([^:?}]+)\}'
+
+    # Apply substitutions in order of complexity
+    input_string = re.sub(quoted_conditional_pattern, conditional_substitution, input_string)
+    input_string = re.sub(unquoted_conditional_pattern, conditional_substitution, input_string)
+    input_string = re.sub(default_value_pattern, default_value_substitution, input_string)
+    input_string = re.sub(basic_pattern, basic_substitution, input_string)
+
+    return input_string
 
 def get_app_config(config_id: str) -> AppConfigType:
     def func() -> ProvenaConfig:
