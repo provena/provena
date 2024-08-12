@@ -5,7 +5,7 @@ from provena.config.config_class import (
 )
 import re
 import os
-from typing import Callable, Optional
+from typing import Callable, Optional, Dict
 
 CONFIGS_FILE_PREFIX = "configs"
 
@@ -13,21 +13,31 @@ AppConfigType = Callable[[], ProvenaConfig]
 UIConfigType = Callable[[], ProvenaUIOnlyConfig]
 BootstrapConfigType = Callable[[], GithubBootstrapConfig]
 
-def substitute_env_vars(input_string: str) -> str:
+# Global variable for the self-reference marker
+SELF_REFERENCE_MARKER = "!!"
+
+def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]] = None) -> str:
     """
     Perform case-insensitive, bash-style variable substitution on the input string with extended functionality.
-
     The function supports the following patterns:
     1. ${VARIABLE_NAME} - Basic substitution
     2. ${VARIABLE_NAME:-default_value} - Substitution with default value
     3. ${VARIABLE_NAME?true_value||false_value} - Conditional substitution with else value
     4. ${VARIABLE_NAME?true_value} - Conditional substitution without else value (returns empty string if falsey)
+    5. ${VARIABLE_NAME?"!!":null} - Conditional substitution with self-reference
 
     Variable names are case-insensitive. For conditional substitution, a value is considered
     truthy if it exists and is not explicitly set to "false" (case-insensitive).
 
+    The self-reference marker (default: "!!") can be used in conditional replacements to refer
+    to the value of the variable itself. This marker is configurable via the global variable
+    SELF_REFERENCE_MARKER.
+
     Args:
         input_string (str): The input string containing variables to be substituted.
+        replacements (Optional[Dict[str, str]]): An optional dictionary of replacement keys -> values
+            to be used if the environment variable isn't available. Environment variables always
+            take precedence over the replacements dictionary.
 
     Returns:
         str: The input string with all variables substituted.
@@ -35,18 +45,37 @@ def substitute_env_vars(input_string: str) -> str:
     Example:
         >>> os.environ['NAME'] = 'John'
         >>> os.environ['DEBUG'] = '0'
+        >>> os.environ['LEVEL'] = '5'
         >>> substitute_env_vars('Hello, ${name}!')
         'Hello, John!'
         >>> substitute_env_vars('Mode: ${DEBUG?Debug}')
         'Mode: Debug'
         >>> substitute_env_vars('Admin: ${IS_ADMIN?Administrator}')
         'Admin: '
+        >>> substitute_env_vars('Color: ${COLOR:-Blue}')
+        'Color: Blue'
+        >>> substitute_env_vars('Color: ${COLOR:-Blue}', {'COLOR': 'Red'})
+        'Color: Red'
+        >>> os.environ['COLOR'] = 'Yellow'
+        >>> substitute_env_vars('Color: ${COLOR:-Blue}', {'COLOR': 'Red'})
+        'Color: Yellow'
+        >>> substitute_env_vars('Level: ${LEVEL?"!!":Not set}')
+        'Level: 5'
+        >>> substitute_env_vars('Status: ${STATUS?"!!":Not set}')
+        'Status: Not set'
     """
-    def get_env_var(var_name: str) -> Optional[str]:
-        """Get environment variable value case-insensitively."""
+    def get_replacement(var_name: str) -> Optional[str]:
+        """
+        Get environment variable value case-insensitively.
+        If not found in environment, check the replacements dictionary.
+        """
         for key, value in os.environ.items():
             if key.lower() == var_name.lower():
                 return value
+        if replacements:
+            for key, value in replacements.items():
+                if key.lower() == var_name.lower():
+                    return value
         return None
 
     def is_truthy(value: Optional[str]) -> bool:
@@ -60,24 +89,28 @@ def substitute_env_vars(input_string: str) -> str:
         # Check for conditional pattern
         if '?' in var_content:
             var_name, rest = var_content.split('?', 1)
+            var_value = get_replacement(var_name)
             if '||' in rest:
                 true_value, false_value = rest.split('||', 1)
-                return true_value if is_truthy(get_env_var(var_name)) else false_value
+                result = true_value if is_truthy(var_value) else false_value
             else:
                 true_value = rest
-                return true_value if is_truthy(get_env_var(var_name)) else ''
+                result = true_value if is_truthy(var_value) else ''
+            
+            # Handle self-reference
+            return result.replace(SELF_REFERENCE_MARKER, str(var_value) if var_value is not None else '')
 
         # Check for default value pattern
         if ':-' in var_content:
             var_name, default_value = var_content.split(':-', 1)
-            return get_env_var(var_name) or default_value
+            return get_replacement(var_name) or default_value
 
         # Basic substitution
         var_name = var_content
-        value = get_env_var(var_name)
+        value = get_replacement(var_name)
         
         if value is None:
-            print(f"Warning: Environment variable '{var_name}' not found and no default provided.")
+            print(f"Warning: Variable '{var_name}' not found in environment or replacements dictionary, and no default provided.")
             return full_match  # Return the original ${VARIABLE_NAME} unchanged
         
         return value
