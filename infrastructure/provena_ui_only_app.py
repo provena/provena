@@ -2,7 +2,7 @@
 import aws_cdk as cdk
 import os
 from provena.pipeline.pipeline_stack import ProvenaUIOnlyPipelineStack
-from configs.config_loader import get_ui_only_config
+from provena.config.config_loader import get_ui_only_config
 
 """
 This manages a provena app deployment. The config is dispatched based on the

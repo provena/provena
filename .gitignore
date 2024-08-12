@@ -304,19 +304,6 @@ dist
 *.aider*
 
 
-# configuration - keycloak themes
-infrastructure/provena/keycloak/themes/*
-!infrastructure/provena/keycloak/themes/default/*
-!infrastructure/provena/keycloak/themes/default
-
-# CDK configs
-infrastructure/configs/*
-!infrastructure/configs/sample.json
-!infrastructure/configs/version_helpers.py
-
-# cdk context
-infrastructure/cdk.context.json
-
 # environments for admin tooling
 admin-tooling/environments.json
 

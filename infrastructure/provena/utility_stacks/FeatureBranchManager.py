@@ -4,12 +4,15 @@ from typing import Any, Dict
 from constructs import Construct
 from dataclasses import dataclass
 from provena.custom_constructs.timed_lambda import TimedLambda
+from pydantic import BaseModel
 
 
-@dataclass
-class FeatureBranchManagerStackConfig:
+class FeatureBranchManagerStackConfig(BaseModel):
     # token to use when authenticating to github API - requires repo access
     github_api_token_arn: str
+
+    # repo owner e.g. organisation
+    repo_owner: str
 
     # repo name to target e.g. organisation/my-repo
     repo_name: str
@@ -65,7 +68,7 @@ def create_plaintext_env_vars(
             value=str(getattr(config, key)),
         )
         for key in vars(config)
-        if key != "github_api_token_arn" and not callable(getattr(config, key))
+        if key != "github_api_token_arn" and key != "repo_owner" and not callable(getattr(config, key))
     }
 
 
@@ -93,7 +96,7 @@ class FeatureBranchManager(Stack):
 
         # source this repo
         repo_source = build.Source.git_hub(
-            owner=config.owner,
+            owner=config.repo_owner,
             repo=config.repo_name,
             webhook=False,
             branch_or_ref=config.branch_name,

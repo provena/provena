@@ -17,7 +17,7 @@ customised get_bootstrap_config map exported from configs.config_map
 app = cdk.App()
 
 from provena.utility_stacks.CodeBuildGithubBootstrap import CodeBuildGithubBootstrap
-from configs.config_loader import get_bootstrap_config
+from provena.config.config_loader import get_bootstrap_config
 
 # Dispatch from config ID
 # =========================
