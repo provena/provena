@@ -16,7 +16,10 @@ BootstrapConfigType = Callable[[], GithubBootstrapConfig]
 # Global variable for the self-reference marker
 SELF_REFERENCE_MARKER = "!!"
 
-def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]] = None) -> str:
+
+def substitute_env_vars(
+    input_string: str, replacements: Optional[Dict[str, str]] = None
+) -> str:
     """
     Perform case-insensitive, bash-style variable substitution on the input string with extended functionality.
 
@@ -36,6 +39,7 @@ def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]
     Returns:
         str: The input string with all variables substituted.
     """
+
     def get_replacement(var_name: str) -> Optional[str]:
         """Get environment variable value case-insensitively."""
         for key, value in os.environ.items():
@@ -53,7 +57,7 @@ def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]
 
     def replace_quotes(s: str) -> str:
         """Replace single quotes with double quotes, except for 'null'."""
-        return 'null' if s.strip() == 'null' else s.replace("'", '"')
+        return "null" if s.strip() == "null" else s.replace("'", '"')
 
     def basic_substitution(match: re.Match) -> str:
         var_name = match.group(1)
@@ -70,10 +74,12 @@ def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]
 
     def conditional_substitution(match: re.Match) -> str:
         var_name, true_value = match.group(1, 2)
-        false_value = match.group(3) if match.lastindex == 3 else ''
+        false_value = match.group(3) if match.lastindex == 3 else ""
         var_value = get_replacement(var_name)
         result = true_value if is_truthy(var_value) else false_value
-        result = result.replace(SELF_REFERENCE_MARKER, str(var_value) if var_value is not None else '')
+        result = result.replace(
+            SELF_REFERENCE_MARKER, str(var_value) if var_value is not None else ""
+        )
         return replace_quotes(result)
 
     # Define regex patterns for each substitution type
@@ -81,19 +87,26 @@ def substitute_env_vars(input_string: str, replacements: Optional[Dict[str, str]
     # e.g. "${VAR?'!!'||null}"
     quoted_conditional_pattern = r'"\$\{([^:?}]+)\?([^}|]+)(?:\|\|([^}]+))?\}"'
     # e.g. ${VAR?!!||null}
-    unquoted_conditional_pattern = r'\$\{([^:?}]+)\?([^}|]+)(?:\|\|([^}]+))?\}'
+    unquoted_conditional_pattern = r"\$\{([^:?}]+)\?([^}|]+)(?:\|\|([^}]+))?\}"
     # e.g. ${VAR:-default value}
-    default_value_pattern = r'\$\{([^:?}]+):-([^}]+)\}'
+    default_value_pattern = r"\$\{([^:?}]+):-([^}]+)\}"
     # e.g. ${VAR}
-    basic_pattern = r'\$\{([^:?}]+)\}'
+    basic_pattern = r"\$\{([^:?}]+)\}"
 
     # Apply substitutions in order of complexity
-    input_string = re.sub(quoted_conditional_pattern, conditional_substitution, input_string)
-    input_string = re.sub(unquoted_conditional_pattern, conditional_substitution, input_string)
-    input_string = re.sub(default_value_pattern, default_value_substitution, input_string)
+    input_string = re.sub(
+        quoted_conditional_pattern, conditional_substitution, input_string
+    )
+    input_string = re.sub(
+        unquoted_conditional_pattern, conditional_substitution, input_string
+    )
+    input_string = re.sub(
+        default_value_pattern, default_value_substitution, input_string
+    )
     input_string = re.sub(basic_pattern, basic_substitution, input_string)
 
     return input_string
+
 
 def get_app_config(config_id: str) -> AppConfigType:
     def func() -> ProvenaConfig:
@@ -113,8 +126,10 @@ def get_app_config(config_id: str) -> AppConfigType:
         replaced = substitute_env_vars(content)
         # parse as model
         config = ProvenaConfig.parse_raw(replaced)
-        print(config.json(indent=2))
-        return config
+        f = open('feat.json', 'w')
+        f.write(config.json(indent=2, exclude_defaults=True))
+        f.close()
+        return config 
 
     return func
 

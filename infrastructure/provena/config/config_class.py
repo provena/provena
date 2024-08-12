@@ -742,7 +742,7 @@ class ProvenaUIOnlyConfig(BaseModel):
     dns: DNSConfig
 
     # What theme ID is used for the UIs?
-    ui_theme_id: str
+    ui_theme_id: str = "default"
 
     cdk_out_path: str
     cdk_app_name: str
