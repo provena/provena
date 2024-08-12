@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import typer
-from configs.config_loader import get_app_config, get_ui_only_config
+from provena.config.config_loader import get_app_config, get_ui_only_config
 from enum import Enum
 from typing import List
 import os
