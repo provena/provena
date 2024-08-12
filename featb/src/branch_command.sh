@@ -1,11 +1,11 @@
 #!/usr/bin/env bash -e
 
-ticket_no=${args[ticket]}
+ticket_number=${args[ticket]}
 feature_desc=${args[name]}
 base_branch=${args[base]}
 
 # branch name
-branch_name="feat-${ticket_no}-${feature_desc}"
+branch_name="feat-${ticket_number}-${feature_desc}"
 
 git checkout ${base_branch}
 git pull

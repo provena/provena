@@ -135,7 +135,9 @@ def get_app_config(config_id: str) -> AppConfigType:
         # perform variable replacement
         replaced = substitute_env_vars(content)
         # parse as model
-        return ProvenaConfig.parse_raw(replaced)
+        config = ProvenaConfig.parse_raw(replaced)
+        print(config.json(indent=2))
+        return config
 
     return func
 

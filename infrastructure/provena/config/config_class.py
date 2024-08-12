@@ -40,6 +40,7 @@ from provena.config.config_global_defaults import *
     --------
 """
 
+
 class AWSTarget(BaseModel):
     account: str
     region: str
@@ -47,6 +48,7 @@ class AWSTarget(BaseModel):
     @property
     def env(self) -> Environment:
         return Environment(account=self.account, region=self.region)
+
 
 class Stage(str, Enum):
     TEST = "TEST"
@@ -452,7 +454,7 @@ class DeploymentConfig(BaseModel):
     # Is this a feature branch deployment?
     feature_deployment: bool = False
     # If so - provide the ticket number
-    ticket_no: Optional[int] = None
+    ticket_number: Optional[int] = None
 
     # Should an interface export pipeline be deployed
     interface_pipeline: bool = True
@@ -496,11 +498,11 @@ class DeploymentConfig(BaseModel):
         }
 
         if self.feature_deployment:
-            if self.ticket_no is None:
+            if self.ticket_number is None:
                 raise ValueError(
                     "Cannot deploy a feature stack without specifying the ticket number."
                 )
-            env_vars["TICKET_NO"] = str(self.ticket_no)
+            env_vars["TICKET_NUMBER"] = str(self.ticket_number)
             env_vars["BRANCH_NAME"] = self.git_branch_name
 
         if self.email_alerts_activated:
@@ -706,7 +708,6 @@ class UiOnlyDomainNames(BaseModel):
     keycloak_realm_name: str
 
 
-
 class ProvenaUIOnlyConfig(BaseModel):
     # What is the provena config ID of this deployment
     config_id: str
@@ -749,7 +750,7 @@ class ProvenaUIOnlyConfig(BaseModel):
 
     cdk_out_path: str
     cdk_app_name: str
-    ticket_no: int
+    ticket_number: int
 
     sentry_config: SentryConfig
 
@@ -766,7 +767,7 @@ class ProvenaUIOnlyConfig(BaseModel):
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
             "PROVENA_CONFIG_ID": self.config_id,
-            "TICKET_NO": str(self.ticket_no),
+            "TICKET_NUMBER": str(self.ticket_number),
             "BRANCH_NAME": self.git_branch_name,
         }
 

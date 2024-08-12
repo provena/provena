@@ -297,7 +297,7 @@ class ProvenaPipelineStack(Stack):
             "VITE_KEYCLOAK_AUTH_ENDPOINT": self.endpoints.keycloak_minimal,
             "VITE_KEYCLOAK_REALM": self.endpoints.keycloak_realm_name,
             "VITE_MONITORING_ENABLED": str(config.deployment.sentry_config.monitoring_enabled),
-            "VITE_FEATURE_NUMBER": str(config.deployment.ticket_no)
+            "VITE_FEATURE_NUMBER": str(config.deployment.ticket_number)
         }
 
         optional_shared_lib_env_variables: Dict[str, Optional[str]] = {
@@ -1457,7 +1457,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
             "VITE_KEYCLOAK_REALM": self.config.domains.keycloak_realm_name,
 
             "VITE_MONITORING_ENABLED": str(self.config.sentry_config.monitoring_enabled),
-            "VITE_FEATURE_NUMBER": str(self.config.ticket_no)
+            "VITE_FEATURE_NUMBER": str(self.config.ticket_number)
         }
 
         optional_shared_lib_env_variables: Dict[str, Optional[str]] = {

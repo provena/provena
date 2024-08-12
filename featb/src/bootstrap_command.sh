@@ -11,7 +11,7 @@ branch_split=($current_branch)
 unset IFS
 
 # check that the second number is okay
-ticket_no=${branch_split[1]}
+ticket_number=${branch_split[1]}
 
 # move into the env bootstrapper location
 echo "Moving to environment bootstrapper tool"
@@ -36,10 +36,10 @@ echo
 
 pip install -r requirements.txt
 
-echo "Running bootstrap operation with feature branch number ${ticket_no}"
+echo "Running bootstrap operation with feature branch number ${ticket_number}"
 echo
 
 # run the helper script to deploy feature branch
-python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_no}
+python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_number}
 
 echo "Bootstrapping complete."

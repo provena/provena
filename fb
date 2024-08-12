@@ -523,12 +523,12 @@ fb_branch_command() {
   # src/branch_command.sh
   #!/usr/bin/env bash -e
 
-  ticket_no=${args[ticket]}
+  ticket_number=${args[ticket]}
   feature_desc=${args[name]}
   base_branch=${args[base]}
 
   # branch name
-  branch_name="feat-${ticket_no}-${feature_desc}"
+  branch_name="feat-${ticket_number}-${feature_desc}"
 
   git checkout ${base_branch}
   git pull
@@ -555,9 +555,9 @@ fb_deploy_command() {
   unset IFS
 
   # check that the second number is okay
-  ticket_no=${branch_split[1]}
+  ticket_number=${branch_split[1]}
 
-  stack_prefix="f${ticket_no}"
+  stack_prefix="f${ticket_number}"
 
   main_branches=("main" "test" "stage" "prod")
 
@@ -585,7 +585,7 @@ fb_deploy_command() {
   fi
 
   # check with user
-  echo "Parsed the ticket number as ${ticket_no}."
+  echo "Parsed the ticket number as ${ticket_number}."
   read -p "Is this correct? (yY)" -n 1 -r
   echo
 
@@ -597,7 +597,7 @@ fb_deploy_command() {
   fi
 
   echo "Exporting ticket number and branch name"
-  export TICKET_NO=${ticket_no}
+  export TICKET_NUMBER=${ticket_number}
   export BRANCH_NAME=${current_branch}
 
   echo "Moving into infrastructure folder"
@@ -681,7 +681,7 @@ fb_bootstrap_command() {
   unset IFS
 
   # check that the second number is okay
-  ticket_no=${branch_split[1]}
+  ticket_number=${branch_split[1]}
 
   # move into the env bootstrapper location
   echo "Moving to environment bootstrapper tool"
@@ -706,11 +706,11 @@ fb_bootstrap_command() {
 
   pip install -r requirements.txt
 
-  echo "Running bootstrap operation with feature branch number ${ticket_no}"
+  echo "Running bootstrap operation with feature branch number ${ticket_number}"
   echo
 
   # run the helper script to deploy feature branch
-  python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_no}
+  python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_number}
 
   echo "Bootstrapping complete."
 
@@ -732,7 +732,7 @@ fb_markdown_command() {
   unset IFS
 
   # check that the second number is okay
-  ticket_no=${branch_split[1]}
+  ticket_number=${branch_split[1]}
 
   # from https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
   function join_by {
@@ -745,14 +745,14 @@ fb_markdown_command() {
 
   main_branches=("main" "test" "stage" "prod")
 
-  pipeline_link_q_string=$(echo "{\"f\":{\"text\":\"f${ticket_no}\"},\"s\":{\"property\":\"updated\",\"direction\":-1},\"n\":10,\"i\":0}" | base64 -w 0)
+  pipeline_link_q_string=$(echo "{\"f\":{\"text\":\"f${ticket_number}\"},\"s\":{\"property\":\"updated\",\"direction\":-1},\"n\":10,\"i\":0}" | base64 -w 0)
   pipeline_link="https://ap-southeast-2.console.aws.amazon.com/codesuite/codepipeline/pipelines?region=ap-southeast-2&pipelines-meta=${pipeline_link_q_string}"
 
   general_prefix="https://"
   base_url=${args[--url]}
   general_postfix=".${base_url}/"
 
-  url_prefix="f${ticket_no}"
+  url_prefix="f${ticket_number}"
 
   if [ ${args[--ui_only]} ]; then
   	names=("landing-portal" "data-store-ui" "prov-ui" "registry-ui")
@@ -792,7 +792,7 @@ fb_markdown_command() {
   	ui_only_arg=" "
   fi
 
-  echo "To tear down feature deployment: ./fb destroy${ui_only_arg}${ticket_no} ${feat_desc}"
+  echo "To tear down feature deployment: ./fb destroy${ui_only_arg}${ticket_number} ${feat_desc}"
 
 }
 
@@ -812,7 +812,7 @@ fb_desc_command() {
   unset IFS
 
   # check that the second number is okay
-  ticket_no=${branch_split[1]}
+  ticket_number=${branch_split[1]}
 
   # from https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
   function join_by {
@@ -825,14 +825,14 @@ fb_desc_command() {
 
   main_branches=("main" "test" "stage" "prod")
 
-  pipeline_link_q_string=$(echo "{\"f\":{\"text\":\"f${ticket_no}\"},\"s\":{\"property\":\"updated\",\"direction\":-1},\"n\":10,\"i\":0}" | base64 -w 0)
+  pipeline_link_q_string=$(echo "{\"f\":{\"text\":\"f${ticket_number}\"},\"s\":{\"property\":\"updated\",\"direction\":-1},\"n\":10,\"i\":0}" | base64 -w 0)
   pipeline_link="https://ap-southeast-2.console.aws.amazon.com/codesuite/codepipeline/pipelines?region=ap-southeast-2&pipelines-meta=${pipeline_link_q_string}"
 
   general_prefix="https://"
   base_url=${args[--url]}
   general_postfix=".${base_url}/"
 
-  url_prefix="f${ticket_no}"
+  url_prefix="f${ticket_number}"
 
   if [ ${args[--ui_only]} ]; then
   	names=("landing-portal" "data-store-ui" "prov-ui" "registry-ui")
@@ -872,7 +872,7 @@ fb_desc_command() {
   	ui_only_arg=" "
   fi
 
-  echo "To tear down feature deployment: ./fb destroy${ui_only_arg}${ticket_no} ${feat_desc}"
+  echo "To tear down feature deployment: ./fb destroy${ui_only_arg}${ticket_number} ${feat_desc}"
 
 }
 
@@ -882,9 +882,9 @@ fb_destroy_command() {
   #!/usr/bin/env bash -e
 
   # decode args
-  ticket_no=${args[ticket]}
+  ticket_number=${args[ticket]}
   feature_desc=${args[name]}
-  branch_name="feat-${ticket_no}-${feature_desc}"
+  branch_name="feat-${ticket_number}-${feature_desc}"
 
   python_command="python3.10"
 
@@ -901,7 +901,7 @@ fb_destroy_command() {
   fi
 
   echo "Exporting ticket number and branch name"
-  export TICKET_NO=${ticket_no}
+  export TICKET_NUMBER=${ticket_number}
   export BRANCH_NAME=${current_branch}
 
   echo "Moving into infrastructure folder"
@@ -981,7 +981,7 @@ fb_run_command() {
   unset IFS
 
   # check that the second number is okay
-  ticket_no=${branch_split[1]}
+  ticket_number=${branch_split[1]}
 
   main_branches=("main" "test" "stage" "prod")
 
@@ -1006,7 +1006,7 @@ fb_run_command() {
   fi
 
   # check with user
-  echo "Parsed the ticket number as ${ticket_no}."
+  echo "Parsed the ticket number as ${ticket_number}."
   read -p "Is this correct? (yY)" -n 1 -r
   echo
 
@@ -1018,7 +1018,7 @@ fb_run_command() {
   fi
 
   echo "Exporting ticket number and branch name"
-  export TICKET_NO=${ticket_no}
+  export TICKET_NUMBER=${ticket_number}
   export BRANCH_NAME=${current_branch}
 
   echo "Moving into infrastructure folder"

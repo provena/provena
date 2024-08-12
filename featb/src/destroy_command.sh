@@ -1,9 +1,9 @@
 #!/usr/bin/env bash -e
 
 # decode args
-ticket_no=${args[ticket]}
+ticket_number=${args[ticket]}
 feature_desc=${args[name]}
-branch_name="feat-${ticket_no}-${feature_desc}"
+branch_name="feat-${ticket_number}-${feature_desc}"
 
 python_command="python3.10"
 
@@ -21,7 +21,7 @@ fi
 
 
 echo "Exporting ticket number and branch name"
-export TICKET_NO=${ticket_no}
+export TICKET_NUMBER=${ticket_number}
 export BRANCH_NAME=${current_branch}
 
 echo "Moving into infrastructure folder"

@@ -14,7 +14,7 @@ branch_split=($current_branch)
 unset IFS
 
 # check that the second number is okay
-ticket_no=${branch_split[1]}
+ticket_number=${branch_split[1]}
 
 main_branches=("main" "test" "stage" "prod")
 
@@ -39,7 +39,7 @@ else
 fi
 
 # check with user
-echo "Parsed the ticket number as ${ticket_no}."
+echo "Parsed the ticket number as ${ticket_number}."
 read -p "Is this correct? (yY)" -n 1 -r
 echo
 
@@ -51,7 +51,7 @@ else
 fi
 
 echo "Exporting ticket number and branch name"
-export TICKET_NO=${ticket_no}
+export TICKET_NUMBER=${ticket_number}
 export BRANCH_NAME=${current_branch}
 
 echo "Moving into infrastructure folder"
