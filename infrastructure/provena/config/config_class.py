@@ -98,8 +98,8 @@ class SentryConfig(BaseModel):
 
     """
 
-    sentry_dsn_back_end: Optional[str]
-    sentry_dsn_front_end: Optional[str]
+    sentry_dsn_back_end: Optional[str] = None
+    sentry_dsn_front_end: Optional[str] = None
     monitoring_enabled: bool = False
 
 
@@ -117,9 +117,9 @@ class NetworkingComponent(BaseModel):
 class AsyncJobsComponent(BaseModel):
     job_api_domain: str
 
-    job_api_extra_hash_dirs: List[str]
-    invoker_extra_hash_dirs: List[str]
-    connector_extra_hash_dirs: List[str]
+    job_api_extra_hash_dirs: List[str] = ASYNC_JOB_API_EXTRA_HASH_DIRS
+    invoker_extra_hash_dirs: List[str] = ASYNC_INVOKER_EXTRA_HASH_DIRS
+    connector_extra_hash_dirs: List[str] = ASYNC_CONNECTOR_EXTRA_HASH_DIRS
 
     # how long does the job poll before exiting (seconds)
     async_idle_timeout: int = 120
@@ -172,13 +172,13 @@ class KeycloakComponent(BaseModel):
     domain: str
 
     # backup rds?
-    rds_backup_policy: BackupType
+    rds_backup_policy: BackupType = BackupType.CRITICAL
 
     # Realm name e.g. "provena"
     realm_name: str
 
     # What is the name of the custom theme to inject?
-    custom_theme_name: str
+    custom_theme_name: str = "default"
 
     # recover from snapshot?
     snapshot_arn: Optional[str] = None
@@ -197,7 +197,7 @@ class IdentityServiceComponent(BaseModel):
     handle_credentials_arn: str
     domain_name: str
     ardc_service_endpoint: str
-    extra_hash_dirs: List[str]
+    extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
 
     component: ProvenaComponent = ProvenaComponent.IDENTITY_SERVICE
 
@@ -212,11 +212,7 @@ class DataStoreComponent(BaseModel):
     api_domain: str
     ui_domain: str
 
-    # backup
-    pitr_enabled: bool
-    table_backup_policy: BackupType
-
-    extra_hash_dirs: List[str]
+    extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
 
     component: ProvenaComponent = ProvenaComponent.DATA_STORE
 
@@ -230,19 +226,19 @@ class LandingPageComponent(BaseModel):
 
 
 class AuthApiComponent(BaseModel):
-    extra_hash_dirs: List[str]
+    api_domain: str
 
-    pitr_request_table: bool
-    pitr_groups_table: bool
+    extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
+
+    pitr_request_table: bool = True
+    pitr_groups_table: bool = True
 
     api_service_account_secret_arn: str
     access_alerts_email_address: str
 
-    backup_request_table: BackupType
-    backup_groups_table: BackupType
-    backup_username_person_link_table: BackupType
-
-    api_domain: str
+    backup_request_table: BackupType = BackupType.NON_CRITICAL
+    backup_groups_table: BackupType = BackupType.CRITICAL
+    backup_username_person_link_table: BackupType = BackupType.CRITICAL
 
     # table removal policies
     request_table_removal_policy: RemovalPolicy = RemovalPolicy.DESTROY
@@ -258,11 +254,11 @@ class SearchClusterEndpoints(BaseModel):
 
 
 class SearchComponent(BaseModel):
-    api_hash_dirs: List[str]
-    streamer_extra_hash_dirs: List[str]
+    api_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
+    streamer_extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
 
     # use an existing cluster!
-    existing_cluster_info: Optional[SearchClusterEndpoints]
+    existing_cluster_info: Optional[SearchClusterEndpoints] = None
 
     # domains
     # cluster domain
@@ -272,11 +268,11 @@ class SearchComponent(BaseModel):
     api_domain: str
 
     # index names - these should be unique if sharing a cluster
-    registry_index_name: str
-    global_index_name: str
+    registry_index_name: str = "registry_index"
+    global_index_name: str = "global_index"
 
     # streamer configurations
-    stream_registry: bool  # requires entity-registry
+    stream_registry: bool = True  # requires entity-registry
 
     # open search removal policy
     cluster_removal_policy: RemovalPolicy = RemovalPolicy.RETAIN
@@ -292,15 +288,15 @@ class EntityRegistryComponent(BaseModel):
     service_account_arn: str
 
     # hash config
-    extra_hash_dirs: List[str]
+    extra_hash_dirs: List[str] = REGISTRY_DEPENDANT_HASH_DIRS
 
     # domains
     api_domain: str
     ui_domain: str
 
     # backup
-    pitr_enabled: bool
-    tables_backup_policy: BackupType
+    pitr_enabled: bool = True
+    tables_backup_policy: BackupType = BackupType.CRITICAL
 
     # removals
     tables_removal_policy: RemovalPolicy = RemovalPolicy.RETAIN
@@ -310,8 +306,8 @@ class EntityRegistryComponent(BaseModel):
 
 class ProvStoreComponent(BaseModel):
     # deployment misc config
-    prov_job_extra_hash_dirs: List[str]
-    extra_hash_dirs: List[str]
+    prov_job_extra_hash_dirs: List[str] = PROV_JOB_EXTRA_HASH_DIRS
+    extra_hash_dirs: List[str] = JOB_ENABLED_API_EXTRA_HASH_DIRS
 
     # domains
     api_domain: str
@@ -328,10 +324,10 @@ class ProvStoreComponent(BaseModel):
     prov_job_dispatcher_service_role_secret_arn: str
 
     # neo4j config
-    neo4j_efs_root_path: str
+    neo4j_efs_root_path: str = "/"
 
     # neo4j backup policy
-    efs_backup_policy: BackupType
+    efs_backup_policy: BackupType = BackupType.CRITICAL
 
     # default - retain EFS
     neo4j_efs_removal_policy: RemovalPolicy = RemovalPolicy.RETAIN
@@ -446,7 +442,7 @@ class DeploymentConfig(BaseModel):
     # cdk out path
     cdk_out_path: str
     # The name of the cdk python app
-    cdk_app_name: str
+    cdk_app_name: str = "provena_app.py"
 
     # Sentry API monitoring?
     sentry_config: SentryConfig
@@ -552,14 +548,14 @@ class GeneralConfig(BaseModel):
 
     # storage bucket arn and backup
     storage_bucket_arn: str
-    storage_bucket_backup_policy: BackupType
+    storage_bucket_backup_policy: BackupType = BackupType.NONE
 
     # what is the root domain of the application (not necessarily same as hosted zone)
     # e.g. dev.provena.io
     application_root_domain: str
 
     # What theme ID is used for the UIs?
-    ui_theme_id: str
+    ui_theme_id: str = "default"
 
     # Links for deployment specific documentation/contact us links
     documentation_base_link: str
@@ -588,7 +584,7 @@ class TestType(str, Enum):
 
 class UnitTestConfig(BaseModel):
     handle_secret_arn: str
-    ardc_service_endpoint: str
+    ardc_service_endpoint: str = "https://demo.identifiers.ardc.edu.au/pids"
 
 
 class IntegrationTestConfig(BaseModel):
@@ -609,7 +605,7 @@ class TestConfig(BaseModel):
 
     unit_tests: Optional[UnitTestConfig]
     integration_tests: Optional[IntegrationTestConfig]
-    system_tests: Optional[SystemTestConfig]
+    system_tests: Optional[SystemTestConfig] = None
 
 
 # ======
