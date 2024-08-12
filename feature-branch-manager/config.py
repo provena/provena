@@ -19,7 +19,7 @@ class Config(BaseSettings):
     deploy_stack_pattern: str
 
     # pipeline stack name regex pattern to look for
-    pipeline_stack_pattern = r"f(\d+)Pipeline"
+    pipeline_stack_pattern : str = r"f(\d+)Pipeline"
 
     # regex pattern to search for in PR description as backup to title match
     feat_md_pattern: str = r"feat-(\d+)"
