@@ -31,6 +31,8 @@ This will pull down your config repo's configs for the GitHub bootstrap.
 
 The config schema is documented in `config.py`. This includes comments explaining the variables.
 
+`sample.json` is provided as a starting point. Make sure not to use sample as the name of your config as this will be committed to version control.
+
 ## Python setup
 
 Create venv, source and install.
