@@ -1,58 +1,84 @@
+# GitHub Credentials Bootstrap CDK Stack
 
-# Welcome to your CDK Python project!
+## Purpose
 
-This is a blank project for CDK development with Python.
+This CDK stack is very simple, it just deploys a GitHub connection credential
+which CodeBuild can use to authenticate with GitHub.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+This is a dependency for the main CDK pipeline workflow, but is managed in a
+separate project to keep the main CDK app simple.
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+## Config management
 
-To manually create a virtualenv on MacOS and Linux:
+This project shares a configuration management approach from the main CDK infrastructure application.
 
-```
-$ python3 -m venv .venv
-```
+For more detailed explanation of the configuration setup, see `provena/infrastructure/README.md`.
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+To get setup
 
-```
-$ source .venv/bin/activate
-```
+```bash
+# Return to root of Provena repo - depends on your installation
+cd ../path/provena
 
-If you are a Windows platform, you would activate the virtualenv like this:
-
-```
-% .venv\Scripts\activate.bat
+# run the config script to pull config for your desired stage
+# if used previously, you won't need to specify the config repo string
+./config namespace stage [--target repo-clone-string]
 ```
 
-Once the virtualenv is activated, you can install the required dependencies.
+This will pull down your config repo's configs for the GitHub bootstrap.
+
+### Config schema
+
+The config schema is documented in `config.py`. This includes comments explaining the variables.
+
+## Python setup
+
+Create venv, source and install.
 
 ```
-$ pip install -r requirements.txt
+python3.10 -m venv .venv && source .venv/bin/activate && pip install -r requirements-dev.txt
 ```
 
-At this point you can now synthesize the CloudFormation template for this code.
+## How to deploy/update
+
+### AWS Creds
+
+Ensure for your target deployment you have the appropriate AWS creds setup.
+
+### Determine config target
+
+Config files are named `<config id>.json` where config ID is always lower cased in the file system.
+
+For example, if you have a config called `dev.json` then specify this using an environment variable or preceding variable e.g.
 
 ```
-$ cdk synth
+export CONFIG_ID=dev
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+or
 
-## Useful commands
+```
+CONFIG_ID=dev cdk ...
+```
 
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
+### Diff
 
-Enjoy!
+Replacing `dev` with your preferred target.
+
+Run
+
+```
+CONFIG_ID=dev cdk diff
+```
+
+Check the diff to ensure your changes are desirable.
+
+### Deploy
+
+Run
+
+```
+CONFIG_ID=dev cdk deploy
+```
+
+Check the diff to ensure your changes are desirable.
