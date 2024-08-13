@@ -59,23 +59,22 @@ echo
 
 pip install -r requirements.txt
 
-ui_only_arg="--no-ui-only"
-unset UI_ONLY
+stage_arg="feat"
 if [ ${args[--ui_only]} ]; then
-	echo "Performing a UI Only deployment"
-	ui_only_arg="--ui-only"
+	echo "Performing a UI Only destroy"
+	stage_arg="feat-ui"
 fi
 
 echo "Running CDK destroy of app with feature configuration"
 echo
 
-echo "Running helper function: 'python app_run.py FEAT app ${ui_only_arg} destroy --require-approval never'"
-python app_run.py FEAT app ${ui_only_arg} "destroy --require-approval never"
+echo "Running helper function: 'python app_run.py ${stage_arg} app destroy --require-approval never'"
+python app_run.py ${stage_arg} app "destroy --require-approval never"
 
 echo "Running CDK destroy of pipeline with feature configuration"
 echo
 
-echo "Running helper function: 'python app_run.py FEAT pipeline ${ui_only_arg} destroy --require-approval never'"
-python app_run.py FEAT pipeline ${ui_only_arg} "destroy --require-approval never"
+echo "Running helper function: 'python app_run.py ${stage_arg} pipeline destroy --require-approval never'"
+python app_run.py ${stage_arg} pipeline "destroy --require-approval never"
 
 echo "Pipeline and app destroy completed."

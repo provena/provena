@@ -38,7 +38,7 @@ if config.type == DeploymentType.FULL_APP:
     validate_config(config)
 
     print(
-        f"Config ID identified and validated successfully - deploying against {config_id = }.")
+        f"Config ID identified and validated successfully - running against {config_id = }.")
 
     # This app is for the ops deployment of STAGE
     app = cdk.App()
@@ -69,7 +69,7 @@ elif config.type == DeploymentType.UI_ONLY:
     config = cast(ProvenaUIOnlyConfig, config)
 
     print(
-        f"Config ID identified and validated successfully - deploying against {config_id = }.")
+        f"Config ID identified and validated successfully - running against {config_id = }.")
 
     # This app is for the ops deployment of STAGE
     app = cdk.App()

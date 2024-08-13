@@ -106,15 +106,14 @@ if [ ${args[--monitoring]} ]; then
 	export ENABLE_API_MONITORING="true"
 fi
 
-ui_only_arg="--no-ui-only"
-unset UI_ONLY
+stage_arg="feat"
 if [ ${args[--ui_only]} ]; then
 	echo "Performing a UI Only deployment"
-	ui_only_arg="--ui-only"
+	stage_arg="feat-ui"
 fi
 
 # run the helper script to deploy feature branch
-echo "Running helper function: 'python app_run.py FEAT pipeline ${ui_only_arg} deploy --require-approval never'"
-python app_run.py FEAT pipeline ${ui_only_arg} "deploy --require-approval never"
+echo "Running helper function: 'python app_run.py ${stage_arg} pipeline deploy --require-approval never'"
+python app_run.py ${stage_arg} pipeline "deploy --require-approval never"
 
 echo "Pipeline deploy completed, monitor and update deployment from ${pipeline_link} on the BUILD account."

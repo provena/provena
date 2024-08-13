@@ -35,13 +35,13 @@ fb_usage() {
   # :command.usage_commands
   printf "%s\n" "Commands:"
   printf "  %s   Setup the feature branch using the standard name.\n" "branch   "
-  printf "  %s   Deploys the pipeline cloudformation Stack for the current git branch\n" "deploy   "
+  printf "  %s   Deploys the pipeline cloudformation Stack for the current git branch. Relies on feat.json or feat-ui.json being available in config.\n" "deploy   "
   printf "  %s   Sets up the APIs with .env files which reflect the deployed feature infrastructure configurations. Requires complete deployment, browser for auth flow, and admin permissions. Must NOT be a UI only deployment.\n" "bootstrap"
   printf "  %s   Describes the outputs and endpoints of the current feature branch in markdown format\n" "markdown "
   printf "  %s   Describes the outputs and endpoints of the current feature branch in standard non markdown format\n" "desc     "
-  printf "  %s   Destroys the feature infrastructure for the given ticket and description. Run multiple times if required due to API limits.\n" "destroy  "
-  printf "  %s   Run the given commands in the context of the feature branch on either the app or pipeline stacks. All postfixed CDK commands are run.\n" "run      "
-  printf "  %s   Runs a CDK hotswap deploy on the current deployed app infrastructure.\n" "hotswap  "
+  printf "  %s   Destroys the feature infrastructure for the given ticket and description. Run multiple times if required due to API limits. Relies on feat.json or feat-ui.json being available in config.\n" "destroy  "
+  printf "  %s   Run the given commands in the context of the feature branch on either the app or pipeline stacks. All postfixed CDK commands are run. Relies on feat.json or feat-ui.json being available in config.\n" "run      "
+  printf "  %s   Runs a CDK hotswap deploy on the current deployed app infrastructure. Relies on feat.json or feat-ui.json being available in config.\n" "hotswap  "
   echo
 
   # :command.long_usage
@@ -119,11 +119,11 @@ fb_branch_usage() {
 # :command.usage
 fb_deploy_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fb deploy - Deploys the pipeline cloudformation Stack for the current git branch\n"
+    printf "fb deploy - Deploys the pipeline cloudformation Stack for the current git branch. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   else
-    printf "fb deploy - Deploys the pipeline cloudformation Stack for the current git branch\n"
+    printf "fb deploy - Deploys the pipeline cloudformation Stack for the current git branch. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   fi
@@ -143,7 +143,7 @@ fb_deploy_usage() {
     # :command.usage_flags
     # :flag.usage
     printf "  %s\n" "--ui_only, -u"
-    printf "    Only deploy UIs - runs against DEV infrastructure\n"
+    printf "    Only deploy UIs - runs against DEV infrastructure. Depends on feat-ui.json\n    being available for config!\n"
     echo
 
     # :flag.usage
@@ -304,11 +304,11 @@ fb_desc_usage() {
 # :command.usage
 fb_destroy_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fb destroy - Destroys the feature infrastructure for the given ticket and description. Run multiple times if required due to API limits.\n"
+    printf "fb destroy - Destroys the feature infrastructure for the given ticket and description. Run multiple times if required due to API limits. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   else
-    printf "fb destroy - Destroys the feature infrastructure for the given ticket and description. Run multiple times if required due to API limits.\n"
+    printf "fb destroy - Destroys the feature infrastructure for the given ticket and description. Run multiple times if required due to API limits. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   fi
@@ -325,7 +325,7 @@ fb_destroy_usage() {
     # :command.usage_flags
     # :flag.usage
     printf "  %s\n" "--ui_only, -u"
-    printf "    This flag should be included if the feature branch was UI only.\n"
+    printf "    This flag should be included if the feature branch was UI only. Relies on\n    feat-ui.json being available in configs!\n"
     echo
 
     # :command.usage_fixed_flags
@@ -358,11 +358,11 @@ fb_destroy_usage() {
 # :command.usage
 fb_run_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fb run - Run the given commands in the context of the feature branch on either the app or pipeline stacks. All postfixed CDK commands are run.\n"
+    printf "fb run - Run the given commands in the context of the feature branch on either the app or pipeline stacks. All postfixed CDK commands are run. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   else
-    printf "fb run - Run the given commands in the context of the feature branch on either the app or pipeline stacks. All postfixed CDK commands are run.\n"
+    printf "fb run - Run the given commands in the context of the feature branch on either the app or pipeline stacks. All postfixed CDK commands are run. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   fi
@@ -379,7 +379,7 @@ fb_run_usage() {
     # :command.usage_flags
     # :flag.usage
     printf "  %s\n" "--ui_only, -u"
-    printf "    This flag should be included if the feature branch was UI only. This will\n    avoid building the full application stacks against a deployed UI only stack.\n"
+    printf "    This flag should be included if the feature branch was UI only. This will\n    avoid building the full application stacks against a deployed UI only stack.\n    Relies on feat-ui.json config being available.\n"
     echo
 
     # :command.usage_fixed_flags
@@ -412,11 +412,11 @@ fb_run_usage() {
 # :command.usage
 fb_hotswap_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fb hotswap - Runs a CDK hotswap deploy on the current deployed app infrastructure.\n"
+    printf "fb hotswap - Runs a CDK hotswap deploy on the current deployed app infrastructure. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   else
-    printf "fb hotswap - Runs a CDK hotswap deploy on the current deployed app infrastructure.\n"
+    printf "fb hotswap - Runs a CDK hotswap deploy on the current deployed app infrastructure. Relies on feat.json or feat-ui.json being available in config.\n"
     echo
 
   fi
@@ -436,7 +436,7 @@ fb_hotswap_usage() {
     # :command.usage_flags
     # :flag.usage
     printf "  %s\n" "--ui_only, -u"
-    printf "    This flag should be included if the feature branch was UI only.\n"
+    printf "    This flag should be included if the feature branch was UI only. Relies on\n    feat-ui.json being available in config.\n"
     echo
 
     # :command.usage_fixed_flags
@@ -650,16 +650,15 @@ fb_deploy_command() {
   	export ENABLE_API_MONITORING="true"
   fi
 
-  ui_only_arg="--no-ui-only"
-  unset UI_ONLY
+  stage_arg="feat"
   if [ ${args[--ui_only]} ]; then
   	echo "Performing a UI Only deployment"
-  	ui_only_arg="--ui-only"
+  	stage_arg="feat-ui"
   fi
 
   # run the helper script to deploy feature branch
-  echo "Running helper function: 'python app_run.py FEAT pipeline ${ui_only_arg} deploy --require-approval never'"
-  python app_run.py FEAT pipeline ${ui_only_arg} "deploy --require-approval never"
+  echo "Running helper function: 'python app_run.py ${stage_arg} pipeline deploy --require-approval never'"
+  python app_run.py ${stage_arg} pipeline "deploy --require-approval never"
 
   echo "Pipeline deploy completed, monitor and update deployment from ${pipeline_link} on the BUILD account."
 
@@ -939,24 +938,23 @@ fb_destroy_command() {
 
   pip install -r requirements.txt
 
-  ui_only_arg="--no-ui-only"
-  unset UI_ONLY
+  stage_arg="feat"
   if [ ${args[--ui_only]} ]; then
-  	echo "Performing a UI Only deployment"
-  	ui_only_arg="--ui-only"
+  	echo "Performing a UI Only destroy"
+  	stage_arg="feat-ui"
   fi
 
   echo "Running CDK destroy of app with feature configuration"
   echo
 
-  echo "Running helper function: 'python app_run.py FEAT app ${ui_only_arg} destroy --require-approval never'"
-  python app_run.py FEAT app ${ui_only_arg} "destroy --require-approval never"
+  echo "Running helper function: 'python app_run.py ${stage_arg} app destroy --require-approval never'"
+  python app_run.py ${stage_arg} app "destroy --require-approval never"
 
   echo "Running CDK destroy of pipeline with feature configuration"
   echo
 
-  echo "Running helper function: 'python app_run.py FEAT pipeline ${ui_only_arg} destroy --require-approval never'"
-  python app_run.py FEAT pipeline ${ui_only_arg} "destroy --require-approval never"
+  echo "Running helper function: 'python app_run.py ${stage_arg} pipeline destroy --require-approval never'"
+  python app_run.py ${stage_arg} pipeline "destroy --require-approval never"
 
   echo "Pipeline and app destroy completed."
 
@@ -1046,15 +1044,14 @@ fb_run_command() {
 
   echo "Running featcdkrun on ${stack_type} with commands ${commands}..."
 
-  ui_only_arg="--no-ui-only"
-  unset UI_ONLY
+  stage_arg="feat"
   if [ ${args[--ui_only]} ]; then
   	echo "Performing a UI Only deployment"
-  	ui_only_arg="--ui-only"
+  	stage_arg="feat-ui"
   fi
 
   # run the helper script
-  python app_run.py FEAT ${stack_type} ${ui_only_arg} "${commands}"
+  python app_run.py ${stage_arg} ${stack_type} "${commands}"
 
 }
 

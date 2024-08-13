@@ -79,12 +79,11 @@ pip install -r requirements.txt
 
 echo "Running featcdkrun on ${stack_type} with commands ${commands}..."
 
-ui_only_arg="--no-ui-only"
-unset UI_ONLY
+stage_arg="feat"
 if [ ${args[--ui_only]} ]; then
 	echo "Performing a UI Only deployment"
-	ui_only_arg="--ui-only"
+	stage_arg="feat-ui"
 fi
 
 # run the helper script
-python app_run.py FEAT ${stack_type} ${ui_only_arg} "${commands}"
+python app_run.py ${stage_arg} ${stack_type} "${commands}"
