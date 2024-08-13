@@ -12,6 +12,9 @@ This manages a provena app deployment. The config is dispatched based on the
 config ID. This config ID must be present in the imported config map from
 configs.config_map. This allows organisational extension of private
 configurations while retaining a fully typed config interface.
+
+Capable of referring to the base type field in the config and dispatching to
+correct stack (app or UI only).
 """
 
 # Dispatch from config ID
