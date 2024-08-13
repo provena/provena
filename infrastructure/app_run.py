@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import typer
-from provena.config.config_loader import get_app_config, get_ui_only_config
+from provena.config.config_loader import get_config
+from provena.config.config_class import DeploymentType, ProvenaConfig, ProvenaUIOnlyConfig
 from enum import Enum
-from typing import List
+from typing import List, cast
 import os
 
 
@@ -34,10 +35,6 @@ def run(
         ...,
         help=f"What app target do you want to use. app or pipeline."
     ),
-    ui_only: bool = typer.Option(
-        False,
-        help=f"Do you want to deploy/modify a UI only stack?"
-    ),
     commands: List[str] = typer.Argument(
         ...,
         help=f"What CDK commands do you want to run - all postfixed onto the end of the cdk ... command."
@@ -49,34 +46,34 @@ def run(
     deployment_stack_id: str = ""
     input_output_subcommand: str = ""
 
+    # load config
+    app_config_loader = get_config(config_id)
+    config = app_config_loader()
+
     # standard deployment
-    if not ui_only:
-        # get the app config
-        try:
-            app_config_loader = get_app_config(config_id)
-            app_config = app_config_loader()
-        except Exception as e:
-            raise Exception(f"Failed to load config with config ID {config_id}. Error.") from e
+    if config.type == DeploymentType.FULL_APP:
+        print("FULL_APP App config loaded and validated. Success.")
 
-        print("App config loaded and validated. Success.")
+        # cast
+        config = cast(ProvenaConfig, config)
 
-        pipeline_stack_id = app_config.deployment.pipeline_stack_id
-        deployment_stack_id = app_config.deployment.deployment_stack_id
-        input_output_subcommand = app_config.deployment.cdk_input_output_subcommand
+        # determine stack IDs and command
+        pipeline_stack_id = config.deployment.pipeline_stack_id
+        deployment_stack_id = config.deployment.deployment_stack_id
+        input_output_subcommand = config.deployment.cdk_input_output_subcommand
+    elif config.type == DeploymentType.UI_ONLY:
+        print("UI_ONLY App config loaded and validated. Success.")
 
-    else:
-        # get the app config
-        try:
-            ui_config_loader = get_ui_only_config(config_id)
-            ui_config = ui_config_loader()
-        except Exception as e:
-            raise Exception(f"Failed to load ui only config with config ID {config_id}. Error.") from e
+        # cast
+        config = cast(ProvenaUIOnlyConfig, config)
 
+        # determine stack IDs and command
         print("UI only app config loaded and validated. Success.")
-        pipeline_stack_id = ui_config.pipeline_stack_id
-        deployment_stack_id = ui_config.deployment_stack_id
-        input_output_subcommand = ui_config.cdk_input_output_subcommand
-
+        pipeline_stack_id = config.pipeline_stack_id
+        deployment_stack_id = config.deployment_stack_id
+        input_output_subcommand = config.cdk_input_output_subcommand
+    else: 
+        raise ValueError(f"Unexpected DeploymentType in base config: {config.type}. Report to system administrator.")
     # build command string
 
     # work out target stack name

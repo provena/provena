@@ -215,7 +215,7 @@ python app_run.py <config_id> app diff
 This will result in a command with the following structure
 
 ```
-cdk --app "python provena_app.py" --output "<config_id>_cdk.out" diff <variable>Pipeline/deploy/<variable>
+cdk --output "<config_id>_cdk.out" diff <variable>Pipeline/deploy/<variable>
 ```
 
 Where some values have been omitted above.

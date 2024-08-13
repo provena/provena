@@ -1,23 +1,18 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
 import os
+from provena.pipeline.pipeline_stack import ProvenaPipelineStack, ProvenaUIOnlyPipelineStack
+from provena.config.config_helpers import validate_config
+from provena.config.config_loader import get_config
+from provena.config.config_class import DeploymentType, ProvenaConfig, ProvenaUIOnlyConfig
+from typing import cast
 
 """
-This python app just deploys the codebuild GitHub authentication stack.
-
-Make sure that when tokens are expired that this underlying stack is also
-redeployed.
-
-The config is dispatched in a similar way to the main provena app config. 
-
-Specify a PROVENA_CONFIG_ID environment variable which is available in the user
-customised get_bootstrap_config map exported from configs.config_map
+This manages a provena app deployment. The config is dispatched based on the
+config ID. This config ID must be present in the imported config map from
+configs.config_map. This allows organisational extension of private
+configurations while retaining a fully typed config interface.
 """
-
-app = cdk.App()
-
-from provena.utility_stacks.CodeBuildGithubBootstrap import CodeBuildGithubBootstrap
-from provena.config.config_loader import get_bootstrap_config
 
 # Dispatch from config ID
 # =========================
@@ -27,17 +22,77 @@ config_id = os.getenv("PROVENA_CONFIG_ID")
 if config_id is None:
     raise ValueError("No PROVENA_CONFIG_ID environment variable provided.")
 
-config_loader = get_bootstrap_config(config_id)
+config_loader = get_config(config_id)
 config = config_loader()
 
-# Github bootstrap
+# Determine type 
+if config.type == DeploymentType.FULL_APP:
+    print(f"Identified app type: {config.type}.")
 
-# BUILD - comment when working on OPS
+    # Validate imported config
+    # =========================
 
-CodeBuildGithubBootstrap(
-    scope=app, id='GithubCredsBootstrap', token_arn=config.github_token_arn, env=config.env)
+    config = cast(ProvenaConfig, config)
 
-# TODO bring back FeatureBranchManager and ExporterJob in a non specific config approach
+    # Validate config
+    validate_config(config)
 
-# app synth
-app.synth()
+    print(
+        f"Config ID identified and validated successfully - deploying against {config_id = }.")
+
+    # This app is for the ops deployment of STAGE
+    app = cdk.App()
+
+    """
+    =========================
+    DEPLOYMENT PIPELINE STACK
+    =========================
+    This should be the only stack in the deployment pipeline.
+    """
+
+    ProvenaPipelineStack(
+        scope=app,
+        id=config.deployment.pipeline_stack_id,
+        config=config,
+        env=config.deployment.pipeline_environment.env
+    )
+
+    """
+    =============================
+    APP SYNTH - DONT COPY OR MOVE
+    =============================
+    """
+    app.synth()
+elif config.type == DeploymentType.UI_ONLY:
+    print(f"Identified app type: {config.type}.")
+
+    config = cast(ProvenaUIOnlyConfig, config)
+
+    print(
+        f"Config ID identified and validated successfully - deploying against {config_id = }.")
+
+    # This app is for the ops deployment of STAGE
+    app = cdk.App()
+
+    """
+    =========================
+    DEPLOYMENT PIPELINE STACK
+    =========================
+    This should be the only stack in the deployment pipeline.
+    """
+
+    ProvenaUIOnlyPipelineStack(
+        scope=app,
+        id=config.pipeline_stack_id,
+        config=config,
+        env=config.aws_environment.env,
+    )
+
+    """
+    =============================
+    APP SYNTH - DONT COPY OR MOVE
+    =============================
+    """
+    app.synth()
+else: 
+    raise ValueError(f"Unexpected DeploymentType in base config: {config.type}. Report to system administrator.")

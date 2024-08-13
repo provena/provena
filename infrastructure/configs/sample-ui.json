@@ -52,7 +52,6 @@
     },
     "ui_theme_id": "default",
     "cdk_out_path": "f${TICKET_NUMBER}_cdk.out",
-    "cdk_app_name": "provena_ui_only_app.py",
     "ticket_number": "${TICKET_NUMBER?!!}",
     "email_alerts_activated": "${PIPELINE_ALERTS?true||false}",
     "pipeline_alert_email": "${PIPELINE_ALERTS?'9cfdabab.CSIROAU.onmicrosoft.com@au.teams.ms'||null}"

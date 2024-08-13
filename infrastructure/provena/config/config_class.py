@@ -40,6 +40,14 @@ from provena.config.config_global_defaults import *
     --------
 """
 
+class DeploymentType(str, Enum):
+    # ProvenaConfig
+    FULL_APP = "FULL_APP"
+    # ProvenaUiOnlyConfig
+    UI_ONLY = "UI_ONLY"
+
+class ConfigBase(BaseModel):
+    type: DeploymentType = DeploymentType.FULL_APP
 
 class AWSTarget(BaseModel):
     account: str
@@ -441,8 +449,6 @@ class DeploymentConfig(BaseModel):
 
     # cdk out path
     cdk_out_path: str
-    # The name of the cdk python app
-    cdk_app_name: str = "provena_app.py"
 
     # Sentry API monitoring?
     sentry_config: SentryConfig
@@ -484,7 +490,7 @@ class DeploymentConfig(BaseModel):
     # synth command (generated from app name and output path)
     @property
     def cdk_input_output_subcommand(self) -> str:
-        return f'--app "python {self.cdk_app_name}" --output "{self.cdk_out_path}"'
+        return f'--output "{self.cdk_out_path}"'
 
     # synth command (generated from app name and output path)
     @property
@@ -647,7 +653,9 @@ ALL CONFIG
 """
 
 
-class ProvenaConfig(BaseModel):
+class ProvenaConfig(ConfigBase):
+    # type inherited from base
+
     deployment: DeploymentConfig
     components: ComponentConfig
     tests: TestConfig
@@ -704,7 +712,9 @@ class UiOnlyDomainNames(BaseModel):
     keycloak_realm_name: str
 
 
-class ProvenaUIOnlyConfig(BaseModel):
+class ProvenaUIOnlyConfig(ConfigBase):
+    # type inherited from base
+
     # What is the provena config ID of this deployment
     config_id: str
 
@@ -745,7 +755,6 @@ class ProvenaUIOnlyConfig(BaseModel):
     ui_theme_id: str = "default"
 
     cdk_out_path: str
-    cdk_app_name: str
     ticket_number: int
 
     sentry_config: SentryConfig
@@ -756,7 +765,7 @@ class ProvenaUIOnlyConfig(BaseModel):
     # synth command (generated from app name and output path)
     @property
     def cdk_input_output_subcommand(self) -> str:
-        return f'--app "python {self.cdk_app_name}" --output "{self.cdk_out_path}"'
+        return f'--output "{self.cdk_out_path}"'
 
     # synth command (generated from app name and output path)
     @property
@@ -778,8 +787,3 @@ class ProvenaUIOnlyConfig(BaseModel):
         export_string = " && ".join([f'export {k}="{v}"' for k, v in env_vars.items()])
 
         return f"{export_string} && npx cdk synth {self.cdk_input_output_subcommand}"
-
-
-class GithubBootstrapConfig(BaseModel):
-    env: AWSTarget
-    github_token_arn: str
