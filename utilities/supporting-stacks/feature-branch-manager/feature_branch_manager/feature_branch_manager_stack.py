@@ -96,7 +96,7 @@ class FeatureBranchManager(Stack):
         lambda_func = _lambda.Function(
             scope=self,
             id="runner",
-            code=_lambda.Code.from_asset(path="provena/utility_stacks/schedule_lambda"),
+            code=_lambda.Code.from_asset(path="feature_branch_manager/schedule_lambda"),
             handler="lambda_function.handler",
             runtime=_lambda.Runtime.PYTHON_3_9,
             description="Triggers the CodeBuild project which runs the feature brach manager.",
