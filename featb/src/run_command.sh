@@ -77,7 +77,7 @@ echo
 
 pip install -r requirements.txt
 
-echo "Running featcdkrun on ${stack_type} with commands ${commands}..."
+echo "Running cdk on ${stack_type} with commands ${commands}..."
 
 stage_arg="feat"
 if [ ${args[--ui_only]} ]; then
