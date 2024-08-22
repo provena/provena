@@ -28,7 +28,7 @@ def perform_config_substitution(
     6. ${VARIABLE_NAME} - Basic substitution
 
     Args:
-        input_string (str): The input string containing variables to be substituted.
+        input_string (str): The input string of a config file containing variables to be substituted.
         replacements (Optional[Dict[str, str]]): An optional dictionary of replacement keys -> values
             to be used if the environment variable isn't available.
 
@@ -52,8 +52,8 @@ def perform_config_substitution(
         return value is not None and value.lower() != "false"
 
     def replace_quotes(s: str) -> str:
-        """Replace single quotes with double quotes, except for 'null'."""
-        return "null" if s.strip() == "null" else s.replace("'", '"')
+        """Replace single quotes with double quotes."""
+        return s.replace("'", '"')
 
     def basic_substitution(match: re.Match) -> str:
         var_name = match.group(1)
