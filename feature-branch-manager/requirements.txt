@@ -1,0 +1,10 @@
+requests
+python-jose
+mypy
+types-requests
+pydantic[dotenv]==1.10.17
+PyGithub
+typer[all]
+autopep8
+boto3==1.28.62
+botocore==1.31.62

@@ -1,0 +1,58 @@
+{
+    "config_id": "DEV",
+    "config_source_repo_clone_string": "https://github.com/your-org/your-config-repo.git",
+    "config_source_name_space": "provena",
+    "config_source_stage": "dev",
+    "config_repo_oauth_token_secret_arn": "arn:aws:secretsmanager:YOUR_SECRET_ARN",
+    "pipeline_stack_id": "f${TICKET_NUMBER}Pipeline",
+    "deployment_stack_id": "f${TICKET_NUMBER}-your-ui-only",
+    "github_token_arn": "arn:aws:secretsmanager:YOUR_SECRET_ARN",
+    "dockerhub_creds_arn": "arn:aws:secretsmanager:YOUR_SECRET_ARN",
+    "git_repo_name": "provena",
+    "git_owner_org": "gbrrestoration",
+    "git_branch_name": "${BRANCH_NAME}",
+    "git_commit_id": "${GIT_COMMIT_ID?'!!'||null}",
+    "git_commit_url": "${GIT_COMMIT_URL?'!!'||null}",
+    "git_tag_name": "${GIT_TAG_NAME?'!!'||null}",
+    "git_release_title": "${GIT_RELEASE_TITLE?'!!'||null}",
+    "git_release_url": "${GIT_RELEASE_URL?'!!'||null}",
+    "aws_environment": {
+        "account": "239021088610",
+        "region": "ap-southeast-2"
+    },
+    "target_stage": "DEV",
+    "domains": {
+        "root_domain": "rrap-is.com",
+        "landing_page_sub_domain": "f${TICKET_NUMBER}.dev",
+        "registry_sub_domain": "f${TICKET_NUMBER}-registry.dev",
+        "data_store_sub_domain": "f${TICKET_NUMBER}-data.dev",
+        "prov_store_sub_domain": "f${TICKET_NUMBER}-prov.dev",
+        "search_api_endpoint": "https://search.dev.rrap-is.com",
+        "prov_api_endpoint": "https://prov-api.dev.rrap-is.com",
+        "data_api_endpoint": "https://data-api.dev.rrap-is.com",
+        "auth_api_endpoint": "https://auth-api.dev.rrap-is.com",
+        "registry_api_endpoint": "https://registry-api.dev.rrap-is.com",
+        "warmer_api_endpoint": "https://warmer.dev.rrap-is.com",
+        "async_jobs_api_endpoint": "https://job-api.dev.rrap-is.com",
+        "documentation_base_link": "https://docs.provena.io",
+        "contact_us_link": "https://jira.csiro.au/rest/collectors/1.0/template/form/520ad91f",
+        "keycloak_minimal_endpoint": "https://auth.dev.rrap-is.com/auth",
+        "keycloak_realm_name": "rrap"
+    },
+    "dns": {
+        "root_domain": "rrap-is.com",
+        "hosted_zone_name": "rrap-is.com",
+        "hosted_zone_id": "Z0836941212BLCTPJJ6PY",
+        "domain_certificate_arn": "arn:aws:acm:ap-southeast-2:239021088610:certificate/ba0b5ea3-10ec-4fb4-b97b-987438e7c208",
+        "us_east_certificate_arn": "arn:aws:acm:us-east-1:239021088610:certificate/94d93514-3fd8-4314-8926-3581ccc9a24a"
+    },
+    "sentry_config": {
+        "sentry_dsn_front_end": "${ENABLE_API_MONITORING?'https://21aea42c9ffb6b2e00425068348881cb@o4506907043561472.ingest.us.sentry.io/4506947274342400'||null}",
+        "monitoring_enabled": "${ENABLE_API_MONITORING?true||false}"
+    },
+    "ui_theme_id": "default",
+    "cdk_out_path": "f${TICKET_NUMBER}_cdk.out",
+    "ticket_number": "${TICKET_NUMBER?!!}",
+    "email_alerts_activated": "${PIPELINE_ALERTS?true||false}",
+    "pipeline_alert_email": "${PIPELINE_ALERTS?'9cfdabab.CSIROAU.onmicrosoft.com@au.teams.ms'||null}"
+}

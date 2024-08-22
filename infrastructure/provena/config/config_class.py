@@ -1,13 +1,8 @@
-from typing import Dict, Optional, Set
-from dataclasses import dataclass, field
-from aws_cdk import (
-    Environment,
-    aws_codepipeline_actions,
-    aws_iam as iam,
-    RemovalPolicy
-)
-from typing import Any, List
+from typing import Dict, Optional
+from aws_cdk import Environment, aws_codepipeline_actions, aws_iam as iam, RemovalPolicy
+from typing import List
 from enum import Enum, auto
+from pydantic import BaseModel, Field
 from provena.config.config_global_defaults import *
 
 """
@@ -45,6 +40,23 @@ from provena.config.config_global_defaults import *
     --------
 """
 
+class DeploymentType(str, Enum):
+    # ProvenaConfig
+    FULL_APP = "FULL_APP"
+    # ProvenaUiOnlyConfig
+    UI_ONLY = "UI_ONLY"
+
+class ConfigBase(BaseModel):
+    type: DeploymentType = DeploymentType.FULL_APP
+
+class AWSTarget(BaseModel):
+    account: str
+    region: str
+
+    @property
+    def env(self) -> Environment:
+        return Environment(account=self.account, region=self.region)
+
 
 class Stage(str, Enum):
     TEST = "TEST"
@@ -74,14 +86,12 @@ class ProvenaComponent(str, Enum):
     WARMER = "WARMER"
 
 
-@dataclass
-class FeatName:
+class FeatName(BaseModel):
     ticket_num: int
     description: str
 
 
-@dataclass
-class SentryConfig:
+class SentryConfig(BaseModel):
     """
     A class used to represent the configuration for application monitoring via Sentry.
 
@@ -96,8 +106,8 @@ class SentryConfig:
 
     """
 
-    sentry_dsn_back_end: Optional[str]
-    sentry_dsn_front_end: Optional[str]
+    sentry_dsn_back_end: Optional[str] = None
+    sentry_dsn_front_end: Optional[str] = None
     monitoring_enabled: bool = False
 
 
@@ -108,18 +118,16 @@ STAGES
 """
 
 
-@dataclass
-class NetworkingComponent():
+class NetworkingComponent(BaseModel):
     component: ProvenaComponent = ProvenaComponent.NETWORKING
 
 
-@dataclass
-class AsyncJobsComponent():
+class AsyncJobsComponent(BaseModel):
     job_api_domain: str
 
-    job_api_extra_hash_dirs: List[str]
-    invoker_extra_hash_dirs: List[str]
-    connector_extra_hash_dirs: List[str]
+    job_api_extra_hash_dirs: List[str] = ASYNC_JOB_API_EXTRA_HASH_DIRS
+    invoker_extra_hash_dirs: List[str] = ASYNC_INVOKER_EXTRA_HASH_DIRS
+    connector_extra_hash_dirs: List[str] = ASYNC_CONNECTOR_EXTRA_HASH_DIRS
 
     # how long does the job poll before exiting (seconds)
     async_idle_timeout: int = 120
@@ -128,12 +136,9 @@ class AsyncJobsComponent():
     max_task_scaling: int = 3
 
     # Job config extra hash dirs (defaults provided)
-    registry_job_extra_hash_dirs: List[str] = field(
-        default_factory=lambda: REGISTRY_JOB_EXTRA_HASH_DIRS)
-    prov_job_extra_hash_dirs: List[str] = field(
-        default_factory=lambda: PROV_JOB_EXTRA_HASH_DIRS)
-    email_job_extra_hash_dirs: List[str] = field(
-        default_factory=lambda: EMAIL_JOB_EXTRA_HASH_DIRS)
+    registry_job_extra_hash_dirs: List[str] = REGISTRY_JOB_EXTRA_HASH_DIRS
+    prov_job_extra_hash_dirs: List[str] = PROV_JOB_EXTRA_HASH_DIRS
+    email_job_extra_hash_dirs: List[str] = EMAIL_JOB_EXTRA_HASH_DIRS
 
     component: ProvenaComponent = ProvenaComponent.ASYNC_JOBS
 
@@ -151,14 +156,12 @@ class BackupType(str, Enum):
     NONE = "NONE"
 
 
-@dataclass
-class LambdaWarmerComponent():
+class LambdaWarmerComponent(BaseModel):
     domain: str
     component: ProvenaComponent = ProvenaComponent.WARMER
 
 
-@dataclass
-class KeycloakConfiguration():
+class KeycloakConfiguration(BaseModel):
     # realm name is already known
 
     # What should be displayed in the Login page etc
@@ -172,19 +175,18 @@ class KeycloakConfiguration():
     stage_override: Optional[Stage] = None
 
 
-@dataclass
-class KeycloakComponent():
+class KeycloakComponent(BaseModel):
     # auth domain
     domain: str
 
     # backup rds?
-    rds_backup_policy: BackupType
+    rds_backup_policy: BackupType = BackupType.CRITICAL
 
     # Realm name e.g. "provena"
     realm_name: str
 
     # What is the name of the custom theme to inject?
-    custom_theme_name: str
+    custom_theme_name: str = "default"
 
     # recover from snapshot?
     snapshot_arn: Optional[str] = None
@@ -199,18 +201,16 @@ class KeycloakComponent():
     component: ProvenaComponent = ProvenaComponent.KEYCLOAK
 
 
-@dataclass
-class IdentityServiceComponent():
+class IdentityServiceComponent(BaseModel):
     handle_credentials_arn: str
     domain_name: str
     ardc_service_endpoint: str
-    extra_hash_dirs: List[str]
+    extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
 
     component: ProvenaComponent = ProvenaComponent.IDENTITY_SERVICE
 
 
-@dataclass
-class DataStoreComponent():
+class DataStoreComponent(BaseModel):
     # Service account creds for general API
     service_account_arn: str
     # Special service account for OIDC AWS connection
@@ -220,11 +220,7 @@ class DataStoreComponent():
     api_domain: str
     ui_domain: str
 
-    # backup
-    pitr_enabled: bool
-    table_backup_policy: BackupType
-
-    extra_hash_dirs: List[str]
+    extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
 
     component: ProvenaComponent = ProvenaComponent.DATA_STORE
 
@@ -232,27 +228,25 @@ class DataStoreComponent():
     table_removal_policy: RemovalPolicy = RemovalPolicy.RETAIN
 
 
-@dataclass
-class LandingPageComponent():
+class LandingPageComponent(BaseModel):
     ui_domain: str
     component: ProvenaComponent = ProvenaComponent.LANDING_PAGE
 
 
-@dataclass
-class AuthApiComponent():
-    extra_hash_dirs: List[str]
+class AuthApiComponent(BaseModel):
+    api_domain: str
 
-    pitr_request_table: bool
-    pitr_groups_table: bool
+    extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
+
+    pitr_request_table: bool = True
+    pitr_groups_table: bool = True
 
     api_service_account_secret_arn: str
     access_alerts_email_address: str
 
-    backup_request_table: BackupType
-    backup_groups_table: BackupType
-    backup_username_person_link_table: BackupType
-
-    api_domain: str
+    backup_request_table: BackupType = BackupType.NON_CRITICAL
+    backup_groups_table: BackupType = BackupType.CRITICAL
+    backup_username_person_link_table: BackupType = BackupType.CRITICAL
 
     # table removal policies
     request_table_removal_policy: RemovalPolicy = RemovalPolicy.DESTROY
@@ -262,19 +256,17 @@ class AuthApiComponent():
     component: ProvenaComponent = ProvenaComponent.AUTH_API
 
 
-@dataclass
-class SearchClusterEndpoints():
+class SearchClusterEndpoints(BaseModel):
     domain_arn: str
     domain_endpoint: str
 
 
-@dataclass
-class SearchComponent():
-    api_hash_dirs: List[str]
-    streamer_extra_hash_dirs: List[str]
+class SearchComponent(BaseModel):
+    api_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
+    streamer_extra_hash_dirs: List[str] = DEFAULT_EXTRA_HASH_DIRS
 
     # use an existing cluster!
-    existing_cluster_info: Optional[SearchClusterEndpoints]
+    existing_cluster_info: Optional[SearchClusterEndpoints] = None
 
     # domains
     # cluster domain
@@ -284,11 +276,11 @@ class SearchComponent():
     api_domain: str
 
     # index names - these should be unique if sharing a cluster
-    registry_index_name: str
-    global_index_name: str
+    registry_index_name: str = "registry_index"
+    global_index_name: str = "global_index"
 
     # streamer configurations
-    stream_registry: bool  # requires entity-registry
+    stream_registry: bool = True  # requires entity-registry
 
     # open search removal policy
     cluster_removal_policy: RemovalPolicy = RemovalPolicy.RETAIN
@@ -299,21 +291,20 @@ class SearchComponent():
     component: ProvenaComponent = ProvenaComponent.SEARCH
 
 
-@dataclass
-class EntityRegistryComponent():
+class EntityRegistryComponent(BaseModel):
     # service account arn
     service_account_arn: str
 
     # hash config
-    extra_hash_dirs: List[str]
+    extra_hash_dirs: List[str] = REGISTRY_DEPENDANT_HASH_DIRS
 
     # domains
     api_domain: str
     ui_domain: str
 
     # backup
-    pitr_enabled: bool
-    tables_backup_policy: BackupType
+    pitr_enabled: bool = True
+    tables_backup_policy: BackupType = BackupType.CRITICAL
 
     # removals
     tables_removal_policy: RemovalPolicy = RemovalPolicy.RETAIN
@@ -321,11 +312,10 @@ class EntityRegistryComponent():
     component: ProvenaComponent = ProvenaComponent.ENTITY_REGISTRY
 
 
-@dataclass
-class ProvStoreComponent():
+class ProvStoreComponent(BaseModel):
     # deployment misc config
-    prov_job_extra_hash_dirs: List[str]
-    extra_hash_dirs: List[str]
+    prov_job_extra_hash_dirs: List[str] = PROV_JOB_EXTRA_HASH_DIRS
+    extra_hash_dirs: List[str] = JOB_ENABLED_API_EXTRA_HASH_DIRS
 
     # domains
     api_domain: str
@@ -342,10 +332,10 @@ class ProvStoreComponent():
     prov_job_dispatcher_service_role_secret_arn: str
 
     # neo4j config
-    neo4j_efs_root_path: str
+    neo4j_efs_root_path: str = "/"
 
     # neo4j backup policy
-    efs_backup_policy: BackupType
+    efs_backup_policy: BackupType = BackupType.CRITICAL
 
     # default - retain EFS
     neo4j_efs_removal_policy: RemovalPolicy = RemovalPolicy.RETAIN
@@ -356,8 +346,7 @@ class ProvStoreComponent():
     component: ProvenaComponent = ProvenaComponent.PROV_STORE
 
 
-@ dataclass
-class ComponentConfig():
+class ComponentConfig(BaseModel):
     # each component can either be included or not and defines a personal set of
     # config options
     networking: Optional[NetworkingComponent]
@@ -380,8 +369,7 @@ DOMAIN CONFIG
 """
 
 
-@dataclass
-class HZConfig():
+class HZConfig(BaseModel):
     # this is the root domain to which the component config domains will be
     # relative to
     root_domain: str
@@ -391,7 +379,6 @@ class HZConfig():
     hosted_zone_id: str
 
 
-@ dataclass
 class DNSConfig(HZConfig):
     # awsregion specific certificate
     domain_certificate_arn: str
@@ -406,16 +393,23 @@ DEPLOYMENT CONFIG
 """
 
 
-@dataclass
-class BuildBadgeConfig():
+class BuildBadgeConfig(BaseModel):
     build_domain: str
     interface_domain: str
 
 
-@dataclass
-class DeploymentConfig():
+class DeploymentConfig(BaseModel):
     # What is the Provena config ID of this config?
     config_id: str
+
+    # config source repo that defined this config
+    config_source_repo_clone_string: str
+    # The name space for the config
+    config_source_name_space: str
+    # The stage for the config
+    config_source_stage: str
+    # The secret ARN which contains the username/token combination to use for cloning the repo
+    config_repo_oauth_token_secret_arn: str
 
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
@@ -444,9 +438,9 @@ class DeploymentConfig():
         return f"{self.git_owner_org}/{self.git_repo_name}"
 
     # Which CDK target environment (account/region) should host the pipeline
-    deployment_environment: Environment
+    deployment_environment: AWSTarget
     # Which CDK target environment (account/region) should the application be deployed into
-    pipeline_environment: Environment
+    pipeline_environment: AWSTarget
     # github oauth token arn
     github_token_arn: str
 
@@ -455,8 +449,6 @@ class DeploymentConfig():
 
     # cdk out path
     cdk_out_path: str
-    # The name of the cdk python app
-    cdk_app_name: str
 
     # Sentry API monitoring?
     sentry_config: SentryConfig
@@ -464,20 +456,24 @@ class DeploymentConfig():
     # Is this a feature branch deployment?
     feature_deployment: bool = False
     # If so - provide the ticket number
-    ticket_no: Optional[int] = None
+    ticket_number: Optional[int] = None
 
     # Should an interface export pipeline be deployed
     interface_pipeline: bool = True
     # Should a quick deploy pipeline be deployed
     quick_deploy_pipeline: bool = True
     # How should the pipeline be triggered?
-    interface_pipeline_trigger_settings: Optional[aws_codepipeline_actions.GitHubTrigger] = None
+    interface_pipeline_trigger_settings: Optional[
+        aws_codepipeline_actions.GitHubTrigger
+    ] = None
     # build badge?
     build_badge: Optional[BuildBadgeConfig] = None
     # Should a ui only pipeline be deployed
     ui_only_pipeline: bool = True
     # How should the pipeline be triggered?
-    ui_pipeline_trigger_settings: Optional[aws_codepipeline_actions.GitHubTrigger] = None
+    ui_pipeline_trigger_settings: Optional[aws_codepipeline_actions.GitHubTrigger] = (
+        None
+    )
     # Email alerts?
     email_alerts_activated: bool = True
     # What is the email address to send to?
@@ -494,36 +490,34 @@ class DeploymentConfig():
     # synth command (generated from app name and output path)
     @property
     def cdk_input_output_subcommand(self) -> str:
-        return f'--app "python {self.cdk_app_name}" --output "{self.cdk_out_path}"'
+        return f'--output "{self.cdk_out_path}"'
 
     # synth command (generated from app name and output path)
     @property
     def cdk_synth_command(self) -> str:
-
         env_vars: Dict[str, str] = {
-            'PROVENA_CONFIG_ID': self.config_id,
+            "PROVENA_CONFIG_ID": self.config_id,
         }
 
         if self.feature_deployment:
-            if self.ticket_no is None:
+            if self.ticket_number is None:
                 raise ValueError(
                     "Cannot deploy a feature stack without specifying the ticket number."
                 )
-            env_vars['TICKET_NO'] = str(self.ticket_no)
-            env_vars['BRANCH_NAME'] = self.git_branch_name
+            env_vars["TICKET_NUMBER"] = str(self.ticket_number)
+            env_vars["BRANCH_NAME"] = self.git_branch_name
 
         if self.email_alerts_activated:
-            env_vars['PIPELINE_ALERTS'] = "true"
-        
+            env_vars["PIPELINE_ALERTS"] = "true"
+
         if self.sentry_config.monitoring_enabled:
             # note that because of how the config is set up,
             # the infra will interpret any non None value to be true
-            env_vars['ENABLE_API_MONITORING'] = "true"
+            env_vars["ENABLE_API_MONITORING"] = "true"
 
-        export_string = " && ".join(
-            [f'export {k}="{v}"' for k, v in env_vars.items()]
-        )
-        return f'{export_string} && npx cdk synth {self.cdk_input_output_subcommand}'
+        export_string = " && ".join([f'export {k}="{v}"' for k, v in env_vars.items()])
+        return f"{export_string} && npx cdk synth {self.cdk_input_output_subcommand}"
+
 
 """
 ==============
@@ -532,44 +526,42 @@ GENERAL CONFIG
 """
 
 
-@dataclass
-class KeycloakEndpoints():
+class KeycloakEndpoints(BaseModel):
     full_endpoint: str
     minimal_endpoint: str
     issuer: str
     realm_name: str
 
 
-@dataclass
-class APIGatewayRateLimitingSettings():
+class APIGatewayRateLimitingSettings(BaseModel):
     # Maximum number of concurrent requests which API gateway
-    # can handle during immediate high traffic time periods 
+    # can handle during immediate high traffic time periods
     throttling_burst_limit: int = 20
 
     # Rate limit controls the steady-state request rate, i.e., the
     # long-term average number of requests per second (RPS), which
     # API Gateway can handle. For example, if a rate limit of 500 is
     # set, it means API Gateway will be able to process 500 requests
-    # per second on an average over a long period. 
+    # per second on an average over a long period.
     throttling_rate_limit: int = 10
 
-@dataclass
-class GeneralConfig():
+
+class GeneralConfig(BaseModel):
     email_connection_secret_arn: str
 
-    # used for authenticating docker pulls  
+    # used for authenticating docker pulls
     dockerhub_creds_arn: str
 
     # storage bucket arn and backup
     storage_bucket_arn: str
-    storage_bucket_backup_policy: BackupType
+    storage_bucket_backup_policy: BackupType = BackupType.NONE
 
     # what is the root domain of the application (not necessarily same as hosted zone)
     # e.g. dev.provena.io
     application_root_domain: str
 
     # What theme ID is used for the UIs?
-    ui_theme_id: str
+    ui_theme_id: str = "default"
 
     # Links for deployment specific documentation/contact us links
     documentation_base_link: str
@@ -585,53 +577,49 @@ class GeneralConfig():
     extra_name_prefix: Optional[str] = None
 
     # These tags will be added to the whole application tree
-    tags: Dict[str, str] = field(default_factory=lambda: {})
+    tags: Optional[Dict[str, str]] = None
 
 
 class TestType(str, Enum):
-    TS_TYPE_CHECK = auto()
-    MYPY_TYPE_CHECK = auto()
-    UNIT = auto()
-    INTEGRATION = auto()
-    SYSTEM = auto()
+    TS_TYPE_CHECK = "TS_TYPE_CHECK"
+    MYPY_TYPE_CHECK = "MYPY_TYPE_CHECK"
+    UNIT = "UNIT"
+    INTEGRATION = "INTEGRATION"
+    SYSTEM = "SYSTEM"
 
 
-@dataclass
-class UnitTestConfig():
+class UnitTestConfig(BaseModel):
     handle_secret_arn: str
-    ardc_service_endpoint: str
+    ardc_service_endpoint: str = "https://demo.identifiers.ardc.edu.au/pids"
 
 
-@dataclass
-class IntegrationTestConfig():
+class IntegrationTestConfig(BaseModel):
     keycloak_client_id: str
     # data_store_user_creds_arn: str
     # registry_user_creds_arn: str
     integration_test_bots_creds_arn: str
 
 
-@dataclass
-class SystemTestConfig():
+class SystemTestConfig(BaseModel):
     shared_link: str
     user_creds_arn: str
 
 
-@dataclass
-class TestConfig():
+class TestConfig(BaseModel):
     # which tests should be run in the deployed pipeline?
     test_activation: Dict[TestType, bool]
 
     unit_tests: Optional[UnitTestConfig]
     integration_tests: Optional[IntegrationTestConfig]
-    system_tests: Optional[SystemTestConfig]
+    system_tests: Optional[SystemTestConfig] = None
 
 
 # ======
 # BACKUP
 # ======
 
-@dataclass
-class BackupConfig():
+
+class BackupConfig(BaseModel):
     # Backups switched on? Settings below will be ignored if set to False
     backups_enabled: bool
 
@@ -646,8 +634,8 @@ class BackupConfig():
 
     # The below properties cannot be provided if an existing vault is to be used
 
-    # Key admins if required
-    key_admins: List[iam.IPrincipal] = field(default_factory=lambda: [])
+    # Key admins if required default = [] -> specify inputs to ArnPrincipal
+    key_admins: Optional[List[str]] = None
 
     # Trusted vault accounts (copy into this one) - these will have the vault
     # access policy which enables copies from this vault
@@ -665,8 +653,9 @@ ALL CONFIG
 """
 
 
-@ dataclass
-class ProvenaConfig():
+class ProvenaConfig(ConfigBase):
+    # type inherited from base
+
     deployment: DeploymentConfig
     components: ComponentConfig
     tests: TestConfig
@@ -675,8 +664,7 @@ class ProvenaConfig():
     backup: BackupConfig
 
 
-@dataclass
-class ResolvedDomainNames():
+class ResolvedDomainNames(BaseModel):
     # e.g. provena.io
     root_domain: str
 
@@ -701,8 +689,7 @@ class ResolvedDomainNames():
     keycloak_realm_name: str
 
 
-@dataclass
-class UiOnlyDomainNames():
+class UiOnlyDomainNames(BaseModel):
     # this is a static representation of all non ui domains in the system
     root_domain: str
     landing_page_sub_domain: str
@@ -725,10 +712,20 @@ class UiOnlyDomainNames():
     keycloak_realm_name: str
 
 
-@ dataclass
-class ProvenaUIOnlyConfig():
+class ProvenaUIOnlyConfig(ConfigBase):
+    # type inherited from base
+
     # What is the provena config ID of this deployment
     config_id: str
+
+    # config source repo that defined this config
+    config_source_repo_clone_string: str
+    # The name space for the config
+    config_source_name_space: str
+    # The stage for the config
+    config_source_stage: str
+    # The secret ARN which contains the username/token combination to use for cloning the repo
+    config_repo_oauth_token_secret_arn: str
 
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
@@ -749,59 +746,44 @@ class ProvenaUIOnlyConfig():
     def git_repo_string(self) -> str:
         return f"{self.git_owner_org}/{self.git_repo_name}"
 
-    aws_environment: Environment
+    aws_environment: AWSTarget
     target_stage: Stage
     domains: UiOnlyDomainNames
     dns: DNSConfig
 
     # What theme ID is used for the UIs?
-    ui_theme_id: str
+    ui_theme_id: str = "default"
 
     cdk_out_path: str
-    cdk_app_name: str
-    ticket_no: int
+    ticket_number: int
 
     sentry_config: SentryConfig
 
     email_alerts_activated: bool
     pipeline_alert_email: Optional[str] = None
 
-
-
     # synth command (generated from app name and output path)
     @property
     def cdk_input_output_subcommand(self) -> str:
-        return f'--app "python {self.cdk_app_name}" --output "{self.cdk_out_path}"'
-
-    
-
+        return f'--output "{self.cdk_out_path}"'
 
     # synth command (generated from app name and output path)
     @property
     def cdk_synth_command(self) -> str:
-
         env_vars: Dict[str, str] = {
-            'PROVENA_CONFIG_ID': self.config_id,
-            'TICKET_NO': str(self.ticket_no),
-            'BRANCH_NAME': self.git_branch_name
+            "PROVENA_CONFIG_ID": self.config_id,
+            "TICKET_NUMBER": str(self.ticket_number),
+            "BRANCH_NAME": self.git_branch_name,
         }
 
         if self.sentry_config.monitoring_enabled:
             # note that because of how the config is set up,
             # the infra will interpret any non None value to be true
-            env_vars['ENABLE_API_MONITORING'] = "true"
-        
+            env_vars["ENABLE_API_MONITORING"] = "true"
+
         if self.email_alerts_activated:
-            env_vars['PIPELINE_ALERTS'] = "true"
+            env_vars["PIPELINE_ALERTS"] = "true"
 
-        export_string = " && ".join(
-            [f'export {k}="{v}"' for k, v in env_vars.items()]
-        )
+        export_string = " && ".join([f'export {k}="{v}"' for k, v in env_vars.items()])
 
-        return f'{export_string} && npx cdk synth {self.cdk_input_output_subcommand}'
-
-
-@dataclass
-class GithubBootstrapConfig():
-    env: Environment
-    github_token_arn: str
+        return f"{export_string} && npx cdk synth {self.cdk_input_output_subcommand}"

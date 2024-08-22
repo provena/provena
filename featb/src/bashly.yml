@@ -1,0 +1,139 @@
+name: fb
+help: Set of Bash CLI tools which helps automate feature branch deployments.
+version: 0.1.0
+
+commands:
+  - name: branch
+    alias: b
+    help: Setup the feature branch using the standard name.
+
+    args:
+      - name: ticket
+        required: true
+        help: The JIRA ticket number (or identifier)
+      - name: name
+        required: true
+        help: A helpful name in the style some-feat-description
+      - name: base
+        required: false
+        help: The bash branch to branch from - defaults to main
+        default: "main"
+
+    examples:
+      - fb branch 1234 awesome-feature
+      - fb branch 1234 awesome-feature other-base-branch
+
+  - name: deploy
+    alias: d
+    help: Deploys the pipeline cloudformation Stack for the current git branch. Relies on feat.json or feat-ui.json being available in config.
+
+    flags:
+      - long: --ui_only
+        short: -u
+        help: Only deploy UIs - runs against DEV infrastructure. Depends on feat-ui.json being available for config!
+      - long: --notify
+        short: -n
+        help: Enables pipeline alerts on Teams channel
+      - long: --monitoring
+        short: -m
+        help: Enables sentry monitoring
+
+    examples:
+      - fb d
+      - fb d -u -n
+
+  - name: bootstrap
+    help: Sets up the APIs with .env files which reflect the deployed feature infrastructure configurations. Requires complete deployment, browser for auth flow, and admin permissions. Must NOT be a UI only deployment.
+
+    examples:
+      - fb bootstrap
+
+  - name: markdown
+    alias: md
+    help: Describes the outputs and endpoints of the current feature branch in markdown format
+
+    flags:
+      - long: --ui_only
+        short: -u
+        help: UI Only dump - doesn't include APIs - just UIs
+      - long: --url
+        help: The base URL to use e.g. dev.domain.com
+        arg: url
+        required: true
+
+    examples:
+      - fb md --url your.domain.com
+      - fb md -u --url your.domain.com
+      - fb md -u --url your.domain.com
+
+  - name: desc
+    help: Describes the outputs and endpoints of the current feature branch in standard non markdown format
+
+    flags:
+      - long: --ui_only
+        short: -u
+        help: UI Only dump - doesn't include APIs - just UIs
+      - long: --url
+        help: The base URL to use e.g. dev.domain.com
+        arg: url
+
+    examples:
+      - fb desc --url your.domain.com
+      - fb desc -u --url your.domain.com
+      - fb desc -u --url your.domain.com
+
+  - name: destroy
+    help: Destroys the feature infrastructure for the given ticket and description. Run multiple times if required due to API limits. Relies on feat.json or feat-ui.json being available in config.
+
+    args:
+      - name: ticket
+        required: true
+        help: The JIRA ticket number (or identifier)
+      - name: name
+        required: true
+        help: The chosen feature description - must match deployed feature
+
+    flags:
+      - long: --ui_only
+        short: -u
+        help: This flag should be included if the feature branch was UI only. Relies on feat-ui.json being available in configs!
+
+    examples:
+      - fb destroy 1234 awesome-feature
+      - fb destroy 1234 awesome-feature -u
+
+  - name: run
+    help: Run the given commands in the context of the feature branch on either the app or pipeline stacks. All postfixed CDK commands are run. Relies on feat.json or feat-ui.json being available in config.
+
+    args:
+      - name: target
+        required: true
+        help: app = The actual application stack, pipeline = The pipelines stack
+        allowed: ["app", "pipeline"]
+
+    flags:
+      - long: --ui_only
+        short: -u
+        help: This flag should be included if the feature branch was UI only. This will avoid building the full application stacks against a deployed UI only stack. Relies on feat-ui.json config being available.
+
+    catch_all: true
+
+    examples:
+      - fb run app deploy --hotswap
+      - fb run app --ui_only deploy --hotswap
+      - fb run app diff
+      - fb run app deploy
+      - fb run pipeline diff
+      - fb run pipeline deploy
+
+  - name: hotswap
+    alias: hot
+    help: Runs a CDK hotswap deploy on the current deployed app infrastructure. Relies on feat.json or feat-ui.json being available in config.
+
+    flags:
+      - long: --ui_only
+        short: -u
+        help: This flag should be included if the feature branch was UI only. Relies on feat-ui.json being available in config.
+
+    examples:
+      - fb hot

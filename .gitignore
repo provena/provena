@@ -302,3 +302,10 @@ dist
 # thunderclient environments
 *tc_env_*
 *.aider*
+
+
+# environments for admin tooling
+admin-tooling/environments.json
+
+# the config targets
+env.json

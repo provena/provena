@@ -7,8 +7,7 @@ from aws_cdk import (
 from typing import Any
 from constructs import Construct
 
-
-class CodeBuildGithubBootstrap(Stack):
+class GithubCredsStack(Stack):
     def __init__(
             self,
             scope: Construct,

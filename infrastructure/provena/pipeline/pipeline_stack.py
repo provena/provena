@@ -24,7 +24,7 @@ from provena.pipeline.testing_setup.type_checking_shell_step import generate_typ
 from provena.config.config_class import *
 from provena.config.config_helpers import resolve_endpoints
 from provena.utility.cfn_output_helpers import get_output_name, get_stack_name
-from typing import List, Dict
+from typing import List, Dict, Any
 
 VERSION_INFO_FILE_PATH = "../repo-tools/github-version/version_info.json"
 
@@ -108,6 +108,23 @@ class ProvenaPipelineStack(Stack):
             # node and npm version
             "node -v",
             "npm -v",
+            # Install AWS CLI and jq
+            "apt-get update && apt-get install -y awscli jq",
+           
+            # Retrieve OAuth token from AWS Secrets Manager
+            f"SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id {config.deployment.config_repo_oauth_token_secret_arn} --query SecretString --output text)",
+            "USERNAME=$(echo $SECRET_JSON | jq -r '.username')",
+            "TOKEN=$(echo $SECRET_JSON | jq -r '.token')",
+           
+            # Clone the config repo
+            f"git clone https://$USERNAME:$TOKEN@{config.deployment.config_source_repo_clone_string.removeprefix('https://')} config-repo-clone",
+           
+            # Run the config management script
+            "chmod +x ./config",
+            f"./config {config.deployment.config_source_name_space} {config.deployment.config_source_stage} --repo-dir config-repo-clone",
+           
+            # Clean up sensitive information
+            "unset SECRET_JSON USERNAME TOKEN",
             # move to repo tooling
             "cd repo-tools/github-version",
             "pip install -r requirements.txt",
@@ -280,7 +297,7 @@ class ProvenaPipelineStack(Stack):
             "VITE_KEYCLOAK_AUTH_ENDPOINT": self.endpoints.keycloak_minimal,
             "VITE_KEYCLOAK_REALM": self.endpoints.keycloak_realm_name,
             "VITE_MONITORING_ENABLED": str(config.deployment.sentry_config.monitoring_enabled),
-            "VITE_FEATURE_NUMBER": str(config.deployment.ticket_no)
+            "VITE_FEATURE_NUMBER": str(config.deployment.ticket_number)
         }
 
         optional_shared_lib_env_variables: Dict[str, Optional[str]] = {
@@ -1440,7 +1457,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
             "VITE_KEYCLOAK_REALM": self.config.domains.keycloak_realm_name,
 
             "VITE_MONITORING_ENABLED": str(self.config.sentry_config.monitoring_enabled),
-            "VITE_FEATURE_NUMBER": str(self.config.ticket_no)
+            "VITE_FEATURE_NUMBER": str(self.config.ticket_number)
         }
 
         optional_shared_lib_env_variables: Dict[str, Optional[str]] = {
