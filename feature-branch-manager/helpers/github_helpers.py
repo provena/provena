@@ -12,7 +12,7 @@ DEFAULT_LIMIT = 150
 def list_prs(limit: int = DEFAULT_LIMIT) -> List[github.PullRequest.PullRequest]:
     print(f"Fetching up to {limit} PRs.")
     # get the repo
-    repo = g.get_repo(config.repo_name)
+    repo = g.get_repo(config.repo_string)
     # get PRs on the repo
     prs = list(repo.get_pulls(state="all")[:DEFAULT_LIMIT])
     print(f"Completed fetch - retrieved {len(prs)} PRs.")

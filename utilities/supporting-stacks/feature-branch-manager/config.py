@@ -27,11 +27,14 @@ class FeatureBranchManagerConfig(BaseModel):
     # token to use when authenticating to github API - requires repo access
     github_api_token_arn: str
 
-    # repo owner e.g. organisation
+    # repo owner e.g. provena
     repo_owner: str
 
-    # repo name to target e.g. organisation/my-repo
+    # repo name to target e.g. provena
     repo_name: str
+
+    # combined repo name to target e.g. provena/provena
+    repo_string: str
 
     # what branch to checkout to get this script
     branch_name: str

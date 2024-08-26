@@ -7,8 +7,8 @@ class Config(BaseSettings):
     # token to use when authenticating to github API - requires repo access
     github_token: str
 
-    # repo name to target e.g. organisation/my-repo
-    repo_name: str
+    # combined repo name to target e.g. provena/provena
+    repo_string: str
 
     # regex pattern to look at in PR titles to identify ticket number
     # e.g. r"JIRA-(\d+)"
