@@ -127,6 +127,38 @@ The Provena repo contains a dedicated integration testing directory, separate fr
 
 These are some basic end-to-end system tests which test core functionality pathways to detect and prevent feature regression as new features are developed. These tests interact with the User Interfaces. For more info and to run the tests, see the [system tests readme](./tests/system/README.md).
 
+## Helper deployment scripts
+
+This repository contains three bash scripts for deploying different components of our infrastructure:
+
+1. `scripts/deploy/pipeline.sh`: Deploys the pipeline infrastructure
+2. `scripts/deploy/github.sh`: Deploys the GitHub bootstrap stack
+3. `scripts/deploy/fb_manager.sh`: Deploys the feature branch manager
+
+These scripts automate the process of installing the virtual environments and running the correct setup commands for a given namespace/stage/name combination.
+
+These scripts should be run from the top level of the repo e.g. 
+
+```
+./scripts/deploy/pipeline.sh org/dev/dev
+```
+
+## Script Arguments
+
+Each script uses the following argument structure:
+
+```
+namespace/stage/name [--target git_url]
+```
+
+- `namespace`: The configuration namespace, typically your org (e.g. 'your-org')
+- `stage`: The deployment stage (e.g., 'dev', 'prod')
+- `name`: The name of the configuration file without the .json extension (e.g. 'dev', 'build', 'ops', 'prod')
+
+The `--target` option is optional and allows you to specify a custom Git repository URL for the configuration if there isn't a cached value in your `env.json`.
+
+- Each script includes a `--help` option
+
 ## Documentation
 
 ### General Provena Docs
