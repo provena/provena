@@ -143,7 +143,7 @@ These scripts should be run from the top level of the repo e.g.
 ./scripts/deploy/pipeline.sh org/dev/dev
 ```
 
-## Script Arguments
+### Script Arguments
 
 Each script uses the following argument structure:
 
