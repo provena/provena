@@ -481,7 +481,7 @@ async def revert_metadata(
         domain_info=revised_domain_info,
         id=revert_request.id,
         secret_cache=secret_cache,
-        reason=f"Reverting dataset to history id {revert_request.history_id}.",
+        reason=f"Reverting dataset to history id {revert_request.history_id}. Reason: {revert_request.reason}.",
         config=config
     )
 
