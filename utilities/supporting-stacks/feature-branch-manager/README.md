@@ -8,7 +8,7 @@ This CDK stack deploys infrastructure to, on a daily schedule, use the feature-b
 
 This project shares a configuration management approach from the main CDK infrastructure application.
 
-For more detailed explanation of the configuration setup, see `provena/infrastructure/README.md`.
+For more detailed explanation of the configuration setup, see [README](../../../README.md).
 
 To get setup
 

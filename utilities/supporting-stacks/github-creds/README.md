@@ -2,17 +2,15 @@
 
 ## Purpose
 
-This CDK stack is very simple, it just deploys a GitHub connection credential
-which CodeBuild can use to authenticate with GitHub.
+This CDK stack is very simple, it just deploys a GitHub connection credential which CodeBuild can use to authenticate with GitHub.
 
-This is a dependency for the main CDK pipeline workflow, but is managed in a
-separate project to keep the main CDK app simple.
+This is a dependency for the main CDK pipeline workflow, but is managed in a separate project to keep the main CDK app simple.
 
 ## Config management
 
 This project shares a configuration management approach from the main CDK infrastructure application.
 
-For more detailed explanation of the configuration setup, see `provena/infrastructure/README.md`.
+For more detailed explanation of the configuration setup, see [README](../../../README.md).
 
 To get setup
 
