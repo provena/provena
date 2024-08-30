@@ -164,7 +164,9 @@ Environment Variables:
     Set to 'true' for verbose output
 ```
 
-The central idea of this configuration approach is that each namespace/stage combination contains a set of files, which are gitignored by default in Provena, which are 'merged' into the user's clone of the Provena repository, allowing temporary access to private information without exposing it in git.
+The central idea of this configuration approach is that each namespace/stage combination contains a set of files, which are gitignored by default in Provena, which are 'merged' into the user's clone of the Provena repository, allowing temporary access to private information without exposing it in git. 
+
+Sample configuration files are provided in various spots to help get started, including the [template config repo](https://github.com/provena/provena-config-repo-template).
 
 ### Config path caching
 
@@ -190,7 +192,7 @@ This saves using the `--target` option on every `./config` invocation. You can s
 
 ## Config repository
 
-The config repository is structured carefully, a copy of the README of the [sample config repository](https://github.com/provena/provena-config-repo-template) is included below
+The config repository is structured carefully, a copy of the README of the [sample config repository](https://github.com/provena/provena-config-repo-template) is included below:
 
 ### Purpose
 
