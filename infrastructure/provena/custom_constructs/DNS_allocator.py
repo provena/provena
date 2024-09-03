@@ -20,6 +20,7 @@ class DNSAllocator(Construct):
                  construct_id: str,
                  hosted_zone_name: str,
                  hosted_zone_id: str,
+                 root_domain: str,
                  **kwargs: Any) -> None:
         """A construct which enables the dynamic subscription
         of ec2 instances with elastic IPs and statically hosted
@@ -38,6 +39,8 @@ class DNSAllocator(Construct):
 
         # Save some variables
         self.zone_domain_name = hosted_zone_name
+        # the application root domain which routes will be respective to 
+        self.root_domain = root_domain 
 
         # Pull the existing Hosted Zone based on the hosted_zone_id
         self.hz = r53.PublicHostedZone.from_hosted_zone_attributes(
@@ -72,7 +75,7 @@ class DNSAllocator(Construct):
             scope=self,
             id=id,
             zone=self.hz,
-            record_name=domain_prefix + self.zone_domain_name,
+            record_name=domain_prefix + self.root_domain,
             comment=comment,
             ttl=route_ttl,
             # This is the only way to get the elastic IP to resolve
@@ -102,10 +105,10 @@ class DNSAllocator(Construct):
         """
 
         # Work out the full qualified domain name
-        full_domain_target = f"{unqualified_bucket_name}.{self.zone_domain_name}.s3-website-{region}.amazonaws.com"
+        full_domain_target = f"{unqualified_bucket_name}.{self.root_domain}.s3-website-{region}.amazonaws.com"
 
         # Name of the record (desired URL) must be the qualified bucket name
-        record_name = f"{unqualified_bucket_name}.{self.zone_domain_name}"
+        record_name = f"{unqualified_bucket_name}.{self.root_domain}"
 
         # Create the record
         r53.CnameRecord(

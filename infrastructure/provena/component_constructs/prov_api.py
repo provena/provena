@@ -133,7 +133,7 @@ class ProvAPI(Construct):
             # to lambda
             proxy=True,
             domain_name=api_gw.DomainNameOptions(
-                domain_name=f"{domain}.{allocator.zone_domain_name}",
+                domain_name=f"{domain}.{allocator.root_domain}",
                 certificate=acm_cert
             ),
             deploy_options=api_gw.StageOptions(
@@ -153,7 +153,7 @@ class ProvAPI(Construct):
             comment="Lambda Prov API domain entry"
         )
 
-        target_host = domain + "." + allocator.zone_domain_name
+        target_host = domain + "." + allocator.root_domain
 
         # expose endpoint and function
         self.endpoint = f"https://{target_host}"

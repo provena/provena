@@ -300,7 +300,7 @@ class Neo4jECS(Construct):
             target_group=atg,
             conditions=[
                 elb.ListenerCondition.host_headers(
-                    [f"{http_instance_domain}.{allocator.zone_domain_name}"]
+                    [f"{http_instance_domain}.{allocator.root_domain}"]
                 )
             ],
             priority=http_priority
@@ -379,8 +379,8 @@ class Neo4jECS(Construct):
             comment="Neo4j Load Balancer bolt TCP DNS target"
         )
 
-        self.neo4j_http_host = f"{http_instance_domain}.{allocator.zone_domain_name}"
-        self.neo4j_bolt_host = f"{bolt_instance_domain}.{allocator.zone_domain_name}"
+        self.neo4j_http_host = f"{http_instance_domain}.{allocator.root_domain}"
+        self.neo4j_bolt_host = f"{bolt_instance_domain}.{allocator.root_domain}"
         self.neo4j_bolt_port = 7687
         self.neo4j_http_port = 7474
         self.file_system = file_system

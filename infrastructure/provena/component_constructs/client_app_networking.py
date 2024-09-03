@@ -100,7 +100,7 @@ class ClientAppNetworking(Construct):
 
         # Add a listener action on the subdomain
         # expected domain
-        expected_header = f"{sub_domain}.{allocator.zone_domain_name}"
+        expected_header = f"{sub_domain}.{allocator.root_domain}"
         balancers.add_http_redirected_conditional_https_target(
             action_id='neo4j',
             target_group=tg,

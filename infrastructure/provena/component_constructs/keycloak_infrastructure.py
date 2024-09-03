@@ -222,7 +222,7 @@ class KeycloakConstruct(Construct):
             action_id='keycloak',
             target_group=tg,
             conditions=[elb.ListenerCondition.host_headers(
-                [f"{kc_domain}.{allocator.zone_domain_name}"]
+                [f"{kc_domain}.{allocator.root_domain}"]
             )],
             priority=https_listener_priority,
             http_redirect_priority=http_listener_priority
@@ -409,8 +409,8 @@ class KeycloakConstruct(Construct):
         )
 
         # entity ID for OIDC
-        entity_id_full_url = f"https://{kc_domain}.{allocator.zone_domain_name}/auth/realms/{realm_name}"
-        entity_id_qualified_domain = f"{kc_domain}.{allocator.zone_domain_name}/auth/realms/{realm_name}"
+        entity_id_full_url = f"https://{kc_domain}.{allocator.root_domain}/auth/realms/{realm_name}"
+        entity_id_qualified_domain = f"{kc_domain}.{allocator.root_domain}/auth/realms/{realm_name}"
 
         self.keycloak_auth_endpoint = entity_id_full_url
 

@@ -49,7 +49,7 @@ class BuildBadgeLambda(Construct):
             proxy=True,
             binary_media_types=["*/*"],
             domain_name=api_gw.DomainNameOptions(
-                domain_name=f"{domain}.{allocator.zone_domain_name}",
+                domain_name=f"{domain}.{allocator.root_domain}",
                 certificate=acm_cert
             )
         )
@@ -86,7 +86,7 @@ class BuildBadgeLambda(Construct):
         )
 
         # Output badge endpoint
-        endpoint = f"https://{domain}.{allocator.zone_domain_name}"
+        endpoint = f"https://{domain}.{allocator.root_domain}"
         output = CfnOutput(
             scope=self,
             id='output',

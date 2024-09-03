@@ -83,7 +83,7 @@ class LambdaWarmer(Construct):
             # to lambda
             proxy=True,
             domain_name=api_gw.DomainNameOptions(
-                domain_name=f"{sub_domain}.{allocator.zone_domain_name}",
+                domain_name=f"{sub_domain}.{allocator.root_domain}",
                 certificate=acm_cert
             ),
             deploy_options=api_gw.StageOptions(
@@ -104,4 +104,4 @@ class LambdaWarmer(Construct):
         )
 
         # Full name of api
-        self.endpoint = f"https://{sub_domain}.{allocator.zone_domain_name}"
+        self.endpoint = f"https://{sub_domain}.{allocator.root_domain}"

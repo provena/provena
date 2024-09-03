@@ -81,8 +81,8 @@ class StaticCloudfrontS3Website(Construct):
             dns_allocator.add_subdomain_redirect(
                 id=construct_id + 'www-redirect',
                 from_sub_domain='www',
-                to_target=dns_allocator.zone_domain_name,
-                comment=f"Adding redirect from www to {dns_allocator.zone_domain_name}"
+                to_target=dns_allocator.root_domain,
+                comment=f"Adding redirect from www to {dns_allocator.root_domain}"
             )
         else:
             dns_allocator.add_cloudfront_distribution_target(
