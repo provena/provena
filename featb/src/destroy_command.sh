@@ -54,6 +54,10 @@ echo
 # source and install requirements
 source .venv/bin/activate
 
+
+# install latest pip
+pip install pip --upgrade
+
 echo "Installing requirements"
 echo
 
