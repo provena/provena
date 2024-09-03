@@ -275,7 +275,7 @@ class ProvenaPipelineStack(Stack):
 
         # Determine shared library env requirements - still need to setup keycloak client ID for each static UI
         shared_lib_env_variables: Dict[str, str] = {
-            "VITE_STAGE": self.stage,
+            "VITE_STAGE": self.stage.value,
             "VITE_THEME_ID": config.general.ui_theme_id,
 
 
@@ -698,7 +698,7 @@ class ProvenaPipelineStack(Stack):
                 scope=self,
                 construct_id='deployment-build-badge',
                 domain=build_badge_config.build_domain,
-                stage=config.deployment.stage,
+                stage=config.deployment.stage.value,
                 cert_arn=config.dns.domain_certificate_arn,
                 allocator=allocator,
                 built_pipeline=finalized_code_pipeline
@@ -710,7 +710,7 @@ class ProvenaPipelineStack(Stack):
                     scope=self,
                     construct_id='interface-build-badge',
                     domain=build_badge_config.interface_domain,
-                    stage=config.deployment.stage,
+                    stage=config.deployment.stage.value,
                     cert_arn=config.dns.domain_certificate_arn,
                     allocator=allocator,
                     built_pipeline=interface_pipeline
@@ -731,7 +731,7 @@ class ProvenaPipelineStack(Stack):
             # Github source code for ci_projects and define triggers for the build.
             # Credentials are CodeBuild wide for GitHub.
             branch_name = config.deployment.git_branch_name
-            stage = config.deployment.stage
+            stage = config.deployment.stage.value
             github_source = build.Source.git_hub(
                 owner=config.deployment.git_owner_org,
                 repo=config.deployment.git_repo_name,
