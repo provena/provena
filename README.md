@@ -170,7 +170,7 @@ Sample configuration files are provided in various spots to help get started, in
 
 ### Config path caching
 
-The script builds in functionality to cache the repo which makes available a given namespace/stage combination. These are stored in `env.json` and has a structure like so:
+The script builds in functionality to cache the repo which makes available a given namespace/stage combination. These are stored in `env.json`, at the repository root, which has a structure like so:
 
 ```json
 {
@@ -196,17 +196,17 @@ The config repository is structured carefully, a copy of the README of the [samp
 
 ### Purpose
 
-This repository contains configuration files for the Provena project. It serves as a centralized location for managing configuration across different environments and components of the Provena system. This configuration is a mix of sensitive and non-sensitive information, but it is managed centrally to simplify this process.
+The configuration repository contains configuration files for the Provena project. It serves as a centralized location for managing configuration across different environments and components of the Provena system. This configuration is a mix of sensitive and non-sensitive information, but it is managed centrally to simplify this process.
 
 **Warning: while this repo is private, please don't commit secrets to it, instead commit references/IDs for those secrets stored in AWS Secret Manager**
 
 ### `cdk.context.json`
 
-This repo does not contain sample `cdk.context.json` files, but we recommend including this in this repo to make sure deployments are deterministic. This will be generated upon first CDK deploy.
+The configuration repo does not contain sample `cdk.context.json` files, but we recommend including this in this repo to make sure deployments are deterministic. This will be generated upon first CDK deploy.
 
 ### Structure
 
-The repository is organized using a hierarchical structure based on namespaces and stages:
+The configuration repository is organized using a hierarchical structure based on namespaces and stages:
 
 ```
 .
