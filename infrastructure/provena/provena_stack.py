@@ -82,7 +82,7 @@ class ProvenaStack(Stack):
         # work out keycloak endpoints
         if config.components.keycloak is not None:
             auth_domain = config.components.keycloak.domain
-            root_domain = config.dns.root_domain
+            root_domain = config.general.root_domain
             realm_name = config.components.keycloak.realm_name
             keycloak_auth_endpoint_full = (
                 f"https://{auth_domain}.{root_domain}/auth/realms/{realm_name}"
@@ -113,7 +113,7 @@ class ProvenaStack(Stack):
         build_token_arn = config.deployment.github_token_arn
         cert_arn = config.dns.domain_certificate_arn
         us_east_cert_arn = config.dns.us_east_certificate_arn
-        root_domain = config.dns.root_domain
+        root_domain = config.general.root_domain
 
         network: Optional[NetworkConstruct] = None
         # networking is required
@@ -215,7 +215,7 @@ class ProvenaStack(Stack):
                 scope=self,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 construct_id="id",
                 stage=stage,
                 handle_secret_arn=id_config.handle_credentials_arn,
@@ -247,7 +247,7 @@ class ProvenaStack(Stack):
             ), "Cannot deploy auth API without registry"
             auth_api = LambdaAuthApi(
                 self,
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 construct_id="auth-api",
                 stage=stage,
                 extra_hash_dirs=auth_config.extra_hash_dirs,
@@ -338,7 +338,7 @@ class ProvenaStack(Stack):
             search_api = LambdaSearchAPI(
                 scope=self,
                 construct_id="search-api",
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
@@ -413,7 +413,7 @@ class ProvenaStack(Stack):
             registry_api = RegistryAPI(
                 scope=self,
                 construct_id="entity-registry-api",
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
@@ -505,7 +505,7 @@ class ProvenaStack(Stack):
             data_api = LambdaDataStoreAPI(
                 self,
                 construct_id="data-api",
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
@@ -576,7 +576,7 @@ class ProvenaStack(Stack):
                 scope=self,
                 construct_id="prov-api",
                 stage=stage,
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
                 github_build_token_arn=build_token_arn,
@@ -781,7 +781,7 @@ class ProvenaStack(Stack):
             allocator=dns_allocator,
             keycloak_endpoint=keycloak_auth_endpoint_full,
             domain=async_config.job_api_domain,
-            domain_base=config.general.application_root_domain,
+            domain_base=config.general.root_domain,
             github_build_token_arn=config.deployment.github_token_arn,
             repo_string=config.deployment.git_repo_string,
             branch_name=config.deployment.git_branch_name,

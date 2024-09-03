@@ -370,9 +370,6 @@ DOMAIN CONFIG
 
 
 class HZConfig(BaseModel):
-    # this is the root domain to which the component config domains will be
-    # relative to
-    root_domain: str
     # this is the hosted zone name, usually the same as the root domain
     hosted_zone_name: str
     # this is the hosted zone ID
@@ -558,7 +555,7 @@ class GeneralConfig(BaseModel):
 
     # what is the root domain of the application (not necessarily same as hosted zone)
     # e.g. dev.provena.io
-    application_root_domain: str
+    root_domain: str
 
     # What theme ID is used for the UIs?
     ui_theme_id: str = "default"
