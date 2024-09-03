@@ -424,29 +424,63 @@ Given the above information, a common use would be to 'checkout' configuration f
 ./config namespace stage
 ```
 
+# Helper deployment scripts
+
+This repository contains three bash scripts for deploying different components of our infrastructure:
+
+1. `scripts/deploy/pipeline.sh`: Deploys the pipeline infrastructure
+2. `scripts/deploy/github.sh`: Deploys the GitHub bootstrap stack
+3. `scripts/deploy/fb_manager.sh`: Deploys the feature branch manager
+
+These scripts automate the process of installing the virtual environments and running the correct setup commands for a given namespace/stage/name combination.
+
+These scripts should be run from the top level of the repo e.g. 
+
+```
+./scripts/deploy/pipeline.sh org/dev/dev
+```
+
+## Script Arguments
+
+Each script uses the following argument structure:
+
+```
+namespace/stage/name [--target git_url]
+```
+
+Namespace and stage are defined in greater detail in [configuring provena](#configuring-provena), however a brief description is provided below.
+
+- `namespace`: The configuration namespace, typically your org (e.g. 'your-org')
+- `stage`: The deployment stage (e.g., 'dev', 'prod')
+- `name`: The name of the configuration file without the .json extension (e.g. 'dev', 'build', 'ops', 'prod')
+
+The `--target` option is optional and allows you to specify a custom Git repository URL for the configuration if there isn't a cached value in your `env.json`.
+
+- Each script includes a `--help` option
+
 # Documentation
 
-### General Provena Docs
+## General Provena Docs
 
 [Click here for general purpose Provena documentation](http://docs.provena.io/)
 
-### API endpoint documentation
+## API endpoint documentation
 
 Individual API documentation can be found at _endpoint_/docs or _endpoint_/redoc. This is useful for inspecting the payloads and available endpoints of each API.
 
-## License
+# License
 
 Provena is available via an open-source licence (BSD 3-clause) allowing your project to deploy an instance with freedom to operate.
 
-## Contact Information
+# Contact Information
 
 Contact Provena Developers via [https://www.csiro.au/en/contact](https://www.csiro.au/en/contact)
 
-## Contributing
+# Contributing
 
-### TODO
+## TODO
 
-## Acknowledgements
+# Acknowledgements
 
 The development of Provena Version 1.0 was funded by Reef Restoration and Adaptation Program (RRAP), which is a partnership between the Australian Government’s Reef Trust and the Great Barrier Reef Foundation. Provena has been developed to support the Modelling and Decision Support (MDS) Subprogram (https://gbrrestoration.org/program/modelling-and-decision-support/).
 
