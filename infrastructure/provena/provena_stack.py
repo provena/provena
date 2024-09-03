@@ -79,6 +79,15 @@ class ProvenaStack(Stack):
         for k, v in tags.items():
             Tags.of(self).add(key=k, value=v)
 
+        # DNS allocator helper
+        dns_allocator = DNSAllocator(
+            scope=self,
+            construct_id="dns_allocator",
+            hosted_zone_name=config.dns.hosted_zone_name,
+            hosted_zone_id=config.dns.hosted_zone_id,
+            root_domain=config.general.root_domain
+        )
+
         # work out keycloak endpoints
         if config.components.keycloak is not None:
             auth_domain = config.components.keycloak.domain
@@ -165,6 +174,7 @@ class ProvenaStack(Stack):
                 hosted_zone_name=config.dns.hosted_zone_name,
                 hosted_zone_id=config.dns.hosted_zone_id,
                 balancers=balancers,
+                allocator=dns_allocator,
                 http_listener_priority=priority,
                 https_listener_priority=priority,
                 rds_removal_policy=kc_config.rds_removal_policy,
@@ -172,20 +182,11 @@ class ProvenaStack(Stack):
             )
             # This is redundant
             # keycloak_auth_endpoint = kc_construct.keycloak_auth_endpoint
-            dns_allocator = kc_construct.dns_allocator
             oidc_service_role_arn = kc_construct.oidc_bucket_service_role.role_arn
 
         # If we don't deploy keycloak - we need to know the auth endpoint that is
         # shared - this comes from parameter
         else:
-            # Create allocator to use
-            dns_allocator = DNSAllocator(
-                scope=self,
-                construct_id="dns",
-                hosted_zone_id=config.dns.hosted_zone_id,
-                hosted_zone_name=config.dns.hosted_zone_name,
-            )
-
             if stage not in ["TEST", "DEV"]:
                 assert False, "Trying to assume role ARN on non TEST stage."
 

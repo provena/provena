@@ -101,6 +101,7 @@ class KeycloakConstruct(Construct):
                  custom_theme_name: str,
                  bucket_arn: str,
                  cert_arn: str,
+                 allocator: DNSAllocator,
                  dockerhub_creds_arn: str,
                  hosted_zone_id: str,
                  hosted_zone_name: str,
@@ -113,15 +114,6 @@ class KeycloakConstruct(Construct):
                  initial_configuration: Optional[KeycloakConfiguration],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
-
-        # Create static DNS allocations
-        allocator = DNSAllocator(
-            scope=self,
-            construct_id="dns_allocator",
-            hosted_zone_name=hosted_zone_name,
-            hosted_zone_id=hosted_zone_id
-        )
-        self.dns_allocator = allocator
 
         # Should we restore from snapshot
         snapshot_mode = bool(kc_db_instance_snapshot_arn)

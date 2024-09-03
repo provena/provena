@@ -32,7 +32,8 @@ class ProvenaUIStack(Stack):
             scope=self,
             construct_id="dns",
             hosted_zone_id=config.dns.hosted_zone_id,
-            hosted_zone_name=config.dns.hosted_zone_name
+            hosted_zone_name=config.dns.hosted_zone_name,
+            root_domain=config.domains.root_domain
         )
 
         landing_page_ui = StaticCloudfrontDistribution(
