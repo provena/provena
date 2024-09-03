@@ -151,6 +151,8 @@ Each script uses the following argument structure:
 namespace/stage/name [--target git_url]
 ```
 
+Namespace and stage are defined in greater detail in [configuring provena](#configuring-provena), however a brief description is provided below.
+
 - `namespace`: The configuration namespace, typically your org (e.g. 'your-org')
 - `stage`: The deployment stage (e.g., 'dev', 'prod')
 - `name`: The name of the configuration file without the .json extension (e.g. 'dev', 'build', 'ops', 'prod')
