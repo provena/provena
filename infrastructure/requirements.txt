@@ -1,4 +1,4 @@
-aws-cdk-lib==2.81.0
+aws-cdk-lib==2.155.0
 constructs
 boto3
 aws-cron-expression-validator==1.0.4

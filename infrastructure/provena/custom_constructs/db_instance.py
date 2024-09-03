@@ -11,7 +11,7 @@ from typing import Optional, Any
 BACKUP_RETENTION_DAYS = 10
 BACKUP_DURATION = Duration.days(BACKUP_RETENTION_DAYS)
 NO_BACKUP_DURATION = Duration.days(0)
-RDS_POSTGRES_VERSION = rds.PostgresEngineVersion.VER_13_7
+RDS_POSTGRES_VERSION = rds.PostgresEngineVersion.VER_13_16
 INSTANCE_TYPE = ec2.InstanceType.of(
     instance_class=ec2.InstanceClass.BURSTABLE3,
     instance_size=ec2.InstanceSize.MEDIUM

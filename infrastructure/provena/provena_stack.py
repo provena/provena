@@ -108,7 +108,7 @@ class ProvenaStack(Stack):
         used_priorities: List[int] = [0]
 
         # pull out some common vars
-        stage = config.deployment.stage
+        stage = config.deployment.stage.value
         branch_name = config.deployment.git_branch_name
         build_token_arn = config.deployment.github_token_arn
         cert_arn = config.dns.domain_certificate_arn
