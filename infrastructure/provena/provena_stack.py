@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_backup as backup,
     aws_kms as kms,
     aws_ecs as ecs,
+    aws_iam as iam,
     aws_secretsmanager as aws_sm,
     Aspects,
     Duration,
@@ -79,10 +80,20 @@ class ProvenaStack(Stack):
         for k, v in tags.items():
             Tags.of(self).add(key=k, value=v)
 
+        # DNS allocator helper
+        dns_allocator = DNSAllocator(
+            scope=self,
+            construct_id="dns_allocator",
+            hosted_zone_name=config.dns.hosted_zone_name,
+            hosted_zone_id=config.dns.hosted_zone_id,
+            root_domain=config.general.root_domain,
+            debug_route_prefix=config.general.debug_route_prefix
+        )
+
         # work out keycloak endpoints
         if config.components.keycloak is not None:
             auth_domain = config.components.keycloak.domain
-            root_domain = config.dns.root_domain
+            root_domain = config.general.root_domain
             realm_name = config.components.keycloak.realm_name
             keycloak_auth_endpoint_full = (
                 f"https://{auth_domain}.{root_domain}/auth/realms/{realm_name}"
@@ -108,18 +119,19 @@ class ProvenaStack(Stack):
         used_priorities: List[int] = [0]
 
         # pull out some common vars
-        stage = config.deployment.stage.value
+        stage = config.stage.value
         branch_name = config.deployment.git_branch_name
         build_token_arn = config.deployment.github_token_arn
         cert_arn = config.dns.domain_certificate_arn
         us_east_cert_arn = config.dns.us_east_certificate_arn
-        root_domain = config.dns.root_domain
+        root_domain = config.general.root_domain
 
         network: Optional[NetworkConstruct] = None
         # networking is required
         if config.components.networking:
             # Create basic network
-            network = NetworkConstruct(scope=self, construct_id="net", stage=stage)
+            network = NetworkConstruct(
+                scope=self, construct_id="net", stage=stage)
 
             balancers = network.balancers
 
@@ -161,10 +173,8 @@ class ProvenaStack(Stack):
                 cert_arn=config.dns.domain_certificate_arn,
                 kc_db_instance_snapshot_arn=kc_config.snapshot_arn,
                 kc_domain=kc_config.domain,
-                dockerhub_creds_arn=config.general.dockerhub_creds_arn,
-                hosted_zone_name=config.dns.hosted_zone_name,
-                hosted_zone_id=config.dns.hosted_zone_id,
                 balancers=balancers,
+                allocator=dns_allocator,
                 http_listener_priority=priority,
                 https_listener_priority=priority,
                 rds_removal_policy=kc_config.rds_removal_policy,
@@ -172,20 +182,11 @@ class ProvenaStack(Stack):
             )
             # This is redundant
             # keycloak_auth_endpoint = kc_construct.keycloak_auth_endpoint
-            dns_allocator = kc_construct.dns_allocator
             oidc_service_role_arn = kc_construct.oidc_bucket_service_role.role_arn
 
         # If we don't deploy keycloak - we need to know the auth endpoint that is
         # shared - this comes from parameter
         else:
-            # Create allocator to use
-            dns_allocator = DNSAllocator(
-                scope=self,
-                construct_id="dns",
-                hosted_zone_id=config.dns.hosted_zone_id,
-                hosted_zone_name=config.dns.hosted_zone_name,
-            )
-
             if stage not in ["TEST", "DEV"]:
                 assert False, "Trying to assume role ARN on non TEST stage."
 
@@ -215,7 +216,7 @@ class ProvenaStack(Stack):
                 scope=self,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 construct_id="id",
                 stage=stage,
                 handle_secret_arn=id_config.handle_credentials_arn,
@@ -247,7 +248,7 @@ class ProvenaStack(Stack):
             ), "Cannot deploy auth API without registry"
             auth_api = LambdaAuthApi(
                 self,
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 construct_id="auth-api",
                 stage=stage,
                 extra_hash_dirs=auth_config.extra_hash_dirs,
@@ -319,6 +320,7 @@ class ProvenaStack(Stack):
                 scope=self,
                 id="opensearch",
                 cert_arn=cert_arn,
+                root_domain=config.general.root_domain,
                 hz=dns_allocator.hz,
                 removal_policy=search_config.cluster_removal_policy,
                 # this may not be defined depending on if we are reusing existing domain
@@ -338,7 +340,7 @@ class ProvenaStack(Stack):
             search_api = LambdaSearchAPI(
                 scope=self,
                 construct_id="search-api",
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
@@ -413,7 +415,7 @@ class ProvenaStack(Stack):
             registry_api = RegistryAPI(
                 scope=self,
                 construct_id="entity-registry-api",
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
@@ -505,7 +507,7 @@ class ProvenaStack(Stack):
             data_api = LambdaDataStoreAPI(
                 self,
                 construct_id="data-api",
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
@@ -576,7 +578,7 @@ class ProvenaStack(Stack):
                 scope=self,
                 construct_id="prov-api",
                 stage=stage,
-                domain_base=config.general.application_root_domain,
+                domain_base=config.general.root_domain,
                 branch_name=branch_name,
                 repo_string=config.deployment.git_repo_string,
                 github_build_token_arn=build_token_arn,
@@ -781,7 +783,7 @@ class ProvenaStack(Stack):
             allocator=dns_allocator,
             keycloak_endpoint=keycloak_auth_endpoint_full,
             domain=async_config.job_api_domain,
-            domain_base=config.general.application_root_domain,
+            domain_base=config.general.root_domain,
             github_build_token_arn=config.deployment.github_token_arn,
             repo_string=config.deployment.git_repo_string,
             branch_name=config.deployment.git_branch_name,
@@ -833,11 +835,13 @@ class ProvenaStack(Stack):
 
         # Update data store API with job api endpoint
         assert data_api
-        data_api.add_api_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        data_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
 
         # Update auth API with job api endpoint
         assert auth_api
-        auth_api.add_api_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        auth_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
 
         # Update the registry API with the job API endpoint
         registry_api.add_to_environment(
@@ -850,7 +854,8 @@ class ProvenaStack(Stack):
         )
 
         # Update the prov API with the job API endpoint
-        prov_api.add_to_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        prov_api.add_to_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
         # This sets up the prov job ECS task dfn to have equivalent
         # permissions/rights as the prov API
         prov_api.grant_equivalent_permissions(

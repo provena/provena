@@ -1,8 +1,8 @@
 from typing import Dict, Optional
-from aws_cdk import Environment, aws_codepipeline_actions, aws_iam as iam, RemovalPolicy
+from aws_cdk import Environment, aws_codepipeline_actions, RemovalPolicy
 from typing import List
-from enum import Enum, auto
-from pydantic import BaseModel, Field
+from enum import Enum
+from pydantic import BaseModel
 from provena.config.config_global_defaults import *
 
 """
@@ -40,14 +40,28 @@ from provena.config.config_global_defaults import *
     --------
 """
 
+
 class DeploymentType(str, Enum):
     # ProvenaConfig
     FULL_APP = "FULL_APP"
     # ProvenaUiOnlyConfig
     UI_ONLY = "UI_ONLY"
 
-class ConfigBase(BaseModel):
-    type: DeploymentType = DeploymentType.FULL_APP
+
+class ConfigSource(BaseModel):
+    # What is the name of the config file to use for deployment - typically same as stage - don't include *.json postfix
+    config_file_name: str
+    # config source repo that defined this config
+    repo_clone_string: str
+    # The name space for the config
+    namespace: str
+    # The stage for the config
+    stage: str
+    # The secret ARN which contains the username/token combination to use for cloning the repo
+    oauth_token_secret_arn: str
+    # Which branch to use for the source config repo
+    branch: str = "main"
+
 
 class AWSTarget(BaseModel):
     account: str
@@ -63,6 +77,13 @@ class Stage(str, Enum):
     DEV = "DEV"
     STAGE = "STAGE"
     PROD = "PROD"
+
+
+class ConfigBase(BaseModel):
+    type: DeploymentType = DeploymentType.FULL_APP
+
+    # Which application stage is this
+    stage: Stage
 
 
 """
@@ -162,8 +183,6 @@ class LambdaWarmerComponent(BaseModel):
 
 
 class KeycloakConfiguration(BaseModel):
-    # realm name is already known
-
     # What should be displayed in the Login page etc
     display_name: str
 
@@ -370,9 +389,6 @@ DOMAIN CONFIG
 
 
 class HZConfig(BaseModel):
-    # this is the root domain to which the component config domains will be
-    # relative to
-    root_domain: str
     # this is the hosted zone name, usually the same as the root domain
     hosted_zone_name: str
     # this is the hosted zone ID
@@ -399,24 +415,11 @@ class BuildBadgeConfig(BaseModel):
 
 
 class DeploymentConfig(BaseModel):
-    # What is the Provena config ID of this config?
-    config_id: str
-
-    # config source repo that defined this config
-    config_source_repo_clone_string: str
-    # The name space for the config
-    config_source_name_space: str
-    # The stage for the config
-    config_source_stage: str
-    # The secret ARN which contains the username/token combination to use for cloning the repo
-    config_repo_oauth_token_secret_arn: str
+    config: ConfigSource
 
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
     deployment_stack_id: str
-
-    # Which application stage is this
-    stage: Stage
 
     # git owner/organisation e.g. provena
     git_owner_org: str
@@ -496,7 +499,7 @@ class DeploymentConfig(BaseModel):
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_id,
+            "PROVENA_CONFIG_ID": self.config.config_file_name,
         }
 
         if self.feature_deployment:
@@ -515,7 +518,8 @@ class DeploymentConfig(BaseModel):
             # the infra will interpret any non None value to be true
             env_vars["ENABLE_API_MONITORING"] = "true"
 
-        export_string = " && ".join([f'export {k}="{v}"' for k, v in env_vars.items()])
+        export_string = " && ".join(
+            [f'export {k}="{v}"' for k, v in env_vars.items()])
         return f"{export_string} && npx cdk synth {self.cdk_input_output_subcommand}"
 
 
@@ -558,7 +562,7 @@ class GeneralConfig(BaseModel):
 
     # what is the root domain of the application (not necessarily same as hosted zone)
     # e.g. dev.provena.io
-    application_root_domain: str
+    root_domain: str
 
     # What theme ID is used for the UIs?
     ui_theme_id: str = "default"
@@ -578,6 +582,10 @@ class GeneralConfig(BaseModel):
 
     # These tags will be added to the whole application tree
     tags: Optional[Dict[str, str]] = None
+
+    # Prefix all routes with an optional prefix - will break application but is
+    # useful to avoid route53 redeploy issues in some situations
+    debug_route_prefix: Optional[str] = None
 
 
 class TestType(str, Enum):
@@ -655,7 +663,6 @@ ALL CONFIG
 
 class ProvenaConfig(ConfigBase):
     # type inherited from base
-
     deployment: DeploymentConfig
     components: ComponentConfig
     tests: TestConfig
@@ -713,20 +720,7 @@ class UiOnlyDomainNames(BaseModel):
 
 
 class ProvenaUIOnlyConfig(ConfigBase):
-    # type inherited from base
-
-    # What is the provena config ID of this deployment
-    config_id: str
-
-    # config source repo that defined this config
-    config_source_repo_clone_string: str
-    # The name space for the config
-    config_source_name_space: str
-    # The stage for the config
-    config_source_stage: str
-    # The secret ARN which contains the username/token combination to use for cloning the repo
-    config_repo_oauth_token_secret_arn: str
-
+    config: ConfigSource
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
     deployment_stack_id: str
@@ -747,7 +741,6 @@ class ProvenaUIOnlyConfig(ConfigBase):
         return f"{self.git_owner_org}/{self.git_repo_name}"
 
     aws_environment: AWSTarget
-    target_stage: Stage
     domains: UiOnlyDomainNames
     dns: DNSConfig
 
@@ -771,7 +764,7 @@ class ProvenaUIOnlyConfig(ConfigBase):
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_id,
+            "PROVENA_CONFIG_ID": self.config.config_file_name,
             "TICKET_NUMBER": str(self.ticket_number),
             "BRANCH_NAME": self.git_branch_name,
         }
@@ -784,6 +777,7 @@ class ProvenaUIOnlyConfig(ConfigBase):
         if self.email_alerts_activated:
             env_vars["PIPELINE_ALERTS"] = "true"
 
-        export_string = " && ".join([f'export {k}="{v}"' for k, v in env_vars.items()])
+        export_string = " && ".join(
+            [f'export {k}="{v}"' for k, v in env_vars.items()])
 
         return f"{export_string} && npx cdk synth {self.cdk_input_output_subcommand}"

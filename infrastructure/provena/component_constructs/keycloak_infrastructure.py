@@ -101,9 +101,7 @@ class KeycloakConstruct(Construct):
                  custom_theme_name: str,
                  bucket_arn: str,
                  cert_arn: str,
-                 dockerhub_creds_arn: str,
-                 hosted_zone_id: str,
-                 hosted_zone_name: str,
+                 allocator: DNSAllocator,
                  kc_db_instance_snapshot_arn: Optional[str],
                  kc_domain: str,
                  balancers: SharedBalancers,
@@ -113,15 +111,6 @@ class KeycloakConstruct(Construct):
                  initial_configuration: Optional[KeycloakConfiguration],
                  **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
-
-        # Create static DNS allocations
-        allocator = DNSAllocator(
-            scope=self,
-            construct_id="dns_allocator",
-            hosted_zone_name=hosted_zone_name,
-            hosted_zone_id=hosted_zone_id
-        )
-        self.dns_allocator = allocator
 
         # Should we restore from snapshot
         snapshot_mode = bool(kc_db_instance_snapshot_arn)
@@ -222,7 +211,7 @@ class KeycloakConstruct(Construct):
             action_id='keycloak',
             target_group=tg,
             conditions=[elb.ListenerCondition.host_headers(
-                [f"{kc_domain}.{allocator.zone_domain_name}"]
+                [f"{kc_domain}.{allocator.root_domain}"]
             )],
             priority=https_listener_priority,
             http_redirect_priority=http_listener_priority
@@ -403,14 +392,14 @@ class KeycloakConstruct(Construct):
         # for the API
         record = allocator.add_load_balancer(
             "kc_dns_record",
-            domain_prefix=kc_domain,
+            domain=kc_domain,
             load_balancer=balancers.alb,
             comment=stage + " KC Load Balancer DNS target"
         )
 
         # entity ID for OIDC
-        entity_id_full_url = f"https://{kc_domain}.{allocator.zone_domain_name}/auth/realms/{realm_name}"
-        entity_id_qualified_domain = f"{kc_domain}.{allocator.zone_domain_name}/auth/realms/{realm_name}"
+        entity_id_full_url = f"https://{kc_domain}.{allocator.root_domain}/auth/realms/{realm_name}"
+        entity_id_qualified_domain = f"{kc_domain}.{allocator.root_domain}/auth/realms/{realm_name}"
 
         self.keycloak_auth_endpoint = entity_id_full_url
 

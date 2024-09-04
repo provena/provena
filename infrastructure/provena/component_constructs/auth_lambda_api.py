@@ -139,7 +139,7 @@ class LambdaAuthApi(Construct):
             # to lambda
             proxy=True,
             domain_name=api_gw.DomainNameOptions(
-                domain_name=f"{domain}.{allocator.zone_domain_name}",
+                domain_name=f"{domain}.{allocator.root_domain}",
                 certificate=acm_cert
             ),
             deploy_options=api_gw.StageOptions(
@@ -155,12 +155,12 @@ class LambdaAuthApi(Construct):
         allocator.add_api_gateway_target(
             id="lambda-auth-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Auth API domain entry"
         )
 
         # Add rule to listener to hit this target group
-        target_host = domain + "." + allocator.zone_domain_name
+        target_host = domain + "." + allocator.root_domain
 
         # enable the API to read the service account secret
         auth_service_secret = sm.Secret.from_secret_complete_arn(

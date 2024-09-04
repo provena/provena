@@ -23,3 +23,8 @@ flags:
     short: -d
     arg: path
     help: Path to the pre-cloned repository
+  - long: --branch
+    short: -b
+    arg: branch_name
+    help: "The branch to clone from the remote config repository (default: 'main')"
+    default: main

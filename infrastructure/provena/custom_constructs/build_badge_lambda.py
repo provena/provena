@@ -1,4 +1,4 @@
-from aws_cdk import(
+from aws_cdk import (
     aws_lambda as _lambda,
     aws_apigateway as api_gw,
     aws_codepipeline as code_pipeline,
@@ -10,6 +10,7 @@ from aws_cdk import(
 from constructs import Construct
 from provena.custom_constructs.DNS_allocator import DNSAllocator
 from typing import Any
+
 
 class BuildBadgeLambda(Construct):
     def __init__(self, scope: Construct,
@@ -49,7 +50,7 @@ class BuildBadgeLambda(Construct):
             proxy=True,
             binary_media_types=["*/*"],
             domain_name=api_gw.DomainNameOptions(
-                domain_name=f"{domain}.{allocator.zone_domain_name}",
+                domain_name=f"{domain}.{allocator.root_domain}",
                 certificate=acm_cert
             )
         )
@@ -58,7 +59,7 @@ class BuildBadgeLambda(Construct):
         allocator.add_api_gateway_target(
             id=f"{stage}_{construct_id}_route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="API Gateway for build badge generation"
         )
 
@@ -86,7 +87,7 @@ class BuildBadgeLambda(Construct):
         )
 
         # Output badge endpoint
-        endpoint = f"https://{domain}.{allocator.zone_domain_name}"
+        endpoint = f"https://{domain}.{allocator.root_domain}"
         output = CfnOutput(
             scope=self,
             id='output',

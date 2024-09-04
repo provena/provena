@@ -18,7 +18,6 @@ provena/keycloak/themes/*
 
 # CDK configs
 configs/*
-!configs/sample*.json
 
 # cdk context
 cdk.context.json
