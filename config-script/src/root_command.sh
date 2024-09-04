@@ -109,41 +109,6 @@ validate_args() {
   fi
 }
 
-# Parse command line arguments
-parse_args() {
-  declare -A args
-  while [[ $# -gt 0 ]]; do
-    case $1 in
-      --namespace)
-        args[namespace]="$2"
-        shift 2
-        ;;
-      --stage)
-        args[stage]="$2"
-        shift 2
-        ;;
-      --target)
-        args[--target]="$2"
-        shift 2
-        ;;
-      --repo-dir)
-        args[--repo-dir]="$2"
-        shift 2
-        ;;
-      --branch)
-        args[--branch]="$2"
-        shift 2
-        ;;
-      *)
-        echo "Unknown option: $1"
-        exit 1
-        ;;
-    esac
-  done
-}
-
-# Main execution
-parse_args "$@"
 initialize
 validate_args
 
