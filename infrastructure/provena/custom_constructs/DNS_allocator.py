@@ -303,6 +303,7 @@ class DNSAllocator(Construct):
         """
         r53.ARecord(
             self, id,
+            record_name=self._generate_route(""),
             target=r53.RecordTarget.from_alias(
                 r53_targets.CloudFrontTarget(target)),
             zone=self.hz,
