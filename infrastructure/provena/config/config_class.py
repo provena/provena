@@ -47,8 +47,8 @@ class DeploymentType(str, Enum):
     UI_ONLY = "UI_ONLY"
 
 class ConfigSource(BaseModel):
-    # What is the name of the config file to use for deployment - typically same as stage
-    config_name: str
+    # What is the name of the config file to use for deployment - typically same as stage - don't include *.json postfix
+    config_file_name: str
     # config source repo that defined this config
     repo_clone_string: str
     # The name space for the config
@@ -494,7 +494,7 @@ class DeploymentConfig():
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_source.config_name,
+            "PROVENA_CONFIG_ID": self.config_source.config_file_name,
         }
 
         if self.feature_deployment:
@@ -755,7 +755,7 @@ class ProvenaUIOnlyConfig(ConfigBase):
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_source.config_name,
+            "PROVENA_CONFIG_ID": self.config_source.config_file_name,
             "TICKET_NUMBER": str(self.ticket_number),
             "BRANCH_NAME": self.git_branch_name,
         }
