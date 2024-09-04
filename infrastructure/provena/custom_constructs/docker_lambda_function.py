@@ -54,8 +54,6 @@ class DockerImageLambda(Construct):
                 os.path.abspath(dir)
             ) for dir in extra_hash_dirs])
 
-        print(extra_hash if extra_hash else "No hash provided")
-
         final_build_args: Dict[str, str] = {}
 
         # add cache buster == MD5 hash of extra things to force Docker to rebuild images
