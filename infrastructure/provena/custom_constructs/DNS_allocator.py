@@ -37,8 +37,6 @@ class DNSAllocator(Construct):
         # Super constructor
         super().__init__(scope, construct_id, **kwargs)
 
-        # Save some variables
-        self.zone_domain_name = hosted_zone_name
         # the application root domain which routes will be respective to 
         self.root_domain = root_domain 
 
@@ -61,7 +59,7 @@ class DNSAllocator(Construct):
 
         Args:
             id (str): The CDK id of the record you are creating (your choice)
-            domain_prefix (str): The prefix (including the full stop) of the
+            domain_prefix (str): The prefix (excluding the full stop) of the
             target e.g. if you want api.example.com and the domain is example.com,
             you should include "api."
             target_eip (ec2.CfnEIP): The elastic IP associated to the ec2 instance.
@@ -75,7 +73,7 @@ class DNSAllocator(Construct):
             scope=self,
             id=id,
             zone=self.hz,
-            record_name=domain_prefix + self.root_domain,
+            record_name=f"{domain_prefix}.{self.root_domain}.",
             comment=comment,
             ttl=route_ttl,
             # This is the only way to get the elastic IP to resolve
@@ -108,7 +106,7 @@ class DNSAllocator(Construct):
         full_domain_target = f"{unqualified_bucket_name}.{self.root_domain}.s3-website-{region}.amazonaws.com"
 
         # Name of the record (desired URL) must be the qualified bucket name
-        record_name = f"{unqualified_bucket_name}.{self.root_domain}"
+        record_name = f"{unqualified_bucket_name}.{self.root_domain}."
 
         # Create the record
         r53.CnameRecord(
@@ -145,7 +143,7 @@ class DNSAllocator(Construct):
             scope=self,
             id=id,
             zone=self.hz,
-            record_name=domain_prefix,
+            record_name=f"{domain_prefix}.{self.root_domain}.",
             comment=comment,
             ttl=route_ttl,
             target=r53.RecordTarget.from_alias(target)
@@ -172,7 +170,7 @@ class DNSAllocator(Construct):
             scope=self,
             id=id,
             zone=self.hz,
-            record_name=domain_prefix,
+            record_name=f"{domain_prefix}.{self.root_domain}.",
             domain_name=dns_address,
             comment=comment,
             ttl=route_ttl
@@ -219,7 +217,7 @@ class DNSAllocator(Construct):
             self, id,
             target=r53.RecordTarget.from_alias(r53_targets.ApiGateway(target)),
             zone=self.hz,
-            record_name=domain_prefix,
+            record_name=f"{domain_prefix}.{self.root_domain}.",
             comment=comment,
             ttl=route_ttl)
 
@@ -265,7 +263,7 @@ class DNSAllocator(Construct):
             target=r53.RecordTarget.from_alias(
                 r53_targets.CloudFrontTarget(target)),
             zone=self.hz,
-            record_name=sub_domain,
+            record_name=f"{sub_domain}.{self.root_domain}.",
             comment=comment,
             ttl=route_ttl)
 
@@ -306,6 +304,7 @@ class DNSAllocator(Construct):
         """
         r53.ARecord(
             self, id,
+            record_name=f"{self.root_domain}.",
             target=r53.RecordTarget.from_alias(
                 r53_targets.CloudFrontTarget(target)),
             zone=self.hz,
@@ -325,5 +324,5 @@ class DNSAllocator(Construct):
             domain_name=to_target,
             zone=self.hz,
             comment=comment,
-            record_name=from_sub_domain,
+            record_name=f"{from_sub_domain}.{self.root_domain}.",
             ttl=route_ttl)
