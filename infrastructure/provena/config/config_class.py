@@ -731,7 +731,6 @@ class ProvenaUIOnlyConfig(ConfigBase):
         return f"{self.git_owner_org}/{self.git_repo_name}"
 
     aws_environment: AWSTarget
-    target_stage: Stage
     domains: UiOnlyDomainNames
     dns: DNSConfig
 

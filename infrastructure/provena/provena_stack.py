@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_backup as backup,
     aws_kms as kms,
     aws_ecs as ecs,
+    aws_iam as iam,
     aws_secretsmanager as aws_sm,
     Aspects,
     Duration,

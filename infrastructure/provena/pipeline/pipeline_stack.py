@@ -116,12 +116,9 @@ class ProvenaPipelineStack(Stack):
             "USERNAME=$(echo $SECRET_JSON | jq -r '.username')",
             "TOKEN=$(echo $SECRET_JSON | jq -r '.token')",
            
-            # Clone the config repo
-            f"git clone https://$USERNAME:$TOKEN@{config.deployment.config.repo_clone_string.removeprefix('https://')} config-repo-clone",
-           
             # Run the config management script
             "chmod +x ./config",
-            f"./config {config.deployment.config.namespace} {config.deployment.config.stage} --repo-dir config-repo-clone",
+            f"./config {config.deployment.config.namespace} {config.deployment.config.stage} --target https://$USERNAME:$TOKEN@{config.deployment.config.repo_clone_string.removeprefix('https://')} --branch {config.deployment.config.branch}",
            
             # Clean up sensitive information
             "unset SECRET_JSON USERNAME TOKEN",
@@ -1301,7 +1298,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
         """
 
         # Expose the stage
-        self.stage = config.target_stage
+        self.stage = config.stage
 
         # expose config
         self.config = config

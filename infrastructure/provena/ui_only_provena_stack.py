@@ -24,7 +24,7 @@ class ProvenaUIStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # pull out some common vars
-        stage = config.target_stage
+        stage = config.stage
         us_east_cert_arn = config.dns.us_east_certificate_arn
 
         # Create allocator to use
