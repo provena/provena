@@ -409,7 +409,7 @@ class BuildBadgeConfig(BaseModel):
     interface_domain: str
 
 
-class DeploymentConfig():
+class DeploymentConfig(BaseModel):
     config: ConfigSource
 
     # Stack IDs - used to specify what the stack names should be
