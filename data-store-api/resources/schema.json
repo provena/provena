@@ -181,7 +181,7 @@
                     "$id": "#/properties/publisher_id",
                     "type": "string",
                     "title": "Publisher",
-                    "description": "Please provide information about the organisation which publishing/producing this dataset. If this is your organisation, please select it again using the tool below."
+                    "description": "Please provide information about the organisation which is publishing or producing this dataset. If this is your organisation, please select it again using the tool below."
                 },
                 "created_date": {
                     "$id": "#/properties/created_date",
