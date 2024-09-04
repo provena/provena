@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Initialize global variables and perform setup tasks
 initialize() {
   set -e  # Exit immediately if a command exits with a non-zero status
@@ -7,6 +9,7 @@ initialize() {
   TEMP_DIR=""
   ENV_FILE="env.json"
   BASE_STAGE="base"
+  DEFAULT_BRANCH="main"
   
   # Ensure jq is installed
   if ! command -v jq &> /dev/null; then
@@ -40,7 +43,7 @@ update_env_file() {
 clone_repo() {
   TEMP_DIR=$(mktemp -d)
   echo "Cloning repository into temporary directory: $TEMP_DIR"
-  git clone "$TARGET_REPO" "$TEMP_DIR"
+  git clone -b "$BRANCH" "$TARGET_REPO" "$TEMP_DIR"
 }
 
 # Copy files from the cloned repository to the local workspace
@@ -84,13 +87,12 @@ validate_args() {
     echo "Error: Both namespace and stage must be specified."
     exit 1
   fi
-
   # Set global variables based on command-line arguments
   NAMESPACE="${args[namespace]}"
   STAGE="${args[stage]}"
   TARGET_REPO="${args[--target]}"
   REPO_DIR="${args[--repo-dir]}"
-
+  BRANCH="${args[--branch]:-$DEFAULT_BRANCH}"
   # Check if either --target or --repo-dir is provided
   if [[ -n "$TARGET_REPO" && -n "$REPO_DIR" ]]; then
     echo "Error: Cannot specify both --target and --repo-dir."
@@ -107,7 +109,6 @@ validate_args() {
   fi
 }
 
-# Main execution
 initialize
 validate_args
 
@@ -126,4 +127,4 @@ else
   cleanup
 fi
 
-echo "Configuration update complete for namespace: $NAMESPACE, stage: $STAGE"
+echo "Configuration update complete for namespace: $NAMESPACE, stage: $STAGE, branch: $BRANCH"

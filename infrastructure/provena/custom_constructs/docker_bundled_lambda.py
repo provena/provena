@@ -136,9 +136,6 @@ def create_lambda(scope: Construct,
     A docker build will be initiated with a python3.7 runtime, the requirements
     will be installed in the build then exported to the AWS build.
     """
-    print(f"Creating lambda function at path: {path}")
-    if bundling_required:
-        print(f"Bundling lambda asset for {path}")
     bundling_options = BundlingOptions(
         image=LAMBDA_DOCKER_IMAGE,
         command=[
@@ -159,7 +156,6 @@ def create_lambda(scope: Construct,
         custom_hash = "".join([hash_dir(
             os.path.abspath(dir)
         ) for dir in full_hash_dirs])
-        print(f"Custom hash for {path} was {custom_hash}.")
 
     func = _lambda.Function(
         scope, id,

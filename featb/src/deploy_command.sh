@@ -89,6 +89,9 @@ source .venv/bin/activate
 echo "Installing requirements"
 echo
 
+# install latest pip
+pip install pip --upgrade
+
 pip install -r requirements.txt
 
 echo "Running CDK deploy of pipeline with feature configuration"

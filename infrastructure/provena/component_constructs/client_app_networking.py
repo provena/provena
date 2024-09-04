@@ -100,7 +100,7 @@ class ClientAppNetworking(Construct):
 
         # Add a listener action on the subdomain
         # expected domain
-        expected_header = f"{sub_domain}.{allocator.zone_domain_name}"
+        expected_header = f"{sub_domain}.{allocator.root_domain}"
         balancers.add_http_redirected_conditional_https_target(
             action_id='neo4j',
             target_group=tg,
@@ -115,7 +115,7 @@ class ClientAppNetworking(Construct):
         assert balancers.alb
         allocator.add_load_balancer(
             id='client-balancer-route',
-            domain_prefix=sub_domain,
+            domain=sub_domain,
             load_balancer=balancers.alb,
             comment='Routes HTTPS traffic for client tool'
         )

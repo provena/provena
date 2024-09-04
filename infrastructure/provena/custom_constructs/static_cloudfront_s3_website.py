@@ -1,5 +1,5 @@
 
-from aws_cdk import(
+from aws_cdk import (
     Duration,
     aws_certificatemanager as acm,
     aws_cloudfront as cloudfront,
@@ -19,7 +19,7 @@ class StaticCloudfrontS3Website(Construct):
                  root_domain: str,
                  cert_arn: str,
                  dns_allocator: DNSAllocator,
-                 **kwargs : Any) -> None:
+                 **kwargs: Any) -> None:
         # Super constructor
         super().__init__(scope, construct_id, **kwargs)
 
@@ -27,10 +27,10 @@ class StaticCloudfrontS3Website(Construct):
                                                     id="dist",
                                                     default_behavior=cloudfront.BehaviorOptions(
                                                         origin=origins.S3Origin(
-                                                            bucket = bucket,
-                                                            ),
+                                                            bucket=bucket,
+                                                        ),
                                                         # TODO change this for PROD
-                                                        # currently disables all caching but we should 
+                                                        # currently disables all caching but we should
                                                         # enable cloudfront caching for PROD
                                                         cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
                                                         viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
@@ -80,13 +80,13 @@ class StaticCloudfrontS3Website(Construct):
             # since this is not unique in any way
             dns_allocator.add_subdomain_redirect(
                 id=construct_id + 'www-redirect',
-                from_sub_domain='www',
-                to_target=dns_allocator.zone_domain_name,
-                comment=f"Adding redirect from www to {dns_allocator.zone_domain_name}"
+                from_domain='www',
+                to_domain="",
+                comment=f"Adding redirect from www to {dns_allocator.root_domain}"
             )
         else:
             dns_allocator.add_cloudfront_distribution_target(
                 construct_id + '-cloudfront-dns',
-                sub_domain=sub_domain,
+                domain=sub_domain,
                 target=self.distribution
             )

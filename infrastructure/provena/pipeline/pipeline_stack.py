@@ -60,7 +60,7 @@ class ProvenaPipelineStack(Stack):
         """
 
         # Expose the stage
-        self.stage = config.deployment.stage
+        self.stage = config.stage
 
         # resolve the endpoints - this is used in UI build steps and is a critical process
         self.endpoints = resolve_endpoints(config=config)
@@ -112,16 +112,13 @@ class ProvenaPipelineStack(Stack):
             "apt-get update && apt-get install -y awscli jq",
            
             # Retrieve OAuth token from AWS Secrets Manager
-            f"SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id {config.deployment.config_repo_oauth_token_secret_arn} --query SecretString --output text)",
+            f"SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id {config.deployment.config.oauth_token_secret_arn} --query SecretString --output text)",
             "USERNAME=$(echo $SECRET_JSON | jq -r '.username')",
             "TOKEN=$(echo $SECRET_JSON | jq -r '.token')",
            
-            # Clone the config repo
-            f"git clone https://$USERNAME:$TOKEN@{config.deployment.config_source_repo_clone_string.removeprefix('https://')} config-repo-clone",
-           
             # Run the config management script
             "chmod +x ./config",
-            f"./config {config.deployment.config_source_name_space} {config.deployment.config_source_stage} --repo-dir config-repo-clone",
+            f"./config {config.deployment.config.namespace} {config.deployment.config.stage} --target https://$USERNAME:$TOKEN@{config.deployment.config.repo_clone_string.removeprefix('https://')} --branch {config.deployment.config.branch}",
            
             # Clean up sensitive information
             "unset SECRET_JSON USERNAME TOKEN",
@@ -693,12 +690,13 @@ class ProvenaPipelineStack(Stack):
                 construct_id='allocator',
                 hosted_zone_id=config.dns.hosted_zone_id,
                 hosted_zone_name=config.dns.hosted_zone_name,
+                root_domain=config.general.root_domain
             )
             BuildBadgeLambda(
                 scope=self,
                 construct_id='deployment-build-badge',
                 domain=build_badge_config.build_domain,
-                stage=config.deployment.stage.value,
+                stage=config.stage.value,
                 cert_arn=config.dns.domain_certificate_arn,
                 allocator=allocator,
                 built_pipeline=finalized_code_pipeline
@@ -710,7 +708,7 @@ class ProvenaPipelineStack(Stack):
                     scope=self,
                     construct_id='interface-build-badge',
                     domain=build_badge_config.interface_domain,
-                    stage=config.deployment.stage.value,
+                    stage=config.stage.value,
                     cert_arn=config.dns.domain_certificate_arn,
                     allocator=allocator,
                     built_pipeline=interface_pipeline
@@ -731,7 +729,7 @@ class ProvenaPipelineStack(Stack):
             # Github source code for ci_projects and define triggers for the build.
             # Credentials are CodeBuild wide for GitHub.
             branch_name = config.deployment.git_branch_name
-            stage = config.deployment.stage.value
+            stage = config.stage.value
             github_source = build.Source.git_hub(
                 owner=config.deployment.git_owner_org,
                 repo=config.deployment.git_repo_name,
@@ -1300,7 +1298,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
         """
 
         # Expose the stage
-        self.stage = config.target_stage
+        self.stage = config.stage
 
         # expose config
         self.config = config

@@ -12,6 +12,8 @@ fi
 # :command.root_command
 root_command() {
   # src/root_command.sh
+  #!/bin/bash
+
   # Initialize global variables and perform setup tasks
   initialize() {
     set -e  # Exit immediately if a command exits with a non-zero status
@@ -21,6 +23,7 @@ root_command() {
     TEMP_DIR=""
     ENV_FILE="env.json"
     BASE_STAGE="base"
+    DEFAULT_BRANCH="main"
 
     # Ensure jq is installed
     if ! command -v jq &> /dev/null; then
@@ -54,7 +57,7 @@ root_command() {
   clone_repo() {
     TEMP_DIR=$(mktemp -d)
     echo "Cloning repository into temporary directory: $TEMP_DIR"
-    git clone "$TARGET_REPO" "$TEMP_DIR"
+    git clone -b "$BRANCH" "$TARGET_REPO" "$TEMP_DIR"
   }
 
   # Copy files from the cloned repository to the local workspace
@@ -98,13 +101,12 @@ root_command() {
       echo "Error: Both namespace and stage must be specified."
       exit 1
     fi
-
     # Set global variables based on command-line arguments
     NAMESPACE="${args[namespace]}"
     STAGE="${args[stage]}"
     TARGET_REPO="${args[--target]}"
     REPO_DIR="${args[--repo-dir]}"
-
+    BRANCH="${args[--branch]:-$DEFAULT_BRANCH}"
     # Check if either --target or --repo-dir is provided
     if [[ -n "$TARGET_REPO" && -n "$REPO_DIR" ]]; then
       echo "Error: Cannot specify both --target and --repo-dir."
@@ -121,7 +123,6 @@ root_command() {
     fi
   }
 
-  # Main execution
   initialize
   validate_args
 
@@ -140,7 +141,7 @@ root_command() {
     cleanup
   fi
 
-  echo "Configuration update complete for namespace: $NAMESPACE, stage: $STAGE"
+  echo "Configuration update complete for namespace: $NAMESPACE, stage: $STAGE, branch: $BRANCH"
 }
 
 # :command.version_command
@@ -179,6 +180,12 @@ config_usage() {
     # :flag.usage
     printf "  %s\n" "--repo-dir, -d PATH"
     printf "    Path to the pre-cloned repository\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--branch, -b BRANCH_NAME"
+    printf "    The branch to clone from the remote config repository (default: 'main')\n"
+    printf "    Default: main\n"
     echo
 
     # :command.usage_fixed_flags
@@ -342,6 +349,20 @@ parse_requirements() {
         fi
         ;;
 
+      # :flag.case
+      --branch | -b)
+
+        # :flag.case_arg
+        if [[ -n ${2+x} ]]; then
+          args['--branch']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--branch requires an argument: --branch, -b BRANCH_NAME" >&2
+          exit 1
+        fi
+        ;;
+
       -?*)
         printf "invalid option: %s\n" "$key" >&2
         exit 1
@@ -377,6 +398,9 @@ parse_requirements() {
     printf "missing required argument: STAGE\nusage: config NAMESPACE STAGE [OPTIONS]\n" >&2
     exit 1
   fi
+
+  # :command.default_assignments
+  [[ -n ${args['--branch']:-} ]] || args['--branch']="main"
 
 }
 

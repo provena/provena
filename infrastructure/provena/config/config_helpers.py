@@ -139,7 +139,7 @@ def resolve_endpoints(config: ProvenaConfig) -> ResolvedDomainNames:
 
     def subdomain_to_full(subdomain: str) -> str:
         # base name never changes
-        base_name = config.dns.root_domain
+        base_name = config.general.root_domain
 
         # all URLs in system are https
         protocol = "https://"
@@ -163,7 +163,7 @@ def resolve_endpoints(config: ProvenaConfig) -> ResolvedDomainNames:
 
     return ResolvedDomainNames(
         # root
-        root_domain=config.dns.root_domain,
+        root_domain=config.general.root_domain,
         # apis
         data_store_api=subdomain_to_full(config.components.data_store.api_domain)
         if config.components.data_store

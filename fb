@@ -633,6 +633,9 @@ fb_deploy_command() {
   echo "Installing requirements"
   echo
 
+  # install latest pip
+  pip install pip --upgrade
+
   pip install -r requirements.txt
 
   echo "Running CDK deploy of pipeline with feature configuration"
@@ -699,6 +702,9 @@ fb_bootstrap_command() {
 
   # source and install requirements
   source .venv/bin/activate
+
+  # install latest pip
+  pip install pip --upgrade
 
   echo "Installing requirements"
   echo
@@ -933,6 +939,9 @@ fb_destroy_command() {
   # source and install requirements
   source .venv/bin/activate
 
+  # install latest pip
+  pip install pip --upgrade
+
   echo "Installing requirements"
   echo
 
@@ -1036,6 +1045,9 @@ fb_run_command() {
 
   # source and install requirements
   source .venv/bin/activate
+
+  # install latest pip
+  pip install pip --upgrade
 
   echo "Installing requirements"
   echo
