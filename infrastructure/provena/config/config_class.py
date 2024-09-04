@@ -40,11 +40,13 @@ from provena.config.config_global_defaults import *
     --------
 """
 
+
 class DeploymentType(str, Enum):
     # ProvenaConfig
     FULL_APP = "FULL_APP"
     # ProvenaUiOnlyConfig
     UI_ONLY = "UI_ONLY"
+
 
 class ConfigSource(BaseModel):
     # What is the name of the config file to use for deployment - typically same as stage - don't include *.json postfix
@@ -60,6 +62,7 @@ class ConfigSource(BaseModel):
     # Which branch to use for the source config repo
     branch: str = "main"
 
+
 class AWSTarget(BaseModel):
     account: str
     region: str
@@ -68,11 +71,13 @@ class AWSTarget(BaseModel):
     def env(self) -> Environment:
         return Environment(account=self.account, region=self.region)
 
+
 class Stage(str, Enum):
     TEST = "TEST"
     DEV = "DEV"
     STAGE = "STAGE"
     PROD = "PROD"
+
 
 class ConfigBase(BaseModel):
     type: DeploymentType = DeploymentType.FULL_APP
@@ -513,7 +518,8 @@ class DeploymentConfig(BaseModel):
             # the infra will interpret any non None value to be true
             env_vars["ENABLE_API_MONITORING"] = "true"
 
-        export_string = " && ".join([f'export {k}="{v}"' for k, v in env_vars.items()])
+        export_string = " && ".join(
+            [f'export {k}="{v}"' for k, v in env_vars.items()])
         return f"{export_string} && npx cdk synth {self.cdk_input_output_subcommand}"
 
 
@@ -576,6 +582,10 @@ class GeneralConfig(BaseModel):
 
     # These tags will be added to the whole application tree
     tags: Optional[Dict[str, str]] = None
+
+    # Prefix all routes with an optional prefix - will break application but is
+    # useful to avoid route53 redeploy issues in some situations
+    debug_route_prefix: Optional[str] = None
 
 
 class TestType(str, Enum):
@@ -767,6 +777,7 @@ class ProvenaUIOnlyConfig(ConfigBase):
         if self.email_alerts_activated:
             env_vars["PIPELINE_ALERTS"] = "true"
 
-        export_string = " && ".join([f'export {k}="{v}"' for k, v in env_vars.items()])
+        export_string = " && ".join(
+            [f'export {k}="{v}"' for k, v in env_vars.items()])
 
         return f"{export_string} && npx cdk synth {self.cdk_input_output_subcommand}"

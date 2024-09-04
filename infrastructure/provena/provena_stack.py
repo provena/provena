@@ -86,7 +86,8 @@ class ProvenaStack(Stack):
             construct_id="dns_allocator",
             hosted_zone_name=config.dns.hosted_zone_name,
             hosted_zone_id=config.dns.hosted_zone_id,
-            root_domain=config.general.root_domain
+            root_domain=config.general.root_domain,
+            debug_root_prefix=config.general.debug_route_prefix
         )
 
         # work out keycloak endpoints
@@ -129,7 +130,8 @@ class ProvenaStack(Stack):
         # networking is required
         if config.components.networking:
             # Create basic network
-            network = NetworkConstruct(scope=self, construct_id="net", stage=stage)
+            network = NetworkConstruct(
+                scope=self, construct_id="net", stage=stage)
 
             balancers = network.balancers
 
@@ -833,11 +835,13 @@ class ProvenaStack(Stack):
 
         # Update data store API with job api endpoint
         assert data_api
-        data_api.add_api_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        data_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
 
         # Update auth API with job api endpoint
         assert auth_api
-        auth_api.add_api_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        auth_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
 
         # Update the registry API with the job API endpoint
         registry_api.add_to_environment(
@@ -850,7 +854,8 @@ class ProvenaStack(Stack):
         )
 
         # Update the prov API with the job API endpoint
-        prov_api.add_to_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        prov_api.add_to_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
         # This sets up the prov job ECS task dfn to have equivalent
         # permissions/rights as the prov API
         prov_api.grant_equivalent_permissions(
