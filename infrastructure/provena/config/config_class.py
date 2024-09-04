@@ -1,8 +1,8 @@
 from typing import Dict, Optional
-from aws_cdk import Environment, aws_codepipeline_actions, aws_iam as iam, RemovalPolicy
+from aws_cdk import Environment, aws_codepipeline_actions, RemovalPolicy
 from typing import List
-from enum import Enum, auto
-from pydantic import BaseModel, Field
+from enum import Enum
+from pydantic import BaseModel
 from provena.config.config_global_defaults import *
 
 """
@@ -410,7 +410,7 @@ class BuildBadgeConfig(BaseModel):
 
 
 class DeploymentConfig():
-    config_source: ConfigSource
+    config: ConfigSource
 
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
@@ -494,7 +494,7 @@ class DeploymentConfig():
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_source.config_file_name,
+            "PROVENA_CONFIG_ID": self.config.config_file_name,
         }
 
         if self.feature_deployment:
@@ -710,7 +710,7 @@ class UiOnlyDomainNames(BaseModel):
 
 
 class ProvenaUIOnlyConfig(ConfigBase):
-    config_source: ConfigSource
+    config: ConfigSource
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
     deployment_stack_id: str
@@ -755,7 +755,7 @@ class ProvenaUIOnlyConfig(ConfigBase):
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_source.config_file_name,
+            "PROVENA_CONFIG_ID": self.config.config_file_name,
             "TICKET_NUMBER": str(self.ticket_number),
             "BRANCH_NAME": self.git_branch_name,
         }

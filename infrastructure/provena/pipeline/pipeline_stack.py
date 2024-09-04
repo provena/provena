@@ -112,16 +112,16 @@ class ProvenaPipelineStack(Stack):
             "apt-get update && apt-get install -y awscli jq",
            
             # Retrieve OAuth token from AWS Secrets Manager
-            f"SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id {config.deployment.config_source.oauth_token_secret_arn} --query SecretString --output text)",
+            f"SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id {config.deployment.config.oauth_token_secret_arn} --query SecretString --output text)",
             "USERNAME=$(echo $SECRET_JSON | jq -r '.username')",
             "TOKEN=$(echo $SECRET_JSON | jq -r '.token')",
            
             # Clone the config repo
-            f"git clone https://$USERNAME:$TOKEN@{config.deployment.config_source.repo_clone_string.removeprefix('https://')} config-repo-clone",
+            f"git clone https://$USERNAME:$TOKEN@{config.deployment.config.repo_clone_string.removeprefix('https://')} config-repo-clone",
            
             # Run the config management script
             "chmod +x ./config",
-            f"./config {config.deployment.config_source.namespace} {config.deployment.config_source.stage} --repo-dir config-repo-clone",
+            f"./config {config.deployment.config.namespace} {config.deployment.config.stage} --repo-dir config-repo-clone",
            
             # Clean up sensitive information
             "unset SECRET_JSON USERNAME TOKEN",
