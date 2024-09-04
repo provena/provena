@@ -149,7 +149,7 @@ class ProvAPI(Construct):
         allocator.add_api_gateway_target(
             id="lambda-prov-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Prov API domain entry"
         )
 

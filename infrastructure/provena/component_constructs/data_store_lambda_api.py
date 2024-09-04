@@ -168,7 +168,7 @@ class LambdaDataStoreAPI(Construct):
         allocator.add_api_gateway_target(
             id="lambda-data-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Data API domain entry"
         )
 

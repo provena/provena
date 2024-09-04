@@ -15,6 +15,7 @@ from typing import Any
 from provena.custom_constructs.DNS_allocator import DNSAllocator
 from provena.custom_constructs.load_balancers import *
 
+
 class Neo4jECS(Construct):
     def __init__(
             self,
@@ -26,10 +27,10 @@ class Neo4jECS(Construct):
             vpc: ec2.Vpc,
             allocator: DNSAllocator,
             balancers: SharedBalancers,
-            http_priority: int, 
+            http_priority: int,
             efs_root_path: str,
             neo4j_auth_arn: str,
-            neo4j_cpu_size: int, 
+            neo4j_cpu_size: int,
             neo4j_memory_size: int,
             efs_service_instance_required: bool = True,
             service_instance_role_arn: Optional[str] = None,
@@ -283,7 +284,7 @@ class Neo4jECS(Construct):
             protocol=elb.ApplicationProtocol.HTTP,
             vpc=vpc
         )
-        
+
         http_fargate_target = self.service.load_balancer_target(
             container_name=container_name,
             container_port=http_port,
@@ -292,7 +293,7 @@ class Neo4jECS(Construct):
             container_name=container_name,
             container_port=tcp_port,
         )
-        
+
         atg.add_target(http_fargate_target)
 
         balancers.add_conditional_http_route(
@@ -305,8 +306,8 @@ class Neo4jECS(Construct):
             ],
             priority=http_priority
         )
-        
-        # setup tcp route 
+
+        # setup tcp route
         ntg = elb.NetworkTargetGroup(
             self,
             f"network-tg",
@@ -316,8 +317,8 @@ class Neo4jECS(Construct):
             vpc=vpc
         )
         ntg.add_target(tcp_fargate_target)
-        
-        # add tcp route 
+
+        # add tcp route
         balancers.add_tcp_route(
             id='neo4j-tcp',
             source_port=tcp_port,
@@ -367,14 +368,14 @@ class Neo4jECS(Construct):
         assert balancers.nlb
         http_record = allocator.add_load_balancer(
             "neo4j_balancer_record",
-            domain_prefix=http_instance_domain,
+            domain=http_instance_domain,
             load_balancer=balancers.alb,
             comment="Neo4j Load Balancer HTTP DNS target"
         )
 
         tcp_record = allocator.add_load_balancer(
             "neo4j_bolt_balancer_record",
-            domain_prefix=bolt_instance_domain,
+            domain=bolt_instance_domain,
             load_balancer=balancers.nlb,
             comment="Neo4j Load Balancer bolt TCP DNS target"
         )

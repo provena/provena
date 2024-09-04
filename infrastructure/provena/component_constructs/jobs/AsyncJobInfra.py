@@ -138,7 +138,7 @@ class AsyncJobInfra(Construct):
         allocator.add_api_gateway_target(
             id="lambda-job-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Job API domain entry"
         )
 

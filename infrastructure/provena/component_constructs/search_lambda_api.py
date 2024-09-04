@@ -54,7 +54,7 @@ class LambdaSearchAPI(Construct):
             },
             extra_hash_dirs=extra_hash_dirs
         )
-        
+
         assert api_func.function.role
 
         # Environment
@@ -110,7 +110,7 @@ class LambdaSearchAPI(Construct):
         allocator.add_api_gateway_target(
             id="lambda-search-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Search API domain entry"
         )
 

@@ -143,7 +143,7 @@ class RegistryAPI(Construct):
         allocator.add_api_gateway_target(
             id="lambda-registry-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Registry API domain entry"
         )
 

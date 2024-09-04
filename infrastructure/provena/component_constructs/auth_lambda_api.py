@@ -155,7 +155,7 @@ class LambdaAuthApi(Construct):
         allocator.add_api_gateway_target(
             id="lambda-auth-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Auth API domain entry"
         )
 

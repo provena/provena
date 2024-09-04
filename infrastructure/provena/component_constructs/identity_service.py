@@ -118,7 +118,7 @@ class IdentityService(Construct):
         allocator.add_api_gateway_target(
             id="lambda-identity-service-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Identity Service API domain entry"
         )
 

@@ -392,7 +392,7 @@ class KeycloakConstruct(Construct):
         # for the API
         record = allocator.add_load_balancer(
             "kc_dns_record",
-            domain_prefix=kc_domain,
+            domain=kc_domain,
             load_balancer=balancers.alb,
             comment=stage + " KC Load Balancer DNS target"
         )

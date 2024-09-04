@@ -115,7 +115,7 @@ class ClientAppNetworking(Construct):
         assert balancers.alb
         allocator.add_load_balancer(
             id='client-balancer-route',
-            domain_prefix=sub_domain,
+            domain=sub_domain,
             load_balancer=balancers.alb,
             comment='Routes HTTPS traffic for client tool'
         )

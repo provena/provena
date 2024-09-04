@@ -99,7 +99,7 @@ class LambdaWarmer(Construct):
         allocator.add_api_gateway_target(
             id="warmer_api_route",
             target=api,
-            domain_prefix=sub_domain,
+            domain=sub_domain,
             comment="Warmer API domain entry"
         )
 
