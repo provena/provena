@@ -87,7 +87,7 @@ class ProvenaStack(Stack):
             hosted_zone_name=config.dns.hosted_zone_name,
             hosted_zone_id=config.dns.hosted_zone_id,
             root_domain=config.general.root_domain,
-            debug_root_prefix=config.general.debug_route_prefix
+            debug_route_prefix=config.general.debug_route_prefix
         )
 
         # work out keycloak endpoints
