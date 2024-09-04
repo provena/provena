@@ -16,6 +16,7 @@ class OpenSearchCluster(Construct):
             scope: Construct,
             id: str,
             cert_arn: str,
+            root_domain: str,
             hz: r53.IHostedZone,
             removal_policy: RemovalPolicy,
             # if creating a new domain
@@ -34,7 +35,7 @@ class OpenSearchCluster(Construct):
             assert search_domain
 
             # fully qualified domain name
-            qualified_domain_name = f"{search_domain}.{hz.zone_name}"
+            qualified_domain_name = f"{search_domain}.{root_domain}"
 
             # setup an open search cluster
             # this is a prototyping setup TODO encryption, auth, VPC? etc
@@ -80,8 +81,8 @@ class OpenSearchCluster(Construct):
 
         if existing_domain_arn is None:
             # construct the domains - this uses a custom endpoint
-            self.qualified_domain_endpoint = f"https://{search_domain}.{hz.zone_name}"
-            self.unqualified_domain_endpoint = f"{search_domain}.{hz.zone_name}"
+            self.qualified_domain_endpoint = f"https://{search_domain}.{root_domain}"
+            self.unqualified_domain_endpoint = f"{search_domain}.{root_domain}"
         else:
             # this uses the provided domain endpoint - probably a default generated endpoint
             assert existing_domain_endpoint

@@ -117,7 +117,7 @@ class ProvenaStack(Stack):
         used_priorities: List[int] = [0]
 
         # pull out some common vars
-        stage = config.deployment.stage.value
+        stage = config.stage.value
         branch_name = config.deployment.git_branch_name
         build_token_arn = config.deployment.github_token_arn
         cert_arn = config.dns.domain_certificate_arn
@@ -170,9 +170,6 @@ class ProvenaStack(Stack):
                 cert_arn=config.dns.domain_certificate_arn,
                 kc_db_instance_snapshot_arn=kc_config.snapshot_arn,
                 kc_domain=kc_config.domain,
-                dockerhub_creds_arn=config.general.dockerhub_creds_arn,
-                hosted_zone_name=config.dns.hosted_zone_name,
-                hosted_zone_id=config.dns.hosted_zone_id,
                 balancers=balancers,
                 allocator=dns_allocator,
                 http_listener_priority=priority,
@@ -320,6 +317,7 @@ class ProvenaStack(Stack):
                 scope=self,
                 id="opensearch",
                 cert_arn=cert_arn,
+                root_domain=config.general.root_domain,
                 hz=dns_allocator.hz,
                 removal_policy=search_config.cluster_removal_policy,
                 # this may not be defined depending on if we are reusing existing domain

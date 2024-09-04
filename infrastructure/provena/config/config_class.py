@@ -46,8 +46,19 @@ class DeploymentType(str, Enum):
     # ProvenaUiOnlyConfig
     UI_ONLY = "UI_ONLY"
 
-class ConfigBase(BaseModel):
-    type: DeploymentType = DeploymentType.FULL_APP
+class ConfigSource(BaseModel):
+    # What is the name of the config file to use for deployment - typically same as stage
+    config_name: str
+    # config source repo that defined this config
+    repo_clone_string: str
+    # The name space for the config
+    namespace: str
+    # The stage for the config
+    stage: str
+    # The secret ARN which contains the username/token combination to use for cloning the repo
+    oauth_token_secret_arn: str
+    # Which branch to use for the source config repo
+    branch: str = "main"
 
 class AWSTarget(BaseModel):
     account: str
@@ -57,12 +68,17 @@ class AWSTarget(BaseModel):
     def env(self) -> Environment:
         return Environment(account=self.account, region=self.region)
 
-
 class Stage(str, Enum):
     TEST = "TEST"
     DEV = "DEV"
     STAGE = "STAGE"
     PROD = "PROD"
+
+class ConfigBase(BaseModel):
+    type: DeploymentType = DeploymentType.FULL_APP
+
+    # Which application stage is this
+    stage: Stage
 
 
 """
@@ -162,8 +178,6 @@ class LambdaWarmerComponent(BaseModel):
 
 
 class KeycloakConfiguration(BaseModel):
-    # realm name is already known
-
     # What should be displayed in the Login page etc
     display_name: str
 
@@ -395,25 +409,12 @@ class BuildBadgeConfig(BaseModel):
     interface_domain: str
 
 
-class DeploymentConfig(BaseModel):
-    # What is the Provena config ID of this config?
-    config_id: str
-
-    # config source repo that defined this config
-    config_source_repo_clone_string: str
-    # The name space for the config
-    config_source_name_space: str
-    # The stage for the config
-    config_source_stage: str
-    # The secret ARN which contains the username/token combination to use for cloning the repo
-    config_repo_oauth_token_secret_arn: str
+class DeploymentConfig():
+    config_source: ConfigSource
 
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
     deployment_stack_id: str
-
-    # Which application stage is this
-    stage: Stage
 
     # git owner/organisation e.g. provena
     git_owner_org: str
@@ -493,7 +494,7 @@ class DeploymentConfig(BaseModel):
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_id,
+            "PROVENA_CONFIG_ID": self.config_source.config_name,
         }
 
         if self.feature_deployment:
@@ -652,7 +653,6 @@ ALL CONFIG
 
 class ProvenaConfig(ConfigBase):
     # type inherited from base
-
     deployment: DeploymentConfig
     components: ComponentConfig
     tests: TestConfig
@@ -710,20 +710,7 @@ class UiOnlyDomainNames(BaseModel):
 
 
 class ProvenaUIOnlyConfig(ConfigBase):
-    # type inherited from base
-
-    # What is the provena config ID of this deployment
-    config_id: str
-
-    # config source repo that defined this config
-    config_source_repo_clone_string: str
-    # The name space for the config
-    config_source_name_space: str
-    # The stage for the config
-    config_source_stage: str
-    # The secret ARN which contains the username/token combination to use for cloning the repo
-    config_repo_oauth_token_secret_arn: str
-
+    config_source: ConfigSource
     # Stack IDs - used to specify what the stack names should be
     pipeline_stack_id: str
     deployment_stack_id: str
@@ -768,7 +755,7 @@ class ProvenaUIOnlyConfig(ConfigBase):
     @property
     def cdk_synth_command(self) -> str:
         env_vars: Dict[str, str] = {
-            "PROVENA_CONFIG_ID": self.config_id,
+            "PROVENA_CONFIG_ID": self.config_source.config_name,
             "TICKET_NUMBER": str(self.ticket_number),
             "BRANCH_NAME": self.git_branch_name,
         }
