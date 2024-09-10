@@ -1213,7 +1213,7 @@ class CollectionFormatDatasetInfo(BaseModel):
     publisher_id: str = Field(
         ...,
         title="Publisher",
-        description="Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below.",
+        description="Please provide information about the organisation which is publishing or producing this dataset. If this is your organisation, please select it again using the tool below.",
     )
 
     # created/published dates
