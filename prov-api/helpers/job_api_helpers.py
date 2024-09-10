@@ -74,6 +74,37 @@ async def submit_model_run_lodge_job(username: str, payload: ProvLodgeModelRunPa
     )).session_id
 
 
+async def submit_model_run_lodge_only_job(username: str, payload: ProvLodgeModelRunLodgeOnlyPayload, config: Config) -> str:
+    """Submit a model run lodge only job. This job will not make a new registry 
+    entity for the model run, it'll only make (or overwrite if it doesn't already
+      exist) the provenance record in the graph. This can be used after updating 
+      provenance graph information in a model run record that needs a graph 
+      update too. For example, updating a model run to be linked to a study
+
+    Parameters
+    ----------
+    payload : ProvLodgeModelRunLodgeOnlyPayload
+        The payload for the job
+    
+
+    Returns
+    -------
+    str
+        The session ID for the job created
+    """
+    payload = AdminLaunchJobRequest(
+        username=username,
+        job_type=JobType.PROV_LODGE,
+        job_sub_type=JobSubType.MODEL_RUN_LODGE_ONLY,
+        job_payload=py_to_dict(payload)
+    )
+
+    return (await launch_generic_job(
+        payload=payload,
+        config=config
+    )).session_id
+
+
 async def submit_batch_lodge_job(username: str, payload: ProvLodgeBatchSubmitPayload, config: Config) -> str:
     """
     Lodges the specified job payload using the job API, returns the session ID

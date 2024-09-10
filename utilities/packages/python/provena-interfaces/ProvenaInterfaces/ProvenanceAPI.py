@@ -47,3 +47,19 @@ class ConvertModelRunsResponse(StatusResponse):
     existing_records: Optional[List[str]]
 
     warnings: Optional[List[str]]
+
+
+class AddStudyLinkRequest(BaseModel):
+    # the model run that is being linked to the study
+    model_run_id: str
+    # the study that is being linked to the model run
+    study_id: str
+    
+
+class AddStudyLinkResponse(StatusResponse):
+    # the model run that was linked to the study
+    model_run_id: str
+    # the study that was linked to the model run
+    study_id: str
+    # the session id for the provenance graph update job
+    session_id: str
