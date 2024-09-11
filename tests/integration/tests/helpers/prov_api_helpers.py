@@ -1,8 +1,12 @@
 from enum import Enum
-from tests.config import config
+from tests.config import TokenGenerator, config
 from ProvenaInterfaces.ProvenanceAPI import *
+from ProvenaInterfaces.AsyncJobModels import JobStatus
 from KeycloakRestUtilities.Token import BearerAuth
 import requests
+from requests import Response
+
+from tests.helpers.async_job_helpers import wait_for_full_lifecycle
 
 
 class Direction(str, Enum):
@@ -34,3 +38,57 @@ def successful_basic_prov_query(start: str, direction: Direction, depth: int, to
     assert res.status.success, f"Status failure in prov query. Info: {res.status.details or 'No details provided'}"
 
     return res
+
+
+def link_model_run_to_study_successfully(token: TokenGenerator, study_id: str, model_run_id: str) -> AddStudyLinkResponse:
+    """Link a model run to a study and wait for the job to complete, and assert success.
+
+    Parameters
+    ----------
+    token : TokenGenerator
+        _description_
+    study_id : str
+        The study ID to link to.
+    model_run_id : str
+        The model run ID to link.
+
+    Returns
+    -------
+    AddStudyLinkResponse
+        Study link response parsed model
+    """
+    res: Response = link_model_run_to_study(token=token(), study_id=study_id, model_run_id=model_run_id)
+    assert res.status_code == 200, f"Non 200 response code from linking model run to study, code={res.status_code}, value={res.text}."
+    res = AddStudyLinkResponse.parse_obj(res.json())
+    assert res.status.success, f"Status failure in linking model run to study. Info: {res.status.details or 'No details provided'}"
+    
+    payload = wait_for_full_lifecycle(
+        session_id=res.session_id, get_token=token)
+    assert payload.status == JobStatus.SUCCEEDED, f"Failed to link model run to study. Status: {payload.status}"
+    return res
+
+def link_model_run_to_study(token: str, study_id: str, model_run_id: str) -> Response:
+    """Link a model run to a study.
+
+    Parameters
+    ----------
+    token : str
+        _description_
+    study_id : str
+        The study ID to link to.
+    model_run_id : str
+        The model run ID to link.
+
+    Returns
+    -------
+    Response
+        raw response from the server.
+    """
+    return requests.post(
+        config.PROV_API_ENDPOINT + '/model_run/edit/link_to_study',
+        params={
+            'study_id': study_id,
+            'model_run_id': model_run_id
+        },
+        auth=BearerAuth(token)
+    )
