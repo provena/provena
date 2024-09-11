@@ -15,7 +15,7 @@ from config import get_settings, Config
 
 router = APIRouter()
 
-edit_root_prefix = "/edit"
+EDIT_ROOT_PREFIX = "/edit"
 
 
 @router.post("/register", response_model=RegisterModelRunResponse, operation_id="register_model_run")
@@ -170,7 +170,7 @@ async def register_model_run_sync(
     )
 
 
-@router.post(f"{edit_root_prefix}/link_to_study", response_model=AddStudyLinkResponse, operation_id="add_study_link")
+@router.post(f"{EDIT_ROOT_PREFIX}/link_to_study", response_model=AddStudyLinkResponse, operation_id="add_study_link")
 async def link_to_study(
     model_run_id: str,
     study_id: str,
