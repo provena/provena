@@ -51,9 +51,12 @@ import { Link as RouteLink, useParams } from "react-router-dom";
 import { registryVersionIdLinkResolver } from "util/helper";
 import { nonEditEntityTypes } from "../entityLists";
 import { ItemRevertResponse } from "../provena-interfaces/RegistryAPI";
-import { ItemBase, ItemSubType } from "../provena-interfaces/RegistryModels";
+import { ItemBase, ItemSubType, ItemModelRun } from "../provena-interfaces/RegistryModels";
+
 import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
+import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -222,6 +225,8 @@ const RecordView = observer((props: {}) => {
   // Copy state
   const [handleCopied, setHandleCopied] = useState<boolean>(false);
 
+  const [isLinkedToStudy, setIsLinkedToStudy] = useState<boolean>(true);
+
   // Does the access store imply that we are ready to query for the item?
   const readyToQueryUntyped =
     // Ensure handle is defined
@@ -353,6 +358,16 @@ const RecordView = observer((props: {}) => {
   const headerName = subtype ? mapSubTypeToPrettyName(subtype) : "Entity";
 
   const isDataset = subtype === "DATASET";
+  const isModelRun = subtype === "MODEL_RUN"
+
+  useEffect(() => {
+    
+    if (isModelRun && typedPayload) {
+      // Check if the ModelRun is linked to a study
+      setIsLinkedToStudy(!!(typedPayload.item as ItemModelRun).record.study_id);
+    }
+  }, [isModelRun, typedPayload]);
+
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
     : undefined;
@@ -520,7 +535,19 @@ const RecordView = observer((props: {}) => {
                     </Button>
                   </Grid>
                 )}
-
+                {isModelRun && !isLinkedToStudy && (
+                <Grid item>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      // Add your logic for linking to study here
+                      console.log("Linking to study...");
+                    }}
+                  >
+                    Link to Study
+                  </Button>
+                </Grid>
+              )}
                 <Grid item>
                   <Button
                     variant="outlined"
