@@ -60,6 +60,7 @@ import {
 import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
 import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
+import { useAddStudyLinkDialog } from "hooks/useAddStudyLinkDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -360,7 +361,10 @@ const RecordView = observer((props: {}) => {
 
   const isDataset = subtype === "DATASET";
   const isModelRun = subtype === "MODEL_RUN";
-  const isLinkedToStudy = isModelRun && typedPayload && !!((typedPayload.item as ItemModelRun).record.study_id)
+  const isLinkedToStudy =
+    isModelRun &&
+    typedPayload &&
+    !!(typedPayload.item as ItemModelRun).record.study_id;
 
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
@@ -436,6 +440,15 @@ const RecordView = observer((props: {}) => {
   // You should be able to link study if model run and not linked to study
   const seeAddStudyLinkButton = isModelRun && !isLinkedToStudy;
 
+  // Use the add study link component to manage adding
+  const studyLinkDialog = useAddStudyLinkDialog({
+    modelRunId: handleId,
+    onSuccess: () => {
+      // TODO
+      console.log("Success");
+    },
+  });
+
   return (
     <Grid container>
       {
@@ -443,6 +456,7 @@ const RecordView = observer((props: {}) => {
       }
       {versionControls.render()}
       {revertControls.render()}
+      {studyLinkDialog.render()}
       <Grid container item className={classes.topPanelContainer}>
         <Stack
           direction="row"
@@ -537,8 +551,9 @@ const RecordView = observer((props: {}) => {
                     <Button
                       variant="outlined"
                       onClick={() => {
-                        // Add your logic for linking to study here
-                        console.log("Linking to study...");
+                        // Start if possible
+                        studyLinkDialog.startAddStudyLink &&
+                          studyLinkDialog.startAddStudyLink();
                       }}
                     >
                       Link to Study

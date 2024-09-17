@@ -1,27 +1,23 @@
-import { useState } from "react";
-import { ItemSubType } from "../provena-interfaces/RegistryModels";
 import {
   Alert,
   AlertTitle,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
+import { stripPossibleFullStop, SubtypeSearchSelector } from "react-libs";
 import { AddStudyLinkResponse } from "react-libs/provena-interfaces/AsyncJobAPI";
 import { useAddStudyLink } from "./useAddStudyLink";
-import { stripPossibleFullStop, useLoadedSearch } from "react-libs";
-import { ItemModelRun } from "provena-interfaces/RegistryAPI";
 
 export interface UseAddStudyLinkDialogProps {
   // What is the ID of the model run?
-  modelRunId: string;
+  modelRunId: string | undefined;
 
   // Optional hook for when the revert is completed successfully
   onSuccess?: (response: AddStudyLinkResponse) => void;
@@ -44,15 +40,6 @@ export const useAddStudyLinkDialog = (
   // Is the popup active?
   const [popupOpen, setPopupOpen] = useState<boolean>(false);
   const [studyId, setStudyId] = useState<string | undefined>(undefined);
-  const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
-
-  // Search results
-  const searchResults = useLoadedSearch({
-    searchQuery: searchQuery,
-    enabled: true,
-    subtype: "MODEL_RUN",
-    searchLimit: 10,
-  });
 
   // On submit handler
   const onSubmit = () => {
@@ -100,19 +87,18 @@ export const useAddStudyLinkDialog = (
           fullWidth={true}
           maxWidth={"md"}
         >
-          <DialogTitle>
-            Link an existing model run to a Study in the Registry
-          </DialogTitle>
           <DialogContent>
             <Stack spacing={2} direction="column">
-              <DialogContentText>
-                Please select a Study to link this model run to.
-              </DialogContentText>
-              {loading && (
-                <Stack direction="row" justifyContent="center">
-                  <CircularProgress />
-                </Stack>
-              )}
+              <SubtypeSearchSelector
+                description="Link an existing model run to a study in the registry by searching or entering a valid ID."
+                subtypePlural="Studies"
+                required={true}
+                selectedId={studyId}
+                setSelectedId={setStudyId}
+                subtype="STUDY"
+                title="Select a Study"
+                persistTitle={true}
+              />
               {error && (
                 <Alert severity="error" variant="outlined">
                   <AlertTitle>An error occurred</AlertTitle>
