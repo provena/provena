@@ -51,12 +51,15 @@ import { Link as RouteLink, useParams } from "react-router-dom";
 import { registryVersionIdLinkResolver } from "util/helper";
 import { nonEditEntityTypes } from "../entityLists";
 import { ItemRevertResponse } from "../provena-interfaces/RegistryAPI";
-import { ItemBase, ItemSubType, ItemModelRun } from "../provena-interfaces/RegistryModels";
+import {
+  ItemBase,
+  ItemSubType,
+  ItemModelRun,
+} from "../provena-interfaces/RegistryModels";
 
 import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
 import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
-
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -140,7 +143,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
       paddingTop: theme.spacing(0),
     },
-  }),
+  })
 );
 
 type ItemParams = {
@@ -224,8 +227,6 @@ const RecordView = observer((props: {}) => {
 
   // Copy state
   const [handleCopied, setHandleCopied] = useState<boolean>(false);
-
-  const [isLinkedToStudy, setIsLinkedToStudy] = useState<boolean>(true);
 
   // Does the access store imply that we are ready to query for the item?
   const readyToQueryUntyped =
@@ -358,15 +359,8 @@ const RecordView = observer((props: {}) => {
   const headerName = subtype ? mapSubTypeToPrettyName(subtype) : "Entity";
 
   const isDataset = subtype === "DATASET";
-  const isModelRun = subtype === "MODEL_RUN"
-
-  useEffect(() => {
-    
-    if (isModelRun && typedPayload) {
-      // Check if the ModelRun is linked to a study
-      setIsLinkedToStudy(!!(typedPayload.item as ItemModelRun).record.study_id);
-    }
-  }, [isModelRun, typedPayload]);
+  const isModelRun = subtype === "MODEL_RUN";
+  const isLinkedToStudy = isModelRun && typedPayload && !!((typedPayload.item as ItemModelRun).record.study_id)
 
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
@@ -438,6 +432,9 @@ const RecordView = observer((props: {}) => {
       .
     </p>
   );
+
+  // You should be able to link study if model run and not linked to study
+  const seeAddStudyLinkButton = isModelRun && !isLinkedToStudy;
 
   return (
     <Grid container>
@@ -526,7 +523,7 @@ const RecordView = observer((props: {}) => {
                         window.open(
                           datastoreLink,
                           "_blank",
-                          "noopener,noreferrer",
+                          "noopener,noreferrer"
                         );
                       }}
                     >
@@ -535,19 +532,19 @@ const RecordView = observer((props: {}) => {
                     </Button>
                   </Grid>
                 )}
-                {isModelRun && !isLinkedToStudy && (
-                <Grid item>
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      // Add your logic for linking to study here
-                      console.log("Linking to study...");
-                    }}
-                  >
-                    Link to Study
-                  </Button>
-                </Grid>
-              )}
+                {seeAddStudyLinkButton && (
+                  <Grid item>
+                    <Button
+                      variant="outlined"
+                      onClick={() => {
+                        // Add your logic for linking to study here
+                        console.log("Linking to study...");
+                      }}
+                    >
+                      Link to Study
+                    </Button>
+                  </Grid>
+                )}
                 <Grid item>
                   <Button
                     variant="outlined"
@@ -565,7 +562,7 @@ const RecordView = observer((props: {}) => {
                       className={classes.actionButton}
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `https://hdl.handle.net/${item!.id}`,
+                          `https://hdl.handle.net/${item!.id}`
                         );
                         if (!handleCopied) {
                           setTimeout(() => {

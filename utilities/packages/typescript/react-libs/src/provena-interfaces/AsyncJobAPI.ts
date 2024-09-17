@@ -261,15 +261,25 @@ export interface WakeUpPayload {
   reason?: string;
 }
 export interface WakeUpResult {}
+export interface AddStudyLinkRequest {
+  model_run_id: string;
+  study_id: string;
+}
+export interface AddStudyLinkResponse {
+  status: Status;
+  model_run_id: string;
+  study_id: string;
+  session_id: string;
+}
+export interface Status {
+  success: boolean;
+  details: string;
+}
 export interface ConvertModelRunsResponse {
   status: Status;
   new_records?: ModelRunRecord[];
   existing_records?: string[];
   warnings?: string[];
-}
-export interface Status {
-  success: boolean;
-  details: string;
 }
 export interface LineageResponse {
   status: Status;

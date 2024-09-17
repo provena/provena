@@ -54,6 +54,7 @@
         "build:dev": "npx tsc && env-cmd -f .env.dev vite build",
         "build:feat": "npx tsc && env-cmd -f .env.feat vite build",
         "start:dev": "env-cmd -f .env.dev vite",
+        "start": "env-cmd -f .env vite",
         "start:feat": "env-cmd -f .env.feat vite",
         "start:stage": "env-cmd -f .env.stage vite",
         "start:prod": "env-cmd -f .env.prod vite"
