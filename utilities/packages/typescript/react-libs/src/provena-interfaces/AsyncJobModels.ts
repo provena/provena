@@ -18,12 +18,7 @@ export type JobSubType =
   | "REGISTER_VERSION_ACTIVITY"
   | "EMAIL_WAKE_UP"
   | "SEND_EMAIL";
-export type JobStatus =
-  | "PENDING"
-  | "DEQUEUED"
-  | "IN_PROGRESS"
-  | "SUCCEEDED"
-  | "FAILED";
+export type JobStatus = "PENDING" | "DEQUEUED" | "IN_PROGRESS" | "SUCCEEDED" | "FAILED";
 export type DatasetType = "DATA_STORE";
 export type ItemSubType =
   | "WORKFLOW_RUN"
@@ -43,11 +38,7 @@ export type ItemCategory = "ACTIVITY" | "AGENT" | "ENTITY";
 export type RecordType = "SEED_ITEM" | "COMPLETE_ITEM";
 export type ReleaseAction = "REQUEST" | "APPROVE" | "REJECT";
 export type ReleasedStatus = "NOT_RELEASED" | "PENDING" | "RELEASED";
-export type ResourceUsageType =
-  | "PARAMETER_FILE"
-  | "CONFIG_FILE"
-  | "FORCING_DATA"
-  | "GENERAL_DATA";
+export type ResourceUsageType = "PARAMETER_FILE" | "CONFIG_FILE" | "FORCING_DATA" | "GENERAL_DATA";
 export type WorkflowRunCompletionStatus = "INCOMPLETE" | "COMPLETE" | "LODGED";
 export type LockActionType = "LOCK" | "UNLOCK";
 
