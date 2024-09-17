@@ -7,7 +7,7 @@
 
 export type DatasetType = "DATA_STORE";
 
-export interface AddStudyLinkRequest {
+export interface AddStudyLinkQueryParameters {
   model_run_id: string;
   study_id: string;
 }

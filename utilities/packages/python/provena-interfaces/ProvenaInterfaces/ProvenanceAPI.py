@@ -49,7 +49,7 @@ class ConvertModelRunsResponse(StatusResponse):
     warnings: Optional[List[str]]
 
 
-class AddStudyLinkRequest(BaseModel):
+class AddStudyLinkQueryParameters(BaseModel):
     # the model run that is being linked to the study
     model_run_id: str
     # the study that is being linked to the model run

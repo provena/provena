@@ -1,7 +1,7 @@
 import { PROV_API_ENDPOINTS } from "./endpoints";
 import { requests } from "../stores";
 import {
-  AddStudyLinkRequest,
+  AddStudyLinkQueryParameters,
   AddStudyLinkResponse,
 } from "../provena-interfaces/AsyncJobAPI";
 import { requestErrToMsg } from "../util";
@@ -15,7 +15,7 @@ export const addStudyLink = (inputs: {
     .post(endpoint, {}, {
       model_run_id: inputs.modelRunId,
       study_id: inputs.studyId,
-    } as AddStudyLinkRequest)
+    } as AddStudyLinkQueryParameters)
     .then((res) => {
       const resJson = res as AddStudyLinkResponse;
       try {
