@@ -166,7 +166,7 @@ export const PROV_API_ENDPOINTS = {
   DOWNSTREAM_DATASETS: SPECIAL_QUERY_BASE + "/effected_datasets",
   UPSTREAM_AGENTS: SPECIAL_QUERY_BASE + "/contributing_agents",
   DOWNSTREAM_AGENTS: SPECIAL_QUERY_BASE + "/effected_agents",
-  ADD_STUDY_LINK: PROV_API_URL + "/model_run/link_to_study",
+  ADD_STUDY_LINK: PROV_API_URL + "/model_run/edit/link_to_study",
 };
 
 export const DATA_STORE_API_ENDPOINTS = {

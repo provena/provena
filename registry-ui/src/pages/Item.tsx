@@ -444,8 +444,7 @@ const RecordView = observer((props: {}) => {
   const studyLinkDialog = useAddStudyLinkDialog({
     modelRunId: handleId,
     onSuccess: () => {
-      // TODO
-      console.log("Success");
+      refetchLoadedItem();
     },
   });
 

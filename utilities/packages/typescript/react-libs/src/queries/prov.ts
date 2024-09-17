@@ -12,14 +12,10 @@ export const addStudyLink = (inputs: {
 }) => {
   const endpoint = PROV_API_ENDPOINTS.ADD_STUDY_LINK;
   return requests
-    .post(
-      endpoint,
-      {
-        model_run_id: inputs.modelRunId,
-        study_id: inputs.studyId,
-      } as AddStudyLinkRequest,
-      {}
-    )
+    .post(endpoint, {}, {
+      model_run_id: inputs.modelRunId,
+      study_id: inputs.studyId,
+    } as AddStudyLinkRequest)
     .then((res) => {
       const resJson = res as AddStudyLinkResponse;
       try {
