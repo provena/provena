@@ -438,7 +438,8 @@ const RecordView = observer((props: {}) => {
   );
 
   // You should be able to link study if model run and not linked to study
-  const seeAddStudyLinkButton = isModelRun && !isLinkedToStudy;
+  const seeAddStudyLinkButton =
+    isModelRun && !isLinkedToStudy && writeAccessGranted;
 
   // Use the add study link component to manage adding
   const studyLinkDialog = useAddStudyLinkDialog({
