@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 // Definition of option in the list of options to pick from.
-interface OptionsType {
+export interface OptionsType {
   id: string;
   display_name: string;
   version?: number;
@@ -74,9 +74,9 @@ interface OptionsType {
 }
 
 // Current selection/value
-type IdSelectionValue = string | undefined;
+export type IdSelectionValue = string | undefined;
 
-interface SearchSelectorComponentProps {
+export interface SearchSelectorComponentProps {
   selection: IdSelectionValue;
   setSelection: (selection: IdSelectionValue) => void;
   subtype: ItemSubType;
@@ -285,10 +285,10 @@ export const SearchSelectorComponent = (
   );
 };
 
-const fallthroughDescription = "Use the search tool above to select an ID";
-const fallthroughTitle = "Select an item from the registry";
+export const fallthroughDescription = "Use the search tool above to select an ID";
+export const fallthroughTitle = "Select an item from the registry";
 
-const registryHelpLink = DOCUMENTATION_BASE_URL + "/registry/";
+export const registryHelpLink = DOCUMENTATION_BASE_URL + "/registry/";
 
 export interface SubtypeSearchAutoCompleteProps
   extends FieldProps<IdSelectionValue> {

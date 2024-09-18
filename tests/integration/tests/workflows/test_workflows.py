@@ -211,6 +211,65 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
         cleanup_items.append((ItemSubType.MODEL_RUN, model_run_id))
         assert False, f"Model run registration with invalid study should have failed, but did not."
 
+    # register a model run without a study, check no upstreamstudy, then add a study using the edit/link_to_study route,check upstream has study.
+    model_run_record.study_id = None
+    response_model_run_record = register_modelrun_from_record_info_successfully(
+        get_token=write_token, model_run_record=model_run_record)
+    model_run_id = response_model_run_record.id
+    cleanup_items.append((ItemSubType.MODEL_RUN, model_run_id))
+
+    # fetch model run
+    model_run_fetch = fetch_item_successfully_parse(item_subtype=ItemSubType.MODEL_RUN, id=model_run_id, token=write_token(), model=ModelRunFetchResponse)
+    assert isinstance(model_run_fetch, ModelRunFetchResponse)
+    model_run = model_run_fetch.item
+    assert isinstance(model_run, ItemModelRun), f"Model run fetch response was not a model run. Type: {type(model_run)}"
+    assert model_run.record.study_id is None, f"Study id should be None but was {model_run.record.study_id}"
+
+    # check err is raised if no study id in prov graph aswell
+    activity_upstream_query = successful_basic_prov_query(
+        start=model_run_id,
+        direction=Direction.UPSTREAM,
+        depth=1,
+        token=Tokens.user1()
+    )
+
+    # model run -wasInformedBy-> study
+    with pytest.raises(AssertionError):
+        assert_non_empty_graph_property(
+            prop=GraphProperty(
+                type="wasInformedBy",
+                source=model_run_id,
+                target=study.id
+            ),
+            lineage_response=activity_upstream_query
+        )
+
+    # link to study
+    link_resp = link_model_run_to_study_successfully(token=write_token, study_id=study.id, model_run_id=model_run_id)
+    # fetch again and make sure study is linked
+    model_run_fetch = fetch_item_successfully_parse(item_subtype=ItemSubType.MODEL_RUN, id=model_run_id, token=write_token(), model=ModelRunFetchResponse)
+    assert isinstance(model_run_fetch, ModelRunFetchResponse)
+    model_run = model_run_fetch.item
+    assert isinstance(model_run, ItemModelRun)
+    assert model_run.record.study_id == study.id, f"Study id should be {study.id} but was {model_run.record.study_id}"
+
+    activity_upstream_query = successful_basic_prov_query(
+        start=model_run_id,
+        direction=Direction.UPSTREAM,
+        depth=1,
+        token=Tokens.user1()
+    )
+
+    # model run -wasInformedBy-> study
+    assert_non_empty_graph_property(
+        prop=GraphProperty(
+            type="wasInformedBy",
+            source=model_run_id,
+            target=study.id
+        ),
+        lineage_response=activity_upstream_query
+    )
+
 
 def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
     write_token = Tokens.user1

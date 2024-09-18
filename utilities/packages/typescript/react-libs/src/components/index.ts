@@ -10,6 +10,7 @@ export * from "./MetadataHistoryStatusDisplay";
 export * from "./OptionalStringFieldOverride";
 export * from "./LinkedUsernameDisplay";
 export * from "./SubtypeSearchOrManualFormOverride";
+export * from "./SubtypeSearchSelector";
 export * from "./Footer";
 export * from "./BoundedContainer";
 export * from "./ProvGraphTabView";

@@ -1,4 +1,4 @@
-from typing import TypeVar, Type, Union
+from typing import Awaitable, Callable, TypeVar, Type, Union
 from fastapi import HTTPException
 from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.RegistryAPI import *
@@ -453,7 +453,7 @@ async def validate_person_id(id: str, request_style: RequestStyle, config: Confi
 
 @cached(ttl=CACHE_TTL, cache=CACHE_TYPE)
 async def validate_study_id(id: str, request_style: RequestStyle, config: Config) -> Union[ItemStudy, SeededItem, str]:
-    """    validate_organisation_id
+    """    validate_study_id
         Validates a Study activity by ID
 
         Arguments
@@ -594,6 +594,49 @@ async def validate_datastore_id(id: str, request_style: RequestStyle, config: Co
 
 
 @cached(ttl=CACHE_TTL, cache=CACHE_TYPE)
+async def validate_model_run_id(id: str, request_style: RequestStyle, config: Config) -> Union[ItemModelRun, SeededItem, str]:
+    """    validate_model_run_id
+        Validates a ModelRun activity by ID
+
+        Arguments
+        ----------
+        id : str
+            The handle ID
+
+        Returns
+        -------
+         : Union[ItemModelRun, SeededItem, str]
+            ItemModelRun if full record
+            SeededItem if seed
+            Str if error
+
+        See Also (optional)
+        --------
+
+        Examples (optional)
+        --------
+    """
+    # endpoint to target
+    postfix = "/registry/activity/model_run"
+    endpoint = f"{config.registry_api_endpoint}{postfix}"
+
+    error_or_value = await validate_by_id(
+        id=id,
+        base_endpoint=endpoint,
+        fetch_response_class=ModelRunFetchResponse,
+        config=config,
+        request_style=request_style
+    )
+
+    if isinstance(error_or_value, str):
+        return error_or_value
+    if isinstance(error_or_value, SeededItem):
+        return error_or_value
+    elif isinstance(error_or_value, ItemBase):
+        return ItemModelRun(**error_or_value.dict())
+
+
+@cached(ttl=CACHE_TTL, cache=CACHE_TYPE)
 async def validate_registry_generic_id(id: str, request_style: RequestStyle, config: Config) -> Union[Dict[str, Any], str]:
     # endpoint to target
     postfix = "/registry/general"
@@ -654,3 +697,68 @@ async def unknown_validator(id: str, config: Config, request_style: RequestStyle
             detail=f"The provided id {id} was not a valid registry\
                 item. Error from registry lookup: {registry_err}."
         )
+
+
+@cached(ttl=CACHE_TTL, cache=CACHE_TYPE)
+async def validate_model_run_study_linking(model_run_id: str, study_id: str, request_style: RequestStyle, config: Config) -> Tuple[ItemModelRun, ItemStudy]:
+
+    # checks both items exist and are of the correct type.
+    async def validate_item_type(id: str, validator_func: Callable[[str, RequestStyle, Config], Awaitable[Union[ItemBase, SeededItem, str]]]) -> ItemBase:
+        """    validate_item_type
+            Given an ID and a validation function, will call the 
+            function to validate the ID and then ensure the item is not 
+            a seed type. If the validation fails will raise a HTTP
+            400 exception with the error message.
+
+            If the validation succeeds will return the fetched item as
+            an ItemBase but can be dumped and re-parsed into the correct
+            model type if known in the context of where this function is
+            called.
+
+            Arguments
+            ----------
+            id : str
+                The handle ID to validate
+            validator_func : Callable[[str, RequestStyle, Config], Awaitable[Union[ItemBase, SeededItem, str]]]
+                The validation function to call
+
+            Returns
+            -------
+             : ItemBase
+                The fetched item that can be dumped and parsed into the appropriate model if known in the context of 
+                where this function is called.
+
+            Raises
+            ------
+            HTTPException
+                If the validation fails or the item is a seeded item.
+        """
+        validate_resp = await validator_func(id, request_style, config)
+        if isinstance(validate_resp, str):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Item {id} failed validation: {validate_resp}"
+            )
+        if isinstance(validate_resp, SeededItem):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Item {id} is a seeded item."
+            )
+        # validate sucess, return the fetched item.
+        return validate_resp
+
+    model_run = await validate_item_type(model_run_id, validate_model_run_id)
+    study = await validate_item_type(study_id, validate_study_id)
+
+    model_run = ItemModelRun(**model_run.dict())
+    study = ItemStudy(**study.dict())
+    
+    # check if model_run is already linked to a study
+    if model_run.record.study_id != None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"ModelRun {model_run_id} already linked to a study. Study ID: {model_run.record.study_id}. Cannot link to another study."
+        )
+    
+    # all good.
+    return model_run, study
