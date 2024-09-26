@@ -61,6 +61,8 @@ import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
 import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
 import { useAddStudyLinkDialog } from "hooks/useAddStudyLinkDialog";
+import { useExportDialog } from "hooks/useExportGraph";
+import { ExportDialogComponent } from "components/ExportDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -366,6 +368,12 @@ const RecordView = observer((props: {}) => {
     typedPayload &&
     !!(typedPayload.item as ItemModelRun).record.study_id;
 
+  // Checking whether we should render the "Export Button"
+  const isStudy = subtype === "STUDY"
+  const isModelRunOrStudy =
+    isStudy || isModelRun &&
+    typedPayload
+
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
     : undefined;
@@ -448,6 +456,8 @@ const RecordView = observer((props: {}) => {
       refetchLoadedItem();
     },
   });
+
+  const { popUpOpen, openDialog, closeDialog } = useExportDialog()
 
   return (
     <Grid container>
@@ -546,6 +556,25 @@ const RecordView = observer((props: {}) => {
                     </Button>
                   </Grid>
                 )}
+
+                {isModelRunOrStudy && (
+                  <Grid item>
+                    <Button
+                      variant="outlined"
+                      onClick={openDialog}
+                    >
+                      Export
+                    </Button>
+                  </Grid>
+                )}
+
+                {<ExportDialogComponent
+                  nodeId={typedItem?.id}
+                  popUpOpen={popUpOpen}
+                  closeDialog={closeDialog}
+
+                />}
+
                 {seeAddStudyLinkButton && (
                   <Grid item>
                     <Button
