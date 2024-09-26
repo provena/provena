@@ -61,7 +61,7 @@ import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
 import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
 import { useAddStudyLinkDialog } from "hooks/useAddStudyLinkDialog";
-import { useExportDialog } from "hooks/useExportGraph";
+import { useExportDialog } from "hooks/useExportDialog";
 import { ExportDialogComponent } from "components/ExportDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -457,7 +457,9 @@ const RecordView = observer((props: {}) => {
     },
   });
 
-  const { popUpOpen, openDialog, closeDialog } = useExportDialog()
+  const { openDialog, renderedDialog } = useExportDialog({
+    nodeId: typedPayload?.item?.id
+  })
 
   return (
     <Grid container>
@@ -467,6 +469,7 @@ const RecordView = observer((props: {}) => {
       {versionControls.render()}
       {revertControls.render()}
       {studyLinkDialog.render()}
+      {renderedDialog}
       <Grid container item className={classes.topPanelContainer}>
         <Stack
           direction="row"
@@ -567,13 +570,6 @@ const RecordView = observer((props: {}) => {
                     </Button>
                   </Grid>
                 )}
-
-                {<ExportDialogComponent
-                  nodeId={typedItem?.id}
-                  popUpOpen={popUpOpen}
-                  closeDialog={closeDialog}
-
-                />}
 
                 {seeAddStudyLinkButton && (
                   <Grid item>
