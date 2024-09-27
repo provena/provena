@@ -1,22 +1,23 @@
 """
 Graph Database Management and Querying Module
 
-This module provides functionality for managing and querying a graph database using Neo4j.
-It includes classes and functions for creating, updating, and querying graph structures,
-as well as utilities for comparing and applying differences between graphs.
+This module provides functionality for managing and querying a graph database
+using Neo4j. It includes classes and functions for creating, updating, and
+querying graph structures, as well as utilities for comparing and applying
+differences between graphs.
 
-The module is designed to work with provenance data, using the PROV-O ontology for
-relationship types and custom item categories and subtypes.
+The module is designed to work with provenance data, using the PROV-O ontology
+for relationship types and custom item categories and subtypes.
 
-Key components:
-- Neo4j connection and query execution
-- Graph structure representations (Node, NodeLink, NodeGraph)
-- Graph querying and traversal
-- Graph comparison and diffing
-- Graph building and modification
+Key components: - Neo4j connection and query execution - Graph structure
+representations (Node, NodeLink, NodeGraph) - Graph querying and traversal -
+Graph comparison and diffing - Graph building and modification
 
 Note: This module assumes the use of a Neo4j database and requires appropriate
 configuration and credentials to connect to the database.
+
+TODO: Consider alternative ways of embedding record IDs which will scale more as
+record count increases.
 """
 from typing import Dict, Callable, List
 from enum import Enum, auto
@@ -696,6 +697,18 @@ class NodeLink(BaseModel):
     # What props?
     props: NodeLinkProps
 
+    def get_coord(self) -> Tuple[str, str]:
+        """
+
+        Gets source/target tuple for node link
+
+        Returns
+        -------
+        Tuple[str, str]
+            source.id, target.id
+        """
+        return (self.source.id, self.target.id)
+
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, NodeLink):
             return False
@@ -710,6 +723,7 @@ NodeMap = Dict[str, Node]
 # Map of links from source,target -> NodeLink
 LinkMap = Dict[Tuple[str, str], NodeLink]
 
+
 class NodeGraph(BaseModel):
     record_id: str
     links: List[NodeLink]
@@ -723,6 +737,12 @@ class NodeGraph(BaseModel):
             node_set.add(link.target)
 
         return node_set
+
+    def get_node_map(self) -> NodeMap:
+        return {node.id: node for node in self.get_node_set()}
+
+    def get_link_set(self) -> Set[NodeLink]:
+        return set(self.links)
 
     def get_link_map(self) -> LinkMap:
         link_map: LinkMap = {}
@@ -880,7 +900,7 @@ class AddRecordIdToNode(DiffAction):
 
 def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
     """
-    
+
     Generates a list of actions (unsorted) which conservatively modifies the old
     graph to match the new graph. The logic tries to not remove any node or
     links which are involved in an existing record.
@@ -903,65 +923,82 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
 
     actions: List[DiffAction] = []
 
-    # Get all nodes and links
-    old_nodes = {node.id: node for node in old_graph.get_node_set()}
-    new_nodes = {node.id: node for node in new_graph.get_node_set()}
-    old_links = old_graph.get_link_map()
-    new_links = new_graph.get_link_map()
+    # Get all nodes and links for new and old
+
+    # Old nodes
+    old_node_set = old_graph.get_node_set()
+    old_node_map = old_graph.get_node_map()
+
+    # Old links
+    old_link_set = old_graph.get_link_set()
+    old_link_map = old_graph.get_link_map()
+
+    # new nodes
+    new_node_set = new_graph.get_node_set()
+    new_node_map = new_graph.get_node_map()
+
+    # new links
+    new_link_set = new_graph.get_link_set()
+    new_link_map = new_graph.get_link_map()
 
     # Process nodes
-    # TODO optimise performance here
-    removed_nodes = [
-        node_id for node_id in old_nodes if node_id not in new_nodes]
-    added_nodes = [
-        node_id for node_id in new_nodes if node_id not in old_nodes]
-    in_both = list(set(new_nodes.keys()).intersection(set(old_nodes.keys())))
 
-    for node_id in added_nodes:
-        new_node = new_nodes[node_id]
+    # Removed nodes are those which were in the original set but no longer are
+    removed_nodes = old_node_set - new_node_set
+
+    # Added nodes are those in the new set which weren't in the old
+    added_nodes = new_node_set - old_node_set
+
+    # Intersection defines both
+    in_both = new_node_set.intersection(old_node_set)
+
+    for node in added_nodes:
+        new_node = new_node_map[node.id]
         # New node which is not in old nodes
         actions.append(AddNewNode(
             action_type=DiffActionType.ADD_NEW_NODE, node=new_node))
 
-    for node_id in removed_nodes:
+    for node in removed_nodes:
         # Remove record id if others, or delete if just this record
-        removed_node = old_nodes[node_id]
+        removed_node = old_node_map[node.id]
         old_record_ids = set(removed_node.props.record_ids.split(','))
         # TODO optimise
         if len(old_record_ids) <= 1 and record_id in old_record_ids:
             # Just this single record ID - so remove the node
             actions.append(RemoveNode(
-                action_type=DiffActionType.REMOVE_NODE, node_id=node_id))
+                action_type=DiffActionType.REMOVE_NODE, node_id=node))
         else:
             # Contains other links as well - so don't remove
             actions.append(RemoveRecordIdFromNode(
-                action_type=DiffActionType.REMOVE_RECORD_ID_FROM_NODE, node_id=node_id, record_id=record_id))
-    for node_id in in_both:
-        old_version = old_nodes[node_id]
+                action_type=DiffActionType.REMOVE_RECORD_ID_FROM_NODE, node_id=node, record_id=record_id))
+    for node in in_both:
+        old_version = old_node_map[node.id]
         # all we want to do is ensure that the record ID is in this one already
         old_record_ids = set(old_version.props.record_ids.split(','))
         if record_id not in old_record_ids:
             actions.append(AddRecordIdToNode(
-                action_type=DiffActionType.ADD_RECORD_ID_TO_NODE, node_id=node_id, record_id=record_id))
+                action_type=DiffActionType.ADD_RECORD_ID_TO_NODE, node_id=node, record_id=record_id))
 
-    # Process nodes
-    # TODO optimise performance here
-    removed_links = [
-        link_id for link_id in old_links if link_id not in new_links]
-    added_links = [
-        link_id for link_id in new_links if link_id not in old_links]
-    links_in_both = list(
-        set(new_links.keys()).intersection(set(old_links.keys())))
+    # Process links
 
-    for link_id in added_links:
-        new_link = new_links[link_id]
+    # Removed nodes are those which were in the original set but no longer are
+    removed_links = old_link_set - new_link_set
+
+    # Added links are those in the new set which weren't in the old
+    added_links = new_link_set - old_link_set
+
+    # Intersection defines both
+    links_in_both = new_link_set.intersection(old_link_set)
+
+    for link in added_links:
+        new_link = new_link_map[link.get_coord()]
         # New link which is not in old links
         actions.append(AddNewLink(
             action_type=DiffActionType.ADD_NEW_LINK, link=new_link))
 
-    for link_id in removed_links:
+    for link in removed_links:
         # Remove record id if others, or delete if just this record
-        removed_link = old_links[link_id]
+        removed_link = old_link_map[link.get_coord()]
         old_record_ids = set(removed_link.props.record_ids.split(','))
         # TODO optimise
         if len(old_record_ids) <= 1 and record_id in old_record_ids:
@@ -973,8 +1010,8 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
             actions.append(RemoveRecordIdFromLink(
                 action_type=DiffActionType.REMOVE_RECORD_ID_FROM_LINK, link=removed_link, record_id=record_id))
 
-    for link_id in links_in_both:
-        old_link = old_links[link_id]
+    for link in links_in_both:
+        old_link = old_link_map[link.get_coord()]
         # all we want to do is ensure that the record ID is in this one already
         old_record_ids = set(old_link.props.record_ids.split(','))
         if record_id not in old_record_ids:
@@ -985,10 +1022,22 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
 
 
 class Neo4jGraphManager():
+    """
+    This class manages basic record level read/write with the Neo4J graph.
+    """
     driver: GraphDatabase.driver
     _config: Config
 
     def __init__(self, config: Config) -> None:
+        """
+
+        Construct the driver and store config
+
+        Parameters
+        ----------
+        config : Config
+            Config
+        """
         # Create driver
         self.driver = connect_to_neo4j(config)
         self._config = config
@@ -996,6 +1045,11 @@ class Neo4jGraphManager():
     def merge_add_graph_to_db(self, graph: NodeGraph) -> None:
         """
         Writes a NodeGraph to the Neo4j database.
+
+        This is an additive merge mode which will never destroy. Not suitable for editing.
+
+        Will update record_ids with additional record IDs if not already present.
+
         Args:
             graph (NodeGraph): The NodeGraph to be written to the database.
         """
@@ -1045,6 +1099,17 @@ class Neo4jGraphManager():
         print(f"Successfully merge-wrote NodeGraph to the database.")
 
     def get_graph_by_record_id(self, record_id: str) -> NodeGraph:
+        """
+        Gets a NodeGraph from the Neo4j database.
+
+        This works by traversing the graph and looking for nodes/relations which have the record_id property on them.
+
+        It then builds out the nodes and links from this result into the NodeGraph object.
+
+        Args:
+            graph (NodeGraph): The NodeGraph read from the db.
+        """
+
         if self._config.mock_graph_db:
             raise RuntimeError(
                 "Asking for real data from graph DB during mock! Returning [].")
@@ -1062,6 +1127,7 @@ class Neo4jGraphManager():
 
         # Execute the query
         with self.driver.session() as session:
+            # query to get all relevant nodes/links
             result = session.run(query, record_id=record_id)
 
             # Process the results
@@ -1069,6 +1135,7 @@ class Neo4jGraphManager():
             links = {}
 
             for record in result:
+                # work out the relationship/nodes
                 start_node = record['n']
                 end_node = record['m']
                 relationship = record['r']
@@ -1108,6 +1175,9 @@ class Neo4jGraphManager():
 
 
 class GraphBuilder:
+    """
+    Helper class which wraps the graph class. Provides a more interactive r/w interface for iteratively building a graph.
+    """
     _nodes: Dict[str, Node] = {}
     _links: Dict[Tuple[str, str], NodeLink] = {}
     _record_id: str
@@ -1217,8 +1287,16 @@ class GraphBuilder:
 
 
 class GraphDiffApplier:
+    """
+    This is a class which manages graph diff operations.
+
+    Notably it can take an old -> new graph, then generate a diff and apply it.
+    """
+
     def __init__(self, neo4j_manager: Neo4jGraphManager):
+        # Setup manager
         self.neo4j_manager = neo4j_manager
+        # Register handlers
         # Actually a list of DiffAction -> mypy doesn't understand!
         self.handlers: Dict[DiffActionType, Callable[[Any], None]] = {
             DiffActionType.ADD_RECORD_ID_TO_NODE: self._handle_add_record_id_to_node,
@@ -1232,25 +1310,49 @@ class GraphDiffApplier:
         }
 
     def apply_diff(self, old_graph: NodeGraph, new_graph: NodeGraph) -> None:
-        print("Generating graph diff")
-        diff_actions = diff_graphs(old_graph, new_graph)
-        print(f"Found {len(diff_actions)} actions.")
+        """
 
-        print("Sorting...")
+        Generates, sorts, then applies a list of graph diffs.
+
+        Parameters
+        ----------
+        old_graph : NodeGraph
+            The existing graph (NOTE: populated with all record ids)
+        new_graph : NodeGraph
+            The proposed/new graph (NOTE: only contains this records record ids)
+        """
+        # Diff the graphs
+        diff_actions = diff_graphs(old_graph, new_graph)
+        # sort thea ctions
         sorted_actions = self._sort_diff_actions(diff_actions)
-        print("Done.")
+        # apply all actions
 
         for action in sorted_actions:
-            print(f"Applying {action}")
+            handler = self.handlers.get(action.action_type)
+            if not handler:
+                raise RuntimeError(
+                    f"Missing a handler for action type: {action}. Aborting.")
+
+        for action in sorted_actions:
             handler = self.handlers.get(action.action_type)
             if handler:
                 handler(action)
-            else:
-                print(
-                    f"No handler found for action type: {action.action_type}")
-            print("done.")
 
     def _sort_diff_actions(self, actions: List[DiffAction]) -> List[DiffAction]:
+        """
+
+        Defines an ordering for actions which seems safest.
+
+        Parameters
+        ----------
+        actions : List[DiffAction]
+            The list of actions
+
+        Returns
+        -------
+        List[DiffAction]
+            The sorted list of actions
+        """
         action_order = {
             DiffActionType.ADD_RECORD_ID_TO_NODE: 1,
             DiffActionType.ADD_NEW_NODE: 2,
