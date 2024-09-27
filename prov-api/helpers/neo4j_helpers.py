@@ -47,7 +47,7 @@ def connect_to_neo4j(config: Config) -> GraphDatabase.driver:
     )
 
 
-def run_query(query: str, config: Config) -> List[Record]:
+def run_query(query: str, config: Config, driver : Optional[GraphDatabase.driver] = None) -> List[Record]:
     """    run_query
         Will generate a neo4j driver, then open a managed session, 
         run the query, and stream all results into a list of records.
