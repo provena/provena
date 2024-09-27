@@ -8,7 +8,7 @@ from helpers.entity_validators import RequestStyle, ServiceAccountProxy
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.prov_helpers import produce_create_prov_document, produce_version_prov_document
 from helpers.job_api_helpers import launch_generic_job
-from helpers.graph_db_helpers import upload_prov_document
+from helpers.prov_connector import Neo4jGraphManager
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
@@ -304,7 +304,7 @@ def creation_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) ->
     # Create prov document
     print("Converting details into prov document.")
     try:
-        document = produce_create_prov_document(
+        document, graph = produce_create_prov_document(
             created_item_id=creation_lodge_payload.created_item_id,
             created_item_subtype=creation_lodge_payload.created_item_subtype,
             create_activity_id=creation_lodge_payload.creation_activity_id,
@@ -316,11 +316,14 @@ def creation_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) ->
     # Upload to the DB
     print("Uploading to DB.")
     try:
-        upload_prov_document(
-            id=creation_lodge_payload.creation_activity_id,
-            prov_document=document,
-            config=config
-        )
+        # ==========================================
+        # Upload provenance record into graph store
+        #
+        # This is an additive merge
+        # ==========================================
+
+        manager = Neo4jGraphManager(config=config)
+        manager.merge_add_graph_to_db(graph)
     except Exception as e:
         return generate_failed_job(error=f"Failed to lodge generated prov document into the Provenance graph database. Error: {e}.")
 
@@ -475,7 +478,7 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     # Create prov document
     print("Converting details into prov document.")
     try:
-        document = produce_version_prov_document(
+        document, graph = produce_version_prov_document(
             from_version_id=version_payload.from_version_id,
             to_version_id=version_payload.to_version_id,
             version_activity_id=version_payload.version_activity_id,
@@ -488,11 +491,14 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     # Upload to the DB
     print("Uploading to DB.")
     try:
-        upload_prov_document(
-            id=version_payload.version_activity_id,
-            prov_document=document,
-            config=config
-        )
+        # ==========================================
+        # Upload provenance record into graph store
+        #
+        # This is an additive merge
+        # ==========================================
+
+        manager = Neo4jGraphManager(config=config)
+        manager.merge_add_graph_to_db(graph)
     except Exception as e:
         return generate_failed_job(error=f"Failed to lodge generated prov document into the Provenance graph database. Error: {e}.")
 

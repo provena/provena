@@ -41,7 +41,7 @@ class BaseConfig(BaseSettings):
     feature_number: Optional[str]
 
     # monitoring via sentry
-    monitoring_enabled: Optional[bool] = False 
+    monitoring_enabled: Optional[bool] = False
     sentry_dsn: Optional[str] = None
 
     @property
@@ -51,7 +51,7 @@ class BaseConfig(BaseSettings):
     # validate sentry dsn is provided if monitoring is enabled
     @root_validator
     def valide_sentry_config(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if values.get("monitoring_enabled")==True and values.get("sentry_dsn") is None:
+        if values.get("monitoring_enabled") == True and values.get("sentry_dsn") is None:
             raise ValueError(
                 "Sentry DSN is required if monitoring is enabled.")
         return values

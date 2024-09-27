@@ -1,7 +1,8 @@
 import prov.model as prov  # type: ignore
 from ProvenaInterfaces.ProvenanceModels import *
 from ProvenaInterfaces.RegistryModels import *
-from typing import List, Any, Dict
+from helpers.prov_connector import GraphBuilder, Node, NodeProps, NodeLink, NodeGraph, ProvORelationType, NodeLinkProps
+from typing import List, Any, Dict, Tuple
 
 
 def produce_attribute_set(
@@ -230,7 +231,7 @@ def produce_organisation(
     )
 
 
-def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_id: str, workflow_template: ItemModelRunWorkflowTemplate) -> prov.ProvDocument:
+def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_id: str, workflow_template: ItemModelRunWorkflowTemplate) -> Tuple[prov.ProvDocument, NodeGraph]:
     """    produce_prov_document
         Given the model record inputted by user and the handle ID for the
         record, will produce a python-prov prov-o document.
@@ -261,15 +262,16 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
     """
     document = prov.ProvDocument()
 
-    # add default Provena namespace
-    # if no namespace provided, this will be used
-    # TODO consider namespace for identities
+    # hdl is globally unique - good namespace
     document.set_default_namespace('http://hdl.handle.net/')
 
     # universal entity map
     universal_entity_map: Dict[str, prov.ProvEntity] = {}
     universal_activity_map: Dict[str, prov.ProvActivity] = {}
     universal_agent_map: Dict[str, prov.ProvAgent] = {}
+
+    # setup graph object builder
+    builder = GraphBuilder(record_id=record_id)
 
     """
     ==============
@@ -286,6 +288,10 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
         )
     )
     universal_activity_map[record_id] = model_run_activity
+    builder.add_node(
+        Node(id=record_id, subtype=ItemSubType.MODEL_RUN,
+             category=ItemCategory.ACTIVITY, props=NodeProps(record_ids=record_id))
+    )
 
     # Create study if provided
     study_id = model_record.study_id
@@ -299,6 +305,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
             )
         )
         universal_activity_map[study_id] = study_node
+        builder.add_node(Node(id=study_id, subtype=ItemSubType.STUDY,
+                              category=ItemCategory.ACTIVITY, props=NodeProps(record_ids=record_id)))
 
     # Add input datasets
 
@@ -353,6 +361,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
 
             # add to universal map (may already be there)
             universal_entity_map[dataset_id] = prov_entity
+            builder.add_node(Node(id=dataset_id, subtype=ItemSubType.DATASET,
+                                  category=ItemCategory.ENTITY, props=NodeProps(record_ids=record_id)))
 
             # link the template ID -> prov entity
             datasets_match_list = input_dataset_template_object_map.get(
@@ -385,6 +395,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
 
             # add to universal map (may already be there)
             universal_entity_map[dataset_id] = prov_entity
+            builder.add_node(Node(id=dataset_id, subtype=ItemSubType.DATASET,
+                                  category=ItemCategory.ENTITY, props=NodeProps(record_ids=record_id)))
 
             # link the template ID -> prov entity
             datasets_match_list = output_dataset_template_object_map.get(
@@ -400,6 +412,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
         record_id=record_id
     )
     universal_entity_map[workflow_template_id] = workflow_template_entity
+    builder.add_node(Node(id=workflow_template_id, subtype=ItemSubType.WORKFLOW_TEMPLATE,
+                          category=ItemCategory.ENTITY, props=NodeProps(record_ids=record_id)))
 
     # add dataset templates
     template_id_object_map: Dict[str, prov.ProvEntity] = {}
@@ -418,6 +432,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
         # update maps
         template_id_object_map[template_id] = entity
         universal_entity_map[template_id] = entity
+        builder.add_node(Node(id=template_id, subtype=ItemSubType.DATASET_TEMPLATE,
+                              category=ItemCategory.ENTITY, props=NodeProps(record_ids=record_id)))
 
     # add associations
 
@@ -430,6 +446,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
     )
     # add to entity map
     universal_entity_map[model_id] = model
+    builder.add_node(Node(id=model_id, subtype=ItemSubType.MODEL,
+                          category=ItemCategory.ENTITY, props=NodeProps(record_ids=record_id)))
 
     # Add modeller
     modeller_id = model_record.associations.modeller_id
@@ -440,6 +458,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
     )
     # add to agent map
     universal_agent_map[modeller_id] = modeller
+    builder.add_node(Node(id=modeller_id, subtype=ItemSubType.PERSON,
+                          category=ItemCategory.AGENT, props=NodeProps(record_ids=record_id)))
 
     # Add organisation if present
     requesting_organisation: Optional[prov.ProvAgent] = None
@@ -452,6 +472,8 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
         )
         # add to agent map
         universal_agent_map[organisation_id] = requesting_organisation
+        builder.add_node(Node(id=organisation_id, subtype=ItemSubType.ORGANISATION,
+                              category=ItemCategory.AGENT, props=NodeProps(record_ids=record_id)))
 
     """
     ================
@@ -464,6 +486,10 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
         model_run_activity.wasInformedBy(
             informant=universal_activity_map[study_id]
         )
+        source = builder.get_node(record_id)
+        target = builder.get_node(study_id)
+        builder.add_link(NodeLink(relation=ProvORelationType.WAS_INFORMED_BY,
+                                  source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # model run used input datasets
     for dataset_list in input_dataset_template_object_map.values():
@@ -471,6 +497,10 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
             model_run_activity.used(
                 entity=dataset
             )
+            source = builder.get_node(record_id)
+            target = builder.get_node(str(dataset.identifier))
+            builder.add_link(NodeLink(relation=ProvORelationType.USED,
+                                      source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # output datasets --wasGeneratedBy--> model run activity
     for dataset_list in output_dataset_template_object_map.values():
@@ -481,22 +511,39 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
             dataset.wasGeneratedBy(
                 activity=model_run_activity
             )
+            source = builder.get_node(str(dataset.identifier))
+            target = builder.get_node(str(model_run_activity.identifier))
+            builder.add_link(NodeLink(relation=ProvORelationType.WAS_GENERATED_BY,
+                                      source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # model run --used--> model
     model_run_activity.used(
         entity=model
     )
+    source = builder.get_node(str(model_run_activity.identifier))
+    target = builder.get_node(str(model.identifier))
+    builder.add_link(NodeLink(relation=ProvORelationType.USED,
+                              source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # mark the model run as using the workflow definition
     model_run_activity.used(
         entity=workflow_template_entity
     )
 
+    source = builder.get_node(str(model_run_activity.identifier))
+    target = builder.get_node(str(workflow_template_entity.identifier))
+    builder.add_link(NodeLink(relation=ProvORelationType.USED,
+                              source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
+
     # explicit association additionally
     # model run --wasAssociatedWith--> modeller
     model_run_activity.wasAssociatedWith(
         agent=modeller
     )
+    source = builder.get_node(str(model_run_activity.identifier))
+    target = builder.get_node(str(modeller.identifier))
+    builder.add_link(NodeLink(relation=ProvORelationType.WAS_ASSOCIATED_WITH,
+                              source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # model run --wasAssociatedWith--> requesting_organisation
     # TODO redirect through 'on behalf of qualified association'
@@ -504,6 +551,10 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
         model_run_activity.wasAssociatedWith(
             agent=requesting_organisation
         )
+        source = builder.get_node(str(model_run_activity.identifier))
+        target = builder.get_node(str(requesting_organisation.identifier))
+        builder.add_link(NodeLink(relation=ProvORelationType.WAS_ASSOCIATED_WITH,
+                                  source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # output datasets --wasAttributedTo--> modeller
     for dataset_list in output_dataset_template_object_map.values():
@@ -511,6 +562,10 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
             dataset.wasAttributedTo(
                 agent=modeller
             )
+            source = builder.get_node(str(dataset.identifier))
+            target = builder.get_node(str(modeller.identifier))
+            builder.add_link(NodeLink(relation=ProvORelationType.WAS_ATTRIBUTED_TO,
+                                      source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # add relation between datasets and their dataset template
     for template_id, template_entity in template_id_object_map.items():
@@ -518,6 +573,11 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
         workflow_template_entity.hadMember(
             entity=template_entity
         )
+
+        source = builder.get_node(str(workflow_template_entity.identifier))
+        target = builder.get_node(str(template_entity.identifier))
+        builder.add_link(NodeLink(relation=ProvORelationType.HAD_MEMBER,
+                                  source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
         if template_id in input_dataset_template_object_map:
             # there was an input(s) which fulfilled this template
@@ -527,6 +587,10 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
                     influencee=input_dataset_entity,
                     influencer=template_entity
                 )
+                source = builder.get_node(str(input_dataset_entity.identifier))
+                target = builder.get_node(str(template_entity.identifier))
+                builder.add_link(NodeLink(relation=ProvORelationType.WAS_INFLUENCED_BY,
+                                          source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
         if template_id in output_dataset_template_object_map:
             # there was an output(s) which fulfilled this template
@@ -536,16 +600,25 @@ def produce_prov_document_existing_handle(model_record: ModelRunRecord, record_i
                     influencee=output_dataset_entity,
                     influencer=template_entity
                 )
+                source = builder.get_node(
+                    str(output_dataset_entity.identifier))
+                target = builder.get_node(str(template_entity.identifier))
+                builder.add_link(NodeLink(relation=ProvORelationType.WAS_INFLUENCED_BY,
+                                          source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
     # link the model/software entity as a member of the workflow definition
     workflow_template_entity.hadMember(
         entity=model
     )
+    source = builder.get_node(str(workflow_template_entity.identifier))
+    target = builder.get_node(str(model.identifier))
+    builder.add_link(NodeLink(relation=ProvORelationType.HAD_MEMBER,
+                              source=source, target=target, props=NodeLinkProps(record_ids=record_id)))
 
-    return document
+    return document, builder.build()
 
 
-def produce_prov_document(model_record: ModelRunRecord, record_id: str, workflow_template: ItemModelRunWorkflowTemplate) -> prov.ProvDocument:
+def produce_prov_document(model_record: ModelRunRecord, record_id: str, workflow_template: ItemModelRunWorkflowTemplate) -> Tuple[prov.ProvDocument, NodeGraph]:
     """    produce_prov_document
         Given the model record inputted by user and the newly seeded model run
         item, will produce a python-prov prov-o document.
@@ -575,31 +648,27 @@ def produce_prov_document(model_record: ModelRunRecord, record_id: str, workflow
     return produce_prov_document_existing_handle(model_record=model_record, record_id=record_id, workflow_template=workflow_template)
 
 
-def produce_create_prov_document(created_item_id: str, created_item_subtype: ItemSubType, create_activity_id: str, agent_id: str) -> prov.ProvDocument:
+def produce_create_prov_document(created_item_id: str, created_item_subtype: ItemSubType, create_activity_id: str, agent_id: str) -> Tuple[prov.ProvDocument, NodeGraph]:
     """
     Generates a prov document representation of a creation activity.
-
     Ready to be lodged into graph DB
-
     Args:
         created_item_id (str): The ID of the created item
-
         created_item_subtype (ItemSubType): The subtype of the created item
         (currently assumed to be Entity category)
-
         create_activity_id (str): The creation activity ID
-
         agent_id (str): The agent to link to
-
     Returns:
-        prov.ProvDocument: The realised prov document
+        Tuple[prov.ProvDocument, NodeGraph]: The realised prov document and the node graph
     """
     document = prov.ProvDocument()
-
     # add default Provena namespace
     # if no namespace provided, this will be used
     # TODO consider namespace for identities
     document.set_default_namespace('http://hdl.handle.net/')
+
+    # Setup graph object builder
+    builder = GraphBuilder(record_id=create_activity_id)
 
     """
     ==============
@@ -615,12 +684,20 @@ def produce_create_prov_document(created_item_id: str, created_item_subtype: Ite
             id=create_activity_id
         )
     )
+    builder.add_node(
+        Node(id=create_activity_id, subtype=ItemSubType.CREATE,
+             category=ItemCategory.ACTIVITY, props=NodeProps(record_ids=create_activity_id))
+    )
 
     # Add Agent
     person: prov.ProvAgent = produce_modeller(
         prov_document=document,
         modeller_resource=agent_id,
         record_id=create_activity_id
+    )
+    builder.add_node(
+        Node(id=agent_id, subtype=ItemSubType.PERSON,
+             category=ItemCategory.AGENT, props=NodeProps(record_ids=create_activity_id))
     )
 
     # Create the correct item created
@@ -633,30 +710,50 @@ def produce_create_prov_document(created_item_id: str, created_item_subtype: Ite
             id=create_activity_id
         )
     )
+    builder.add_node(
+        Node(id=created_item_id, subtype=created_item_subtype,
+             category=ItemCategory.ENTITY, props=NodeProps(record_ids=create_activity_id))
+    )
 
     """
     ================
     CREATE RELATIONS
     ================
     """
-
     # mark that the created item was generated by the create activity
     created.wasGeneratedBy(
         activity=create_activity
+    )
+    builder.add_link(
+        NodeLink(relation=ProvORelationType.WAS_GENERATED_BY,
+                 source=builder.get_node(created_item_id),
+                 target=builder.get_node(create_activity_id),
+                 props=NodeLinkProps(record_ids=create_activity_id))
     )
 
     # activity was associated with agent
     create_activity.wasAssociatedWith(
         agent=person
     )
+    builder.add_link(
+        NodeLink(relation=ProvORelationType.WAS_ASSOCIATED_WITH,
+                 source=builder.get_node(create_activity_id),
+                 target=builder.get_node(agent_id),
+                 props=NodeLinkProps(record_ids=create_activity_id))
+    )
 
     # created was attributed to agent
     created.wasAttributedTo(
         agent=person
     )
+    builder.add_link(
+        NodeLink(relation=ProvORelationType.WAS_ATTRIBUTED_TO,
+                 source=builder.get_node(created_item_id),
+                 target=builder.get_node(agent_id),
+                 props=NodeLinkProps(record_ids=create_activity_id))
+    )
 
-    return document
-
+    return document, builder.build()
 
 def produce_version_prov_document(
     from_version_id: str,
@@ -664,20 +761,22 @@ def produce_version_prov_document(
     version_activity_id: str,
     item_subtype: ItemSubType,
     agent_id: str
-) -> prov.ProvDocument:
+) -> Tuple[prov.ProvDocument, NodeGraph]:
     document = prov.ProvDocument()
-
     # add default Provena namespace
     # if no namespace provided, this will be used
     document.set_default_namespace('http://hdl.handle.net/')
+
+    # Setup graph object builder
+    builder = GraphBuilder(record_id=version_activity_id)
 
     """
     ==============
     CREATE OBJECTS
     ==============
     """
-    # Create model run activity
-    create_activity: prov.ProvActivity = document.activity(
+    # Create version activity
+    version_activity: prov.ProvActivity = document.activity(
         identifier=version_activity_id,
         other_attributes=produce_attribute_set(
             item_category=ItemCategory.ACTIVITY,
@@ -685,12 +784,20 @@ def produce_version_prov_document(
             id=version_activity_id
         )
     )
+    builder.add_node(
+        Node(id=version_activity_id, subtype=ItemSubType.VERSION,
+             category=ItemCategory.ACTIVITY, props=NodeProps(record_ids=version_activity_id))
+    )
 
     # Add Agent
     person: prov.ProvAgent = produce_modeller(
         prov_document=document,
         modeller_resource=agent_id,
         record_id=version_activity_id
+    )
+    builder.add_node(
+        Node(id=agent_id, subtype=ItemSubType.PERSON,
+             category=ItemCategory.AGENT, props=NodeProps(record_ids=version_activity_id))
     )
 
     # From Entity
@@ -702,6 +809,10 @@ def produce_version_prov_document(
             id=version_activity_id
         )
     )
+    builder.add_node(
+        Node(id=from_version_id, subtype=item_subtype,
+             category=ItemCategory.ENTITY, props=NodeProps(record_ids=version_activity_id))
+    )
 
     # To Entity
     to_entity: prov.ProvEntity = document.entity(
@@ -712,31 +823,58 @@ def produce_version_prov_document(
             id=version_activity_id
         )
     )
+    builder.add_node(
+        Node(id=to_version_id, subtype=item_subtype,
+             category=ItemCategory.ENTITY, props=NodeProps(record_ids=version_activity_id))
+    )
 
     """
     ================
     CREATE RELATIONS
     ================
     """
-
     # mark that the created item was generated by the create activity
     to_entity.wasGeneratedBy(
-        activity=create_activity
+        activity=version_activity
+    )
+    builder.add_link(
+        NodeLink(relation=ProvORelationType.WAS_GENERATED_BY,
+                 source=builder.get_node(to_version_id),
+                 target=builder.get_node(version_activity_id),
+                 props=NodeLinkProps(record_ids=version_activity_id))
     )
 
     # activity was associated with agent
-    create_activity.wasAssociatedWith(
+    version_activity.wasAssociatedWith(
         agent=person
+    )
+    builder.add_link(
+        NodeLink(relation=ProvORelationType.WAS_ASSOCIATED_WITH,
+                 source=builder.get_node(version_activity_id),
+                 target=builder.get_node(agent_id),
+                 props=NodeLinkProps(record_ids=version_activity_id))
     )
 
     # created was attributed to agent
     to_entity.wasAttributedTo(
         agent=person
     )
-
-    # create activity used from
-    create_activity.used(
-        entity=from_entity
+    builder.add_link(
+        NodeLink(relation=ProvORelationType.WAS_ATTRIBUTED_TO,
+                 source=builder.get_node(to_version_id),
+                 target=builder.get_node(agent_id),
+                 props=NodeLinkProps(record_ids=version_activity_id))
     )
 
-    return document
+    # create activity used from
+    version_activity.used(
+        entity=from_entity
+    )
+    builder.add_link(
+        NodeLink(relation=ProvORelationType.USED,
+                 source=builder.get_node(version_activity_id),
+                 target=builder.get_node(from_version_id),
+                 props=NodeLinkProps(record_ids=version_activity_id))
+    )
+
+    return document, builder.build()

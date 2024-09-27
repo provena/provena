@@ -5,11 +5,29 @@ from helpers.entity_validators import *
 from helpers.registry_helpers import *
 from helpers.prov_helpers import produce_prov_document
 from helpers.model_run_helpers import *
-from helpers.graph_db_helpers import *
+from helpers.prov_connector import Neo4jGraphManager
 from config import Config
 
 
 async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, request_style: RequestStyle) -> ProvenanceRecordInfo:
+    """
+
+    Registers and lodges a provenance record into the Registry and GraphDB.
+
+    Parameters
+    ----------
+    record : ModelRunRecord
+        The model run record to mint, lodge, update.
+    config : Config
+        The config
+    request_style : RequestStyle
+        The type of requests to use when validating info in the model run record.
+
+    Returns
+    -------
+    ProvenanceRecordInfo
+        The completed info
+    """
     # ==========================
     # Seed identity in registry
     # ==========================
@@ -46,7 +64,7 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
     assert isinstance(workflow_response, ItemModelRunWorkflowTemplate)
 
     try:
-        prov_document = produce_prov_document(
+        prov_document, graph = produce_prov_document(
             model_record=record,
             record_id=seeded_item.id,
             workflow_template=workflow_response
@@ -105,12 +123,12 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
 
     # ==========================================
     # Upload provenance record into graph store
+    #
+    # This is an additive merge
     # ==========================================
-    document_id = upload_prov_document(
-        id=model_run_item.id,
-        prov_document=prov_document,
-        config=config
-    )
+
+    manager = Neo4jGraphManager(config=config)
+    manager.merge_add_graph_to_db(graph)
 
     # =======================================
     # Mark record as being lodged in registry
@@ -168,7 +186,7 @@ async def lodge_provenance(handle_id: str, record: ModelRunRecord, config: Confi
 
     print("Producing prov document")
     try:
-        prov_document = produce_prov_document(
+        prov_document, graph = produce_prov_document(
             model_record=record,
             record_id=handle_id,
             workflow_template=workflow_response
@@ -186,13 +204,13 @@ async def lodge_provenance(handle_id: str, record: ModelRunRecord, config: Confi
 
     # ==========================================
     # Upload provenance record into graph store
+    #
+    # This is an additive merge
     # ==========================================
-    print("Uploading prov document")
-    document_id = upload_prov_document(
-        id=handle_id,
-        prov_document=prov_document,
-        config=config
-    )
+
+    manager = Neo4jGraphManager(config=config)
+    manager.merge_add_graph_to_db(graph)
+
     # ===========================================
     # Produce JSON serialisation of prov document
     # ===========================================
