@@ -40,6 +40,7 @@ from helpers.keycloak_helpers import retrieve_secret_value
 # This is the property on which the principal id for the record is stored
 IDENTIFIER_TAG = "id"
 
+
 def get_credentials(config: Config) -> Tuple[str, str]:
     """
     Retrieve Neo4j database credentials based on the provided configuration.
@@ -227,13 +228,9 @@ def special_contributing_dataset_query(starting_id: str, depth: int, config: Con
         raise RuntimeError(
             "Asking for real data from graph DB during mock! Returning [].")
 
-    # The neo4j tag created by prov-db-connector which contains just the
-    # handle ID to match against
-    id_tag = IDENTIFIER_TAG
-
     # The cypher query to make for upstream lineage - only concerned with datasets upstream
     query = f"""
-    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) <-[*1..{depth}]-(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -281,13 +278,9 @@ def special_effected_dataset_query(starting_id: str, depth: int, config: Config)
         raise RuntimeError(
             "Asking for real data from graph DB during mock! Returning [].")
 
-    # The neo4j tag created by prov-db-connector which contains just the
-    # handle ID to match against
-    id_tag = IDENTIFIER_TAG
-
     # The cypher query to make for upstream lineage - only concerned with datasets upstream
     query = f"""
-    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) -[*1..{depth}]->(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) -[*1..{depth}]->(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -335,13 +328,9 @@ def special_contributing_agent_query(starting_id: str, depth: int, config: Confi
         raise RuntimeError(
             "Asking for real data from graph DB during mock! Returning [].")
 
-    # The neo4j tag created by prov-db-connector which contains just the
-    # handle ID to match against
-    id_tag = IDENTIFIER_TAG
-
     # The cypher query to make for upstream lineage - only concerned with datasets upstream
     query = f"""
-    MATCH r=((parent : Agent) <-[*1..{depth}]-(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    MATCH r=((parent : Agent) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -389,13 +378,9 @@ def special_effected_agent_query(starting_id: str, depth: int, config: Config) -
         raise RuntimeError(
             "Asking for real data from graph DB during mock! Returning [].")
 
-    # The neo4j tag created by prov-db-connector which contains just the
-    # handle ID to match against
-    id_tag = IDENTIFIER_TAG
-
     # The query to see effected agents one step removed from any downstream occurrences i.e. 'effected people/organisations'
     query = f"""
-    MATCH r=((agent: Agent) <-[]- (downstream) -[*0..{depth}]->(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    MATCH r=((agent: Agent) <-[]- (downstream) -[*0..{depth}]->(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -465,13 +450,9 @@ def upstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, An
         raise RuntimeError(
             "Asking for real data from graph DB during mock! Returning [].")
 
-    # The neo4j tag created by prov-db-connector which contains just the
-    # handle ID to match against
-    id_tag = "id"
-
     # The cypher query to make for upstream lineage
     query = f"""
-    MATCH r=((parent) <-[*1..{depth}]-(start{{`{id_tag}`:'{starting_id}'}})) RETURN r
+    MATCH r=((parent) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -541,13 +522,9 @@ def downstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, 
         raise RuntimeError(
             "Asking for real data from graph DB during mock! Returning [].")
 
-    # The neo4j tag created by prov-db-connector which contains just the
-    # handle ID to match against
-    id_tag = IDENTIFIER_TAG
-
     # The cypher query to make for lineage
     query = f"""
-    MATCH r=((start{{`{id_tag}`:'{starting_id}'}})<-[*1..{depth}]-(child)) RETURN r
+    MATCH r=((start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})<-[*1..{depth}]-(child)) RETURN r
     """
 
     # Run the query
