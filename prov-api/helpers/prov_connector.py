@@ -37,8 +37,8 @@ import networkx  # type: ignore
 from dependencies.dependencies import secret_cache
 from helpers.keycloak_helpers import retrieve_secret_value
 
+# This is the property on which the principal id for the record is stored
 IDENTIFIER_TAG = "id"
-
 
 def get_credentials(config: Config) -> Tuple[str, str]:
     """
