@@ -18,15 +18,14 @@ import {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     interactionContainer: {
-      paddingTop: theme.spacing(2),
-      paddingLeft: theme.spacing(1),
+      padding: theme.spacing(1),
     },
     interactionPanel: {
       display: "flex",
       justifyContent: "space-around",
       alignItems: "center",
       backgroundColor: "white",
-      padding: theme.spacing(2),
+      padding: theme.spacing(1),
       borderRadius: 5,
     },
     mainActionButton: {
@@ -36,10 +35,10 @@ const useStyles = makeStyles((theme: Theme) =>
     stackContainer: {
       backgroundColor: "white",
       borderRadius: 5,
-      paddingLeft: theme.spacing(4),
-      paddingRight: theme.spacing(4),
-      paddingTop: theme.spacing(2),
-      paddingBottom: theme.spacing(2),
+      paddingLeft: theme.spacing(1),
+      paddingRight: theme.spacing(1),
+      paddingTop: theme.spacing(1),
+      paddingBottom: theme.spacing(1),
     },
   })
 );

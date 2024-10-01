@@ -120,6 +120,22 @@ export const CreateModelRunTool = () => {
 
   return (
     <Stack direction="column" divider={<Divider flexItem={true} />} spacing={3}>
+      <Stack direction="column" spacing={1}>
+        <Stack
+          direction="row"
+          justifyContent={"space-between"}
+          alignItems="center"
+        >
+          <Typography variant="h4">Create a new Model Run</Typography>
+          <Button onClick={clear} variant="outlined" color="warning">
+            Start again
+          </Button>
+        </Stack>
+        <Typography variant="subtitle1">
+          This tool provides a form in which you can create a new model run.
+        </Typography>
+      </Stack>
+
       {!granted && (
         <AccessStatusDisplayComponent
           accessCheck={auth}

@@ -201,8 +201,6 @@ export const UpdateModelRunTool = () => {
     Lodge form page. Allows updating an existing record.
     
     */
-  // TODO Destub
-
   const [modelRunId, setModelRunId] = useState<string | undefined>(undefined);
   const [modelRunRecord, setModelRunRecord] = useState<
     ItemModelRun | undefined
@@ -212,6 +210,7 @@ export const UpdateModelRunTool = () => {
   const [canWriteToRecord, setCanWriteToRecord] = useState<boolean | undefined>(
     undefined
   );
+  const [showResult, setShowResult] = useState<boolean>(false);
 
   // Authorisation check
   const auth = useAccessCheck({
@@ -220,7 +219,7 @@ export const UpdateModelRunTool = () => {
   });
 
   const granted = !!auth.granted;
-  const showUpdateForm = granted && canWriteToRecord;
+  const showUpdateForm = granted && canWriteToRecord && !showResult;
 
   useEffect(() => {
     // TODO replace with useFormSetup once API returns the data - this is hack!
@@ -246,10 +245,25 @@ export const UpdateModelRunTool = () => {
     modelRunId,
   });
 
-  const [showResult, setShowResult] = useState<boolean>(false);
-
   return (
     <Stack direction="column" divider={<Divider flexItem={true} />} spacing={3}>
+      <Stack direction="column" spacing={1}>
+        <Stack
+          direction="row"
+          justifyContent={"space-between"}
+          alignItems="center"
+        >
+          <Typography variant="h4">Update a Model Run</Typography>
+          <Button onClick={clear} variant="outlined" color="warning">
+            Start again
+          </Button>
+        </Stack>
+        <Typography variant="subtitle1">
+          This tool provides a form in which you can update an existing model
+          run. To get started, use the search tool below to identify your
+          existing model run, or enter the identifier directly.
+        </Typography>
+      </Stack>
       {!granted && (
         <AccessStatusDisplayComponent
           accessCheck={auth}
