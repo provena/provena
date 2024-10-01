@@ -26,7 +26,8 @@ import LodgeTemplate from "../subpages/LodgeTemplate";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { BoundedContainer } from "react-libs";
-import { LodgeComponent } from "./Lodge";
+import { CreateModelRunTool } from "./CreateModelRunTool";
+import { UpdateModelRunTool } from "./UpdateModelRunTool";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -230,10 +231,22 @@ const RegistrationTools = observer(() => {
                           align="right"
                           width="100%"
                         >
-                          Create or update Model Run
+                          Register Model Run
                         </Typography>
                       }
-                      key="createupdatemodelrunrecord"
+                      key="createrecord"
+                    />
+                    <Tab
+                      label={
+                        <Typography
+                          variant="subtitle1"
+                          align="right"
+                          width="100%"
+                        >
+                          Update Model Run
+                        </Typography>
+                      }
+                      key="updaterecord"
                     />
                   </Tabs>
                 </Box>
@@ -248,7 +261,10 @@ const RegistrationTools = observer(() => {
               <LodgeTemplate />
             </TabPanel>
             <TabPanel index={2} currentIndex={currentTab}>
-              <LodgeComponent />
+              <CreateModelRunTool />
+            </TabPanel>
+            <TabPanel index={3} currentIndex={currentTab}>
+              <UpdateModelRunTool />
             </TabPanel>
           </Grid>
         </Grid>
