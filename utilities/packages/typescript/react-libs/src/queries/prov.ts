@@ -7,8 +7,8 @@ import {
   RegisterModelRunResponse,
 } from "../provena-interfaces/AsyncJobAPI";
 import { requestErrToMsg } from "../util";
-import { ModelRunRecord } from "provena-interfaces/RegistryModels";
-import { PostUpdateModelRunResponse } from "provena-interfaces/ProvenanceAPI";
+import { ModelRunRecord } from "../provena-interfaces/RegistryModels";
+import { PostUpdateModelRunResponse } from "../provena-interfaces/ProvenanceAPI";
 
 export const addStudyLink = (inputs: {
   modelRunId: string;
