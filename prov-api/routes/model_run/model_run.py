@@ -9,8 +9,8 @@ from ProvenaInterfaces.SharedTypes import Status
 from ProvenaInterfaces.RegistryModels import ItemModelRun
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.auth_helpers import *
-from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job
-from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload
+from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
+from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
 from helpers.prov_connector import NodeGraph, Neo4jGraphManager, GraphDiffApplier
 from config import get_settings, Config
 from typing import Any
@@ -239,131 +239,54 @@ async def link_to_study(
         session_id=session_id
     )
 
+@router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
+async def update_model_run(
+    payload: PostUpdateModelRunInput,
+    roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
+    config: Config = Depends(get_settings)
+) -> PostUpdateModelRunResponse:
+    # no proxy - user direct
+    request_style = RequestStyle(
+        service_account=None, user_direct=roles.user)
 
-#@router.post("/new_graph", operation_id="new_graph", include_in_schema=False)
-#async def new_graph(
-#    record: ModelRunRecord,
-#    # admin only for this endpoint
-#    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
-#    config: Config = Depends(get_settings)
-#) -> Any:
-#    # no proxy - user direct
-#    request_style = RequestStyle(
-#        service_account=None, user_direct=roles.user)
-#
-#    valid, error_message = await validate_model_run_record(
-#        record=record,
-#        request_style=request_style,
-#        config=config,
-#    )
-#
-#    if not valid:
-#        assert error_message
-#        raise HTTPException(
-#            status_code=400,
-#            detail=f"Failed to validate an entity's ID in the record, error: {error_message}."
-#        )
-#
-#    # build the graph
-#    print("Building graph from model run record")
-#    graph, doc = await graph_from_model_run_record(
-#        model_record=record, request_style=request_style, config=config)
-#    print("Done")
-#
-#    # Record id
-#    record_id = graph.links[0].props.record_ids
-#
-#    print("Setting up neo4j client")
-#    neo4j_manager = Neo4jGraphManager(config=config)
-#    print("Done")
-#
-#    print("Retrieving graph")
-#    old_graph = neo4j_manager.get_graph_by_record_id("10378.1/1962040")
-#    print("Done")
-#
-#    print("Writing graph")
-#    neo4j_manager.merge_add_graph_to_db(graph)
-#    print("Done")
-#    print("Retrieving graph")
-#    new_graph = neo4j_manager.get_graph_by_record_id(
-#        graph.links[0].props.record_ids)
-#    print("Done")
-#
-#    return {"old": old_graph, "proposed": graph.to_json_pretty(), "new": new_graph.to_json_pretty()}
+    # validate first
+    valid, error_message = await validate_model_run_record(
+        record=payload.record,
+        request_style=request_style,
+        config=config,
+    )
+    if not valid:
+        assert error_message
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to validate an entity's ID in the record, error: {error_message}."
+        )
+
+    res = await submit_model_run_update_job(
+        username=roles.user.username,
+        payload=ProvLodgeUpdatePayload(
+            model_run_record_id=payload.model_run_id,
+            updated_record=payload.record,
+            reason=payload.reason,
+            revalidate=True
+        ),
+        config=config)
+
+    return PostUpdateModelRunResponse(session_id=res)
+
 #
 #
-#class UpdateGraph(ModelRunRecord):
-#    existing_record_id: str
-#
-#
-#@router.post("/update_graph", operation_id="update_graph", include_in_schema=False)
-#async def update_graph(
-#    update: UpdateGraph,
-#    # admin only for this endpoint
-#    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
-#    config: Config = Depends(get_settings)
-#) -> Any:
-#    # no proxy - user direct
-#    request_style = RequestStyle(
-#        service_account=None, user_direct=roles.user)
-#
-#    # TODO bring this back
-#
-#    # valid, error_message = await validate_model_run_record(
-#    #    record=update,
-#    #    request_style=request_style,
-#    #    config=config,
-#    # )
-#
-#    # if not valid:
-#    #    assert error_message
-#    #    raise HTTPException(
-#    #        status_code=400,
-#    #        detail=f"Failed to validate an entity's ID in the record, error: {error_message}."
-#    #    )
-#
-#    print("Setting up neo4j client")
-#    neo4j_manager = Neo4jGraphManager(config=config)
-#    print("Done")
-#
-#    # Getting old graph
-#    print("Retrieving graph")
-#    old_graph = neo4j_manager.get_graph_by_record_id(update.existing_record_id)
-#    print("Done")
-#
-#    # build the graph
-#    print("Building graph from model run record")
-#    # TODO update registry item as well
-#    new_graph, doc = await graph_from_model_run_record(
-#        model_record=update, request_style=request_style, config=config, record_id=update.existing_record_id)
-#    print("Done")
-#
-#    # get the graph diff
-#    print("Building diff and applying...")
-#    diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
-#    diff_generator.apply_diff(old_graph=old_graph, new_graph=new_graph)
-#    print("Done")
-#
-#    # get the updated graph
-#    print("Retrieving updated graph")
-#    updated_graph = neo4j_manager.get_graph_by_record_id(
-#        update.existing_record_id)
-#    print("Done")
-#
-#    return {"old_graph": old_graph.to_json_pretty(), "new": new_graph.to_json_pretty(), "updated": updated_graph.to_json_pretty()}
-#
-#
-#class DeleteGraph(BaseModel):
+# class DeleteGraph(BaseModel):
 #    record_id: str
 #
 #
-#@router.post("/delete_graph", operation_id="delete_graph", include_in_schema=False)
-#async def delete_graph(
+# @router.post("/delete_graph", operation_id="delete_graph", include_in_schema=False)
+# async def delete_graph(
 #    delete: DeleteGraph,
 #    # admin only for this endpoint
 #    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
 #    config: Config = Depends(get_settings)
-#) -> Any:
+# ) -> Any:
 #    # no proxy - user direct
 #    request_style = RequestStyle(
 #        service_account=None, user_direct=roles.user)
