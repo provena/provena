@@ -26,7 +26,7 @@ export const displayValidationError = (valError: HTTPValidationError) => {
     messageList.push(
       `[Message: ${detail.msg}, Type: ${
         detail.type
-      }, Location: ${detail.loc.join(" - ")}]`,
+      }, Location: ${detail.loc.join(" - ")}]`
     );
   });
   return messageList.join(", ");
@@ -54,7 +54,7 @@ export const timestampToLocalTime = (timestamp: number): string => {
     });
   } catch (e: any) {
     console.log(
-      `Failed to parse time with error ${e} falling back to unparsed string.`,
+      `Failed to parse time with error ${e} falling back to unparsed string.`
     );
   }
   return outputString;
@@ -103,7 +103,7 @@ const filteringQString = "filtering";
 const subtypeQString = "subtype";
 
 export const generateRegistryDeepLink = (
-  subtypeFilter: ItemSubType | undefined,
+  subtypeFilter: ItemSubType | undefined
 ) => {
   /**
    * Generates a deep link into the registry explore view optionally tailored
@@ -120,7 +120,7 @@ export const generateRegistryDeepLink = (
 
 export const composeSectionHeaderTitle = (
   parentField: string | undefined,
-  recordName: string,
+  recordName: string
 ) => {
   if (!isNaN(Number(recordName))) {
     recordName = (Number(recordName) + 1).toString();
@@ -237,8 +237,8 @@ export function requestErrToMsg(err: any): string {
         message = err.data.detail[0].msg
           ? err.data.detail[0].msg
           : err.data.detail
-            ? err.data.detail
-            : "";
+          ? err.data.detail
+          : "";
       } catch {}
     }
 
@@ -253,7 +253,7 @@ interface FormTitleDescription {
   description: string;
 }
 export function deriveTitleDescription<T>(
-  props: FieldProps<T>,
+  props: FieldProps<T>
 ): FormTitleDescription {
   const uiTitle = props.uiSchema ? props.uiSchema["ui:title"] : undefined;
   const uiDescription = props.uiSchema
@@ -280,4 +280,8 @@ export const createSubtypeAcronym = (subtype: string) => {
 export const isBlank = (str: string): boolean => {
   const blankReg = new RegExp(/^\s*$/);
   return !str || blankReg.test(str);
+};
+
+export const allDefined = (inputs: any[]): boolean => {
+  return !inputs.some((i) => i === undefined || i === null);
 };

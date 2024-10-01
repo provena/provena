@@ -9,6 +9,7 @@ export * from "./TabPanel";
 export * from "./MetadataHistoryStatusDisplay";
 export * from "./OptionalStringFieldOverride";
 export * from "./LinkedUsernameDisplay";
+export * from "./DatasetTemplateAdditionalAnnotationsOverride";
 export * from "./SubtypeSearchOrManualFormOverride";
 export * from "./SubtypeSearchSelector";
 export * from "./Footer";

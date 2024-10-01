@@ -23,10 +23,10 @@ import React, { useEffect, useState } from "react";
 import accessStore from "../stores/accessStore";
 import GenerateTemplate from "../subpages/GenerateTemplate";
 import LodgeTemplate from "../subpages/LodgeTemplate";
-
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { BoundedContainer } from "react-libs";
+import { LodgeComponent } from "./Lodge";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
     },
-  }),
+  })
 );
 
 interface TabPanelProps {
@@ -223,6 +223,18 @@ const RegistrationTools = observer(() => {
                       }
                       key="lodgecsvtemplate"
                     />
+                    <Tab
+                      label={
+                        <Typography
+                          variant="subtitle1"
+                          align="right"
+                          width="100%"
+                        >
+                          Create or update Model Run
+                        </Typography>
+                      }
+                      key="createupdatemodelrunrecord"
+                    />
                   </Tabs>
                 </Box>
               </Grid>
@@ -234,6 +246,9 @@ const RegistrationTools = observer(() => {
             </TabPanel>
             <TabPanel index={1} currentIndex={currentTab}>
               <LodgeTemplate />
+            </TabPanel>
+            <TabPanel index={2} currentIndex={currentTab}>
+              <LodgeComponent />
             </TabPanel>
           </Grid>
         </Grid>
