@@ -210,36 +210,41 @@ export function requestErrToMsg(err: any): string {
       throw new Error("Failed to parse repsonse as StatusResponse.");
     }
   } catch {
-    // Attempt parsing as either axios response object or axios complete err
-    // object
+    try {
+      // Attempt parsing as either axios response object or axios complete err
+      // object
 
-    // These are fall back errs
-    var statusCode = "Unknown";
-    var message = "Unknown - contact admin and check console";
+      // These are fall back errs
+      var statusCode = "Unknown";
+      var message = "Unknown - contact admin and check console";
 
-    // Try decoding from response object (as in status code err)
-    const response = err.response;
-    if (response !== undefined) {
-      try {
-        statusCode = response.status;
-      } catch {}
+      // Try decoding from response object (as in status code err)
+      const response = err.response;
+      if (response !== undefined) {
+        try {
+          statusCode = response.status;
+        } catch {}
 
-      try {
-        message = response.data.detail ? response.data.detail : "";
-      } catch {}
-    } else {
-      // Try decoding directly from response object
-      try {
-        statusCode = err.status;
-      } catch {}
+        try {
+          message = response.data.detail ? response.data.detail : "";
+        } catch {}
+      } else {
+        // Try decoding directly from response object
+        try {
+          statusCode = err.status;
+        } catch {}
 
-      try {
-        message = err.data.detail[0].msg
-          ? err.data.detail[0].msg
-          : err.data.detail
-          ? err.data.detail
-          : "";
-      } catch {}
+        try {
+          message = err.data.detail[0].msg
+            ? err.data.detail[0].msg
+            : err.data.detail
+            ? err.data.detail
+            : "";
+        } catch {}
+      }
+    } catch {
+      message = "Unknown error during fetch.";
+      statusCode = "500";
     }
 
     const msg = `Status code ${statusCode}. Error message: ${message}`;
@@ -285,3 +290,29 @@ export const isBlank = (str: string): boolean => {
 export const allDefined = (inputs: any[]): boolean => {
   return !inputs.some((i) => i === undefined || i === null);
 };
+
+type DeepCopyResult = { [key: string]: any } | any[] | any;
+
+export function filteredNoneDeepCopy(input: any): DeepCopyResult {
+  // If input is an object (but not null)
+  if (typeof input === "object" && input !== null) {
+    // If it's an array
+    if (Array.isArray(input)) {
+      return input
+        .filter((item) => item != null)
+        .map((item) => filteredNoneDeepCopy(item));
+    }
+    // If it's a regular object
+    else {
+      const newObj: { [key: string]: any } = {};
+      for (const [key, value] of Object.entries(input)) {
+        if (value != null && value !== "null") {
+          newObj[key] = filteredNoneDeepCopy(value);
+        }
+      }
+      return newObj;
+    }
+  }
+  // If it's a primitive value
+  return input;
+}

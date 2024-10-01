@@ -127,7 +127,7 @@ def dev_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
     http_prefix = "http:\/\/"
     safe_base = base_domain.replace(".", "\.")
     # https://*.base.com OR https://base.com OR http(s)://localhost:port
-    return f"({https_prefix}.*\.{safe_base}|{https_prefix}{safe_base}|{https_prefix}localhost:\d*|{http_prefix}localhost:\d*)"
+    return ".*"
 
 
 def stage_cors_generator(base_domain: str) -> CorsGeneratorReturnType:

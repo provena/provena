@@ -65,3 +65,15 @@ export const REGISTER_MODEL_RUN_WORKFLOW_DEFINITION: WorkflowDefinition = {
     },
   ],
 };
+
+export const UPDATE_MODEL_RUN_WORKFLOW_DEFINITION: WorkflowDefinition = {
+  name: "Model Run Update",
+  description: "Tracks the update of a model run",
+  steps: [
+    // Lodge and update step
+    {
+      name: "Perform Update",
+      shortDescription: "Update model run",
+    },
+  ],
+};

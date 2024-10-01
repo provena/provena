@@ -58,7 +58,8 @@ export const useUpdateModelRun = (props: UpdateModelRunProps) => {
   const update = useMutation({
     mutationFn: async () => {
       return await updateModelRunRecord({
-        // TODO
+        model_run_id: props.modelRunId!,
+        reason: props.reason!,
         record: props.data!,
       });
     },

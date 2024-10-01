@@ -27,6 +27,7 @@ import {
   AutoCompleteStudyLookup,
   DatasetTemplateAdditionalAnnotationsOverride,
   deriveResourceAccess,
+  filteredNoneDeepCopy,
   Form,
   REGISTER_MODEL_RUN_WORKFLOW_DEFINITION,
   ResourceAccess,
@@ -558,6 +559,26 @@ const RenderRegisterWorkflowComponent = (
   );
 };
 
+interface RenderUpdateWorkflowComponentProps {
+  session_id: string;
+}
+const RenderUpdateWorkflowComponent = (
+  props: RenderUpdateWorkflowComponentProps
+) => {
+  /**
+    Component: RenderUpdateWorkflowComponent
+    */
+  return (
+    <WorkflowVisualiserComponent
+      adminMode={false}
+      enableExpand={true}
+      startingSessionID={props.session_id}
+      workflowDefinition={REGISTER_MODEL_RUN_WORKFLOW_DEFINITION}
+      direction="column"
+    ></WorkflowVisualiserComponent>
+  );
+};
+
 interface MonitorResultComponentProps {
   lodgeMode: LodgeMode;
   createTask: ReturnType<typeof useCreateModelRun>;
@@ -571,11 +592,18 @@ const MonitorResultComponent = (props: MonitorResultComponentProps) => {
     */
 
   const createSessionId = props.createTask.create?.data?.session_id;
+  const updateSessionId = props.updateTask.update?.data?.session_id;
   if (props.lodgeMode === "create") {
     const header = <Typography variant="h6">Creation Results</Typography>;
     let content;
     if (props.createTask.create?.isLoading) {
       content = <CircularProgress />;
+    } else if (props.createTask.create?.isError) {
+      content = (
+        <Typography variant="caption" color="red">
+          {props.createTask.create.error ?? "Unknown error occurred."}
+        </Typography>
+      );
     } else if (createSessionId) {
       content = (
         <>
@@ -593,17 +621,24 @@ const MonitorResultComponent = (props: MonitorResultComponentProps) => {
     );
   } else {
     const header = <Typography variant="h6">Update Results</Typography>;
-    let content = <p>TODO</p>;
-    //if (props.updateTask.update?.isLoading) {
-    //  content = <CircularProgress />;
-    //  // TODO
-    //} else if (props.updateTask.update?.data?) {
-    //  content = (
-    //    <Typography variant="subtitle1">
-    //      Successfully lodged creation task.
-    //    </Typography>
-    //  );
-    //}
+    let content;
+    if (props.createTask.create?.isLoading) {
+      content = <CircularProgress />;
+    } else if (props.createTask.create?.isError) {
+      content = (
+        <Typography variant="caption" color="red">
+          {props.createTask.create.error ?? "Unknown error occurred."}
+        </Typography>
+      );
+    } else if (createSessionId) {
+      content = (
+        <>
+          <RenderUpdateWorkflowComponent
+            session_id={createSessionId}
+          ></RenderUpdateWorkflowComponent>
+        </>
+      );
+    }
     return (
       <>
         {header}
@@ -655,7 +690,8 @@ export const LodgeComponent = (props: LodgeComponentProps) => {
       !!modelRunRecord
     ) {
       console.log("Updating form data");
-      setFormData(cloneDeep(modelRunRecord.record));
+      console.log(JSON.stringify(modelRunRecord.record));
+      setFormData(filteredNoneDeepCopy(modelRunRecord.record));
     }
   }, [modelRunRecord]);
 
@@ -663,6 +699,7 @@ export const LodgeComponent = (props: LodgeComponentProps) => {
     setFormData({});
     setModelRunId(undefined);
     setModelRunRecord(undefined);
+    setReason(undefined);
     setShowResult(false);
   };
 
@@ -695,7 +732,10 @@ export const LodgeComponent = (props: LodgeComponentProps) => {
           {lodgeMode === "update" && (
             <SelectModelRunComponent
               modelRunId={modelRunId}
-              onSelected={setModelRunId}
+              onSelected={(id) => {
+                clear();
+                setModelRunId(id);
+              }}
               setLoadedModelRun={setModelRunRecord}
               setWriteAccess={setCanWriteToRecord}
             />
