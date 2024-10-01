@@ -4,10 +4,10 @@ from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.SharedTypes import Status
 from config import Config
 from helpers.validate_model_run_record import validate_model_run_record, validate_model_run_workflow_template, RequestStyle
-from helpers.prov_helpers import produce_prov_document_existing_handle
 from dependencies.dependencies import User
 from helpers.async_requests import async_post_request
 from helpers.prov_connector import Neo4jGraphManager
+from helpers.prov_helpers import model_run_to_graph
 import json
 
 
@@ -197,7 +197,7 @@ async def store_existing_record(
     assert isinstance(workflow_response, ItemModelRunWorkflowTemplate)
 
     try:
-        doc, graph = produce_prov_document_existing_handle(
+        graph = model_run_to_graph(
             model_record=registry_record.record,
             record_id=handle_id,
             workflow_template=workflow_response

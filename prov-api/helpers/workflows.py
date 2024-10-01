@@ -3,7 +3,7 @@ from ProvenaInterfaces.ProvenanceModels import *
 from ProvenaInterfaces.SharedTypes import Status
 from helpers.entity_validators import *
 from helpers.registry_helpers import *
-from helpers.prov_helpers import produce_prov_document
+from helpers.prov_helpers import model_run_to_graph
 from helpers.model_run_helpers import *
 from helpers.prov_connector import Neo4jGraphManager
 from config import Config
@@ -64,7 +64,7 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
     assert isinstance(workflow_response, ItemModelRunWorkflowTemplate)
 
     try:
-        prov_document, graph = produce_prov_document(
+        graph = model_run_to_graph(
             model_record=record,
             record_id=seeded_item.id,
             workflow_template=workflow_response
@@ -84,7 +84,8 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
     # Serialise document, update minted identity with prov record
     # ============================================================
     try:
-        serialisation: str = produce_serialisation(prov_document)
+        doc = graph.to_prov_document()
+        serialisation: str = produce_serialisation(doc)
     except HTTPException as he:
         raise HTTPException(
             status_code=500,
@@ -186,7 +187,7 @@ async def lodge_provenance(handle_id: str, record: ModelRunRecord, config: Confi
 
     print("Producing prov document")
     try:
-        prov_document, graph = produce_prov_document(
+        graph = model_run_to_graph(
             model_record=record,
             record_id=handle_id,
             workflow_template=workflow_response
@@ -216,7 +217,8 @@ async def lodge_provenance(handle_id: str, record: ModelRunRecord, config: Confi
     # ===========================================
 
     try:
-        serialisation: str = produce_serialisation(prov_document)
+        doc = graph.to_prov_document()
+        serialisation: str = produce_serialisation(doc)
     except HTTPException as he:
         raise HTTPException(
             status_code=500,

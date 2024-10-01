@@ -6,7 +6,7 @@ from helpers.util import py_to_dict
 from helpers.workflows import register_and_lodge_provenance, lodge_provenance
 from helpers.entity_validators import RequestStyle, ServiceAccountProxy
 from helpers.validate_model_run_record import validate_model_run_record
-from helpers.prov_helpers import produce_create_prov_document, produce_version_prov_document
+from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
 from helpers.prov_connector import Neo4jGraphManager
 from ProvenaInterfaces.AsyncJobAPI import *
@@ -304,7 +304,7 @@ def creation_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) ->
     # Create prov document
     print("Converting details into prov document.")
     try:
-        document, graph = produce_create_prov_document(
+        graph = create_to_graph(
             created_item_id=creation_lodge_payload.created_item_id,
             created_item_subtype=creation_lodge_payload.created_item_subtype,
             create_activity_id=creation_lodge_payload.creation_activity_id,
@@ -478,7 +478,7 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     # Create prov document
     print("Converting details into prov document.")
     try:
-        document, graph = produce_version_prov_document(
+        graph = version_to_graph(
             from_version_id=version_payload.from_version_id,
             to_version_id=version_payload.to_version_id,
             version_activity_id=version_payload.version_activity_id,

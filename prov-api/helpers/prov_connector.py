@@ -19,6 +19,7 @@ configuration and credentials to connect to the database.
 TODO: Consider alternative ways of embedding record IDs which will scale more as
 record count increases.
 """
+import prov.model as prov  # type: ignore
 from typing import Dict, Callable, List
 from enum import Enum, auto
 from pydantic import BaseModel, Field, ValidationError
@@ -39,6 +40,44 @@ from helpers.keycloak_helpers import retrieve_secret_value
 
 # This is the property on which the principal id for the record is stored
 IDENTIFIER_TAG = "id"
+
+
+def produce_attribute_set(
+    item_category: ItemCategory,
+    item_subtype: ItemSubType,
+    id: str
+) -> Dict[str, Any]:
+    """    produce_attribute_set
+        Produces the set of attributes to add to the python-prov object.
+
+        This does NOT inform the attributes stored in the prov graph. Rather,
+        just the prov-o serialisation.
+
+        Arguments
+        ----------
+        item_category : ItemCategory
+            The category of the item
+        item_subtype : ItemSubType
+            The sub type of the item
+        id : str
+            The handle ID of the item
+
+        Returns
+        -------
+         : Dict[str, Any]
+            A set of attributes to add to the item
+
+        See Also (optional)
+        --------
+
+        Examples (optional)
+        --------
+    """
+    return {
+        'id': id,
+        'item_category': item_category.value,
+        'item_subtype': item_subtype.value
+    }
 
 
 def get_credentials(config: Config) -> Tuple[str, str]:
@@ -596,7 +635,8 @@ class Node(BaseModel):
         if not isinstance(other, Node):
             return False
         return (self.id == other.id and
-                self.props == other.props and
+                # don't include props in equality so that set diffs make sense
+                # self.props == other.props and
                 self.subtype == other.subtype and
                 self.category == other.category)
 
@@ -691,8 +731,11 @@ class NodeLink(BaseModel):
             return False
         return (self.source == other.source and
                 self.target == other.target and
-                self.relation == other.relation and
-                self.props == other.props)
+                self.relation == other.relation)
+
+    def __hash__(self) -> int:
+        # hash : = hash(source : target)
+        return hash(self.source.id + ":" + self.target.id)
 
 
 # Map of node ID -> Node
@@ -750,6 +793,111 @@ class NodeGraph(BaseModel):
                 return False
 
         return True
+
+    def to_prov_document(self) -> prov.ProvDocument:
+        """
+
+        This method returns a Python Prov document from a NodeGraph.
+
+        Returns
+        -------
+        prov.ProvDocument
+            The finalised python prov document
+        """
+
+        # nodes and links from current graph
+        nodes = self.get_node_map()
+        links = self.get_link_map()
+
+        # create all nodes in the document and create map to track objects
+        document = prov.ProvDocument()
+
+        # add default Provena namespace - handles are globally unique
+        document.set_default_namespace('http://hdl.handle.net/')
+
+        # track objects created mapped by ID
+        prov_object_map: Dict[str, prov.ProvElement] = {}
+
+        # create a node for every element in graph
+        for node_id, node in nodes.items():
+            # create node based on subtype
+            category = node.category
+            # These args are the same for all methods
+            args = {'identifier': node_id,
+                    'other_attributes': produce_attribute_set(
+                        item_category=node.category,
+                        item_subtype=node.subtype,
+                        id=node_id
+                    )}
+            if category == ItemCategory.ACTIVITY:
+                prov_object_map[node_id] = document.activity(
+                    **args
+                )
+            elif category == ItemCategory.AGENT:
+                prov_object_map[node_id] = document.agent(
+                    **args
+                )
+            elif category == ItemCategory.ENTITY:
+                prov_object_map[node_id] = document.entity(
+                    **args
+                )
+            else:
+                raise ValueError(f"Cannot handle ItemCategory: {category}.")
+
+        # Create a link for every link in graph
+        for source_target, link in links.items():
+            source_id, target_id = source_target
+            source = prov_object_map[source_id]
+            target = prov_object_map[target_id]
+
+            # Check all relation types
+            try:
+                if link.relation == ProvORelationType.WAS_DERIVED_FROM:
+                    document.derivation(
+                        generatedEntity=source, usedEntity=target)
+                elif link.relation == ProvORelationType.WAS_INFLUENCED_BY:
+                    document.wasInfluencedBy(
+                        influencee=source, influencer=target)
+                elif link.relation == ProvORelationType.WAS_REVISION_OF:
+                    document.wasRevisionOf(
+                        generatedEntity=source, usedEntity=target)
+                elif link.relation == ProvORelationType.WAS_QUOTED_FROM:
+                    document.wasQuotedFrom(
+                        generatedEntity=source, usedEntity=target)
+                elif link.relation == ProvORelationType.HAD_PRIMARY_SOURCE:
+                    document.hadPrimarySource(
+                        generatedEntity=source, usedEntity=target)
+                elif link.relation == ProvORelationType.HAD_MEMBER:
+                    document.hadMember(collection=source, entity=target)
+                elif link.relation == ProvORelationType.ALTERNATE_OF:
+                    document.alternateOf(alternate1=source, alternate2=target)
+                elif link.relation == ProvORelationType.SPECIALIZATION_OF:
+                    document.specializationOf(
+                        specificEntity=source, generalEntity=target)
+                elif link.relation == ProvORelationType.WAS_GENERATED_BY:
+                    document.wasGeneratedBy(entity=source, activity=target)
+                elif link.relation == ProvORelationType.USED:
+                    document.used(activity=source, entity=target)
+                elif link.relation == ProvORelationType.WAS_INVALIDATED_BY:
+                    document.wasInvalidatedBy(entity=source, activity=target)
+                elif link.relation == ProvORelationType.WAS_ATTRIBUTED_TO:
+                    document.wasAttributedTo(entity=source, agent=target)
+                elif link.relation == ProvORelationType.WAS_INFORMED_BY:
+                    document.wasInformedBy(informed=source, informant=target)
+                elif link.relation == ProvORelationType.WAS_ASSOCIATED_WITH:
+                    document.wasAssociatedWith(activity=source, agent=target)
+                elif link.relation == ProvORelationType.ACTED_ON_BEHALF_OF:
+                    document.actedOnBehalfOf(
+                        responsible=source, delegate=target)
+                else:
+                    raise ValueError(
+                        f"Unsupported ProvO relation type: {link.relation}")
+            except AttributeError:
+                raise ValueError(
+                    f"The relation '{link.relation}' is not implemented in the current Python prov library.")
+
+        # The document is complete
+        return document
 
     @staticmethod
     def from_link_map(record_id: str, links: LinkMap) -> 'NodeGraph':
@@ -879,8 +1027,16 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
     """
 
     Generates a list of actions (unsorted) which conservatively modifies the old
-    graph to match the new graph. The logic tries to not remove any node or
-    links which are involved in an existing record.
+    graph to match the new proposed RECORD (not arbitrary graph).
+    
+    The logic tries to not remove any node or links which are involved in an
+    existing record.
+
+    NOTE: some assumptions are made - namely that the record ID of the new graph
+    is the same for all links and nodes in that graph AND is only a single
+    record id.
+
+    TODO: make this method more general to handle any graph update.
 
     Parameters
     ----------
@@ -888,15 +1044,15 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
         The old graph (NOTE: The record id's on these elements are accurate)
     new_graph : NodeGraph
         The new graph (NOTE: This graph does not include all record IDs on the
-        property because it reflects a 'new' graph.)
+        property because it reflects a 'new' graph. NOTE: This input must only
+        have one record ID)
 
     Returns
     -------
     List[DiffAction]
         A list of actions to take
     """
-    assert old_graph.record_id == new_graph.record_id, "Should not diff graphs with different record IDs!"
-    record_id = new_graph.record_id
+    new_record_id = new_graph.record_id
 
     actions: List[DiffAction] = []
 
@@ -927,7 +1083,7 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
     added_nodes = new_node_set - old_node_set
 
     # Intersection defines both
-    in_both = new_node_set.intersection(old_node_set)
+    nodes_in_both = new_node_set.intersection(old_node_set)
 
     for node in added_nodes:
         new_node = new_node_map[node.id]
@@ -939,22 +1095,21 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
         # Remove record id if others, or delete if just this record
         removed_node = old_node_map[node.id]
         old_record_ids = set(removed_node.props.record_ids.split(','))
-        # TODO optimise
-        if len(old_record_ids) <= 1 and record_id in old_record_ids:
+        if len(old_record_ids) <= 1 and new_record_id in old_record_ids:
             # Just this single record ID - so remove the node
             actions.append(RemoveNode(
-                action_type=DiffActionType.REMOVE_NODE, node_id=node))
+                action_type=DiffActionType.REMOVE_NODE, node_id=node.id))
         else:
             # Contains other links as well - so don't remove
             actions.append(RemoveRecordIdFromNode(
-                action_type=DiffActionType.REMOVE_RECORD_ID_FROM_NODE, node_id=node, record_id=record_id))
-    for node in in_both:
+                action_type=DiffActionType.REMOVE_RECORD_ID_FROM_NODE, node_id=node.id, record_id=new_record_id))
+    for node in nodes_in_both:
         old_version = old_node_map[node.id]
         # all we want to do is ensure that the record ID is in this one already
         old_record_ids = set(old_version.props.record_ids.split(','))
-        if record_id not in old_record_ids:
+        if new_record_id not in old_record_ids:
             actions.append(AddRecordIdToNode(
-                action_type=DiffActionType.ADD_RECORD_ID_TO_NODE, node_id=node, record_id=record_id))
+                action_type=DiffActionType.ADD_RECORD_ID_TO_NODE, node_id=node.id, record_id=new_record_id))
 
     # Process links
 
@@ -978,22 +1133,22 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
         removed_link = old_link_map[link.get_coord()]
         old_record_ids = set(removed_link.props.record_ids.split(','))
         # TODO optimise
-        if len(old_record_ids) <= 1 and record_id in old_record_ids:
+        if len(old_record_ids) <= 1 and new_record_id in old_record_ids:
             # Just this single record ID - so remove the link
             actions.append(RemoveLink(
                 action_type=DiffActionType.REMOVE_LINK, link=removed_link))
         else:
             # Contains other records as well - so don't remove
             actions.append(RemoveRecordIdFromLink(
-                action_type=DiffActionType.REMOVE_RECORD_ID_FROM_LINK, link=removed_link, record_id=record_id))
+                action_type=DiffActionType.REMOVE_RECORD_ID_FROM_LINK, link=removed_link, record_id=new_record_id))
 
     for link in links_in_both:
         old_link = old_link_map[link.get_coord()]
         # all we want to do is ensure that the record ID is in this one already
         old_record_ids = set(old_link.props.record_ids.split(','))
-        if record_id not in old_record_ids:
+        if new_record_id not in old_record_ids:
             actions.append(AddRecordIdToLink(
-                action_type=DiffActionType.ADD_RECORD_ID_TO_LINK, link=old_link, record_id=record_id))
+                action_type=DiffActionType.ADD_RECORD_ID_TO_LINK, link=old_link, record_id=new_record_id))
 
     return actions
 
@@ -1155,11 +1310,13 @@ class GraphBuilder:
     """
     Helper class which wraps the graph class. Provides a more interactive r/w interface for iteratively building a graph.
     """
-    _nodes: Dict[str, Node] = {}
-    _links: Dict[Tuple[str, str], NodeLink] = {}
+    _nodes: Dict[str, Node]
+    _links: Dict[Tuple[str, str], NodeLink]
     _record_id: str
 
     def __init__(self, record_id: str) -> None:
+        self._nodes = {}
+        self._links = {}
         self._record_id = record_id
 
     def add_node(self, node: Node) -> None:
