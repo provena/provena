@@ -14,7 +14,9 @@ import { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { AccessStatusDisplayComponent } from "components/AccessStatusDisplay";
 import { ModelRunForm } from "components/ModelRunForm";
+import { SelectWorkflowTemplateComponent } from "components/Selectors";
 import { useCreateModelRun } from "hooks/modelRunOps";
+import { ItemModelRunWorkflowTemplate } from "provena-interfaces/AuthAPI";
 import { ModelRunRecord } from "provena-interfaces/RegistryModels";
 import { useState } from "react";
 import {
@@ -32,6 +34,31 @@ import {
 } from "react-libs";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
+
+const generatePrefillFromTemplate = (
+  template: ItemModelRunWorkflowTemplate
+): object => {
+  // Returns a partial prefill of form data based on template contents
+  return {
+    workflow_template_id: template.id,
+    inputs: template.input_templates
+      ? template.input_templates.map((template) => {
+          return {
+            dataset_template_id: template.template_id,
+            dataset_type: "DATA_STORE",
+          };
+        })
+      : [],
+    outputs: template.output_templates
+      ? template.output_templates.map((template) => {
+          return {
+            dataset_template_id: template.template_id,
+            dataset_type: "DATA_STORE",
+          };
+        })
+      : [],
+  };
+};
 
 interface RenderRegisterWorkflowComponentProps {
   session_id: string;
@@ -100,7 +127,10 @@ export const CreateModelRunTool = () => {
     */
   const [formData, setFormData] = useState<object>({});
   const [showResult, setShowResult] = useState<boolean>(false);
-
+  const [workflowId, setWorkflowId] = useState<string | undefined>(undefined);
+  const [workflow, setWorkflow] = useState<
+    ItemModelRunWorkflowTemplate | undefined
+  >(undefined);
   // Manage form submission with create/edit hooks
   const createManager = useCreateModelRun({ data: formData as ModelRunRecord });
 
@@ -111,11 +141,13 @@ export const CreateModelRunTool = () => {
   });
 
   const granted = !!auth.granted;
-  const showCreateForm = granted;
+  const showCreateForm = granted && !!workflow;
 
   const clear = () => {
     setFormData({});
     setShowResult(false);
+    setWorkflow(undefined);
+    setWorkflowId(undefined);
   };
 
   return (
@@ -132,7 +164,9 @@ export const CreateModelRunTool = () => {
           </Button>
         </Stack>
         <Typography variant="subtitle1">
-          This tool provides a form in which you can create a new model run.
+          This tool provides a form in which you can create a new model run. Get
+          started by selecting the workflow template you'd like to create a new
+          Model Run for.
         </Typography>
       </Stack>
 
@@ -141,6 +175,16 @@ export const CreateModelRunTool = () => {
           accessCheck={auth}
         ></AccessStatusDisplayComponent>
       )}
+      <SelectWorkflowTemplateComponent
+        workflowTemplateId={workflowId}
+        onSelected={(id) => {
+          clear();
+          setWorkflowId(id);
+        }}
+        setLoadedWorkflow={setWorkflow}
+        // No need to worry about this right now
+        setWriteAccess={() => {}}
+      ></SelectWorkflowTemplateComponent>
       {showCreateForm && (
         <ModelRunForm
           formData={formData ?? {}}

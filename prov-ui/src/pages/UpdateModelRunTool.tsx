@@ -1,10 +1,7 @@
 import {
-  Alert,
-  AlertTitle,
   Button,
   CircularProgress,
   Divider,
-  Grid,
   Stack,
   TextField,
   Typography,
@@ -12,36 +9,23 @@ import {
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
-import { RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
+import { AccessStatusDisplayComponent } from "components/AccessStatusDisplay";
+import { ModelRunForm } from "components/ModelRunForm";
+import { SelectModelRunComponent } from "components/Selectors";
+import { useUpdateModelRun } from "hooks/modelRunOps";
 import { ItemModelRun } from "provena-interfaces/RegistryAPI";
-import { cloneDeep } from "lodash";
+import { ModelRunRecord } from "provena-interfaces/RegistryModels";
 import { useEffect, useState } from "react";
 import {
-  AutoCompleteDatasetLookup,
-  AutoCompleteDatasetTemplateLookup,
-  AutoCompleteModelLookup,
-  AutoCompleteModelRunWorkflowDefinitionLookup,
-  AutoCompleteOrganisationLookup,
-  AutoCompletePersonLookup,
-  AutoCompleteStudyLookup,
-  DatasetTemplateAdditionalAnnotationsOverride,
   deriveResourceAccess,
   filteredNoneDeepCopy,
-  Form,
-  REGISTER_MODEL_RUN_WORKFLOW_DEFINITION,
   ResourceAccess,
   SubtypeSearchSelector,
   UPDATE_MODEL_RUN_WORKFLOW_DEFINITION,
   useAccessCheck,
   useTypedLoadedItem,
-  useWorkflowManager,
   WorkflowVisualiserComponent,
 } from "react-libs";
-import { useCreateModelRun, useUpdateModelRun } from "hooks/modelRunOps";
-import { ModelRunRecord } from "provena-interfaces/RegistryModels";
-import { AccessStatusDisplayComponent } from "components/AccessStatusDisplay";
-import { ModelRunForm } from "components/ModelRunForm";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
@@ -73,65 +57,6 @@ const ReasonInputComponent = (props: ReasonInputComponentProps) => {
         />
       </Stack>
     </div>
-  );
-};
-
-interface SelectModelRunComponentProps {
-  modelRunId: string | undefined;
-  setLoadedModelRun: (modelRun: ItemModelRun | undefined) => void;
-  setWriteAccess: (hasAccess: boolean | undefined) => void;
-  onSelected: (id: string | undefined) => void;
-}
-const SelectModelRunComponent = (props: SelectModelRunComponentProps) => {
-  /**
-    Component: SelectModelRunComponent
-
-    Select an existing model run to edit.
-    */
-
-  // Hook to load typed item
-  const {
-    item: typedItem,
-    data: typedPayload,
-    loading: typedLoading,
-    error: typedIsError,
-    errorMessage: typedErrorMessage,
-    refetch: refetchLoadedItem,
-  } = useTypedLoadedItem({
-    id: props.modelRunId,
-    subtype: "MODEL_RUN",
-    enabled: !!props.modelRunId,
-  });
-
-  // Need to derive this access when the item is fetched
-  const [resourceAccess, setResourceAccess] = useState<
-    ResourceAccess | undefined
-  >(undefined);
-
-  useEffect(() => {
-    if (typedPayload !== undefined) {
-      const access = deriveResourceAccess(typedPayload.roles ?? []);
-      props.setWriteAccess(access?.writeMetadata);
-      props.setLoadedModelRun(typedItem as ItemModelRun);
-    } else {
-      props.setWriteAccess(undefined);
-      props.setLoadedModelRun(undefined);
-    }
-  }, [typedPayload]);
-
-  return (
-    <>
-      <SubtypeSearchSelector
-        description="Select an existing model run to update it's details."
-        subtypePlural="Model Runs"
-        required={true}
-        selectedId={props.modelRunId}
-        setSelectedId={props.onSelected}
-        subtype="MODEL_RUN"
-        title="Select a Model Run"
-        persistTitle={true}
-      />
-    </>
   );
 };
 
