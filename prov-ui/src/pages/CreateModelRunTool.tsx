@@ -1,33 +1,21 @@
 import {
-  Alert,
   Button,
   CircularProgress,
   Divider,
-  Grid,
   Stack,
   Typography,
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
-import { RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import { AccessStatusDisplayComponent } from "components/AccessStatusDisplay";
 import { ModelRunForm } from "components/ModelRunForm";
 import { SelectWorkflowTemplateComponent } from "components/Selectors";
 import { useCreateModelRun } from "hooks/modelRunOps";
 import { ItemModelRunWorkflowTemplate } from "provena-interfaces/AuthAPI";
 import { ModelRunRecord } from "provena-interfaces/RegistryModels";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  AutoCompleteDatasetLookup,
-  AutoCompleteDatasetTemplateLookup,
-  AutoCompleteModelRunWorkflowDefinitionLookup,
-  AutoCompleteOrganisationLookup,
-  AutoCompletePersonLookup,
-  AutoCompleteStudyLookup,
-  DatasetTemplateAdditionalAnnotationsOverride,
-  Form,
   REGISTER_MODEL_RUN_WORKFLOW_DEFINITION,
   useAccessCheck,
   WorkflowVisualiserComponent,
@@ -39,12 +27,13 @@ const generatePrefillFromTemplate = (
   template: ItemModelRunWorkflowTemplate
 ): object => {
   // Returns a partial prefill of form data based on template contents
+  // TODO prefill the resources by fetching all templates
   return {
     workflow_template_id: template.id,
     inputs: template.input_templates
-      ? template.input_templates.map((template) => {
+      ? template.input_templates.map((dataset_template) => {
           return {
-            dataset_template_id: template.template_id,
+            dataset_template_id: dataset_template.template_id,
             dataset_type: "DATA_STORE",
           };
         })
@@ -82,6 +71,7 @@ const RenderRegisterWorkflowComponent = (
 
 interface MonitorResultComponentProps {
   createTask: ReturnType<typeof useCreateModelRun>;
+  onDismissError: () => void;
 }
 const MonitorResultComponent = (props: MonitorResultComponentProps) => {
   /**
@@ -90,16 +80,26 @@ const MonitorResultComponent = (props: MonitorResultComponentProps) => {
     Shows and monitors results of model run lodge or update.    
     */
 
-  const createSessionId = props.createTask.create?.data?.session_id;
+  const task = props.createTask?.create;
+  const createSessionId = task?.data?.session_id;
   const header = <Typography variant="h6">Creation Results</Typography>;
   let content;
   if (props.createTask.create?.isLoading) {
     content = <CircularProgress />;
-  } else if (props.createTask.create?.isError) {
+  } else if (task?.isError) {
     content = (
-      <Typography variant="caption" color="red">
-        {props.createTask.create.error ?? "Unknown error occurred."}
-      </Typography>
+      <Stack spacing={2} alignContent="flex-start">
+        <Typography variant="subtitle1" color="red">
+          {task?.error ?? "Unknown error occurred."}
+        </Typography>
+        <Button
+          onClick={props.onDismissError}
+          fullWidth={false}
+          variant="outlined"
+        >
+          Dismiss
+        </Button>
+      </Stack>
     );
   } else if (createSessionId) {
     content = (
@@ -141,7 +141,19 @@ export const CreateModelRunTool = () => {
   });
 
   const granted = !!auth.granted;
+  const showSelectTemplate = granted && !workflow;
   const showCreateForm = granted && !!workflow;
+
+  useEffect(() => {
+    // TODO replace with useFormSetup once API returns the data - this is hack!
+    if (Object.keys(formData).length === 0 && !!workflow) {
+      console.log("Updating form data with workflow template results");
+      const prefillData = generatePrefillFromTemplate(workflow);
+      console.log("Prefill data: ");
+      console.log(JSON.stringify(prefillData));
+      setFormData(prefillData);
+    }
+  }, [workflow]);
 
   const clear = () => {
     setFormData({});
@@ -175,16 +187,18 @@ export const CreateModelRunTool = () => {
           accessCheck={auth}
         ></AccessStatusDisplayComponent>
       )}
-      <SelectWorkflowTemplateComponent
-        workflowTemplateId={workflowId}
-        onSelected={(id) => {
-          clear();
-          setWorkflowId(id);
-        }}
-        setLoadedWorkflow={setWorkflow}
-        // No need to worry about this right now
-        setWriteAccess={() => {}}
-      ></SelectWorkflowTemplateComponent>
+      {showSelectTemplate && (
+        <SelectWorkflowTemplateComponent
+          workflowTemplateId={workflowId}
+          onSelected={(id) => {
+            clear();
+            setWorkflowId(id);
+          }}
+          setLoadedWorkflow={setWorkflow}
+          // No need to worry about this right now
+          setWriteAccess={() => {}}
+        ></SelectWorkflowTemplateComponent>
+      )}
       {showCreateForm && (
         <ModelRunForm
           formData={formData ?? {}}
@@ -196,11 +210,15 @@ export const CreateModelRunTool = () => {
           }}
           setFormData={setFormData}
           submitEnabled={true}
+          onCancel={clear}
         />
       )}
       {showResult && (
         <MonitorResultComponent
           createTask={createManager}
+          onDismissError={() => {
+            setShowResult(false);
+          }}
         ></MonitorResultComponent>
       )}
     </Stack>

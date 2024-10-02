@@ -82,6 +82,7 @@ const RenderUpdateWorkflowComponent = (
 
 interface MonitorResultComponentProps {
   updateTask: ReturnType<typeof useUpdateModelRun>;
+  onDismissError: () => void;
 }
 const MonitorResultComponent = (props: MonitorResultComponentProps) => {
   /**
@@ -98,9 +99,18 @@ const MonitorResultComponent = (props: MonitorResultComponentProps) => {
     content = <CircularProgress />;
   } else if (task?.isError) {
     content = (
-      <Typography variant="caption" color="red">
-        {task?.error ?? "Unknown error occurred."}
-      </Typography>
+      <Stack spacing={2} alignItems="flex-start">
+        <Typography variant="subtitle1" color="red">
+          {task?.error ?? "Unknown error occurred."}
+        </Typography>
+        <Button
+          onClick={props.onDismissError}
+          fullWidth={false}
+          variant="outlined"
+        >
+          Dismiss
+        </Button>
+      </Stack>
     );
   } else if (updateSessionId) {
     content = (
@@ -220,6 +230,7 @@ export const UpdateModelRunTool = () => {
               setFormData={setFormData}
               submitEnabled={!!reason}
               submitDisabledReason="Must provide a reason before updating this record"
+              onCancel={clear}
             />
           )}
         </>
@@ -227,6 +238,9 @@ export const UpdateModelRunTool = () => {
       {showResult && (
         <MonitorResultComponent
           updateTask={updateManager}
+          onDismissError={() => {
+            setShowResult(false);
+          }}
         ></MonitorResultComponent>
       )}
     </Stack>

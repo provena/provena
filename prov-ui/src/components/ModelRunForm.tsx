@@ -13,6 +13,7 @@ import {
   AutoCompleteStudyLookup,
   DatasetTemplateAdditionalAnnotationsOverride,
   Form,
+  UnixTimestampField,
 } from "react-libs";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -50,11 +51,6 @@ export const MODEL_RUN_JSON_SCHEMA = {
     datasetItem: {
       type: "object",
       properties: {
-        dataset_type: {
-          type: "string",
-          enum: ["DATA_STORE"],
-          default: "DATA_STORE",
-        },
         dataset_template_id: { type: "string" },
         dataset_id: { type: "string" },
         resources: {
@@ -67,7 +63,20 @@ export const MODEL_RUN_JSON_SCHEMA = {
   },
   properties: {
     workflow_template_id: { type: "string" },
+    display_name: { type: "string" },
+    description: { type: "string" },
     model_version: { type: "string" },
+    start_time: { type: "number" },
+    end_time: { type: "number" },
+    study_id: { type: "string" },
+    associations: {
+      type: "object",
+      properties: {
+        modeller_id: { type: "string" },
+        requesting_organisation_id: { type: "string" },
+      },
+      required: ["modeller_id"],
+    },
     inputs: {
       type: "array",
       items: { $ref: "#/definitions/datasetItem" },
@@ -79,19 +88,6 @@ export const MODEL_RUN_JSON_SCHEMA = {
     annotations: {
       type: "object",
       additionalProperties: { type: "string" },
-    },
-    start_time: { type: "number" },
-    end_time: { type: "number" },
-    display_name: { type: "string" },
-    description: { type: "string" },
-    study_id: { type: "string" },
-    associations: {
-      type: "object",
-      properties: {
-        modeller_id: { type: "string" },
-        requesting_organisation_id: { type: "string" },
-      },
-      required: ["modeller_id"],
     },
   },
   required: [
@@ -105,8 +101,6 @@ export const MODEL_RUN_JSON_SCHEMA = {
     "end_time",
   ],
 };
-const DISPLAY_NAME_LABEL =
-  "Enter a brief name, label or title for this resource.";
 
 const DS_SPEC = {
   "ui:title": "Input Dataset Information",
@@ -131,8 +125,21 @@ const DS_SPEC = {
 
 export const MODEL_RUN_UI_SCHEMA = {
   "ui:title": "Register a Model Run",
+  start_time: {
+    "ui:title": "Start time",
+    "ui:description": "Specify the time when the model run started.",
+    "ui:field": "unixTimestamp",
+  },
+  end_time: {
+    "ui:title": "End time",
+    "ui:description": "Specify the time when the model run completed.",
+    "ui:field": "unixTimestamp",
+  },
   display_name: {
-    "ui:description": DISPLAY_NAME_LABEL,
+    "ui:description": "Provide a short display name for this model run.",
+  },
+  description: {
+    "ui:description": "Provide a description about this model run.",
   },
   model_version: {
     "ui:description":
@@ -186,7 +193,7 @@ export const MODEL_RUN_UI_SCHEMA = {
 };
 
 const customFields: { [name: string]: any } = {
-  // e.g.
+  unixTimestamp: UnixTimestampField,
   autoCompleteDatasetTemplateLookup: AutoCompleteDatasetTemplateLookup,
   autoCompleteWorkflowTemplateLookup:
     AutoCompleteModelRunWorkflowDefinitionLookup,
@@ -203,6 +210,7 @@ export interface ModelRunFormProps {
   onSubmit: () => void;
   submitEnabled: boolean;
   submitDisabledReason?: string;
+  onCancel: () => void;
 }
 export const ModelRunForm = (props: ModelRunFormProps) => {
   /**
@@ -247,8 +255,8 @@ export const ModelRunForm = (props: ModelRunFormProps) => {
             >
               <Button
                 variant="outlined"
-                href="/"
                 className={classes.mainActionButton}
+                onClick={props.onCancel}
               >
                 Cancel
               </Button>
