@@ -63,3 +63,6 @@ class AddStudyLinkResponse(StatusResponse):
     study_id: str
     # the session id for the provenance graph update job
     session_id: str
+
+class SimpleDummyResponse(StatusResponse): 
+    node_count: int

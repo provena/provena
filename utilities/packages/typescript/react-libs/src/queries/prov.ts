@@ -34,4 +34,15 @@ export const addStudyLink = (inputs: {
 };
 
 
-#TODO - Add a new endpoint here.
+export const exportGraph = (inputs: {
+  nodeId: string;
+  depth: string;
+}) => {
+
+  const endpoint = PROV_API_ENDPOINTS.EXPORT
+
+  return requests
+      .get (endpoint, ) 
+  
+
+}
