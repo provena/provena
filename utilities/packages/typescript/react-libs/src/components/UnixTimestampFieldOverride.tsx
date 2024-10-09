@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { FieldProps } from "@rjsf/utils";
-import { Button, Stack, TextField, Typography } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { deriveTitleDescription } from "../util";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { Button, Stack, TextField, Typography } from "@mui/material";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { FieldProps } from "@rjsf/utils";
 import moment from "moment";
+import { useEffect, useState } from "react";
+import { deriveTitleDescription } from "../util";
 
 export interface UnixTimestampFieldProps extends FieldProps<number> {}
 
@@ -37,8 +37,8 @@ export const UnixTimestampField = (props: UnixTimestampFieldProps) => {
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterMoment}>
-      <Stack spacing={2}>
+    <Stack spacing={2}>
+      <LocalizationProvider dateAdapter={AdapterMoment}>
         <Typography variant="h6">{title}</Typography>
         {description && <Typography variant="body2">{description}</Typography>}
         <Stack direction="row" spacing={2}>
@@ -52,8 +52,8 @@ export const UnixTimestampField = (props: UnixTimestampFieldProps) => {
             Set to Current Time
           </Button>
         </Stack>
-      </Stack>
-    </LocalizationProvider>
+      </LocalizationProvider>
+    </Stack>
   );
 };
 
