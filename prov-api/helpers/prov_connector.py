@@ -41,6 +41,9 @@ from helpers.keycloak_helpers import retrieve_secret_value
 # This is the property on which the principal id for the record is stored
 IDENTIFIER_TAG = "id"
 
+# GraphDatabase.driver alias - doesn't like this type
+GraphDriver = Any
+
 
 def produce_attribute_set(
     item_category: ItemCategory,
@@ -109,7 +112,7 @@ def get_credentials(config: Config) -> Tuple[str, str]:
     return (split_auth[0], split_auth[1])
 
 
-def connect_to_neo4j(config: Config) -> GraphDatabase.driver:
+def connect_to_neo4j(config: Config) -> GraphDriver:
     """
     Establishes a connection to the Neo4j database using the bolt protocol.
 
@@ -128,7 +131,7 @@ def connect_to_neo4j(config: Config) -> GraphDatabase.driver:
     )
 
 
-def run_query(query: str, config: Config, driver: Optional[GraphDatabase.driver] = None) -> List[Record]:
+def run_query(query: str, config: Config, driver: Optional[GraphDriver] = None) -> List[Record]:
     """
     Executes a Cypher query against the Neo4j database and returns the results.
 
@@ -216,8 +219,13 @@ def generate_networkx_graph_from_lineage_paths(
         if path:
             for rel in path.relationships:
                 # pull nodes
-                start: graph.Node = rel.start_node
-                end: graph.Node = rel.end_node
+                start = rel.start_node
+                end = rel.end_node
+
+                # don't process nodes with missing start/end
+                if (not start or not end):
+                    print("Warning: relationship missing start OR end.")
+                    continue
 
                 # get ids
                 start_id = start.get(IDENTIFIER_TAG)
@@ -287,7 +295,7 @@ def special_contributing_dataset_query(starting_id: str, depth: int, config: Con
 
     # Apply simple exploration algorithm to traverse paths and produce networkx digraph
     graph = generate_networkx_graph_from_lineage_paths(
-        lineage_paths=paths
+        lineage_paths=[p for p in paths if p is not None]
     )
 
     # Return D3.js friendly serialisation
@@ -337,7 +345,7 @@ def special_effected_dataset_query(starting_id: str, depth: int, config: Config)
 
     # Apply simple exploration algorithm to traverse paths and produce networkx digraph
     graph = generate_networkx_graph_from_lineage_paths(
-        lineage_paths=paths
+        lineage_paths=[p for p in paths if p is not None]
     )
 
     # Return D3.js friendly serialisation
@@ -387,7 +395,7 @@ def special_contributing_agent_query(starting_id: str, depth: int, config: Confi
 
     # Apply simple exploration algorithm to traverse paths and produce networkx digraph
     graph = generate_networkx_graph_from_lineage_paths(
-        lineage_paths=paths
+        lineage_paths=[p for p in paths if p is not None]
     )
 
     # Return D3.js friendly serialisation
@@ -437,7 +445,7 @@ def special_effected_agent_query(starting_id: str, depth: int, config: Config) -
 
     # Apply simple exploration algorithm to traverse paths and produce networkx digraph
     graph = generate_networkx_graph_from_lineage_paths(
-        lineage_paths=paths
+        lineage_paths=[p for p in paths if p is not None]
     )
 
     # Return D3.js friendly serialisation
@@ -509,7 +517,7 @@ def upstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, An
 
     # Apply simple exploration algorithm to traverse paths and produce networkx digraph
     graph = generate_networkx_graph_from_lineage_paths(
-        lineage_paths=paths
+        lineage_paths=[p for p in paths if p is not None]
     )
 
     # Return D3.js friendly serialisation
@@ -581,7 +589,7 @@ def downstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, 
 
     # Apply simple exploration algorithm to traverse paths and produce networkx digraph
     graph = generate_networkx_graph_from_lineage_paths(
-        lineage_paths=paths
+        lineage_paths=[p for p in paths if p is not None]
     )
 
     # Return D3.js friendly serialisation
@@ -1028,7 +1036,7 @@ def diff_graphs(old_graph: NodeGraph, new_graph: NodeGraph) -> List[DiffAction]:
 
     Generates a list of actions (unsorted) which conservatively modifies the old
     graph to match the new proposed RECORD (not arbitrary graph).
-    
+
     The logic tries to not remove any node or links which are involved in an
     existing record.
 
@@ -1157,7 +1165,7 @@ class Neo4jGraphManager():
     """
     This class manages basic record level read/write with the Neo4J graph.
     """
-    driver: GraphDatabase.driver
+    driver: GraphDriver
     _config: Config
 
     def __init__(self, config: Config) -> None:
