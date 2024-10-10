@@ -1,6 +1,6 @@
 import tests.env_setup
 from tests.helpers import *
-from helpers.neo4j_helpers import run_query
+from helpers.prov_connector import run_query
 import networkx  # type: ignore
 from enum import Enum
 from prov.model import ProvDocument  # type: ignore

@@ -1,12 +1,12 @@
 import {
-  Alert,
-  AlertTitle,
-  Button,
-  CircularProgress,
-  Grid,
-  Stack,
-  TextField,
-  Typography,
+    Alert,
+    AlertTitle,
+    Button,
+    CircularProgress,
+    Grid,
+    Stack,
+    TextField,
+    Typography,
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
@@ -14,33 +14,34 @@ import makeStyles from "@mui/styles/makeStyles";
 import { useKeycloak } from "@react-keycloak/web";
 import { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
+import { LinkPersonBoxComponent } from "components/LinkPersonBox";
 import lodashSet from "lodash.set";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import {
-  AutoCompleteDatasetTemplateLookup,
-  AutoCompleteModelLookup,
-  AutoCompleteModelRunWorkflowDefinitionLookup,
-  AutoCompleteOrcid,
-  AutoCompleteOrganisationLookup,
-  AutoCompletePersonLookup,
-  AutoCompletePublisher,
-  DATA_STORE_LINK,
-  Form,
-  LoadedEntity,
-  PROV_STORE_LINK,
-  combineLoadStates,
-  mapSubTypeToPrettyName,
-  startsWithVowel,
-  useAccessCheck,
-  useQueryStringVariable,
-  useTypedQueryStringVariable,
-  useUserLinkEnforcer,
-  userLinkEnforcerDocumentationLink,
-  userLinkEnforcerProfileLink,
+    AutoCompleteDatasetTemplateLookup,
+    AutoCompleteModelLookup,
+    AutoCompleteModelRunWorkflowDefinitionLookup,
+    AutoCompleteOrcid,
+    AutoCompleteOrganisationLookup,
+    AutoCompletePersonLookup,
+    AutoCompletePublisher,
+    DATA_STORE_LINK,
+    DatasetTemplateAdditionalAnnotationsOverride,
+    Form,
+    LoadedEntity,
+    PROV_STORE_LINK,
+    combineLoadStates,
+    mapSubTypeToPrettyName,
+    startsWithVowel,
+    useAccessCheck,
+    useQueryStringVariable,
+    useTypedQueryStringVariable,
+    useUserLinkEnforcer,
+    userLinkEnforcerDocumentationLink,
+    userLinkEnforcerProfileLink,
 } from "react-libs";
 import { PersonEthicsTickConsent } from "../components/ConsentTickBoxOverrides";
-import DatasetTemplateAdditionalAnnotationsOverride from "../components/DatasetTemplateAdditionalAnnotationsOverride";
 import { ItemSubtypeSelector } from "../components/ItemSubtypeSelector";
 import WorkflowDefinitionAutomationScheduleOverride from "../components/WorkflowDefinitionAutomationScheduleOverride";
 import WorkflowTemplateAnnotationsOverride from "../components/WorkflowTemplateAnnotationsOverride";
@@ -50,11 +51,10 @@ import { useFormSetup } from "../hooks/useFormSetup";
 import { useUpdateItem } from "../hooks/useUpdateItem";
 import { ItemSubType } from "../provena-interfaces/RegistryAPI";
 import {
-  DomainInfoBase,
-  PersonDomainInfo,
+    DomainInfoBase,
+    PersonDomainInfo,
 } from "../provena-interfaces/RegistryModels";
 import { getRegisteringDocumentationLink } from "../util/helper";
-import { LinkPersonBoxComponent } from "components/LinkPersonBox";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -82,7 +82,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: theme.spacing(2),
       width: "40%",
     },
-  }),
+  })
 );
 
 export const subtypeQStringKey = "subtype";
@@ -294,7 +294,7 @@ interface CreateItemResultDisplayComponentProps {
   createHook: ReturnType<typeof useCreateItem>;
 }
 const CreateItemResultDisplayComponent = (
-  props: CreateItemResultDisplayComponentProps,
+  props: CreateItemResultDisplayComponentProps
 ) => {
   /**
     Component: CreateItemResultDisplayComponent
@@ -377,7 +377,7 @@ interface UpdateItemResultDisplayComponentProps {
   id: string;
 }
 const UpdateItemResultDisplayComponent = (
-  props: UpdateItemResultDisplayComponentProps,
+  props: UpdateItemResultDisplayComponentProps
 ) => {
   /**
     Component: UpdateItemResultDisplayComponent
@@ -459,7 +459,7 @@ interface SchemaLoadingDisplayComponentProps {
   jsonSchema: LoadedEntity<any>;
 }
 const SchemaLoadingDisplayComponent = (
-  props: SchemaLoadingDisplayComponentProps,
+  props: SchemaLoadingDisplayComponentProps
 ) => {
   /**
     Component: SchemaLoadingDisplayComponent
@@ -499,7 +499,7 @@ interface AccessStatusDisplayComponentProps {
   accessCheck: ReturnType<typeof useAccessCheck>;
 }
 const AccessStatusDisplayComponent = (
-  props: AccessStatusDisplayComponentProps,
+  props: AccessStatusDisplayComponentProps
 ) => {
   /**
     Component: AccessStatusDisplayComponent

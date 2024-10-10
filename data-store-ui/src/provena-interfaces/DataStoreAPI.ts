@@ -114,7 +114,7 @@ export interface DatasetInformation {
   description: string;
   access_info: AccessInfo;
   /**
-   * Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below.
+   * Please provide information about the organisation which is publishing or producing this dataset. If this is your organisation, please select it again using the tool below.
    */
   publisher_id: string;
   created_date: DatasetCreationDate;

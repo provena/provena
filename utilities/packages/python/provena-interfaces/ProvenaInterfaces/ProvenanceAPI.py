@@ -54,7 +54,7 @@ class AddStudyLinkQueryParameters(BaseModel):
     model_run_id: str
     # the study that is being linked to the model run
     study_id: str
-    
+
 
 class AddStudyLinkResponse(StatusResponse):
     # the model run that was linked to the study
@@ -62,4 +62,14 @@ class AddStudyLinkResponse(StatusResponse):
     # the study that was linked to the model run
     study_id: str
     # the session id for the provenance graph update job
+    session_id: str
+
+
+class PostUpdateModelRunInput(BaseModel):
+    model_run_id: str
+    reason: str
+    record: ModelRunRecord
+
+
+class PostUpdateModelRunResponse(BaseModel):
     session_id: str

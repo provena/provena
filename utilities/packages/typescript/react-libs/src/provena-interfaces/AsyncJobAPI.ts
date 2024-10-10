@@ -13,6 +13,8 @@ export type JobSubType =
   | "MODEL_RUN_BATCH_SUBMIT"
   | "LODGE_CREATE_ACTIVITY"
   | "LODGE_VERSION_ACTIVITY"
+  | "MODEL_RUN_UPDATE"
+  | "MODEL_RUN_UPDATE_LODGE_ONLY"
   | "REGISTRY_WAKE_UP"
   | "REGISTER_CREATE_ACTIVITY"
   | "REGISTER_VERSION_ACTIVITY"
@@ -225,6 +227,21 @@ export interface ProvLodgeModelRunPayload {
 export interface ProvLodgeModelRunResult {
   record: ProvenanceRecordInfo;
 }
+export interface ProvLodgeUpdateLodgeOnlyPayload {
+  model_run_record_id: string;
+  updated_record: ModelRunRecord;
+  revalidate: boolean;
+}
+export interface ProvLodgeUpdateLodgeOnlyResult {}
+export interface ProvLodgeUpdatePayload {
+  model_run_record_id: string;
+  updated_record: ModelRunRecord;
+  reason: string;
+  revalidate: boolean;
+}
+export interface ProvLodgeUpdateResult {
+  record: ProvenanceRecordInfo;
+}
 export interface ProvLodgeVersionPayload {
   from_version_id: string;
   to_version_id: string;
@@ -287,6 +304,14 @@ export interface LineageResponse {
   graph?: {
     [k: string]: unknown;
   };
+}
+export interface PostUpdateModelRunInput {
+  model_run_id: string;
+  reason: string;
+  record: ModelRunRecord;
+}
+export interface PostUpdateModelRunResponse {
+  session_id: string;
 }
 export interface RegisterBatchModelRunRequest {
   records: ModelRunRecord[];
@@ -475,7 +500,7 @@ export interface DatasetInformation {
   description: string;
   access_info: AccessInfo;
   /**
-   * Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below.
+   * Please provide information about the organisation which is publishing or producing this dataset. If this is your organisation, please select it again using the tool below.
    */
   publisher_id: string;
   created_date: DatasetCreationDate;
