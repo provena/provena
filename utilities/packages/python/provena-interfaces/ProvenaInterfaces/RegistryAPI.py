@@ -564,3 +564,8 @@ class RegistryImportResponse(StatusResponse):
     trial_mode: bool
     statistics: Optional[RegistryImportStatistics]
     failure_list: Optional[List[Tuple[str, Dict[str, Any]]]]
+
+class Node(BaseModel): 
+    id: str
+    item_category: ItemCategory
+    item_subtype: ItemSubType

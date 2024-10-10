@@ -10,8 +10,8 @@ from typing import Dict, Any
 from config import Config, get_settings
 
 
-from ProvenaInterfaces.RegistryAPI import ItemSubType, ItemBase 
-from helpers.generate_report_helpers import validate_node_id, generate_report_helper
+from ProvenaInterfaces.RegistryAPI import ItemSubType, ItemBase, Node
+from helpers.generate_report_helpers import parse_nodes, validate_node_id, generate_report_helper
 
 router = APIRouter()
 
@@ -345,7 +345,7 @@ async def export_graph(
     await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
 
     # This acting as a shared dictionary across both edge cases and in the helper function in the edge cases.
-    all_filtered_responses: Dict[str, List[ItemBase]] = {"inputs": [], "outputs": [], "model_runs": []}
+    all_filtered_responses: Dict[str, List[Node]] = {"inputs": [], "outputs": [], "model_runs": []}
 
     if item_subtype == ItemSubType.MODEL_RUN: 
         await generate_report_helper(starting_id=node_id, upstream_depth=depth, shared_responses=all_filtered_responses, config=config)
@@ -365,7 +365,7 @@ async def export_graph(
         upstream_model_run_response = await explore_downstream(starting_id=node_id, depth=1, config=config)
         assert upstream_model_run_response.graph, "Node collections not found!"
 
-        model_run_nodes: List[ItemBase] = upstream_model_run_response.graph.get('nodes', [])
+        model_run_nodes: List[Node]= parse_nodes(upstream_model_run_response.graph.get('nodes', []))
 
         # Now branch out with the model runs in here and explore them as above (depth 1-3 upstream and depth 1 downstream)
         # The model run will be the new updated starting id.
