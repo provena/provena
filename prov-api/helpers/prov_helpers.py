@@ -742,27 +742,3 @@ def produce_version_prov_document(
     )
 
     return document
-
-
-from ProvenaInterfaces.ProvenanceAPI import LineageResponse
-from routes.explore.explore import explore_downstream, explore_upstream
-from helpers.util import filter_for_export_prov_graph
-
-async def generate_report_helper(starting_id: str, upstream_depth: int, shared_responses: Dict[str, List[ItemBase]], config: Config, downstream_depth: int = 1) -> None:
-
-    upstream_response: LineageResponse = await explore_upstream(starting_id=starting_id, depth=upstream_depth, config=config)
-    downstream_response: LineageResponse = await explore_downstream(starting_id=starting_id, depth=downstream_depth, config=config)
-        
-    assert upstream_response.graph, "Node collections not found!"
-    assert downstream_response.graph, "Node collections not found!"
-
-    nodes_upstream = upstream_response.graph.get('nodes') #type:ignore
-    nodes_downstream = downstream_response.graph.get('nodes') #type:ignore
-
-    filtered_response = filter_for_export_prov_graph(upstream_nodes=nodes_upstream, 
-                                                    downstream_nodes=nodes_downstream)
-    
-    # Add the results. 
-    shared_responses["inputs"].extend(filtered_response["inputs"])
-    shared_responses["model_runs"].extend(filtered_response["model_runs"])
-    shared_responses["outputs"].extend(filtered_response["outputs"])    

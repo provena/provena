@@ -21,6 +21,7 @@ neo4j
 networkx
 python-dotenv
 sentry-sdk[fastapi]
+python-docx
 
 # this links to the utilities package deployed as part of 
 # this provena repo - ensure this is correct in your 
