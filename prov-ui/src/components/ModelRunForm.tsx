@@ -51,18 +51,16 @@ export const MODEL_RUN_JSON_SCHEMA = {
     datasetItem: {
       type: "object",
       properties: {
-        dataset_template_id: { type: "string" },
         dataset_id: { type: "string" },
         resources: {
           type: "object",
           additionalProperties: { type: "string" },
         },
       },
-      required: ["dataset_template_id", "dataset_id", "dataset_type"],
+      required: ["dataset_id"],
     },
   },
   properties: {
-    workflow_template_id: { type: "string" },
     display_name: { type: "string" },
     description: { type: "string" },
     model_version: { type: "string" },
@@ -91,7 +89,6 @@ export const MODEL_RUN_JSON_SCHEMA = {
     },
   },
   required: [
-    "workflow_template_id",
     "inputs",
     "outputs",
     "display_name",

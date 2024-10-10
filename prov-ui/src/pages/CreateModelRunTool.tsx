@@ -12,16 +12,34 @@ import { AccessStatusDisplayComponent } from "components/AccessStatusDisplay";
 import { ModelRunForm } from "components/ModelRunForm";
 import { SelectWorkflowTemplateComponent } from "components/Selectors";
 import { useCreateModelRun } from "hooks/modelRunOps";
-import { ItemModelRunWorkflowTemplate } from "provena-interfaces/AuthAPI";
-import { ModelRunRecord } from "provena-interfaces/RegistryModels";
-import { useEffect, useState } from "react";
+import { useExploredTemplate } from "hooks/useExploredTemplate";
 import {
+  ItemBase,
+  ItemModelRunWorkflowTemplate,
+} from "provena-interfaces/AuthAPI";
+import { ModelRunRecord } from "provena-interfaces/RegistryModels";
+import { useEffect, useRef, useState } from "react";
+import {
+  JsonDetailViewWrapperComponent,
   REGISTER_MODEL_RUN_WORKFLOW_DEFINITION,
   useAccessCheck,
   WorkflowVisualiserComponent,
 } from "react-libs";
+import { themeConfigMap } from "react-libs/themes/themeConfig";
 
-const useStyles = makeStyles((theme: Theme) => createStyles({}));
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    displayBox: {
+      padding: theme.spacing(3),
+      maxHeight: "25vh",
+      overflowY: "auto",
+      border: `1px solid ${theme.palette.divider}`,
+      borderRadius: theme.shape.borderRadius,
+      backgroundColor: theme.palette.background.paper,
+      boxShadow: theme.shadows[1],
+    },
+  })
+);
 
 const generatePrefillFromTemplate = (
   template: ItemModelRunWorkflowTemplate
@@ -118,6 +136,34 @@ const MonitorResultComponent = (props: MonitorResultComponentProps) => {
   );
 };
 
+interface DisplayTemplateComponentProps {
+  template: ItemModelRunWorkflowTemplate;
+}
+const DisplayTemplateComponent = (props: DisplayTemplateComponentProps) => {
+  /**
+    Component: DisplayTemplateComponent
+    
+    */
+  const classes = useStyles();
+  return (
+    <Stack spacing={2}>
+      <Typography variant="h5">
+        Selected Workflow Template: '{props.template.display_name}'
+      </Typography>
+      <Typography variant="subtitle1">
+        Explore details about your selected template below.
+      </Typography>
+      <div className={classes.displayBox}>
+        <JsonDetailViewWrapperComponent
+          // This is actually fine
+          item={props.template as unknown as ItemBase}
+          layout={"stack"}
+        ></JsonDetailViewWrapperComponent>
+      </div>
+    </Stack>
+  );
+};
+
 export const CreateModelRunTool = () => {
   /**
     Component: LodgeComponent
@@ -128,9 +174,12 @@ export const CreateModelRunTool = () => {
   const [formData, setFormData] = useState<object>({});
   const [showResult, setShowResult] = useState<boolean>(false);
   const [workflowId, setWorkflowId] = useState<string | undefined>(undefined);
-  const [workflow, setWorkflow] = useState<
-    ItemModelRunWorkflowTemplate | undefined
-  >(undefined);
+
+  // Load the template and associated entities + generate prefill
+  const prefillOp = useExploredTemplate({ workflowTemplateId: workflowId });
+  const workflow = prefillOp.query.data?.workflowTemplate;
+  const prefill = prefillOp.query.data?.prefill;
+
   // Manage form submission with create/edit hooks
   const createManager = useCreateModelRun({ data: formData as ModelRunRecord });
 
@@ -141,26 +190,34 @@ export const CreateModelRunTool = () => {
   });
 
   const granted = !!auth.granted;
-  const showSelectTemplate = granted && !workflow;
-  const showCreateForm = granted && !!workflow;
+  const showSelectTemplate = granted && !workflowId && !workflow;
+  const showCreateForm = granted && !!workflowId && !!workflow;
+
+  const prefilledRef = useRef<boolean>(false);
 
   useEffect(() => {
-    // TODO replace with useFormSetup once API returns the data - this is hack!
-    if (Object.keys(formData).length === 0 && !!workflow) {
-      console.log("Updating form data with workflow template results");
-      const prefillData = generatePrefillFromTemplate(workflow);
+    if (!prefilledRef.current && !!prefill) {
+      console.log("Updating form data with workflow template prefill");
       console.log("Prefill data: ");
-      console.log(JSON.stringify(prefillData));
-      setFormData(prefillData);
-    }
-  }, [workflow]);
+      console.log(JSON.stringify(prefill));
+      setFormData(prefill);
 
-  const clear = () => {
-    setFormData({});
+      // Mark as already prefilled
+      prefilledRef.current = true;
+    }
+  }, [prefill]);
+
+  const resetInputs = () => {
     setShowResult(false);
-    setWorkflow(undefined);
-    setWorkflowId(undefined);
+    prefilledRef.current = false;
   };
+
+  useEffect(() => {
+    if (!workflowId) {
+      setFormData({});
+    }
+    resetInputs();
+  }, [workflowId]);
 
   return (
     <Stack direction="column" divider={<Divider flexItem={true} />} spacing={3}>
@@ -171,7 +228,14 @@ export const CreateModelRunTool = () => {
           alignItems="center"
         >
           <Typography variant="h4">Create a new Model Run</Typography>
-          <Button onClick={clear} variant="outlined" color="warning">
+          <Button
+            onClick={() => {
+              resetInputs();
+              setWorkflowId(undefined);
+            }}
+            variant="outlined"
+            color="warning"
+          >
             Start again
           </Button>
         </Stack>
@@ -190,28 +254,33 @@ export const CreateModelRunTool = () => {
       {showSelectTemplate && (
         <SelectWorkflowTemplateComponent
           workflowTemplateId={workflowId}
-          onSelected={(id) => {
-            clear();
-            setWorkflowId(id);
-          }}
-          setLoadedWorkflow={setWorkflow}
+          onSelected={setWorkflowId}
           // No need to worry about this right now
           setWriteAccess={() => {}}
         ></SelectWorkflowTemplateComponent>
       )}
-      {showCreateForm && (
-        <ModelRunForm
-          formData={formData ?? {}}
-          onSubmit={() => {
-            console.log(JSON.stringify(formData));
-            // create new record
-            createManager.create?.mutate();
-            setShowResult(true);
-          }}
-          setFormData={setFormData}
-          submitEnabled={true}
-          onCancel={clear}
-        />
+      {!!workflow && (
+        <DisplayTemplateComponent
+          template={workflow}
+        ></DisplayTemplateComponent>
+      )}
+      {prefillOp.query.isInitialLoading ? (
+        <CircularProgress></CircularProgress>
+      ) : (
+        showCreateForm && (
+          <ModelRunForm
+            formData={formData ?? {}}
+            onSubmit={() => {
+              console.log(JSON.stringify(formData));
+              // create new record
+              createManager.create?.mutate();
+              setShowResult(true);
+            }}
+            setFormData={setFormData}
+            submitEnabled={true}
+            onCancel={resetInputs}
+          />
+        )
       )}
       {showResult && (
         <MonitorResultComponent

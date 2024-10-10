@@ -1,5 +1,4 @@
-import { ItemModelRunWorkflowTemplate } from "provena-interfaces/AuthAPI";
-import { ItemModelRun as ModelRunWorkflowTemplate } from "provena-interfaces/RegistryAPI";
+import { ItemModelRun } from "provena-interfaces/RegistryAPI";
 import { useEffect } from "react";
 import {
   deriveResourceAccess,
@@ -9,7 +8,7 @@ import {
 
 export interface SelectModelRunComponentProps {
   modelRunId: string | undefined;
-  setLoadedModelRun: (modelRun: ModelRunWorkflowTemplate | undefined) => void;
+  setLoadedModelRun: (modelRun: ItemModelRun | undefined) => void;
   setWriteAccess: (hasAccess: boolean | undefined) => void;
   onSelected: (id: string | undefined) => void;
 }
@@ -33,7 +32,7 @@ export const SelectModelRunComponent = (
     if (typedPayload !== undefined) {
       const access = deriveResourceAccess(typedPayload.roles ?? []);
       props.setWriteAccess(access?.writeMetadata);
-      props.setLoadedModelRun(typedItem as ModelRunWorkflowTemplate);
+      props.setLoadedModelRun(typedItem as ItemModelRun);
     } else {
       props.setWriteAccess(undefined);
       props.setLoadedModelRun(undefined);
@@ -58,9 +57,6 @@ export const SelectModelRunComponent = (
 
 export interface SelectWorkflowTemplateComponentProps {
   workflowTemplateId: string | undefined;
-  setLoadedWorkflow: (
-    modelRun: ItemModelRunWorkflowTemplate | undefined
-  ) => void;
   setWriteAccess: (hasAccess: boolean | undefined) => void;
   onSelected: (id: string | undefined) => void;
 }
@@ -72,7 +68,7 @@ export const SelectWorkflowTemplateComponent = (
     */
 
   // Hook to load typed item
-  const { item: typedItem, data: typedPayload } = useTypedLoadedItem({
+  const { data: typedPayload } = useTypedLoadedItem({
     id: props.workflowTemplateId,
     subtype: "MODEL_RUN_WORKFLOW_TEMPLATE",
     enabled: !!props.workflowTemplateId,
@@ -82,10 +78,8 @@ export const SelectWorkflowTemplateComponent = (
     if (typedPayload !== undefined) {
       const access = deriveResourceAccess(typedPayload.roles ?? []);
       props.setWriteAccess(access?.writeMetadata);
-      props.setLoadedWorkflow(typedItem as ItemModelRunWorkflowTemplate);
     } else {
       props.setWriteAccess(undefined);
-      props.setLoadedWorkflow(undefined);
     }
   }, [typedPayload]);
 
