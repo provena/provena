@@ -61,7 +61,6 @@ const buildExploredTemplate = (
   buildingTemplate.workflow_template_id = workflowTemplate.id;
 
   // Check for annotations
-
   buildingTemplate.annotations = {};
 
   // required

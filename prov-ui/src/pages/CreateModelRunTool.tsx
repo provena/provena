@@ -25,13 +25,12 @@ import {
   useAccessCheck,
   WorkflowVisualiserComponent,
 } from "react-libs";
-import { themeConfigMap } from "react-libs/themes/themeConfig";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     displayBox: {
       padding: theme.spacing(3),
-      maxHeight: "25vh",
+      maxHeight: "30vh",
       overflowY: "auto",
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: theme.shape.borderRadius,
@@ -40,32 +39,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
-
-const generatePrefillFromTemplate = (
-  template: ItemModelRunWorkflowTemplate
-): object => {
-  // Returns a partial prefill of form data based on template contents
-  // TODO prefill the resources by fetching all templates
-  return {
-    workflow_template_id: template.id,
-    inputs: template.input_templates
-      ? template.input_templates.map((dataset_template) => {
-          return {
-            dataset_template_id: dataset_template.template_id,
-            dataset_type: "DATA_STORE",
-          };
-        })
-      : [],
-    outputs: template.output_templates
-      ? template.output_templates.map((template) => {
-          return {
-            dataset_template_id: template.template_id,
-            dataset_type: "DATA_STORE",
-          };
-        })
-      : [],
-  };
-};
 
 interface RenderRegisterWorkflowComponentProps {
   session_id: string;
@@ -157,7 +130,7 @@ const DisplayTemplateComponent = (props: DisplayTemplateComponentProps) => {
         <JsonDetailViewWrapperComponent
           // This is actually fine
           item={props.template as unknown as ItemBase}
-          layout={"stack"}
+          layout={"column"}
         ></JsonDetailViewWrapperComponent>
       </div>
     </Stack>
