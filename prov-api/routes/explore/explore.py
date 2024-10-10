@@ -341,6 +341,7 @@ async def _validate_node_id(node_id: str, item_subtype: ItemSubType, request_sty
 async def export_graph(
     node_id: str,
     depth: int, 
+    item_subtype: ItemSubType,
     roles: ProtectedRole = Depends(read_user_protected_role_dependency),
     config: Config = Depends(get_settings)
 ) -> SimpleDummyResponse: 

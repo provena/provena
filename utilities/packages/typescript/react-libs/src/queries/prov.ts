@@ -45,11 +45,10 @@ export const generateReport = (inputs: GenerateReportParameters) => {
   // Create the axios method. 
   return requests
   .get(endpoint, {
-    params: {
     node_id: inputs.node_id,
-    item_sub_type: inputs.item_subtype, 
-    depth: inputs.depth
-    }
+    depth: inputs.depth,
+    item_subtype: inputs.item_subtype, 
+    
   })
   .then((response) => {
     const responseJson = response as GenerateReportResponse

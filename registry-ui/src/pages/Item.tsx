@@ -460,8 +460,8 @@ const RecordView = observer((props: {}) => {
   const { openDialog, renderedDialog } = useGenerateReportDialog({
     nodeId: typedPayload?.item?.id, 
     itemSubType: typedPayload?.item?.item_subtype,
-    onSuccess: () => { 
-      alert("Done!")
+    onSuccess: (response) => { 
+      alert(response.node_count)
     }
   })
 
