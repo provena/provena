@@ -5,9 +5,6 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Theme } from "@mui/material/styles";
-import createStyles from "@mui/styles/createStyles";
-import makeStyles from "@mui/styles/makeStyles";
 import { AccessStatusDisplayComponent } from "components/AccessStatusDisplay";
 import { ModelRunForm } from "components/ModelRunForm";
 import { SelectWorkflowTemplateComponent } from "components/Selectors";
@@ -20,25 +17,11 @@ import {
 import { ModelRunRecord } from "provena-interfaces/RegistryModels";
 import { useEffect, useRef, useState } from "react";
 import {
-  JsonDetailViewWrapperComponent,
   REGISTER_MODEL_RUN_WORKFLOW_DEFINITION,
   useAccessCheck,
   WorkflowVisualiserComponent,
 } from "react-libs";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    displayBox: {
-      padding: theme.spacing(3),
-      maxHeight: "30vh",
-      overflowY: "auto",
-      border: `1px solid ${theme.palette.divider}`,
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: theme.palette.background.paper,
-      boxShadow: theme.shadows[1],
-    },
-  })
-);
+import { BoxedItemDisplayComponent } from "react-libs/components/BoxedItemDisplay";
 
 interface RenderRegisterWorkflowComponentProps {
   session_id: string;
@@ -117,7 +100,6 @@ const DisplayTemplateComponent = (props: DisplayTemplateComponentProps) => {
     Component: DisplayTemplateComponent
     
     */
-  const classes = useStyles();
   return (
     <Stack spacing={2}>
       <Typography variant="h5">
@@ -126,13 +108,10 @@ const DisplayTemplateComponent = (props: DisplayTemplateComponentProps) => {
       <Typography variant="subtitle1">
         Explore details about your selected template below.
       </Typography>
-      <div className={classes.displayBox}>
-        <JsonDetailViewWrapperComponent
-          // This is actually fine
-          item={props.template as unknown as ItemBase}
-          layout={"column"}
-        ></JsonDetailViewWrapperComponent>
-      </div>
+      <BoxedItemDisplayComponent
+        item={props.template as unknown as ItemBase}
+        layout="column"
+      />
     </Stack>
   );
 };

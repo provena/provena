@@ -12,9 +12,11 @@ import {
   AutoCompletePersonLookup,
   AutoCompleteStudyLookup,
   DatasetTemplateAdditionalAnnotationsOverride,
+  DatasetTemplateDisplay,
   Form,
   UnixTimestampField,
 } from "react-libs";
+import ArrayField from "react-libs/components/FixedArrayOverride/FixedArrayField";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -51,6 +53,7 @@ export const MODEL_RUN_JSON_SCHEMA = {
     datasetItem: {
       type: "object",
       properties: {
+        dataset_template_id: { type: "string" },
         dataset_id: { type: "string" },
         resources: {
           type: "object",
@@ -100,17 +103,11 @@ export const MODEL_RUN_JSON_SCHEMA = {
 };
 
 const DS_SPEC = {
-  "ui:title": "Input Dataset Information",
-  dataset_template_id: {
-    "ui:title": "Dataset Template",
-    "ui:description":
-      "Use the search tool below to select the registered dataset template from the workflow template.",
-    "ui:field": "autoCompleteDatasetTemplateLookup",
-  },
+  "ui:title": "Dataset",
   dataset_id: {
     "ui:title": "Dataset",
     "ui:description":
-      "Use the search tool below to select the dataset which satisfies this template.",
+      "Please use the search tool below to select a dataset which satisfies this template.",
     "ui:field": "autoCompleteDatasetLookup",
   },
   resources: {
@@ -160,15 +157,31 @@ export const MODEL_RUN_UI_SCHEMA = {
   },
   inputs: {
     "ui:title": "Input Datasets",
+    "ui:field": "fixedArray",
     "ui:description":
       "Provide an input dataset for each of the model run's templated inputs.",
-    items: DS_SPEC,
+    items: {
+      ...DS_SPEC,
+      dataset_template_id: {
+        "ui:title": "Template",
+        "ui:description": "Details of your selected input template.",
+        "ui:field": "datasetTemplate",
+      },
+    },
   },
   outputs: {
     "ui:title": "Output Datasets",
+    "ui:field": "fixedArray",
     "ui:description":
       "Provide an output dataset for each of the model run's templated outputs.",
-    items: DS_SPEC,
+    items: {
+      ...DS_SPEC,
+      dataset_template_id: {
+        "ui:title": "Input Template",
+        "ui:description": "Details of your selected input template.",
+        "ui:field": "datasetTemplate",
+      },
+    },
   },
   associations: {
     "ui:title": "Associations",
@@ -199,6 +212,8 @@ const customFields: { [name: string]: any } = {
   autoCompletePersonLookup: AutoCompletePersonLookup,
   autoCompleteOrganisationLookup: AutoCompleteOrganisationLookup,
   datasetTemplateMetadataOverride: DatasetTemplateAdditionalAnnotationsOverride,
+  datasetTemplate: DatasetTemplateDisplay,
+  fixedArray: ArrayField,
 };
 
 export interface ModelRunFormProps {
