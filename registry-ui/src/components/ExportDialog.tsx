@@ -12,7 +12,7 @@ import {
     Typography,
 } from "@mui/material";
 
-import { useExportDialog } from "hooks/useExportDialog";
+import { useGenerateReportDialog } from "hooks/useGenerateReportDialog";
 
 export interface ExportProps {
     nodeId: string | undefined

@@ -4,6 +4,9 @@ import {
   AddStudyLinkQueryParameters,
   AddStudyLinkResponse,
 } from "../provena-interfaces/AsyncJobAPI";
+
+import { GenerateReportParameters, GenerateReportResponse } from "react-libs/provena-interfaces/ProvenanceAPI";
+
 import { requestErrToMsg } from "../util";
 
 export const addStudyLink = (inputs: {
@@ -34,15 +37,40 @@ export const addStudyLink = (inputs: {
 };
 
 
-export const exportGraph = (inputs: {
-  nodeId: string;
-  depth: string;
-}) => {
+export const generateReport = (inputs: GenerateReportParameters) => {
 
-  const endpoint = PROV_API_ENDPOINTS.EXPORT
+  // Generate-report endpoints.
+  const endpoint = PROV_API_ENDPOINTS.GENERATE_REPORT
 
+  // Create the axios method. 
   return requests
-      .get (endpoint, ) 
-  
+  .get(endpoint, {
+    params: {
+    node_id: inputs.node_id,
+    item_sub_type: inputs.item_subtype, 
+    depth: inputs.depth
+    }
+  })
+  .then((response) => {
+    const responseJson = response as GenerateReportResponse
+    // Check the status of the response. 
+    try{ 
+    
+      if(!responseJson.status.success){
+        return Promise.reject(response)
+      } else{ 
+        return responseJson
+      }
 
+    } catch (e){ 
+      return Promise.reject(response)
+    }
+
+  })
+
+  .catch((err) => { 
+    return Promise.reject(requestErrToMsg(err))
+  
+  })
+  
 }

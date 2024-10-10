@@ -61,7 +61,7 @@ import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
 import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
 import { useAddStudyLinkDialog } from "hooks/useAddStudyLinkDialog";
-import { useExportDialog } from "hooks/useExportDialog";
+import {useGenerateReportDialog } from "hooks/useGenerateReportDialog";
 import { ExportDialogComponent } from "components/ExportDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -457,8 +457,12 @@ const RecordView = observer((props: {}) => {
     },
   });
 
-  const { openDialog, renderedDialog } = useExportDialog({
-    nodeId: typedPayload?.item?.id
+  const { openDialog, renderedDialog } = useGenerateReportDialog({
+    nodeId: typedPayload?.item?.id, 
+    itemSubType: typedPayload?.item?.item_subtype,
+    onSuccess: () => { 
+      alert("Done!")
+    }
   })
 
   return (

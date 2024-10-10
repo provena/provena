@@ -336,11 +336,10 @@ async def _validate_node_id(node_id: str, item_subtype: ItemSubType, request_sty
     if isinstance(response, SeededItem):
         raise HTTPException(status_code=400, detail="Seeded item cannot be used for this query!")
 
-@router.get("/export/prov-graph", response_model = SimpleDummyResponse, operation_id="export_prov_graph")
+@router.get("/generate/report", response_model = SimpleDummyResponse, operation_id="export_prov_graph")
 # Setup the endpoint inputs.
 async def export_graph(
     node_id: str,
-    item_subtype: ItemSubType,
     depth: int, 
     roles: ProtectedRole = Depends(read_user_protected_role_dependency),
     config: Config = Depends(get_settings)
@@ -362,7 +361,6 @@ async def export_graph(
     # do checks accordingly. 
     await _validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
 
-    # The response variable/data structure.I have this setup like this, could be improved??
     # This acting as a shared dictionary across both edge cases and in the helper function in the edge cases.
     all_filtered_responses: Dict[str, List[ItemBase]] = {"inputs": [], "outputs": [], "model_runs": []}
 

@@ -15,18 +15,24 @@ import {
     InputLabel,
     SelectChangeEvent
 } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 
 import React, { useState } from "react";
+import { GenerateReportResponse } from "react-libs/provena-interfaces/ProvenanceAPI";
+import { useGenerateReport } from "./useGenerateReport";
+import { ItemSubType } from "provena-interfaces/RegistryModels";
 
-export interface ExportProps {
-    nodeId: string | undefined
+export interface GenerateReportProps {
+    nodeId: string | undefined;
+    itemSubType: ItemSubType | undefined; 
+    // This is a wrapper around the other child components and acts as as a callback. 
+    onSuccess?: (response: GenerateReportResponse) => void;
 }
 
 const DEPTH_LIST = ["1", "2", "3"]
 
-export const useExportDialog = (props: ExportProps) => {
+export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
-    const { nodeId } = props
     const [popUpOpen, setPopupOpen] = useState<boolean>(false);
     const [depth, setDepth] = useState<string>("");
 
@@ -48,7 +54,30 @@ export const useExportDialog = (props: ExportProps) => {
 
     const onSubmit = () => {
         // Validate that a depth has been chosen. 
+
+        if (depth.length !== 0){ 
+            // Proceed to submit... 
+            if(generateReportHandler.dataReady){ 
+                if (generateReportHandler.submit !== undefined){
+                    generateReportHandler.submit()
+                }
+            }
+
+        }
+
     }
+
+    // Call the react-query defined. 
+    const generateReportHandler = useGenerateReport({
+        nodeId: props.nodeId, 
+        itemSubType: props.itemSubType, 
+        depth: depth, 
+        onSuccess: (response) => {
+            if (props.onSuccess !== undefined){
+                props.onSuccess(response)
+            }
+        }
+    })
 
     // Submit button is disabled if depth is not picked.
     const submitDisabled = depth === ""
