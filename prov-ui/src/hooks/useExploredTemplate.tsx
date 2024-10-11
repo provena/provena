@@ -14,7 +14,7 @@ export interface PartialTemplatedDataset {
   dataset_template_id: string;
   dataset_type: DatasetType;
   resources?: {
-    [k: string]: string;
+    [k: string]: string | undefined;
   };
 }
 
@@ -23,7 +23,7 @@ export interface ExploredTemplate {
   inputs: PartialTemplatedDataset[];
   outputs: PartialTemplatedDataset[];
   annotations?: {
-    [k: string]: string;
+    [k: string]: string | undefined;
   };
 }
 
@@ -65,12 +65,12 @@ const buildExploredTemplate = (
 
   // required
   for (const ann of workflowTemplate.annotations?.required ?? []) {
-    buildingTemplate.annotations[ann] = "TODO";
+    buildingTemplate.annotations[ann] = undefined;
   }
 
   // optional
   for (const ann of workflowTemplate.annotations?.optional ?? []) {
-    buildingTemplate.annotations[ann] = "Optional TODO";
+    buildingTemplate.annotations[ann] = undefined;
   }
 
   // Now fill in each input/output template
@@ -81,7 +81,7 @@ const buildExploredTemplate = (
     const outputs = [];
     for (const template of templates) {
       // Start up with empty resources
-      var resources: { [k: string]: string } = {};
+      var resources: { [k: string]: string | undefined } = {};
 
       // find the deferred resources
       const deferred = template.deferred_resources ?? [];
@@ -89,7 +89,7 @@ const buildExploredTemplate = (
       // Build out resources - TODO key for each deferred
       // TODO handle optional
       for (const def of deferred) {
-        resources[def.key] = "TODO";
+        resources[def.key] = undefined;
       }
 
       outputs.push({
