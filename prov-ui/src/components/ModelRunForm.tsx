@@ -1,17 +1,12 @@
 import {
   Alert,
   Button,
-  Grid,
-  List,
-  ListItem,
-  Paper,
-  Stack,
-  Typography,
+  Grid
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
-import { ErrorListProps, RJSFSchema } from "@rjsf/utils";
+import { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import {
   AutoCompleteDatasetLookup,
@@ -26,8 +21,6 @@ import {
   UnixTimestampField,
 } from "react-libs";
 import ArrayField from "react-libs/components/FixedArrayOverride/FixedArrayField";
-import ErrorIcon from "@material-ui/icons/Error";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
