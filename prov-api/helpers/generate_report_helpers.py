@@ -17,27 +17,27 @@ from docx import Document
 from docx.shared import Inches
 
 async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_style: RequestStyle, config: Config) -> None: 
-    """_summary_
+    """Validates that a provided node (id + subtype) does exist within the registry.
 
     Parameters
     ----------
     node_id : str
-        _description_
+        The ID of the node.
     item_subtype : ItemSubType
-        _description_
+        The subtype of the node.
     request_style : RequestStyle
-        _description_
+        The style of the request (user, service account etc)
     config : Config
-        _description_
+        A config object containing information about the different endpoints of the system.
 
     Raises
     ------
     HTTPException
-        _description_
+        If an invalid subtype is provided.
     HTTPException
-        _description_
+        If fetched entity contains an error this exception is raised.
     HTTPException
-        _description_
+        If the fetched entity is of type SeededItem this exception is raised.
     """
     
     validation_mapping: Dict[ItemSubType, Callable] = {
@@ -60,19 +60,20 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
     
 
 def filter_for_export_prov_graph(upstream_nodes: List[Node], downstream_nodes: List[Node]) -> Dict[str,List[Node]]: 
-    """_summary_
+    """Takes a list of upstream and downstream nodes and processes them into into different categories of 
+    inputs, models and outputs. 
 
     Parameters
     ----------
     upstream_nodes : List[Node]
-        _description_
+        A list of all upstream nodes. 
     downstream_nodes : List[Node]
-        _description_
+        A list of all downstream nodes.
 
     Returns
     -------
     Dict[str,List[Node]]
-        _description_
+        A dictionary containing the "inputs", "outputs" and "model-runs" involved within the study/model-run.
     """
 
     # Filter through both the upstream and downstream nodes. 
@@ -98,34 +99,35 @@ def filter_for_export_prov_graph(upstream_nodes: List[Node], downstream_nodes: L
     return filtered_response
 
 def parse_nodes(node_list: List[Any]) -> List[Node]: 
-    """_summary_
+    """Parses a list of potential nodes into a list of Valid Node objects.
+
+    This function takes a list of potential nodes, attempts to parse them into 
+    the Node Pydantic model, and returns a list of validated Node objects. 
 
     Parameters
     ----------
     node_list : List[Any]
-        _description_
+        A list of items that can potentially be parsed as Node objects.
 
     Returns
     -------
     List[Node]
-        _description_
+        A list of parsed Node objects.
+
 
     Raises
     ------
     HTTPException
-        _description_
+        Raised if the provided node_list is empty.
     HTTPException
-        _description_
+        Raised if validation fails while parsing any node in the list.
     """
-
-    # This function parses a list of "potential" nodes into the Node Pydantic Interface.  
 
     node_list_parsed: List[Node] = []
 
     if len(node_list) == 0: 
-        # Do I handle this? Can there be a case where a model run does not have any assoicated inputs/outputs??
+        # Do I handle this? Can there be a case where a model run does not have any assoicated inputs/outputs?? - I don't think so.
         raise HTTPException(status_code=400, detail="Cannot process the report generation.")
-
     try:
         for node in node_list: 
             node_list_parsed.append(Node(**node))
@@ -136,26 +138,28 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
 
 
 async def generate_report_helper(starting_id: str, upstream_depth: int, shared_responses: Dict[str, List[Node]], config: Config, downstream_depth: int = 1) -> None:
-    """_summary_
+    """Generates the report by querying upstream and downstream data, parsing nodes, and filtering results.
+
+    This helper function performs upstream and downstream queries, parses the node responses, filters them 
+    for relevant data, and stores the results into a shared dictionary for further report generation.
 
     Parameters
     ----------
     starting_id : str
-        _description_
+        The starting node ID to perform the queries from.
     upstream_depth : int
-        _description_
+        The depth of the upstream query to traverse upto.
     shared_responses : Dict[str, List[Node]]
-        _description_
+        A dictionary which contains the parsed and filtered nodes. 
+        Contains 'inputs', 'model_runs', and 'outputs' as keys.
     config : Config
-        _description_
+        A config object containing information about the different endpoints of the system.
     downstream_depth : int, optional
-        _description_, by default 1
+        The depth of the downstream query to traverse to, by default 1
     """
 
     upstream_response: Dict[str, Any] = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
     downstream_response: Dict[str, Any] = downstream_query(starting_id=starting_id, depth=downstream_depth, config=config)
-
-    print(upstream_response, downstream_response)
 
     assert upstream_response.get('graph'), "Node collections not found!"
     assert downstream_response.get('graph'), "Node collections not found!"
@@ -177,7 +181,7 @@ async def generate_report_helper(starting_id: str, upstream_depth: int, shared_r
 
 
 def generate_word_file() -> str: 
-    """Generates and creates a temporary word file. 
+    """Generates and creates a temporary word file using Python-docx.
     TODO: Need to add the list of collected nodes into here for processing into table.
 
     Returns
@@ -204,8 +208,13 @@ def generate_word_file() -> str:
         return tmpFile.name
 
 
-def remove_word_file(file_path: str) -> None: 
-    """_summary_
+def remove_file(file_path: str) -> None: 
+    """Deletes the specified file from the server.
+
+    Parameters
+    ----------
+    file_path : str
+        The file path of the document to be deleted.
     """
 
     os.remove(file_path)

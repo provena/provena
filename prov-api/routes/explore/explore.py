@@ -12,7 +12,7 @@ from config import Config, get_settings
 
 
 from ProvenaInterfaces.RegistryAPI import ItemSubType, ItemBase, Node
-from helpers.generate_report_helpers import parse_nodes, validate_node_id, generate_report_helper, generate_word_file, remove_word_file
+from helpers.generate_report_helpers import parse_nodes, validate_node_id, generate_report_helper, generate_word_file, remove_file
 
 router = APIRouter()
 
@@ -333,6 +333,36 @@ async def export_graph(
     roles: ProtectedRole = Depends(read_user_protected_role_dependency),
     config: Config = Depends(get_settings),  
 ) -> FileResponse:
+    
+    """Exports the provenance graph upto a certain upstream depth and fixed downstream depth (1) for Study and Model Run based entities.  
+    This generates a Word Document (.docx) and contains the input, outputs and model runs involved within the Study or within the Model Run. 
+
+    Parameters
+    ----------
+    node_id : str
+        The ID of the starting node for which the report will be generated (Study or Model Run). 
+    depth : int
+        The depth for the upstream direction traversal.
+    item_subtype : ItemSubType
+        The type of the node, which can be either MODEL_RUN or STUDY, determining which report generation path is followed.
+    background_tasks : BackgroundTasks
+        FastAPI background task handler which manage tasks such as cleaning up temporary files. 
+
+    Returns
+    -------
+    FileResponse
+        A FileResponse object that contains the generated word-document and is sent to the front-end. 
+
+    Raises
+    ------
+    HTTPException
+        Raised if the input depth is invalid (not within the range of 1 to 3).
+    HTTPException
+        Raised if an unsupported item subtype is provided.
+    HTTPException
+        Raised if there is an error in generating the word document.
+
+    """
          
     # Create the request style, here we assert where the HTTP request came from. 
     request_style: RequestStyle = RequestStyle(
@@ -387,7 +417,7 @@ async def export_graph(
     generated_doc_path = generate_word_file()
 
     if os.path.exists(generated_doc_path): 
-        background_tasks.add_task(remove_word_file, file_path=generated_doc_path)
+        background_tasks.add_task(remove_file, file_path=generated_doc_path)
 
         return FileResponse(
             path = generated_doc_path, 
