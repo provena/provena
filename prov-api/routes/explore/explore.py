@@ -1,17 +1,18 @@
+import os
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, user_general_dependency, admin_user_protected_role_dependency
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from ProvenaInterfaces.ProvenanceAPI import *
 from ProvenaInterfaces.ProvenanceModels import *
 from ProvenaInterfaces.SharedTypes import Status
-from helpers.entity_validators import unknown_validator, RequestStyle, ServiceAccountProxy, validate_model_run_id, validate_study_id, validate_subtype_helper
-import helpers.neo4j_helpers as neo4j_helpers
-from typing import Dict, Any
+from helpers.entity_validators import unknown_validator, RequestStyle, ServiceAccountProxy
+from typing import ByteString, Dict, Any
 from config import Config, get_settings
 
 
 from ProvenaInterfaces.RegistryAPI import ItemSubType, ItemBase, Node
-from helpers.generate_report_helpers import parse_nodes, validate_node_id, generate_report_helper
+from helpers.generate_report_helpers import parse_nodes, validate_node_id, generate_report_helper, generate_word_file, remove_word_file
 
 router = APIRouter()
 
@@ -322,15 +323,16 @@ async def effected_agents(
     )
 
 
-@router.get("/generate/report", response_model = SimpleDummyResponse, operation_id="export_prov_graph")
+@router.get("/generate/report", response_class = FileResponse, operation_id="export_prov_graph")
 # Setup the endpoint inputs.
 async def export_graph(
     node_id: str,
     depth: int, 
     item_subtype: ItemSubType,
+    background_tasks: BackgroundTasks,
     roles: ProtectedRole = Depends(read_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
-) -> SimpleDummyResponse:
+    config: Config = Depends(get_settings),  
+) -> FileResponse:
          
     # Create the request style, here we assert where the HTTP request came from. 
     request_style: RequestStyle = RequestStyle(
@@ -345,6 +347,7 @@ async def export_graph(
     await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
 
     # This acting as a shared dictionary across both edge cases and in the helper function in the edge cases.
+    # Could be converted into a dataclass maybe??
     all_filtered_responses: Dict[str, List[Node]] = {"inputs": [], "outputs": [], "model_runs": []}
 
     if item_subtype == ItemSubType.MODEL_RUN: 
@@ -377,17 +380,23 @@ async def export_graph(
                 await generate_report_helper(starting_id=model_run_id, upstream_depth=depth, shared_responses=all_filtered_responses, config=config)                
 
     else: 
-        raise HTTPException(status_code=400, detail= "Unsupported node requested.")
+        raise HTTPException(status_code=400, detail="Unsupported node requested.")
     
 
-    return SimpleDummyResponse(
-            status = Status(
-                success=True, details="Sucessfully made query."
-            ), 
-            node_count = len(all_filtered_responses["inputs"])
+    # All the nodes involved in the model run/study have been populated. 
+    generated_doc_path = generate_word_file()
+
+    if os.path.exists(generated_doc_path): 
+        background_tasks.add_task(remove_word_file, file_path=generated_doc_path)
+
+        return FileResponse(
+            path = generated_doc_path, 
+            filename= "generated-doc.docx"
         )
     
-
+    else:
+        raise HTTPException(status_code=400, detail="Error generating your study-closeout document.")
+        
 
 
 
