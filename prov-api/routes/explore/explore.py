@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse
 from ProvenaInterfaces.ProvenanceAPI import *
 from ProvenaInterfaces.ProvenanceModels import *
 from ProvenaInterfaces.SharedTypes import Status
-from helpers import prov_helpers
 from helpers.entity_validators import unknown_validator, RequestStyle, ServiceAccountProxy
 import helpers.prov_connector as prov_connector
 from typing import Dict, Any

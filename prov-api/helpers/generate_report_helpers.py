@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from ProvenaInterfaces.RegistryAPI import ItemBase, ItemSubType, SeededItem, Node
 from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id
-from helpers.neo4j_helpers import upstream_query, downstream_query
+from helpers.prov_connector import upstream_query, downstream_query
 
 from tempfile import NamedTemporaryFile
 
@@ -186,9 +186,14 @@ def generate_report(starting_id: str, upstream_depth: int, config: Config) -> Ge
 
 
 def fetch_parse_all_upstream_downstream_nodes(starting_id: str, upstream_depth: int, config: Config, downstream_depth: int = 1) -> Tuple[List[Node], List[Node]] : 
+
+    print(starting_id, "starting-id")
+    print(upstream_depth, "upstream-depth")
     
     upstream_response: Dict[str, Any] = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
     downstream_response: Dict[str, Any] = downstream_query(starting_id=starting_id, depth=downstream_depth, config=config)
+
+    print(upstream_response, downstream_response)
 
     assert upstream_response.get('nodes'), "Node collections not found!"
     assert downstream_response.get('nodes'), "Node collections not found!"
@@ -216,26 +221,33 @@ def generate_word_file(node_collection: GenerateReportFormat) -> str:
     document = Document()
     document.add_heading('Model Run Study Close Out Report', 0)
 
-    table = document.add_table(rows=3, cols=1)
+    table = document.add_table(rows=4, cols=2)
     table.style = 'Table Grid'
 
-    # Add data to the first-rows 
-    input_row = table.rows[0].cells[0]
-    input_row.text = "Inputs:" 
+    # First row here is the modelling-team-name
+    table.cell(0,0).text = "Modelling Team"
+    table.cell(0,1).text = "C~Scape"
+
+    # Second row here is the inputs
+    input_row = table.rows[1].cells[0]
+    input_row.text = "Inputs:"
+    input_data_cell = table.cell(1,1)
     for input_node in node_collection.inputs:
-        input_row.text += f"\n - {input_node.id}: {input_node.item_category}"
+        input_data_cell.text += f"\n - {input_node.id}: {input_node.item_category}"
 
-    # Add data to the second-rows 
-    model_run_row = table.rows[1].cells[0]
-    model_run_row.text = "Inputs:" 
+    # Third row here is the model runs
+    model_run_row = table.rows[2].cells[0]
+    model_run_row.text = "Model Runs:" 
+    model_run_row_data_cell = table.cell(2,1)
     for model_run_node in node_collection.model_runs:
-        model_run_row.text += f"\n - {model_run_node.id}: {model_run_node.item_category}"
+        model_run_row_data_cell.text += f"\n - {model_run_node.id}: {model_run_node.item_category}"
 
-    # Add data to the third-rows
-    output_row = table.rows[2].cells[0]
-    output_row.text = "Inputs:" 
+    # Fourth row here is the outputs
+    output_row = table.rows[3].cells[0]
+    output_row.text = "Outputs:"
+    output_row_data_cell = table.cell(3,1)
     for output_node in node_collection.inputs:
-        output_row.text += f"\n - {output_node.id}: {output_node.item_category}"
+        output_row_data_cell.text += f"\n - {output_node.id}: {output_node.item_category}"
 
     # Temporarily save the document to return it. 
     with NamedTemporaryFile(delete=False, suffix='.docx') as tmpFile: 
@@ -278,6 +290,8 @@ async def generate_report_helper(
     request_style: RequestStyle = RequestStyle(
         user_direct=roles.user, service_account=None
     )
+
+    report_nodes: GenerateReportFormat = GenerateReportFormat()
 
     # do checks accordingly. 
     await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
