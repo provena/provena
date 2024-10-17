@@ -6,12 +6,12 @@ The Provena Provenance API enables the registration of workflow provenance recor
 
 There are two primary registration mechanisms:
 
--   individual record registration (using the Pydantic models directly)
--   CSV bulk model run record ingestion (using a job queue workflow deployed separately)
+- individual record registration (using the Pydantic models directly)
+- CSV bulk model run record ingestion (using a job queue workflow deployed separately)
 
 The primary mechanism of registration through the Prov API is the conversion of Provena provenance into a standard [PROV-O](https://www.w3.org/TR/prov-o/) representation.
 
-Once this conversion is complete, a modified version of [prov-db-connector](https://github.com/DLR-SC/prov-db-connector) is used to lodge these prov-o documents into a graph database, in this case Neo4j.
+A custom layer which manages the conversion of the Prov-O document to the Neo4j graph is built in this API to handle creating, updating and deleting Provenance 'records'.
 
 Once lodged, the Prov API provides querying capability (proxying simple [Cypher](<https://en.wikipedia.org/wiki/Cypher_(query_language)>) queries into the neo4j database). This currently includes an upstream and downstream query.
 
@@ -21,8 +21,8 @@ Workflow provenance can support transparency of the modelling activities and fac
 
 ## Setup Prerequisites
 
--   virtual environment setup
--   environment file setup
+- virtual environment setup
+- environment file setup
 
 ### Virtual Environment Setup
 
@@ -82,8 +82,8 @@ Tests can also be done in a VSCode environment also by using the Testing UI exte
 
 All tests will setup a mock environment to test functionality in these areas:
 
--   Authorization in `test_authorization.py`
--   Core Provenance functionality in `test_functionality.py` and others.
+- Authorization in `test_authorization.py`
+- Core Provenance functionality in `test_functionality.py` and others.
 
 ### Cleaning up failed or debugged tests
 

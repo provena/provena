@@ -1173,7 +1173,6 @@ export function checkFieldRenderWithPossibleExclusion<T>(args: {
     b) exclusion applies.
   */
 
-  console.log("Checking " + JSON.stringify(args));
   // Try and get the renderer info from the overrides map provided
   const possibleOverride = args.renderMap.get(args.fieldName);
 

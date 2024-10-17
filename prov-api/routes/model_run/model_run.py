@@ -9,9 +9,11 @@ from ProvenaInterfaces.SharedTypes import Status
 from ProvenaInterfaces.RegistryModels import ItemModelRun
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.auth_helpers import *
-from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job
-from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload
+from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
+from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
+from helpers.prov_connector import NodeGraph, Neo4jGraphManager, GraphDiffApplier
 from config import get_settings, Config
+from typing import Any
 
 router = APIRouter()
 
@@ -181,7 +183,7 @@ async def link_to_study(
     # validate model_run_id and study_id to be linked.
     request_style = RequestStyle(
         user_direct=roles.user, service_account=None)
-    
+
     model_run, study = await validate_model_run_study_linking(
         model_run_id=model_run_id,
         study_id=study_id,
@@ -212,7 +214,7 @@ async def link_to_study(
         ) from e
 
     # now update to the provenance graph by lodging a model run lodge only job (wont create a new registry record)
-    try: 
+    try:
         session_id = await submit_model_run_lodge_only_job(
             username=roles.user.username,
             payload=ProvLodgeModelRunLodgeOnlyPayload(
@@ -236,3 +238,82 @@ async def link_to_study(
         study_id=study_id,
         session_id=session_id
     )
+
+@router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
+async def update_model_run(
+    payload: PostUpdateModelRunInput,
+    roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
+    config: Config = Depends(get_settings)
+) -> PostUpdateModelRunResponse:
+    # no proxy - user direct
+    request_style = RequestStyle(
+        service_account=None, user_direct=roles.user)
+
+    # validate first
+    valid, error_message = await validate_model_run_record(
+        record=payload.record,
+        request_style=request_style,
+        config=config,
+    )
+    if not valid:
+        assert error_message
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to validate an entity's ID in the record, error: {error_message}."
+        )
+
+    res = await submit_model_run_update_job(
+        username=roles.user.username,
+        payload=ProvLodgeUpdatePayload(
+            model_run_record_id=payload.model_run_id,
+            updated_record=payload.record,
+            reason=payload.reason,
+            revalidate=True
+        ),
+        config=config)
+
+    return PostUpdateModelRunResponse(session_id=res)
+
+#
+#
+# class DeleteGraph(BaseModel):
+#    record_id: str
+#
+#
+# @router.post("/delete_graph", operation_id="delete_graph", include_in_schema=False)
+# async def delete_graph(
+#    delete: DeleteGraph,
+#    # admin only for this endpoint
+#    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
+#    config: Config = Depends(get_settings)
+# ) -> Any:
+#    # no proxy - user direct
+#    request_style = RequestStyle(
+#        service_account=None, user_direct=roles.user)
+#
+#    # dummy delete graph
+#    delete_dummy_graph = NodeGraph(record_id=delete.record_id, links=[])
+#
+#    print("Setting up neo4j client")
+#    neo4j_manager = Neo4jGraphManager(config=config)
+#    print("Done")
+#
+#    # Getting old graph
+#    print("Retrieving graph")
+#    old_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
+#    print("Done")
+#
+#    # get the graph diff
+#    print("Building diff and applying...")
+#    diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
+#    diff_generator.apply_diff(
+#        old_graph=old_graph, new_graph=delete_dummy_graph)
+#    print("Done")
+#
+#    # get the updated graph
+#    print("Retrieving updated graph")
+#    updated_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
+#    print("Done")
+#
+#    return {"old_graph": old_graph.to_json_pretty(), "updated": updated_graph.to_json_pretty()}
+#
