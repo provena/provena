@@ -3,6 +3,8 @@ from ProvenaInterfaces.RegistryModels import *
 from helpers.prov_connector import GraphBuilder, Node, NodeProps, NodeLink, NodeGraph, ProvORelationType, NodeLinkProps
 from typing import List, Dict
 
+from config import Config
+
 
 def model_run_to_graph(model_record: ModelRunRecord, record_id: str, workflow_template: ItemModelRunWorkflowTemplate) -> NodeGraph:
     """

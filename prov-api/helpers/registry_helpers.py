@@ -239,3 +239,37 @@ async def update_model_run_in_registry(
         )
 
     return fetch_response.item
+
+
+async def fetch_item_from_registry_with_subtype(proxy_username: str, 
+                                                id: str, 
+                                                item_subtype: ItemSubType, 
+                                                config: Config) -> GenericFetchResponse:
+    
+    endpoints_mapping: Dict[ItemSubType, str] = {
+        ItemSubType.MODEL_RUN: "/registry/activity/model_run/fetch", 
+        ItemSubType.DATASET: "/registry/activity/dataset/fetch",
+        ItemSubType.MODEL: "/registry/activity/model/fetch" 
+        }
+
+    # Setup request
+    assert config.registry_api_endpoint
+    # use proxy update endpoint
+    endpoint = config.registry_api_endpoint + endpoints_mapping[item_subtype]
+    
+    params: Dict[str, str] = {
+        'id': id,
+        ''
+    }
+
+    # Fetch the actual thing and return it. 
+    token = get_service_token(secret_cache, config)
+
+    # make request
+    response = await async_post_request(
+        endpoint=endpoint,
+        token=token,
+        params=params,
+        # No body for this post
+        json_body=None
+    )

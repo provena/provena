@@ -5,6 +5,8 @@
 /* Do not modify it by hand - just update the pydantic models and then re-run the script
 */
 
+import { ItemSubType } from "./RegistryModels";
+
 export type DatasetType = "DATA_STORE";
 
 export interface AddStudyLinkQueryParameters {
@@ -17,6 +19,19 @@ export interface AddStudyLinkResponse {
   study_id: string;
   session_id: string;
 }
+
+export interface GenerateReportParameters{
+  node_id: string
+  item_subtype: ItemSubType
+  depth: string
+
+}
+
+export interface GenerateReportResponse{ 
+  status: Status
+  node_count: number
+}
+
 export interface Status {
   success: boolean;
   details: string;

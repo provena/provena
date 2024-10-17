@@ -6,6 +6,9 @@ import {
   PostUpdateModelRunInput,
   RegisterModelRunResponse,
 } from "../provena-interfaces/AsyncJobAPI";
+
+import { GenerateReportParameters, GenerateReportResponse } from "react-libs/provena-interfaces/ProvenanceAPI";
+
 import { requestErrToMsg } from "../util";
 import { ModelRunRecord } from "../provena-interfaces/RegistryModels";
 import { PostUpdateModelRunResponse } from "../provena-interfaces/ProvenanceAPI";
@@ -37,6 +40,43 @@ export const addStudyLink = (inputs: {
     });
 };
 
+
+export const generateReport = (inputs: GenerateReportParameters) => {
+
+  // Generate-report endpoints.
+  const endpoint = PROV_API_ENDPOINTS.GENERATE_REPORT
+
+  // Create the axios method. 
+  return requests
+  .get(endpoint, {
+    node_id: inputs.node_id,
+    depth: inputs.depth,
+    item_subtype: inputs.item_subtype, 
+    
+  })
+  .then((response) => {
+    const responseJson = response as GenerateReportResponse
+    // Check the status of the response. 
+    try{ 
+    
+      if(!responseJson.status.success){
+        return Promise.reject(response)
+      } else{ 
+        return responseJson
+      }
+
+    } catch (e){ 
+      return Promise.reject(response)
+    }
+
+  })
+
+  .catch((err) => { 
+    return Promise.reject(requestErrToMsg(err))
+  
+  })
+  
+}
 export const registerModelRunRecord = (inputs: { record: ModelRunRecord }) => {
   const endpoint = PROV_API_ENDPOINTS.REGISTER_MODEL_RUN_COMPLETE;
   return requests
