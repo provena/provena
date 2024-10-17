@@ -55,7 +55,7 @@ class AddStudyLinkQueryParameters(BaseModel):
     model_run_id: str
     # the study that is being linked to the model run
     study_id: str
-    
+
 
 class AddStudyLinkResponse(StatusResponse):
     # the model run that was linked to the study
@@ -71,3 +71,11 @@ class GenerateReportRequest(BaseModel):
     item_subtype: ItemSubType
     # Greater than or equal to 1 and less than equal to 3
     depth: int = Field(ge=1, le=3)
+class PostUpdateModelRunInput(BaseModel):
+    model_run_id: str
+    reason: str
+    record: ModelRunRecord
+
+
+class PostUpdateModelRunResponse(BaseModel):
+    session_id: str

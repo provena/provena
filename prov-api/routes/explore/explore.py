@@ -6,9 +6,10 @@ from fastapi.responses import FileResponse
 from ProvenaInterfaces.ProvenanceAPI import *
 from ProvenaInterfaces.ProvenanceModels import *
 from ProvenaInterfaces.SharedTypes import Status
-from helpers import neo4j_helpers
+from helpers import prov_helpers
 from helpers.entity_validators import unknown_validator, RequestStyle, ServiceAccountProxy
-from typing import ByteString, Dict, Any
+import helpers.prov_connector as prov_connector
+from typing import Dict, Any
 from config import Config, get_settings
 
 
@@ -65,7 +66,7 @@ async def explore_upstream(
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
 
     # make lineage query
-    json_serialisation: Dict[str, Any] = neo4j_helpers.upstream_query(
+    json_serialisation: Dict[str, Any] = prov_connector.upstream_query(
         starting_id=starting_id,
         depth=depth,
         config=config
@@ -132,7 +133,7 @@ async def explore_downstream(
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
 
     # make lineage query
-    json_serialisation: Dict[str, Any] = neo4j_helpers.downstream_query(
+    json_serialisation: Dict[str, Any] = prov_connector.downstream_query(
         starting_id=starting_id,
         depth=depth,
         config=config
@@ -175,7 +176,7 @@ async def contributing_datasets(
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
 
     # make lineage query
-    json_serialisation: Dict[str, Any] = neo4j_helpers.special_contributing_dataset_query(
+    json_serialisation: Dict[str, Any] = prov_connector.special_contributing_dataset_query(
         starting_id=starting_id,
         depth=depth,
         config=config
@@ -218,7 +219,7 @@ async def effected_datasets(
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
 
     # make lineage query
-    json_serialisation: Dict[str, Any] = neo4j_helpers.special_effected_dataset_query(
+    json_serialisation: Dict[str, Any] = prov_connector.special_effected_dataset_query(
         starting_id=starting_id,
         depth=depth,
         config=config
@@ -261,7 +262,7 @@ async def contributing_agents(
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
 
     # make lineage query
-    json_serialisation: Dict[str, Any] = neo4j_helpers.special_contributing_agent_query(
+    json_serialisation: Dict[str, Any] = prov_connector.special_contributing_agent_query(
         starting_id=starting_id,
         depth=depth,
         config=config
@@ -304,7 +305,7 @@ async def effected_agents(
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
 
     # make lineage query
-    json_serialisation: Dict[str, Any] = neo4j_helpers.special_effected_agent_query(
+    json_serialisation: Dict[str, Any] = prov_connector.special_effected_agent_query(
         starting_id=starting_id,
         depth=depth,
         config=config

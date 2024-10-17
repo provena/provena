@@ -4,11 +4,10 @@ from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.SharedTypes import Status
 from config import Config
 from helpers.validate_model_run_record import validate_model_run_record, validate_model_run_workflow_template, RequestStyle
-from helpers.prov_helpers import produce_prov_document_existing_handle
-from helpers.graph_db_helpers import upload_prov_document
-from helpers.keycloak_helpers import get_service_token
-from dependencies.dependencies import secret_cache, User
-from helpers.async_requests import async_get_request, async_post_request
+from dependencies.dependencies import User
+from helpers.async_requests import async_post_request
+from helpers.prov_connector import Neo4jGraphManager
+from helpers.prov_helpers import model_run_to_graph
 import json
 
 
@@ -198,7 +197,7 @@ async def store_existing_record(
     assert isinstance(workflow_response, ItemModelRunWorkflowTemplate)
 
     try:
-        prov_document = produce_prov_document_existing_handle(
+        graph = model_run_to_graph(
             model_record=registry_record.record,
             record_id=handle_id,
             workflow_template=workflow_response
@@ -216,16 +215,14 @@ async def store_existing_record(
 
     # ==========================================
     # Upload provenance record into graph store
+    #
+    # This is an additive merge
     # ==========================================
 
-    # Errors are handled in here
-    document_id = upload_prov_document(
-        id=registry_record.id,
-        prov_document=prov_document,
-        config=config
-    )
+    manager = Neo4jGraphManager(config=config)
+    manager.merge_add_graph_to_db(graph)
 
     return StatusResponse(
         status=Status(
-            success=True, details=f"Successfully re-lodged item.{' WARNING: Used mocked database backend.' if config.mock_graph_db else ''}"),
+            success=True, details=f"Successfully re-lodged item."),
     )

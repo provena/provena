@@ -62,8 +62,8 @@ class RateLimitedClient(AsyncClient):
         return await send
 
 
-slow_per_second = 5
-fast_per_second = 30
+slow_per_second = 1
+fast_per_second = 10
 
 timeout_seconds = 30
 

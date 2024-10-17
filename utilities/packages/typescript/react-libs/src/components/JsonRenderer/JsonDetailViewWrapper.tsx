@@ -8,13 +8,13 @@ import {
   JsonTypes,
 } from "./JsonDetailView";
 
-interface JsonDetailViewWrapperComponentProps {
+export interface JsonDetailViewWrapperComponentProps {
   item: ItemBase;
   layout: DetailLayoutOptions;
   layoutConfig?: ColumnLayoutConfig;
 }
 export const JsonDetailViewWrapperComponent = (
-  props: JsonDetailViewWrapperComponentProps,
+  props: JsonDetailViewWrapperComponentProps
 ) => {
   /**
     Component: JsonDetailViewWrapperComponent
