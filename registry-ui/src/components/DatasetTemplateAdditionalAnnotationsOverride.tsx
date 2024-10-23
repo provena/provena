@@ -62,7 +62,7 @@ interface OverrideProps {
   required: boolean;
 }
 
-export const DatasetTemplateAdditionalAnnotationsOverride = (props: OverrideProps) => {
+const DatasetTemplateAdditionalAnnotationsOverride = (props: OverrideProps) => {
   /**
    * This form overrides the additional annotations fields in the dataset
    * template resources. The data in this form is held using a list of
@@ -387,3 +387,5 @@ export const DatasetTemplateAdditionalAnnotationsOverride = (props: OverrideProp
     </div>
   );
 };
+
+export default DatasetTemplateAdditionalAnnotationsOverride;

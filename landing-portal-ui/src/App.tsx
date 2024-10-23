@@ -17,6 +17,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <div>
+      {" "}
       <QueryClientProvider client={queryClient}>
         <ReactKeycloakProvider authClient={keycloak}>
           <RoutesAndLayout />

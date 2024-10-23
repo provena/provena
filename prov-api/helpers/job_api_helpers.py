@@ -74,29 +74,6 @@ async def submit_model_run_lodge_job(username: str, payload: ProvLodgeModelRunPa
     )).session_id
 
 
-async def submit_model_run_update_job(username: str, payload: ProvLodgeUpdatePayload, config: Config) -> str:
-    """
-    Lodges the specified job payload using the job API, returns the session ID
-    to monitor result
-
-    Args:
-        payload (ProvLodgeUpdatePayload): Update payload
-
-    Returns:
-        str: The session_id
-    """
-    payload = AdminLaunchJobRequest(
-        username=username,
-        job_type=JobType.PROV_LODGE,
-        job_sub_type=JobSubType.MODEL_RUN_UPDATE,
-        job_payload=py_to_dict(payload)
-    )
-    return (await launch_generic_job(
-        payload=payload,
-        config=config
-    )).session_id
-
-
 async def submit_model_run_lodge_only_job(username: str, payload: ProvLodgeModelRunLodgeOnlyPayload, config: Config) -> str:
     """Submit a model run lodge only job. This job will not make a new registry 
     entity for the model run, it'll only make (or overwrite if it doesn't already
@@ -108,7 +85,7 @@ async def submit_model_run_lodge_only_job(username: str, payload: ProvLodgeModel
     ----------
     payload : ProvLodgeModelRunLodgeOnlyPayload
         The payload for the job
-
+    
 
     Returns
     -------

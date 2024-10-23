@@ -155,7 +155,6 @@ const SPECIAL_QUERY_BASE = PROV_API_URL + "/explore/special";
 export const PROV_API_ENDPOINTS = {
   ROOT_URL: PROV_API_URL,
   REGISTER_MODEL_RUN_COMPLETE: PROV_API_URL + "/model_run/register",
-  UPDATE_MODEL_RUN: PROV_API_URL + "/model_run/update",
   REGISTER_MODEL_RUN_BATCH: PROV_API_URL + "/model_run/register_batch",
   EXPLORE_UPSTREAM: PROV_API_URL + "/explore/upstream",
   EXPLORE_DOWNSTREAM: PROV_API_URL + "/explore/downstream",

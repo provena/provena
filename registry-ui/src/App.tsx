@@ -1,8 +1,9 @@
+import { useEffect } from "react";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { observer } from "mobx-react-lite";
 import { keycloak } from "react-libs";
 import RoutesAndLayout from "./layout/RoutesAndLayout";
+import { observer } from "mobx-react-lite";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Create a client
 const queryClient = new QueryClient({

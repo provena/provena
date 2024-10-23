@@ -19,7 +19,7 @@ export default defineConfig({
     outDir: "build",
   },
   server: {
-    open: false,
+    open: true,
     port: 3000,
   },
   optimizeDeps: { esbuildOptions: { preserveSymlinks: true } },

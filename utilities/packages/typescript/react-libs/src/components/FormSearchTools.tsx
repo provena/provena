@@ -11,7 +11,7 @@ interface AutoCompleteOrganisationPropType
   extends FieldProps<string | undefined> {}
 
 export const AutoCompleteOrganisationLookup = (
-  props: AutoCompleteOrganisationPropType
+  props: AutoCompleteOrganisationPropType,
 ) => {
   return <SubtypeSearchAutoComplete {...props} subtype={"ORGANISATION"} />;
 };
@@ -20,23 +20,9 @@ interface AutoCompleteDatasetTemplatePropType
   extends FieldProps<string | undefined> {}
 
 export const AutoCompleteDatasetTemplateLookup = (
-  props: AutoCompleteDatasetTemplatePropType
+  props: AutoCompleteDatasetTemplatePropType,
 ) => {
   return <SubtypeSearchAutoComplete {...props} subtype={"DATASET_TEMPLATE"} />;
-};
-
-interface AutoCompleteDatasetPropType extends FieldProps<string | undefined> {}
-
-export const AutoCompleteDatasetLookup = (
-  props: AutoCompleteDatasetPropType
-) => {
-  return <SubtypeSearchAutoComplete {...props} subtype={"DATASET"} />;
-};
-
-interface AutoCompleteStudyPropType extends FieldProps<string | undefined> {}
-
-export const AutoCompleteStudyLookup = (props: AutoCompleteStudyPropType) => {
-  return <SubtypeSearchAutoComplete {...props} subtype={"STUDY"} />;
 };
 
 interface AutoCompletePersonPropType extends FieldProps<string | undefined> {}
@@ -49,7 +35,7 @@ interface AutoCompleteModelRunWorkflowDefinitionPropType
   extends FieldProps<string | undefined> {}
 
 export const AutoCompleteModelRunWorkflowDefinitionLookup = (
-  props: AutoCompleteModelRunWorkflowDefinitionPropType
+  props: AutoCompleteModelRunWorkflowDefinitionPropType,
 ) => {
   return (
     <SubtypeSearchAutoComplete
