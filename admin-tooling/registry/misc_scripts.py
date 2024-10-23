@@ -3,6 +3,14 @@ import typer
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params
 from KeycloakRestUtilities.TokenManager import DeviceFlowManager
 from helpers.summary_helpers import *
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.console import Console
+from typing import Any, Optional
+# types: ignore
+import boto3
+
+console = Console()
+
 
 # Typer CLI typing hint for parameters
 ParametersType = List[str]
@@ -13,6 +21,7 @@ valid_env_str = env_manager.environment_help_string
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 SAVE_DIRECTORY = "dumps"
+
 
 @app.command()
 def dataset_link_audit(
@@ -61,3 +70,67 @@ def dataset_link_audit(
         output=output,
         get_auth=get_auth
     )
+
+
+def delete_items(table: Any) -> None:
+    #get the table keys
+    tableKeyNames = [key.get("AttributeName") for key in table.key_schema]
+
+    #Only retrieve the keys for each item in the table (minimize data transfer)
+    projectionExpression = ", ".join('#' + key for key in tableKeyNames)
+    expressionAttrNames = {'#'+key: key for key in tableKeyNames}
+    
+    counter = 0
+    page = table.scan(ProjectionExpression=projectionExpression, ExpressionAttributeNames=expressionAttrNames)
+    with table.batch_writer() as batch:
+        while page["Count"] > 0:
+            counter += page["Count"]
+            # Delete items in batches
+            for itemKeys in page["Items"]:
+                batch.delete_item(Key=itemKeys)
+            # Fetch the next page
+            if 'LastEvaluatedKey' in page:
+                page = table.scan(
+                    ProjectionExpression=projectionExpression, ExpressionAttributeNames=expressionAttrNames,
+                    ExclusiveStartKey=page['LastEvaluatedKey'])
+            else:
+                break
+    print(f"Deleted {counter}")
+
+
+@app.command()
+def delete_all(
+    table_name: str = typer.Argument(..., help="Name of the DynamoDB table"),
+    region: str = typer.Option("ap-southeast-2", help="AWS region"),
+    confirm: bool = typer.Option(
+        True, help="Prompt for confirmation before deleting")
+) -> None:
+    """
+    Delete all items from a DynamoDB table.
+    """
+    try:
+        # Set up AWS session
+        session = boto3.Session()
+        dynamodb = session.resource('dynamodb', region_name=region)
+        table = dynamodb.Table(table_name)
+
+        # Get item count (approximate)
+        item_count = table.item_count
+
+        if item_count == 0:
+            console.print(
+                f"[yellow]Table '{table_name}' is already empty.[/yellow]")
+            raise typer.Exit()
+
+        # Confirm deletion
+        if confirm:
+            typer.confirm(
+                f"Are you sure you want to delete approximately {item_count} items from '{table_name}'?",
+                abort=True
+            )
+
+        delete_items(table)
+
+    except Exception as e:
+        console.print(f"[red]Error: {str(e)}[/red]")
+        raise typer.Exit(1)
