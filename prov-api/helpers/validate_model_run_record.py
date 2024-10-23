@@ -46,12 +46,12 @@ async def validate_datastore_resource(templated_dataset: TemplatedDataset, templ
     extra = provided_keys - valid_keys
 
     if len(missing) > 0:
-        return False, f"The provided dataset template with id {templated_dataset.dataset_template_id} " + \
+        return False, f"The provided templated dataset with id {templated_dataset.dataset_template_id} " + \
             f"and dataset id {templated_dataset.dataset_id} was missing deferred resource paths " + \
             f"for the following required resource keys ({','.join(list(missing))})."
 
     if len(extra) > 0:
-        return False, f"The provided dataset template with id {templated_dataset.dataset_template_id} " + \
+        return False, f"The provided templated dataset with id {templated_dataset.dataset_template_id} " + \
             f"and dataset id {templated_dataset.dataset_id} provided unexpected deferred resource paths " + \
             f"for the following unexpected resource keys ({','.join(list(extra))})."
 

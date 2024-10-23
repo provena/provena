@@ -2,7 +2,7 @@
     "explorer.compactFolders": false,
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
-    "editor.autoIndent": "keep",
+    "editor.autoIndent": "full",
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 500,
     "editor.insertSpaces": true,
@@ -20,7 +20,7 @@
         "editor.tabSize": 2
     },
     "[typescript]": {
-        "editor.tabSize": 2
+        "editor.tabSize": 4
     },
     "prettier.tabWidth": 2,
 }

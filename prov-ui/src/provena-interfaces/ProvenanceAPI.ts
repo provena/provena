@@ -61,14 +61,6 @@ export interface LineageResponse {
     [k: string]: unknown;
   };
 }
-export interface PostUpdateModelRunInput {
-  model_run_id: string;
-  reason: string;
-  record: ModelRunRecord;
-}
-export interface PostUpdateModelRunResponse {
-  session_id: string;
-}
 export interface ProvenanceRecordInfo {
   id: string;
   prov_json: string;

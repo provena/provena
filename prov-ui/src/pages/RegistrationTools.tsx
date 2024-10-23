@@ -23,11 +23,10 @@ import React, { useEffect, useState } from "react";
 import accessStore from "../stores/accessStore";
 import GenerateTemplate from "../subpages/GenerateTemplate";
 import LodgeTemplate from "../subpages/LodgeTemplate";
+
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { BoundedContainer } from "react-libs";
-import { CreateModelRunTool } from "./CreateModelRunTool";
-import { UpdateModelRunTool } from "./UpdateModelRunTool";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -50,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
     },
-  })
+  }),
 );
 
 interface TabPanelProps {
@@ -224,30 +223,6 @@ const RegistrationTools = observer(() => {
                       }
                       key="lodgecsvtemplate"
                     />
-                    <Tab
-                      label={
-                        <Typography
-                          variant="subtitle1"
-                          align="right"
-                          width="100%"
-                        >
-                          Register Model Run
-                        </Typography>
-                      }
-                      key="createrecord"
-                    />
-                    <Tab
-                      label={
-                        <Typography
-                          variant="subtitle1"
-                          align="right"
-                          width="100%"
-                        >
-                          Update Model Run
-                        </Typography>
-                      }
-                      key="updaterecord"
-                    />
                   </Tabs>
                 </Box>
               </Grid>
@@ -259,12 +234,6 @@ const RegistrationTools = observer(() => {
             </TabPanel>
             <TabPanel index={1} currentIndex={currentTab}>
               <LodgeTemplate />
-            </TabPanel>
-            <TabPanel index={2} currentIndex={currentTab}>
-              <CreateModelRunTool />
-            </TabPanel>
-            <TabPanel index={3} currentIndex={currentTab}>
-              <UpdateModelRunTool />
             </TabPanel>
           </Grid>
         </Grid>

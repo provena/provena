@@ -147,5 +147,3 @@ temp
 .env.dev
 .env.stage
 .env.prod
-
-test.http

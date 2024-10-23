@@ -1,30 +1,30 @@
 // Source @ https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/core/src/components/fields/ObjectField.tsx
-import { Grid } from "@mui/material";
+import { Component } from "react";
 import {
-  ADDITIONAL_PROPERTY_FLAG,
-  ANY_OF_KEY,
+  getTemplate,
+  getUiOptions,
+  orderProperties,
   ErrorSchema,
   FieldProps,
   FormContextType,
   GenericObjectType,
-  getTemplate,
-  getUiOptions,
   IdSchema,
-  ONE_OF_KEY,
-  orderProperties,
-  PROPERTIES_KEY,
-  REF_KEY,
   RJSFSchema,
   StrictRJSFSchema,
   TranslatableString,
+  ADDITIONAL_PROPERTY_FLAG,
+  PROPERTIES_KEY,
+  REF_KEY,
+  ANY_OF_KEY,
+  ONE_OF_KEY,
 } from "@rjsf/utils";
+import Markdown from "markdown-to-jsx";
 import get from "lodash/get";
 import has from "lodash/has";
 import isObject from "lodash/isObject";
 import set from "lodash/set";
 import unset from "lodash/unset";
-import Markdown from "markdown-to-jsx";
-import { Component } from "react";
+import { Checkbox, FormControlLabel, Grid } from "@mui/material";
 
 /** Type used for the state of the `ObjectField` component */
 type ObjectFieldState = {
@@ -43,7 +43,7 @@ type ObjectFieldState = {
 class ObjectField<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
-  F extends FormContextType = any
+  F extends FormContextType = any,
 > extends Component<FieldProps<T, S, F>, ObjectFieldState> {
   /** Set up the initial state */
   state = {
@@ -77,7 +77,7 @@ class ObjectField<
     return (
       value: T | undefined,
       newErrorSchema?: ErrorSchema<T>,
-      id?: string
+      id?: string,
     ) => {
       const { formData, onChange, errorSchema } = this.props;
       if (value === undefined && addedByAdditionalProperties) {
@@ -91,10 +91,6 @@ class ObjectField<
         value = "" as unknown as T;
       }
       const newFormData = { ...formData, [name]: value } as unknown as T;
-
-      // Update the set state
-      this.setState({ ...this.state, includeOptional: !!formData });
-
       onChange(
         newFormData,
         errorSchema &&
@@ -102,7 +98,7 @@ class ObjectField<
             ...errorSchema,
             [name]: newErrorSchema,
           },
-        id
+        id,
       );
     };
   };
@@ -134,7 +130,7 @@ class ObjectField<
     const { uiSchema, registry } = this.props;
     const { duplicateKeySuffixSeparator = "-" } = getUiOptions<T, S, F>(
       uiSchema,
-      registry.globalUiOptions
+      registry.globalUiOptions,
     );
 
     let index = 0;
@@ -177,7 +173,7 @@ class ObjectField<
           errorSchema && {
             ...errorSchema,
             [value]: newErrorSchema,
-          }
+          },
       );
     };
   };
@@ -228,7 +224,7 @@ class ObjectField<
         const { schemaUtils } = registry;
         apSchema = schemaUtils.retrieveSchema(
           { $ref: apSchema[REF_KEY] } as S,
-          formData
+          formData,
         );
         type = apSchema.type;
       }
@@ -302,7 +298,7 @@ class ObjectField<
     const Template = getTemplate<"ObjectFieldTemplate", T, S, F>(
       "ObjectFieldTemplate",
       registry,
-      uiOptions
+      uiOptions,
     );
 
     const uiSchemaDisableOptionalSwitch = !!uiSchema["disableOptional"];
@@ -352,7 +348,7 @@ class ObjectField<
                   onKeyChange={this.onKeyChange(name)}
                   onChange={this.onPropertyChange(
                     name,
-                    addedByAdditionalProperties
+                    addedByAdditionalProperties,
                   )}
                   onBlur={onBlur}
                   onFocus={onFocus}
@@ -405,16 +401,6 @@ class ObjectField<
         </Grid>
       </>
     );
-  }
-
-  componentDidUpdate(prevProps: any) {
-    if (
-      !this.state.includeOptional &&
-      !!this.props.formData &&
-      Object.keys(this.props.formData as Object).length > 0
-    ) {
-      this.setState({ ...this.state, includeOptional: true });
-    }
   }
 }
 

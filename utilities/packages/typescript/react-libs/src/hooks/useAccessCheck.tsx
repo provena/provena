@@ -24,6 +24,7 @@ const parseReport = (
 ): ParseResponse => {
   var desiredFound = false;
   var compFound = false;
+  console.log("Report", report);
   for (const component of report.components) {
     if (component.component_name === componentName) {
       // we found the component
