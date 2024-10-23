@@ -25,9 +25,9 @@ class NodeType(str, Enum):
 
 @dataclass
 class ReportNodeCollection():
-    inputs: Set[Node] = field(default_factory=Set)
-    model_runs: Set[Node] = field(default_factory=Set)
-    outputs: Set[Node] = field(default_factory=Set)
+    inputs: List[Node] = field(default_factory=list)
+    model_runs: List[Node] = field(default_factory=list)
+    outputs: List[Node] = field(default_factory=list)
 
     def add_node(self, node: Node, node_type: NodeType) -> None:
         
@@ -39,15 +39,15 @@ class ReportNodeCollection():
         # Handle the nodes of type MODEL_RUN
 
             if node.item_subtype == ItemSubType.MODEL_RUN:
-                self.model_runs.add(node)
+                self.model_runs.append(node)
 
             # Handle input nodes.
             elif node_type == NodeType.INPUTS and node.item_subtype == ItemSubType.MODEL or node.item_subtype == ItemSubType.DATASET: 
-                self.inputs.add(node)
+                self.inputs.append(node)
             
             # Handle output nodes.
             elif node_type == NodeType.OUTPUTS and node.item_subtype == ItemSubType.DATASET:
-                self.outputs.add(node)
+                self.outputs.append(node)
         
 async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_style: RequestStyle, config: Config) -> None: 
     """Validates that a provided node (id + subtype) does exist within the registry.
@@ -216,8 +216,8 @@ def generate_report(starting_id: str, upstream_depth: int, config: Config) -> Re
 def fetch_parse_all_upstream_downstream_nodes(starting_id: str, upstream_depth: int, config: Config, downstream_depth: int = 1) -> Tuple[List[Node], List[Node]] : 
     
     try:
-        
-        upstream_response: Dict[str, Any] = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
+                
+        upstream_response = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
         downstream_response: Dict[str, Any] = downstream_query(starting_id=starting_id, depth=downstream_depth, config=config)
 
         assert upstream_response.get('nodes'), "Upstream node collections not found!"
@@ -361,7 +361,7 @@ async def generate_report_helper(
                     report_nodes = generate_report(starting_id=model_run_id, upstream_depth=upstream_depth, config=config)                
 
         else: 
-            raise HTTPException(status_code=400, detail=f"Unsupported node with item subtype {item_subtype.value} requested.
+            raise HTTPException(status_code=400, detail=f"Unsupported node with item subtype {item_subtype.value} requested.\
                                 This endpoint only supports subtype of STUDY and MODEL_RUN.")
 
         # All the nodes involved in the model run/study have been populated. 

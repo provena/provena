@@ -258,8 +258,7 @@ async def fetch_item_from_registry_with_subtype(proxy_username: str,
     endpoint = config.registry_api_endpoint + endpoints_mapping[item_subtype]
     
     params: Dict[str, str] = {
-        'id': id,
-        ''
+        'id': id
     }
 
     # Fetch the actual thing and return it. 
@@ -273,3 +272,5 @@ async def fetch_item_from_registry_with_subtype(proxy_username: str,
         # No body for this post
         json_body=None
     )
+
+    return GenericFetchResponse()
