@@ -258,7 +258,8 @@ async def fetch_item_from_registry_with_subtype(proxy_username: str,
     endpoint = config.registry_api_endpoint + endpoints_mapping[item_subtype]
     
     params: Dict[str, str] = {
-        'id': id
+        'id': id, 
+        'proxy_username': proxy_username
     }
 
     # Fetch the actual thing and return it. 
@@ -273,4 +274,41 @@ async def fetch_item_from_registry_with_subtype(proxy_username: str,
         json_body=None
     )
 
-    return GenericFetchResponse()
+    if response.status_code !=200:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Got status code {response.status_code} when trying to fetch item with subtype {item_subtype}!"
+        )
+    
+    # Get the JSON object. 
+    response_json = response.json()
+
+    # Parse the JSON into a pydantic object. 
+    try: 
+        fetch_response = GenericFetchResponse.parse_obj(response_json)
+    except: 
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to parse item with id {id} and subtype {item_subtype}"
+        )
+
+    if not fetch_response.status.success:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Response from registry API fetch for id {id} was parsed but had success==False with details: {fetch_response.status.details}"
+        )
+    
+    if not fetch_response.item:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Response from registry API fetch for id {id} with subtype {item_subtype} was successful, but no item was present."
+        )
+
+    # If the item is a seed item, that it cannot be used.
+    if fetch_response.item_is_seed:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Response from registry API fetch for id {id} is a seed object."
+        )
+
+    return fetch_response

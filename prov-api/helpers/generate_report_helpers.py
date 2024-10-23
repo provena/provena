@@ -8,12 +8,10 @@ from pydantic import ValidationError
 from config import Config
 from fastapi import HTTPException
 
-from ProvenaInterfaces.ProvenanceAPI import LineageResponse
+from KeycloakFastAPI.Dependencies import ProtectedRole
 from ProvenaInterfaces.RegistryAPI import ItemBase, ItemSubType, SeededItem, Node
 from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id
-from helpers.prov_connector import upstream_query, downstream_query
-
-from KeycloakFastAPI.Dependencies import ProtectedRole
+from helpers.neo4j_helpers import upstream_query, downstream_query
 
 from tempfile import NamedTemporaryFile
 
@@ -53,6 +51,7 @@ class ReportNodeCollection():
         
 async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_style: RequestStyle, config: Config) -> None: 
     """Validates that a provided node (id + subtype) does exist within the registry.
+    This only currently works with Model Runs and Study Entities. 
 
     Parameters
     ----------
@@ -378,4 +377,3 @@ async def generate_report_helper(
     
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error in report generation: {str(e)}")     
-
