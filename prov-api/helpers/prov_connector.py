@@ -277,7 +277,7 @@ def special_contributing_dataset_query(starting_id: str, depth: int, config: Con
 
     # The cypher query to make for upstream lineage - only concerned with datasets upstream
     query = f"""
-    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
+    MATCH r=((parent : ENTITY {{`item_subtype`:'DATASET'}}) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -327,7 +327,7 @@ def special_effected_dataset_query(starting_id: str, depth: int, config: Config)
 
     # The cypher query to make for upstream lineage - only concerned with datasets upstream
     query = f"""
-    MATCH r=((parent : Entity {{`item_subtype`:'DATASET'}}) -[*1..{depth}]->(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
+    MATCH r=((parent : ENTITY {{`item_subtype`:'DATASET'}}) -[*1..{depth}]->(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -377,7 +377,7 @@ def special_contributing_agent_query(starting_id: str, depth: int, config: Confi
 
     # The cypher query to make for upstream lineage - only concerned with datasets upstream
     query = f"""
-    MATCH r=((parent : Agent) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
+    MATCH r=((parent : AGENT) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -427,7 +427,7 @@ def special_effected_agent_query(starting_id: str, depth: int, config: Config) -
 
     # The query to see effected agents one step removed from any downstream occurrences i.e. 'effected people/organisations'
     query = f"""
-    MATCH r=((agent: Agent) <-[]- (downstream) -[*0..{depth}]->(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
+    MATCH r=((agent: AGENT) <-[]- (downstream) -[*0..{depth}]->(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
 
     # Run the query
@@ -1200,8 +1200,8 @@ class Neo4jGraphManager():
         with self.driver.session() as session:
             # Create or merge nodes
             for node in graph.get_node_set():
-                cypher_query = """
-                MERGE (n:Node {id: $id})
+                cypher_query = f"""
+                MERGE (n:{node.category} {{id: $id}})
                 SET n.item_subtype = $subtype,
                     n.item_category = $category,
                     n.record_ids = CASE
@@ -1221,8 +1221,8 @@ class Neo4jGraphManager():
             for link in graph.links:
                 relation_label = link.relation.value
                 cypher_query = """
-                MATCH (source:Node {id: $source_id})
-                MATCH (target:Node {id: $target_id})
+                MATCH (source{id: $source_id})
+                MATCH (target{id: $target_id})
                 MERGE (source)-[r:""" + relation_label + """]->(target)
                 SET r.record_ids = CASE
                     WHEN r.record_ids IS NULL THEN $record_ids
@@ -1510,7 +1510,7 @@ class GraphDiffApplier:
     def _handle_add_record_id_to_node(self, action: AddRecordIdToNode) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = """
-            MATCH (n:Node {id: $node_id})
+            MATCH (n{id: $node_id})
             SET n.record_ids = CASE
                 WHEN n.record_ids IS NULL THEN $record_id
                 WHEN NOT $record_id IN split(n.record_ids, ',') THEN n.record_ids + ',' + $record_id
@@ -1522,13 +1522,13 @@ class GraphDiffApplier:
 
     def _handle_add_new_node(self, action: AddNewNode) -> None:
         with self.neo4j_manager.driver.session() as session:
-            cypher_query = """
-            MERGE (n:Node {
+            cypher_query = f"""
+            MERGE (n: {action.node.category} {{
                 id: $id,
                 item_subtype: $subtype,
                 item_category: $category,
                 record_ids: $record_ids
-            })
+            }})
             """
             session.run(cypher_query, id=action.node.id, subtype=action.node.subtype.value,
                         category=action.node.category.value, record_ids=action.node.props.record_ids)
@@ -1536,7 +1536,7 @@ class GraphDiffApplier:
     def _handle_add_record_id_to_link(self, action: AddRecordIdToLink) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = f"""
-            MATCH (source:Node {{id: $source_id}})-[r:{action.link.relation.value}]->(target:Node {{id: $target_id}})
+            MATCH (source{{id: $source_id}})-[r:{action.link.relation.value}]->(target{{id: $target_id}})
             SET r.record_ids = CASE
                 WHEN r.record_ids IS NULL THEN $record_id
                 WHEN NOT $record_id IN split(r.record_ids, ',') THEN r.record_ids + ',' + $record_id
@@ -1549,8 +1549,8 @@ class GraphDiffApplier:
     def _handle_add_new_link(self, action: AddNewLink) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = f"""
-            MATCH (source:Node {{id: $source_id}})
-            MATCH (target:Node {{id: $target_id}})
+            MATCH (source{{id: $source_id}})
+            MATCH (target{{id: $target_id}})
             CREATE (source)-[r:{action.link.relation.value} {{record_ids: $record_ids}}]->(target)
             """
             session.run(cypher_query, source_id=action.link.source.id, target_id=action.link.target.id,
@@ -1559,7 +1559,7 @@ class GraphDiffApplier:
     def _handle_remove_record_id_from_link(self, action: RemoveRecordIdFromLink) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = f"""
-            MATCH (source:Node {{id: $source_id}})-[r:{action.link.relation.value}]->(target:Node {{id: $target_id}})
+            MATCH (source{{id: $source_id}})-[r:{action.link.relation.value}]->(target{{id: $target_id}})
             WHERE $record_id IN split(r.record_ids, ',')
             SET r.record_ids = reduce(s = '', x IN split(r.record_ids, ',') |
                 CASE WHEN x <> $record_id
@@ -1574,7 +1574,7 @@ class GraphDiffApplier:
     def _handle_remove_link(self, action: RemoveLink) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = f"""
-            MATCH (source:Node {{id: $source_id}})-[r:{action.link.relation.value}]->(target:Node {{id: $target_id}})
+            MATCH (source{{id: $source_id}})-[r:{action.link.relation.value}]->(target{{id: $target_id}})
             DELETE r
             """
             session.run(cypher_query, source_id=action.link.source.id,
@@ -1583,7 +1583,7 @@ class GraphDiffApplier:
     def _handle_remove_record_id_from_node(self, action: RemoveRecordIdFromNode) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = """
-            MATCH (n:Node {id: $node_id})
+            MATCH (n{id: $node_id})
             WHERE $record_id IN split(n.record_ids, ',')
             SET n.record_ids = reduce(s = '', x IN split(n.record_ids, ',') |
                 CASE WHEN x <> $record_id
@@ -1598,7 +1598,7 @@ class GraphDiffApplier:
     def _handle_remove_node(self, action: RemoveNode) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = """
-            MATCH (n:Node {id: $node_id})
+            MATCH (n{id: $node_id})
             WHERE n.record_ids IS NULL OR n.record_ids = ''
             DELETE n
             """
