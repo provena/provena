@@ -1201,7 +1201,7 @@ class Neo4jGraphManager():
             # Create or merge nodes
             for node in graph.get_node_set():
                 cypher_query = f"""
-                MERGE (n:{node.category} {{id: $id}})
+                MERGE (n:{node.category.value} {{id: $id}})
                 SET n.item_subtype = $subtype,
                     n.item_category = $category,
                     n.record_ids = CASE
@@ -1523,7 +1523,7 @@ class GraphDiffApplier:
     def _handle_add_new_node(self, action: AddNewNode) -> None:
         with self.neo4j_manager.driver.session() as session:
             cypher_query = f"""
-            MERGE (n: {action.node.category} {{
+            MERGE (n: {action.node.category.value} {{
                 id: $id,
                 item_subtype: $subtype,
                 item_category: $category,
