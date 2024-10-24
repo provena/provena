@@ -375,7 +375,7 @@ def special_contributing_agent_query(starting_id: str, depth: int, config: Confi
         raise RuntimeError(
             "Asking for real data from graph DB during mock! Returning [].")
 
-    # The cypher query to make for upstream lineage - only concerned with datasets upstream
+    # The cypher query to make for upstream lineage - only concerned with agents upstream
     query = f"""
     MATCH r=((parent : AGENT) <-[*1..{depth}]-(start{{`{IDENTIFIER_TAG}`:'{starting_id}'}})) RETURN r
     """
