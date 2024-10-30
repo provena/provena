@@ -1,5 +1,5 @@
 mdsisclienttools
-typer[all]
+typer
 
 # Shared interfaces
 ../../utilities/packages/python/provena-interfaces

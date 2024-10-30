@@ -801,7 +801,7 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
     assert nx_graph.number_of_nodes() == total
 
     # create a connected chain of records
-    models: List[Tuple[ModelRunRecord, str]] = []
+    modelRuns: List[Tuple[ModelRunRecord, str]] = []
     prev: Optional[ModelRunRecord] = None
 
     for index in range(chain_size):
@@ -848,18 +848,18 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
         model_run_id: str = parsed_response.record_info.id
 
         # add to chain
-        models.append((new_record, model_run_id))
+        modelRuns.append((new_record, model_run_id))
 
         # update previous to enable chaining
         prev = new_record
 
     # get just chain
     model_chain: List[ModelRunRecord] = [model_and_id[0]
-                                         for model_and_id in models]
+                                         for model_and_id in modelRuns]
 
     for index in range(chain_size):
-        model: ModelRunRecord = models[index][0]
-        model_run_record_id: str = models[index][1]
+        model: ModelRunRecord = modelRuns[index][0]
+        model_run_record_id: str = modelRuns[index][1]
 
         for starting_position in ChainPosition:
             # work out correct count
@@ -900,6 +900,97 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
             assert actual_count == correct_count, f"Received graph with nodes: {actual_count} \
                    did not match expected count of {correct_count} for index {index} and chain\
                    position {starting_position.value}."
+
+    # explore upstream - contributing datasets
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/contributing_datasets',
+        id=first_output_dataset_id,
+        depth=3
+    )
+
+    assert nx_graph.number_of_nodes(
+    ) == 3
+
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/contributing_datasets',
+        # Starting at 3rd entry in chain output
+        id=model_chain[2].outputs[0].dataset_id,
+        depth=6
+    )
+
+    assert nx_graph.number_of_nodes() == 7
+
+    # explore downstream - effected datasets
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/effected_datasets',
+        id=model_chain[0].inputs[0].dataset_id,
+        depth=2
+    )
+
+    assert nx_graph.number_of_nodes(
+    ) == 3
+
+    # explore downstream - effected datasets
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/effected_datasets',
+        id=model_chain[2].inputs[0].dataset_id,
+        depth=6
+    )
+
+    assert nx_graph.number_of_nodes(
+    ) == 7
+
+    # explore upstream - contributing agents
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/contributing_agents',
+        id=model_chain[0].outputs[0].dataset_id,
+        depth=2
+    )
+
+    # two nodes, two agents
+    assert nx_graph.number_of_nodes(
+    ) == 4
+
+    # explore upstream - contributing agents
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/contributing_agents',
+        id=model_chain[2].outputs[0].dataset_id,
+        depth=6
+    )
+
+    # 6 agents, 6 nodes
+    assert nx_graph.number_of_nodes(
+    ) == 12
+
+    # explore downstream - effected agents
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/effected_agents',
+        id=model_chain[0].inputs[0].dataset_id,
+        depth=2
+    )
+
+    # three nodes, 2 agents
+    assert nx_graph.number_of_nodes(
+    ) == 5
+
+    # explore downstream - effected agents
+    nx_graph: networkx.Graph = make_exploration_request(
+        client=client,
+        method='special/effected_agents',
+        id=model_chain[2].inputs[0].dataset_id,
+        depth=6
+    )
+
+    # 6 agents, 6 nodes
+    assert nx_graph.number_of_nodes(
+    ) == 14
 
 
 def test_lineage_downstream(client: TestClient, service_config: Config, monkeypatch: Any) -> None:
