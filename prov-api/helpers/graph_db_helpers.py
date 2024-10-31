@@ -5,7 +5,7 @@ from random import randint
 from config import Config, get_settings
 from provdbconnector import ProvDb  # type: ignore
 from provdbconnector.db_adapters.neo4j.neo4jadapter import Neo4jAdapter  # type: ignore
-from helpers.neo4j_helpers import get_credentials
+from helpers.prov_connector import get_credentials
 
 
 def mocked_graph_db_store() -> str:

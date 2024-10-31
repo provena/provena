@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from ProvenaInterfaces.RegistryAPI import ItemBase, ItemSubType, SeededItem, Node
 from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id
-from helpers.neo4j_helpers import upstream_query, downstream_query
+from helpers.prov_connector import upstream_query, downstream_query
 
 from tempfile import NamedTemporaryFile
 
