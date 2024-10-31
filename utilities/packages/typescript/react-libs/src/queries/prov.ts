@@ -5,7 +5,7 @@ import {
   AddStudyLinkResponse,
 } from "../provena-interfaces/AsyncJobAPI";
 
-import { GenerateReportParameters, GenerateReportResponse } from "react-libs/provena-interfaces/ProvenanceAPI";
+import { GenerateReportParameters} from "react-libs/provena-interfaces/ProvenanceAPI";
 
 import { requestErrToMsg } from "../util";
 
@@ -44,18 +44,17 @@ export const generateReport = (inputs: GenerateReportParameters) => {
 
   // Create the axios method. 
   return requests
-  .get(endpoint, {
-    node_id: inputs.node_id,
+  .fileDownload(endpoint, {
+    id: inputs.id,
     depth: inputs.depth,
-    item_subtype: inputs.item_subtype, 
-    
+    item_subtype: inputs.item_subtype,    
   })
   .then((response) => {
-    const responseJson = response as GenerateReportResponse
+    const responseJson = response as any
     // Check the status of the response. 
     try{ 
     
-      if(!responseJson.status.success){
+      if(!responseJson){
         return Promise.reject(response)
       } else{ 
         return responseJson

@@ -21,15 +21,10 @@ export interface AddStudyLinkResponse {
 }
 
 export interface GenerateReportParameters{
-  node_id: string
+  id: string
   item_subtype: ItemSubType
-  depth: string
+  depth: number
 
-}
-
-export interface GenerateReportResponse{ 
-  status: Status
-  node_count: number
 }
 
 export interface Status {

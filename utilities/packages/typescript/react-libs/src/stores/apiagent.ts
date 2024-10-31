@@ -114,6 +114,14 @@ export const requests = {
       params: params,
     });
   },
+  fileDownload(url: string, data = {}){
+    return apiagent({
+      url: url, 
+      method: "post",
+      data: data,
+      responseType: "blob"
+    });
+  },
   manual(config = {}) {
     return apiagent(config);
   },

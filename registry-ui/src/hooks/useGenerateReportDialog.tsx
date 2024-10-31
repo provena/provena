@@ -18,23 +18,34 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 import React, { useState } from "react";
-import { GenerateReportResponse } from "react-libs/provena-interfaces/ProvenanceAPI";
 import { useGenerateReport } from "./useGenerateReport";
 import { ItemSubType } from "provena-interfaces/RegistryModels";
 
 export interface GenerateReportProps {
-    nodeId: string | undefined;
+    id: string | undefined;
     itemSubType: ItemSubType | undefined; 
     // This is a wrapper around the other child components and acts as as a callback. 
-    onSuccess?: (response: GenerateReportResponse) => void;
+    onSuccess?: (response: any) => void;
 }
 
-const DEPTH_LIST = ["1", "2", "3"]
+const DEPTH_LIST = [1,2,3]
 
 export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const [popUpOpen, setPopupOpen] = useState<boolean>(false);
-    const [depth, setDepth] = useState<string>("");
+    const [depth, setDepth] = useState<number|null>(null);
+
+    // Call the react-query defined. 
+    const generateReportHandler = useGenerateReport({
+        id: props.id, 
+        itemSubType: props.itemSubType, 
+        depth: depth!, 
+        onSuccess: (response) => {
+            if (props.onSuccess !== undefined){
+                props.onSuccess(response)
+            }
+        }
+    })
 
     // Helper functions to open and close the popup. 
     const openDialog = () => {
@@ -43,44 +54,27 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const closeDialog = () => {
         // Clear state and close dialog
-        setDepth("")
+        setDepth(null)
         setPopupOpen(false);
 
     }
 
     const handleChange = (event: SelectChangeEvent) => {
-        setDepth(event.target.value as string)
+        setDepth(parseInt(event.target.value))
     }
 
     const onSubmit = () => {
-        // Validate that a depth has been chosen. 
+        // Validate that a depth has been chosen.
 
-        if (depth.length !== 0){ 
+        if (depth !== null && generateReportHandler.dataReady){ 
             // Proceed to submit... 
-            if(generateReportHandler.dataReady){ 
-                if (generateReportHandler.submit !== undefined){
-                    generateReportHandler.submit()
-                }
-            }
-
+            generateReportHandler.generateReportQuery.mutate();
         }
 
     }
 
-    // Call the react-query defined. 
-    const generateReportHandler = useGenerateReport({
-        nodeId: props.nodeId, 
-        itemSubType: props.itemSubType, 
-        depth: depth, 
-        onSuccess: (response) => {
-            if (props.onSuccess !== undefined){
-                props.onSuccess(response)
-            }
-        }
-    })
-
     // Submit button is disabled if depth is not picked.
-    const submitDisabled = depth === ""
+    const submitDisabled = depth === null
 
     const renderedDialog = (
 
@@ -95,12 +89,11 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
                         <Select
                             labelId="depth-select-label"
                             id="depth-simple-select"
-                            value={depth}
                             label="Depth"
                             onChange={handleChange}
 
                         >
-                            {DEPTH_LIST.map((item: string) => (
+                            {DEPTH_LIST.map((item: number) => (
                                 <MenuItem value={item} key={item}> {item}</MenuItem>
                             ))}
 
