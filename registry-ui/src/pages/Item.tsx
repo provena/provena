@@ -458,10 +458,7 @@ const RecordView = observer((props: {}) => {
 
   const { openDialog, renderedDialog } = useGenerateReportDialog({
     id: typedPayload?.item?.id, 
-    itemSubType: typedPayload?.item?.item_subtype,
-    onSuccess: (response) => { 
-      alert("File downloaded")
-    }
+    itemSubType: typedPayload?.item?.item_subtype
   })
 
   return (

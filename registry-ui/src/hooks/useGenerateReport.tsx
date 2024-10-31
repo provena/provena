@@ -30,11 +30,6 @@ export const useGenerateReport = (props: useGenerateReportProps) => {
     // Setting up the useQuery
     const generateReportQuery = useMutation({
         mutationFn: () => {
-            console.log({
-                node_id: props.id,
-                item_subtype: props.itemSubType,
-                depth: props.depth
-            })
             return generateReport({
                 id: props.id!!,
                 item_subtype: props.itemSubType!!,
@@ -47,6 +42,9 @@ export const useGenerateReport = (props: useGenerateReportProps) => {
                 // If the onSuccess function is defined then calls it
                 props.onSuccess(data)
             }
+        },
+        onError(data){
+
         }
     })
 

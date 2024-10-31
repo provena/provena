@@ -4,9 +4,9 @@ import {
   AddStudyLinkQueryParameters,
   AddStudyLinkResponse,
 } from "../provena-interfaces/AsyncJobAPI";
+import FileDownload from "js-file-download";
 
 import { GenerateReportParameters} from "react-libs/provena-interfaces/ProvenanceAPI";
-
 import { requestErrToMsg } from "../util";
 
 export const addStudyLink = (inputs: {
@@ -50,14 +50,14 @@ export const generateReport = (inputs: GenerateReportParameters) => {
     item_subtype: inputs.item_subtype,    
   })
   .then((response) => {
-    const responseJson = response as any
-    // Check the status of the response. 
+    // Check the status of the response - The Response is a blob itself.
+
     try{ 
-    
-      if(!responseJson){
+
+      if(!response){
         return Promise.reject(response)
-      } else{ 
-        return responseJson
+      } else{
+        return FileDownload(response, "study-close-out-report.docx")
       }
 
     } catch (e){ 
@@ -65,7 +65,6 @@ export const generateReport = (inputs: GenerateReportParameters) => {
     }
 
   })
-
   .catch((err) => { 
     return Promise.reject(requestErrToMsg(err))
   

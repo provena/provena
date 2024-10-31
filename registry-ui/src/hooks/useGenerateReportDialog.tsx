@@ -24,8 +24,6 @@ import { ItemSubType } from "provena-interfaces/RegistryModels";
 export interface GenerateReportProps {
     id: string | undefined;
     itemSubType: ItemSubType | undefined; 
-    // This is a wrapper around the other child components and acts as as a callback. 
-    onSuccess?: (response: any) => void;
 }
 
 const DEPTH_LIST = [1,2,3]
@@ -40,10 +38,8 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         id: props.id, 
         itemSubType: props.itemSubType, 
         depth: depth!, 
-        onSuccess: (response) => {
-            if (props.onSuccess !== undefined){
-                props.onSuccess(response)
-            }
+        onSuccess: () => {
+            closeDialog()
         }
     })
 
@@ -65,7 +61,6 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const onSubmit = () => {
         // Validate that a depth has been chosen.
-
         if (depth !== null && generateReportHandler.dataReady){ 
             // Proceed to submit... 
             generateReportHandler.generateReportQuery.mutate();
@@ -81,9 +76,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         <Dialog open={popUpOpen} onClose={closeDialog} fullWidth={true} maxWidth={"md"}>
             <DialogContent>
                 <Stack spacing={2} direction="column">
-
                     Select a depth for the upstream.
-
                     <FormControl fullWidth>
                         <InputLabel id="depth-select-label">Depth</InputLabel>
                         <Select
@@ -123,6 +116,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     return {
         openDialog,
+        closeDialog,
         renderedDialog
     }
 
