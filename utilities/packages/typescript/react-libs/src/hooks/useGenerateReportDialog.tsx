@@ -18,8 +18,8 @@ import {
 
 import { useState } from "react";
 import { useGenerateReport } from "./useGenerateReport";
-import { ItemSubType } from "provena-interfaces/RegistryModels";
-import { stripPossibleFullStop } from "react-libs";
+import { ItemSubType } from "../provena-interfaces/RegistryModels";
+import { stripPossibleFullStop } from "../util";
 
 export interface GenerateReportProps {
     id: string | undefined;

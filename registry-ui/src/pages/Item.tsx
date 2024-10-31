@@ -61,7 +61,7 @@ import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
 import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
 import { useAddStudyLinkDialog } from "hooks/useAddStudyLinkDialog";
-import {useGenerateReportDialog } from "hooks/useGenerateReportDialog";
+import { useGenerateReportDialog } from "react-libs/hooks/useGenerateReportDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

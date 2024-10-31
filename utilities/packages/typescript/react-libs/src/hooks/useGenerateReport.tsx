@@ -2,8 +2,8 @@
 import { useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 
-import { generateReport } from "react-libs"
-import { ItemSubType } from "provena-interfaces/RegistryModels"
+import { generateReport } from "../queries"
+import { ItemSubType } from "../provena-interfaces/RegistryModels"
 
 export interface useGenerateReportProps {
     // What is the Node ID (either model run or study entity)
