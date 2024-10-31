@@ -12,6 +12,7 @@ from KeycloakFastAPI.Dependencies import ProtectedRole
 from ProvenaInterfaces.RegistryAPI import ItemBase, ItemSubType, SeededItem, Node
 from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id
 from helpers.prov_connector import upstream_query, downstream_query
+from helpers.registry_helpers import fetch_item_from_registry_with_subtype
 
 from tempfile import NamedTemporaryFile
 
@@ -23,31 +24,46 @@ class NodeType(str, Enum):
     MODEL_RUNS = "model_runs"
     OUTPUTS = "outputs"
 
+class NodeDirection(str, Enum):
+    UPSTREAM = "UPSTREAM"
+    DOWNSTREAM = "DOWNSTREAM"
+
 @dataclass
 class ReportNodeCollection():
-    inputs: List[Node] = field(default_factory=list)
-    model_runs: List[Node] = field(default_factory=list)
-    outputs: List[Node] = field(default_factory=list)
+     # Used to keep track of unique nodes.
+    node_ids: Set[str] = field(default_factory=set)
+    inputs: List[ItemBase] = field(default_factory=list)
+    model_runs: List[ItemBase] = field(default_factory=list)
+    outputs: List[ItemBase] = field(default_factory=list)
+    
+    # Additional sets to track unique IDs for each category
+    input_ids: Set[str] = field(default_factory=set)
+    model_run_ids: Set[str] = field(default_factory=set)
+    output_ids: Set[str] = field(default_factory=set)
 
-    def add_node(self, node: Node, node_type: NodeType) -> None:
+    def add_node(self, node: ItemBase, node_type: NodeType) -> None:
+        # Check if node is already added to avoid duplicates
+        if node.id in self.node_ids:
+            return
         
-        # Filter the node to remove point of origin and only include datasets and models.
+        # Handle nodes of type MODEL_RUN
+        if node.item_subtype == ItemSubType.MODEL_RUN and node.id not in self.model_run_ids:
+            self.model_runs.append(node)
+            self.model_run_ids.add(node.id)
+        
+        # Handle input nodes (datasets and models)
+        elif node_type == NodeType.INPUTS and node.item_subtype in {ItemSubType.MODEL, ItemSubType.DATASET} and node.id not in self.input_ids:
+            self.inputs.append(node)
+            self.input_ids.add(node.id)
+        
+        # Handle output nodes (datasets only)
+        elif node_type == NodeType.OUTPUTS and node.item_subtype == ItemSubType.DATASET and node.id not in self.output_ids:
+            self.outputs.append(node)
+            self.output_ids.add(node.id)
 
-        # input - datasets and models 
-        # outputs - datasets
+        # Add to the global node_ids set for tracking purposes
+        self.node_ids.add(node.id)
 
-        # Handle the nodes of type MODEL_RUN
-
-            if node.item_subtype == ItemSubType.MODEL_RUN:
-                self.model_runs.append(node)
-
-            # Handle input nodes.
-            elif node_type == NodeType.INPUTS and node.item_subtype == ItemSubType.MODEL or node.item_subtype == ItemSubType.DATASET: 
-                self.inputs.append(node)
-            
-            # Handle output nodes.
-            elif node_type == NodeType.OUTPUTS and node.item_subtype == ItemSubType.DATASET:
-                self.outputs.append(node)
         
 async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_style: RequestStyle, config: Config) -> None: 
     """Validates that a provided node (id + subtype) does exist within the registry.
@@ -181,7 +197,7 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
     return node_list_parsed
 
 
-def generate_report(starting_id: str, upstream_depth: int, config: Config) -> ReportNodeCollection:
+async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth: int, config: Config) -> ReportNodeCollection:
     """Generates the report by querying upstream and downstream data, parsing nodes, and filtering results.
 
     This helper function performs upstream and downstream queries, parses the node responses, filters them 
@@ -202,22 +218,26 @@ def generate_report(starting_id: str, upstream_depth: int, config: Config) -> Re
         The depth of the downstream query to traverse to, by default 1
     """
 
-    upstream_nodes_parsed, downstream_nodes_parsed = fetch_parse_all_upstream_downstream_nodes(
-                                                    starting_id=starting_id, 
+    collection = await fetch_parse_all_upstream_downstream_nodes(
+                                                    user = user, starting_id=starting_id, 
                                                     upstream_depth=upstream_depth,
                                                     config=config)
 
-    filtered_response = filter_for_export_prov_graph(upstream_nodes=upstream_nodes_parsed, 
-                                                    downstream_nodes=downstream_nodes_parsed)
-    
-    return filtered_response
+    return collection
 
-
-def fetch_parse_all_upstream_downstream_nodes(starting_id: str, upstream_depth: int, config: Config, downstream_depth: int = 1) -> Tuple[List[Node], List[Node]] : 
+async def fetch_parse_all_upstream_downstream_nodes(user: ProtectedRole, 
+                                                    starting_id: str, 
+                                                    upstream_depth: int, 
+                                                    config: Config, 
+                                                    downstream_depth: int = 1
+                                                    ) -> ReportNodeCollection: 
     
     try:
+
+        # This is shared dataclass that will capture all the inputs and outputs surronding the requested entity.\
+        collection = ReportNodeCollection()
                 
-        upstream_response = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
+        upstream_response: Dict[str, Any] = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
         downstream_response: Dict[str, Any] = downstream_query(starting_id=starting_id, depth=downstream_depth, config=config)
 
         assert upstream_response.get('nodes'), "Upstream node collections not found!"
@@ -226,17 +246,65 @@ def fetch_parse_all_upstream_downstream_nodes(starting_id: str, upstream_depth: 
         nodes_upstream: List[Any] = upstream_response.get('nodes', [])
         nodes_downstream: List[Any] = downstream_response.get('nodes', [])
 
-        # Parsing the nodes.
-        upstream_nodes_parsed: List[Node] = parse_nodes(nodes_upstream)
-        downstream_nodes_parsed: List[Node] = parse_nodes(nodes_downstream)
+        # Process the nodes in both directions 
+        await process_node_collection(
+            nodes = nodes_upstream, 
+            direction = NodeDirection.UPSTREAM,
+            user = user,
+            config = config,
+            collection = collection
+        )
 
+        await process_node_collection(
+            nodes = nodes_downstream,
+            direction = NodeDirection.DOWNSTREAM,
+            user = user, 
+            config = config,
+            collection = collection
+        )
+
+        return collection
+            
     except AssertionError as e: 
         raise HTTPException(status_code=404, detail=f"The provided model run with id {starting_id} - error: {str(e)}")
     
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error fetching upstream/downstream nodes - error: {str(e)}")
 
-    return upstream_nodes_parsed, downstream_nodes_parsed
+
+async def process_node_collection(
+        nodes: List[Any], 
+        direction: NodeDirection,
+        user: ProtectedRole, 
+        config: Config, 
+        collection: ReportNodeCollection
+) -> ReportNodeCollection:
+    
+    parsed_nodes = parse_nodes(nodes)
+    node_type = NodeType.INPUTS if direction == NodeDirection.UPSTREAM else NodeType.OUTPUTS
+
+    for node in parsed_nodes:
+        if should_load_node(node, direction):
+            loaded_item = await fetch_item_from_registry_with_subtype(
+                proxy_username=user.user.username, 
+                id=node.id,
+                item_subtype=node.item_subtype,
+                config=config
+            )
+
+            collection.add_node(node=loaded_item.item, node_type=node_type)
+
+    return collection
+
+def should_load_node(node: Node, direction: NodeDirection) -> bool:
+    if direction == NodeDirection.UPSTREAM: 
+        return node.item_subtype in{
+            ItemSubType.MODEL_RUN,
+            ItemSubType.MODEL,
+            ItemSubType.DATASET
+        }
+    
+    return node.item_subtype == ItemSubType.DATASET 
 
 def generate_word_file(node_collection: ReportNodeCollection) -> str: 
     """Generates and creates a temporary word file using Python-docx.
@@ -264,21 +332,21 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
         input_row.text = "Inputs:"
         input_data_cell = table.cell(1,1)
         for input_node in node_collection.inputs:
-            input_data_cell.text += f"\n - {input_node.id}: {input_node.item_category}"
+            input_data_cell.text += f"\n - {input_node.display_name}: {'http://hdl.handle.net/' + input_node.id}"
 
         # Third row here is the model runs
         model_run_row = table.rows[2].cells[0]
         model_run_row.text = "Model Runs:" 
         model_run_row_data_cell = table.cell(2,1)
         for model_run_node in node_collection.model_runs:
-            model_run_row_data_cell.text += f"\n - {model_run_node.id}: {model_run_node.item_category}"
+            model_run_row_data_cell.text += f"\n - {model_run_node.display_name}: {'http://hdl.handle.net/' + model_run_node.id}"
 
         # Fourth row here is the outputs
         output_row = table.rows[3].cells[0]
         output_row.text = "Outputs:"
         output_row_data_cell = table.cell(3,1)
-        for output_node in node_collection.inputs:
-            output_row_data_cell.text += f"\n - {output_node.id}: {output_node.item_category}"
+        for output_node in node_collection.outputs:
+            output_row_data_cell.text += f"\n - {output_node.display_name}: {'http://hdl.handle.net/' + output_node.id}"
 
         # Temporarily save the document to return it. 
         with NamedTemporaryFile(delete=False, suffix='.docx') as tmpFile: 
@@ -288,6 +356,13 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
            
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error generating the word file: {str(e)}")
+    
+
+def add_hyperlink(paragraph, text, url): 
+    # Sourced from: https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
+
+    part = paragraph.part
+    r_id = part.relate_to()
 
 def remove_file(file_path: str) -> None: 
     """Deletes the specified file from the server.
@@ -345,7 +420,7 @@ async def generate_report_helper(
         await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
 
         if item_subtype == ItemSubType.MODEL_RUN: 
-            report_nodes = generate_report(starting_id=node_id, upstream_depth=upstream_depth, config=config)
+            report_nodes = await generate_report(user=roles, starting_id=node_id, upstream_depth=upstream_depth, config=config)
 
         elif item_subtype == ItemSubType.STUDY: 
 
@@ -358,7 +433,7 @@ async def generate_report_helper(
                 if model_run_node.item_subtype == ItemSubType.MODEL_RUN:
                     model_run_id = model_run_node.id
                     # Extract the upstream and downstream entities from this node. 
-                    report_nodes = generate_report(starting_id=model_run_id, upstream_depth=upstream_depth, config=config)                
+                    report_nodes = await generate_report(user=roles, starting_id=model_run_id, upstream_depth=upstream_depth, config=config)                
 
         else: 
             raise HTTPException(status_code=400, detail=f"Unsupported node with item subtype {item_subtype.value} requested.\

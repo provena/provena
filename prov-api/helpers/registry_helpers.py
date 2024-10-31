@@ -248,8 +248,8 @@ async def fetch_item_from_registry_with_subtype(proxy_username: str,
     
     endpoints_mapping: Dict[ItemSubType, str] = {
         ItemSubType.MODEL_RUN: "/registry/activity/model_run/fetch", 
-        ItemSubType.DATASET: "/registry/activity/dataset/fetch",
-        ItemSubType.MODEL: "/registry/activity/model/fetch" 
+        ItemSubType.DATASET: "/registry/entity/dataset/fetch",
+        ItemSubType.MODEL: "/registry/entity/model/fetch" 
         }
 
     # Setup request
@@ -266,12 +266,10 @@ async def fetch_item_from_registry_with_subtype(proxy_username: str,
     token = get_service_token(secret_cache, config)
 
     # make request
-    response = await async_post_request(
+    response = await async_get_request(
         endpoint=endpoint,
         token=token,
-        params=params,
-        # No body for this post
-        json_body=None
+        params=params
     )
 
     if response.status_code !=200:
