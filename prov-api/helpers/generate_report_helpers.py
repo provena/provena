@@ -1,6 +1,6 @@
 import io
 import os
-from typing import Dict, List, Any, Callable, Tuple, Set
+from typing import Dict, List, Any, Callable, Tuple, Set, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -17,6 +17,9 @@ from helpers.registry_helpers import fetch_item_from_registry_with_subtype
 from tempfile import NamedTemporaryFile
 
 from docx import Document
+from docx.text.paragraph import Paragraph
+from docx.shared import RGBColor
+import docx
 from docx.shared import Inches
 
 class NodeType(str, Enum): 
@@ -30,8 +33,7 @@ class NodeDirection(str, Enum):
 
 @dataclass
 class ReportNodeCollection():
-     # Used to keep track of unique nodes.
-    node_ids: Set[str] = field(default_factory=set)
+    
     inputs: List[ItemBase] = field(default_factory=list)
     model_runs: List[ItemBase] = field(default_factory=list)
     outputs: List[ItemBase] = field(default_factory=list)
@@ -42,10 +44,7 @@ class ReportNodeCollection():
     output_ids: Set[str] = field(default_factory=set)
 
     def add_node(self, node: ItemBase, node_type: NodeType) -> None:
-        # Check if node is already added to avoid duplicates
-        if node.id in self.node_ids:
-            return
-        
+
         # Handle nodes of type MODEL_RUN
         if node.item_subtype == ItemSubType.MODEL_RUN and node.id not in self.model_run_ids:
             self.model_runs.append(node)
@@ -60,10 +59,6 @@ class ReportNodeCollection():
         elif node_type == NodeType.OUTPUTS and node.item_subtype == ItemSubType.DATASET and node.id not in self.output_ids:
             self.outputs.append(node)
             self.output_ids.add(node.id)
-
-        # Add to the global node_ids set for tracking purposes
-        self.node_ids.add(node.id)
-
         
 async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_style: RequestStyle, config: Config) -> None: 
     """Validates that a provided node (id + subtype) does exist within the registry.
@@ -118,32 +113,6 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error when validating study or model run entities: {str(e)}")
 
-def filter_for_export_prov_graph(upstream_nodes: List[Node], downstream_nodes: List[Node]) -> ReportNodeCollection: 
-    """Takes a list of upstream and downstream nodes and processes them into into different categories of 
-    inputs, models and outputs. 
-
-    Parameters
-    ----------
-    upstream_nodes : List[Node]
-        A list of all upstream nodes. 
-    downstream_nodes : List[Node]
-        A list of all downstream nodes.
-
-    Returns
-    -------
-    ReportNodeCollection
-        A dataclass containing the "inputs", "outputs" and "model-runs" involved within the study/model-run.
-    """
-
-    filtered_response = ReportNodeCollection()
-
-    for node in upstream_nodes:
-        filtered_response.add_node(node, NodeType.INPUTS)
-
-    for node in downstream_nodes: 
-        filtered_response.add_node(node, NodeType.OUTPUTS)
-
-    return filtered_response
 
 def parse_nodes(node_list: List[Any]) -> List[Node]: 
     """Parses a list of potential nodes into a list of Valid Node objects.
@@ -197,7 +166,7 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
     return node_list_parsed
 
 
-async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth: int, config: Config) -> ReportNodeCollection:
+async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth: int, config: Config, collection_shared: ReportNodeCollection) -> ReportNodeCollection:
     """Generates the report by querying upstream and downstream data, parsing nodes, and filtering results.
 
     This helper function performs upstream and downstream queries, parses the node responses, filters them 
@@ -219,9 +188,11 @@ async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth:
     """
 
     collection = await fetch_parse_all_upstream_downstream_nodes(
-                                                    user = user, starting_id=starting_id, 
+                                                    user = user, 
+                                                    starting_id=starting_id, 
                                                     upstream_depth=upstream_depth,
-                                                    config=config)
+                                                    config=config,
+                                                    collection = collection_shared)
 
     return collection
 
@@ -229,14 +200,28 @@ async def fetch_parse_all_upstream_downstream_nodes(user: ProtectedRole,
                                                     starting_id: str, 
                                                     upstream_depth: int, 
                                                     config: Config, 
-                                                    downstream_depth: int = 1
+                                                    collection: ReportNodeCollection,
+                                                    downstream_depth: int = 1, 
                                                     ) -> ReportNodeCollection: 
+    
+    """_summary_
+
+    Returns
+    -------
+    _type_
+        _description_
+
+    Raises
+    ------
+    HTTPException
+        _description_
+    HTTPException
+        _description_
+    """
     
     try:
 
-        # This is shared dataclass that will capture all the inputs and outputs surronding the requested entity.\
-        collection = ReportNodeCollection()
-                
+        # Fetch both upstream and downstream nodes.
         upstream_response: Dict[str, Any] = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
         downstream_response: Dict[str, Any] = downstream_query(starting_id=starting_id, depth=downstream_depth, config=config)
 
@@ -306,6 +291,32 @@ def should_load_node(node: Node, direction: NodeDirection) -> bool:
     
     return node.item_subtype == ItemSubType.DATASET 
 
+def add_hyperlink(paragraph: Paragraph, text: str, url: str) -> Optional[docx.oxml.CT_Hyperlink]: 
+        # Sourced from: https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
+
+        part = paragraph.part
+        r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+
+        # Create the w:hyperlink tag and add needed values
+        hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
+        hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
+
+        # Create a new run object (a wrapper over a 'w:r' element)
+        new_run = docx.text.run.Run(
+            docx.oxml.shared.OxmlElement('w:r'), paragraph)
+        new_run.text = text
+
+        # Set the run's style to the builtin hyperlink style, defining it if necessary
+        #new_run.style = get_or_create_hyperlink_style(part.document)
+        # Alternatively, set the run's formatting explicitly
+        new_run.font.color.rgb = docx.shared.RGBColor(0, 0, 255)
+        new_run.font.underline = True
+
+        # Join all the xml elements together
+        hyperlink.append(new_run._element)
+        paragraph._p.append(hyperlink)
+        return hyperlink
+
 def generate_word_file(node_collection: ReportNodeCollection) -> str: 
     """Generates and creates a temporary word file using Python-docx.
    
@@ -325,28 +336,34 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
 
         # First row here is the modelling-team-name
         table.cell(0,0).text = "Modelling Team"
-        table.cell(0,1).text = "C~Scape"
+        table.cell(0,1).text = "TODO"
 
         # Second row here is the inputs
         input_row = table.rows[1].cells[0]
         input_row.text = "Inputs:"
         input_data_cell = table.cell(1,1)
         for input_node in node_collection.inputs:
-            input_data_cell.text += f"\n - {input_node.display_name}: {'http://hdl.handle.net/' + input_node.id}"
+            paragraph = input_data_cell.add_paragraph(input_node.display_name + ",")
+            url = "http://hdl.handle.net/" + input_node.id
+            add_hyperlink(paragraph, text=url, url=url)
 
         # Third row here is the model runs
         model_run_row = table.rows[2].cells[0]
         model_run_row.text = "Model Runs:" 
         model_run_row_data_cell = table.cell(2,1)
         for model_run_node in node_collection.model_runs:
-            model_run_row_data_cell.text += f"\n - {model_run_node.display_name}: {'http://hdl.handle.net/' + model_run_node.id}"
+            paragraph = model_run_row_data_cell.add_paragraph(model_run_node.display_name)
+            url = "http://hdl.handle.net/" + model_run_node.id
+            add_hyperlink(paragraph, text=url, url=url)
 
         # Fourth row here is the outputs
         output_row = table.rows[3].cells[0]
         output_row.text = "Outputs:"
         output_row_data_cell = table.cell(3,1)
         for output_node in node_collection.outputs:
-            output_row_data_cell.text += f"\n - {output_node.display_name}: {'http://hdl.handle.net/' + output_node.id}"
+            paragraph = output_row_data_cell.add_paragraph(output_node.display_name)
+            url = "http://hdl.handle.net/" + output_node.id
+            add_hyperlink(paragraph, text=url, url=url)
 
         # Temporarily save the document to return it. 
         with NamedTemporaryFile(delete=False, suffix='.docx') as tmpFile: 
@@ -357,12 +374,6 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error generating the word file: {str(e)}")
     
-
-def add_hyperlink(paragraph, text, url): 
-    # Sourced from: https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
-
-    part = paragraph.part
-    r_id = part.relate_to()
 
 def remove_file(file_path: str) -> None: 
     """Deletes the specified file from the server.
@@ -420,7 +431,11 @@ async def generate_report_helper(
         await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
 
         if item_subtype == ItemSubType.MODEL_RUN: 
-            report_nodes = await generate_report(user=roles, starting_id=node_id, upstream_depth=upstream_depth, config=config)
+            report_nodes = await generate_report(user=roles, 
+                                                 starting_id=node_id, 
+                                                 upstream_depth=upstream_depth, 
+                                                 config=config,
+                                                 collection_shared=report_nodes)
 
         elif item_subtype == ItemSubType.STUDY: 
 
@@ -433,7 +448,11 @@ async def generate_report_helper(
                 if model_run_node.item_subtype == ItemSubType.MODEL_RUN:
                     model_run_id = model_run_node.id
                     # Extract the upstream and downstream entities from this node. 
-                    report_nodes = await generate_report(user=roles, starting_id=model_run_id, upstream_depth=upstream_depth, config=config)                
+                    report_nodes = await generate_report(user=roles, 
+                                                         starting_id=model_run_id, 
+                                                         upstream_depth=upstream_depth, 
+                                                         config=config,
+                                                         collection_shared=report_nodes)                
 
         else: 
             raise HTTPException(status_code=400, detail=f"Unsupported node with item subtype {item_subtype.value} requested.\
