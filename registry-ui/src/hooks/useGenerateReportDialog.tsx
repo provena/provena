@@ -15,11 +15,11 @@ import {
     InputLabel,
     SelectChangeEvent
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useGenerateReport } from "./useGenerateReport";
 import { ItemSubType } from "provena-interfaces/RegistryModels";
+import { stripPossibleFullStop } from "react-libs";
 
 export interface GenerateReportProps {
     id: string | undefined;
@@ -31,15 +31,18 @@ const DEPTH_LIST = [1,2,3]
 export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const [popUpOpen, setPopupOpen] = useState<boolean>(false);
-    const [depth, setDepth] = useState<number|null>(null);
-
+    const [depth, setDepth] = useState<number | null>(null);
+    
     // Call the react-query defined. 
-    const generateReportHandler = useGenerateReport({
+    const {mutate, isError, reset, isLoading, isSuccess, error, data, dataReady} = useGenerateReport({
         id: props.id, 
         itemSubType: props.itemSubType, 
         depth: depth!, 
         onSuccess: () => {
-            closeDialog()
+            //
+        },
+        onError:(error) => {
+            //
         }
     })
 
@@ -52,7 +55,8 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         // Clear state and close dialog
         setDepth(null)
         setPopupOpen(false);
-
+        // reset mutation
+        reset();
     }
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -61,11 +65,10 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const onSubmit = () => {
         // Validate that a depth has been chosen.
-        if (depth !== null && generateReportHandler.dataReady){ 
+        if (depth !== null && dataReady){ 
             // Proceed to submit... 
-            generateReportHandler.generateReportQuery.mutate();
+            mutate();
         }
-
     }
 
     // Submit button is disabled if depth is not picked.
@@ -77,37 +80,65 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
             <DialogContent>
                 <Stack spacing={2} direction="column">
                     Select a depth for the upstream.
-                    <FormControl fullWidth>
-                        <InputLabel id="depth-select-label">Depth</InputLabel>
-                        <Select
-                            labelId="depth-select-label"
-                            id="depth-simple-select"
-                            label="Depth"
-                            onChange={handleChange}
+                    
+                    {isError && (
+                        <Alert severity="error" variant="outlined">
+                        <AlertTitle>An error occurred</AlertTitle>
+                        <Typography variant="subtitle1">
+                            An error occurred while running the link operation. Error:{" "}
+                            {error
+                            ? stripPossibleFullStop(error as string)
+                            : "Unknown"}
+                            . Try refreshing the page and performing the operation
+                            again, or contact an administrator for assistance.
+                        </Typography>
+                        </Alert>
+                    )}
 
-                        >
-                            {DEPTH_LIST.map((item: number) => (
-                                <MenuItem value={item} key={item}> {item}</MenuItem>
-                            ))}
+                    {isSuccess && (
 
-                        </Select>
+                        <Alert severity="success" variant="outlined">
+                            <AlertTitle>Your file was downloaded successfully.</AlertTitle>
+                        </Alert>
+                    
+                    )}
 
-                    </FormControl>
+                    {!isSuccess && (
+                        <>
 
-                    <DialogActions>
-                        <Button
-                            onClick={closeDialog}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            color="success"
-                            disabled={submitDisabled}
-                            onClick={onSubmit}
-                        >
-                            Submit
-                        </Button>
-                    </DialogActions>
+                        <FormControl fullWidth>
+                            <InputLabel id="depth-select-label">Depth</InputLabel>
+                            <Select
+                                labelId="depth-select-label"
+                                id="depth-simple-select"
+                                label="Depth"
+                                onChange={handleChange}
+
+                            >
+                                {DEPTH_LIST.map((item: number) => (
+                                    <MenuItem value={item} key={item}> {item}</MenuItem>
+                                ))}
+
+                            </Select>
+
+                        </FormControl>
+
+                        <DialogActions>
+                            <Button
+                                onClick={closeDialog}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                color="success"
+                                disabled={submitDisabled}
+                                onClick={onSubmit}
+                            >
+                                Submit
+                            </Button>
+                        </DialogActions>
+                        </>
+                    )}
 
                 </Stack>
             </DialogContent>

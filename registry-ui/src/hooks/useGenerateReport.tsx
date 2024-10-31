@@ -12,6 +12,7 @@ export interface useGenerateReportProps {
     // Chosen depth by the user.
     depth: number
     onSuccess?: (response: any) => void;
+    onError: (errorMsg: any) => void
 
 }
 
@@ -43,7 +44,10 @@ export const useGenerateReport = (props: useGenerateReportProps) => {
                 props.onSuccess(data)
             }
         },
-        onError(data){
+        onError(error){
+            if (props.onError !== undefined){
+                props.onError(error)
+            }
 
         }
     })
@@ -58,7 +62,9 @@ export const useGenerateReport = (props: useGenerateReportProps) => {
 
     return {
         dataReady,
-        generateReportQuery
+        submit,
+        // De-structure the return of the mutate object.
+        ...generateReportQuery
     }
 }
 
