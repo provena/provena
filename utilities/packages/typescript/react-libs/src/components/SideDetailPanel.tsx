@@ -18,11 +18,14 @@ import {
   Typography,
 } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { FileDownload } from "@mui/icons-material";
 import { REGISTRY_LINK } from "../queries";
 import { useCombinedLoadedItem } from "../hooks";
 import { ItemDisplayWithStatusComponent } from "./ItemDisplayWithStatus";
 import { ExpansionArray, GraphExploreQueries } from "../hooks/useProvGraphData";
 import HelpOutline from "@mui/icons-material/HelpOutline";
+import { useGenerateReportDialog } from "../hooks/useGenerateReportDialog";
+import { ItemSubType } from "../provena-interfaces/RegistryModels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -118,6 +121,20 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
     );
   };
 
+  // Condtionally renders the "Generate Report Button"
+  const subtype = loadedItem.data?.item_subtype as ItemSubType | undefined;
+  const isStudy = subtype === "STUDY"
+  const isModelRun = subtype === "MODEL_RUN";
+
+  const isModelRunOrStudy =
+    isStudy || isModelRun &&
+    loadedItem.data
+
+  const { openDialog, renderedDialog } = useGenerateReportDialog({
+    id: loadedItem?.data?.id,
+    itemSubType: loadedItem.data?.item_subtype
+  })
+
   const renderSelectionDropDown = (id: string) => {
     return (
       <FormControl fullWidth className={classes.selectionFormControl}>
@@ -181,9 +198,23 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
           <ClearIcon />
         </IconButton>
       </Grid>
-      <Stack direction="column" spacing={2}>
+      <Stack direction="column" spacing={3}>
         <Divider />
         <Grid container xs={12} className={classes.buttonsBar}>
+
+          {isModelRunOrStudy &&
+            <Grid item md={6} className={classes.buttons} pr={1} mb={2}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick = {openDialog}
+              >
+              Generate Report
+              <FileDownload style = {{marginLeft: "5px"}}></FileDownload>
+              </Button>
+            </Grid>
+          }
+
           <Grid item md={6} className={classes.buttons} pr={1}>
             <Button
               variant="outlined"
@@ -194,7 +225,7 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
               View Entity Lineage
             </Button>
           </Grid>
-          <Grid item md={6} className={classes.buttons} pl={1}>
+          <Grid item md={6} className={classes.buttons} pl={0}>
             <Button
               variant="outlined"
               fullWidth
@@ -220,6 +251,9 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
           disabled={false}
           status={loadedItem}
         />
+
+        {renderedDialog}
+
       </Stack>
     </div>
   );

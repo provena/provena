@@ -367,7 +367,7 @@ const RecordView = observer((props: {}) => {
     typedPayload &&
     !!(typedPayload.item as ItemModelRun).record.study_id;
 
-  // Checking whether we should render the "Export Button"
+  // Checking whether we should render the "Generate Report Button"
   const isStudy = subtype === "STUDY"
   const isModelRunOrStudy =
     isStudy || isModelRun &&
@@ -566,7 +566,7 @@ const RecordView = observer((props: {}) => {
                       variant="outlined"
                       onClick={openDialog}
                     >
-                      Export
+                      Generate Report
                     </Button>
                   </Grid>
                 )}
