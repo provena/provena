@@ -26,24 +26,19 @@ export interface GenerateReportProps {
     itemSubType: ItemSubType | undefined; 
 }
 
+// A literal list with set depth values.
 const DEPTH_LIST = [1,2,3]
 
 export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const [popUpOpen, setPopupOpen] = useState<boolean>(false);
-    const [depth, setDepth] = useState<number | null>(null);
+    const [depth, setDepth] = useState<number>(DEPTH_LIST[0]);
     
     // Call the react-query defined. 
     const {mutate, isError, reset, isLoading, isSuccess, error, data, dataReady} = useGenerateReport({
         id: props.id, 
         itemSubType: props.itemSubType, 
-        depth: depth!, 
-        onSuccess: () => {
-            //
-        },
-        onError:(error) => {
-            //
-        }
+        depth: depth
     })
 
     // Helper functions to open and close the popup. 
@@ -53,7 +48,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const closeDialog = () => {
         // Clear state and close dialog
-        setDepth(null)
+        setDepth(DEPTH_LIST[0])
         setPopupOpen(false);
         // reset mutation
         reset();
@@ -75,19 +70,15 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
     const submitDisabled = depth === null
 
     const renderedDialog = (
-
         <Dialog open={popUpOpen} onClose={closeDialog} fullWidth={true} maxWidth={"md"}>
             <DialogContent>
-                <Stack spacing={2} direction="column">
-                    This generates a word document containing the associated inputs, model runs and outputs
-                    originating from this {props.itemSubType} upto your chosen upstream depth and a fixed
-                    downstream depth of 1.
-                    
+                <Stack spacing={2} gap={2} direction="column">
+
                     {isError && (
                         <Alert severity="error" variant="outlined">
                         <AlertTitle>An error occurred</AlertTitle>
                         <Typography variant="subtitle1">
-                            An error occurred while running the link operation. Error:{" "}
+                            An error occurred while running the Generate Report operation. Error:{" "}
                             {error
                             ? stripPossibleFullStop(error as string)
                             : "Unknown"}
@@ -98,51 +89,55 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
                     )}
 
                     {isSuccess && (
-
                         <Alert severity="success" variant="outlined">
                             <AlertTitle>Your file was downloaded successfully.</AlertTitle>
                         </Alert>
-                    
                     )}
 
                     {!isSuccess && (
-                        <>
+                        <>   
+                        <DialogContentText>
+                                Generate a word document containing the associated inputs, model runs and outputs
+                                originating from this {props.itemSubType} upto your chosen upstream depth and a fixed
+                                downstream depth of 1.
+                            </DialogContentText>
+                            <FormControl fullWidth>
+                                <InputLabel id="depth-select-label">Depth</InputLabel>
+                                <Select
+                                    labelId="depth-select-label"
+                                    id="depth-simple-select"
+                                    value = {String(depth)}
+                                    label="Depth"
+                                    onChange={handleChange}
 
-                        <FormControl fullWidth>
-                            <InputLabel id="depth-select-label">Depth</InputLabel>
-                            <Select
-                                labelId="depth-select-label"
-                                id="depth-simple-select"
-                                label="Depth"
-                                onChange={handleChange}
-
-                            >
-                                {DEPTH_LIST.map((item: number) => (
-                                    <MenuItem value={item} key={item}> {item}</MenuItem>
-                                ))}
-
-                            </Select>
-
-                        </FormControl>
-
-                        <DialogActions>
-                            <Button
-                                onClick={closeDialog}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                color="success"
-                                disabled={submitDisabled}
-                                onClick={onSubmit}
-                            >
-                                Submit
-                            </Button>
-                        </DialogActions>
+                                >
+                                    {DEPTH_LIST.map((item: number) => (
+                                        <MenuItem value={item} key={item}> {item}</MenuItem>
+                                    ))}
+                                </Select>
+                                <Typography variant="caption" color="textSecondary">
+                                    Select depth level for upstream exploration.
+                                </Typography>
+                            </FormControl>
                         </>
                     )}
-
                 </Stack>
+                <DialogActions>
+                    <Button
+                        onClick={closeDialog}
+                    >
+                        {isSuccess? "Close" : "Cancel"}
+                    </Button>
+                    {!isSuccess && (
+                    <Button
+                        color="success"
+                        disabled={submitDisabled}
+                        onClick={onSubmit}
+                    >
+                        {isLoading ? "Generating..." : "Generate Report"}
+                    </Button>
+                    )}
+                </DialogActions>
             </DialogContent>
         </Dialog>
     )

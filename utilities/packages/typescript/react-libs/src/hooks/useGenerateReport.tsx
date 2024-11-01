@@ -1,5 +1,4 @@
-// Custom hook that manages the react-query/api calls for the "Export" feature. 
-import { useState } from "react"
+// A small custom hook that manages the react-query/api calls for the "Export" feature. 
 import { useMutation } from "@tanstack/react-query"
 
 import { generateReport } from "../queries"
@@ -11,9 +10,6 @@ export interface useGenerateReportProps {
     itemSubType: ItemSubType | undefined
     // Chosen depth by the user.
     depth: number
-    onSuccess?: (response: any) => void;
-    onError: (errorMsg: any) => void
-
 }
 
 export const useGenerateReport = (props: useGenerateReportProps) => {
@@ -24,10 +20,6 @@ export const useGenerateReport = (props: useGenerateReportProps) => {
         return i === undefined;
     });
 
-    /* onSuccess is a callback that is fired anytime the query 
-       succesfully fetches new data.
-     */ 
-
     // Setting up the useQuery
     const generateReportQuery = useMutation({
         mutationFn: () => {
@@ -37,33 +29,13 @@ export const useGenerateReport = (props: useGenerateReportProps) => {
                 depth: props.depth
 
             })
-        },
-        onSuccess(data){
-            if (props.onSuccess !== undefined){
-                // If the onSuccess function is defined then calls it
-                props.onSuccess(data)
-            }
-        },
-        onError(error){
-            if (props.onError !== undefined){
-                props.onError(error)
-            }
-
         }
     })
 
-    const submit = () => {
-        // Call the mutation function
-        generateReportQuery.mutate()
-
-    }
-
     // Return the values generated in the hook. 
-
     return {
         dataReady,
-        submit,
-        // De-structure the return of the mutate object.
+        // Spreads out the return of the mutate object.
         ...generateReportQuery
     }
 }
