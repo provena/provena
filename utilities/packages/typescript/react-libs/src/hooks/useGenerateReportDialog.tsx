@@ -79,7 +79,9 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         <Dialog open={popUpOpen} onClose={closeDialog} fullWidth={true} maxWidth={"md"}>
             <DialogContent>
                 <Stack spacing={2} direction="column">
-                    Select a depth for the upstream.
+                    This generates a word document containing the associated inputs, model runs and outputs
+                    originating from this {props.itemSubType} upto your chosen upstream depth and a fixed
+                    downstream depth of 1.
                     
                     {isError && (
                         <Alert severity="error" variant="outlined">

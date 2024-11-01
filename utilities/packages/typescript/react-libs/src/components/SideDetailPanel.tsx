@@ -10,6 +10,7 @@ import {
   Grid,
   IconButton,
   InputLabel,
+  Menu,
   MenuItem,
   Select,
   SelectChangeEvent,
@@ -104,6 +105,19 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
     Renders in the side panel an independently managed loaded item.
 
     */
+
+  
+  // Defined states for Menu Management for "Entity Actions"
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null); 
+  const open = Boolean(anchorEl)
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  }
+
   const classes = useStyles();
   const registryLink = REGISTRY_LINK + `/item/${props.id}`;
 
@@ -121,7 +135,7 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
     );
   };
 
-  // Condtionally renders the "Generate Report Button"
+  // Conditionally renders the "Generate Report Button"
   const subtype = loadedItem.data?.item_subtype as ItemSubType | undefined;
   const isStudy = subtype === "STUDY"
   const isModelRun = subtype === "MODEL_RUN";
@@ -201,20 +215,6 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
       <Stack direction="column" spacing={3}>
         <Divider />
         <Grid container xs={12} className={classes.buttonsBar}>
-
-          {isModelRunOrStudy &&
-            <Grid item md={6} className={classes.buttons} pr={1} mb={2}>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick = {openDialog}
-              >
-              Generate Report
-              <FileDownload style = {{marginLeft: "5px"}}></FileDownload>
-              </Button>
-            </Grid>
-          }
-
           <Grid item md={6} className={classes.buttons} pr={1}>
             <Button
               variant="outlined"
@@ -225,17 +225,36 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
               View Entity Lineage
             </Button>
           </Grid>
-          <Grid item md={6} className={classes.buttons} pl={0}>
+          <Grid item md={6} className={classes.buttons}>
             <Button
               variant="outlined"
               fullWidth
-              onClick={() => {
-                window.open(registryLink, "_blank", "noopener,noreferrer");
-              }}
+              onClick={handleClick}
             >
-              View In Registry
-              <LaunchIcon style={{ marginLeft: "10px" }} />
+              Entity Actions
             </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+            >
+              <MenuItem
+                onClick={() => {
+                  window.open(registryLink, "_blank", "noopener,noreferrer");
+                }}
+              >
+                View In Registry
+                <LaunchIcon style={{ marginLeft: "10px" }} />
+              </MenuItem>
+
+              <MenuItem
+                onClick={openDialog}
+                disabled={!isModelRunOrStudy}
+              >
+                Generate Report
+                <FileDownload style={{ marginLeft: "10px" }} />
+              </MenuItem>
+            </Menu>
           </Grid>
         </Grid>
         {/* Selections dropdown for query filtering */}
@@ -252,6 +271,7 @@ const SideDetailPanel = (props: SideDetailPanelProps) => {
           status={loadedItem}
         />
 
+        // Renders the Generate Report Dialog
         {renderedDialog}
 
       </Stack>
