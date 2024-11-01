@@ -1,6 +1,5 @@
-import io
 import os
-from typing import Dict, List, Any, Callable, Tuple, Set, Optional
+from typing import Dict, List, Any, Callable, Set, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -18,9 +17,7 @@ from tempfile import NamedTemporaryFile
 
 from docx import Document
 from docx.text.paragraph import Paragraph
-from docx.shared import RGBColor
 import docx
-from docx.shared import Inches
 
 class NodeType(str, Enum): 
     INPUTS = "inputs"
@@ -33,7 +30,16 @@ class NodeDirection(str, Enum):
 
 @dataclass
 class ReportNodeCollection():
-    
+    """A collection to manage and organise nodes in a report, grouping them by type: 
+    inputs, model runs, and outputs. Each type has a corresponding list to store 
+    the nodes and a set to track unique node IDs to silently avoid duplicates.
+
+    Methods: 
+        add_node(node: ItemBase, node_type: NodeType) -> None:
+            Adds a node to the appropriate category based on its type and subtype.
+            Checks whether the node is already present within the collection via
+            it's respective set.
+    """
     inputs: List[ItemBase] = field(default_factory=list)
     model_runs: List[ItemBase] = field(default_factory=list)
     outputs: List[ItemBase] = field(default_factory=list)
@@ -130,7 +136,6 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
     List[Node]
         A list of parsed Node objects.
 
-
     Raises
     ------
     HTTPException
@@ -166,61 +171,82 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
     return node_list_parsed
 
 
-async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth: int, config: Config, collection_shared: ReportNodeCollection) -> ReportNodeCollection:
+async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth: int, config: Config, report_node_collection: ReportNodeCollection) -> ReportNodeCollection:
     """Generates the report by querying upstream and downstream data, parsing nodes, and filtering results.
 
     This helper function performs upstream and downstream queries, parses the node responses, filters them 
-    for relevant data, and stores the results into a shared dictionary for further report generation.
+    for relevant data, and stores the results into a shared dataclass for further report generation.
 
     Parameters
     ----------
+    user : ProtectedRole
+        The role of the user making the request, used for making requests to Registry API.
     starting_id : str
         The starting node ID to perform the queries from.
     upstream_depth : int
-        The depth of the upstream query to traverse upto.
-    shared_responses : Dict[str, List[Node]]
-        A dictionary which contains the parsed and filtered nodes. 
-        Contains 'inputs', 'model_runs', and 'outputs' as keys.
+        The depth of the upstream query to traverse.
     config : Config
         A config object containing information about the different endpoints of the system.
-    downstream_depth : int, optional
-        The depth of the downstream query to traverse to, by default 1
-    """
-
-    collection = await fetch_parse_all_upstream_downstream_nodes(
-                                                    user = user, 
-                                                    starting_id=starting_id, 
-                                                    upstream_depth=upstream_depth,
-                                                    config=config,
-                                                    collection = collection_shared)
-
-    return collection
-
-async def fetch_parse_all_upstream_downstream_nodes(user: ProtectedRole, 
-                                                    starting_id: str, 
-                                                    upstream_depth: int, 
-                                                    config: Config, 
-                                                    collection: ReportNodeCollection,
-                                                    downstream_depth: int = 1, 
-                                                    ) -> ReportNodeCollection: 
-    
-    """_summary_
+    report_node_collection : ReportNodeCollection
+        A collection to store and manage parsed nodes for report generation.
 
     Returns
     -------
-    _type_
-        _description_
+    ReportNodeCollection
+        A collection containing the parsed and filtered nodes, organized by type.
+    """
+
+    collection = await fetch_parse_all_upstream_downstream_nodes(
+        user=user,
+        starting_id=starting_id,
+        upstream_depth=upstream_depth,
+        config=config,
+        report_node_collection=report_node_collection
+    )
+
+    return collection
+
+async def fetch_parse_all_upstream_downstream_nodes(
+    user: ProtectedRole,
+    starting_id: str,
+    upstream_depth: int,
+    config: Config,
+    report_node_collection: ReportNodeCollection,
+    downstream_depth: int = 1
+) -> ReportNodeCollection:
+    
+    """
+    Fetches and parses nodes in both upstream and downstream directions, and adds them to the collection.
+
+    Parameters
+    ----------
+    user : ProtectedRole
+        The role of the user making the request, used for making requests to Registry API.
+    starting_id : str
+        The starting node ID to perform the queries from.
+    upstream_depth : int
+        The depth of the upstream query to traverse.
+    config : Config
+        A config object containing information about the different endpoints of the system.
+    report_node_collection : ReportNodeCollection
+        A collection to store and manage parsed nodes for report generation.
+    downstream_depth : int, optional
+        The depth of the downstream query to traverse, by default 1.
+
+    Returns
+    -------
+    ReportNodeCollection
+        A collection containing the parsed and filtered nodes from both upstream and downstream queries.
 
     Raises
     ------
     HTTPException
-        _description_
+        If nodes cannot be found in upstream or downstream responses.
     HTTPException
-        _description_
+        If any error occurs during fetching and parsing.
     """
     
     try:
-
         # Fetch both upstream and downstream nodes.
         upstream_response: Dict[str, Any] = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
         downstream_response: Dict[str, Any] = downstream_query(starting_id=starting_id, depth=downstream_depth, config=config)
@@ -237,7 +263,7 @@ async def fetch_parse_all_upstream_downstream_nodes(user: ProtectedRole,
             direction = NodeDirection.UPSTREAM,
             user = user,
             config = config,
-            collection = collection
+            report_node_collection = report_node_collection
         )
 
         await process_node_collection(
@@ -245,10 +271,10 @@ async def fetch_parse_all_upstream_downstream_nodes(user: ProtectedRole,
             direction = NodeDirection.DOWNSTREAM,
             user = user, 
             config = config,
-            collection = collection
+            report_node_collection = report_node_collection
         )
 
-        return collection
+        return report_node_collection
             
     except AssertionError as e: 
         raise HTTPException(status_code=404, detail=f"The provided model run with id {starting_id} - error: {str(e)}")
@@ -262,8 +288,29 @@ async def process_node_collection(
         direction: NodeDirection,
         user: ProtectedRole, 
         config: Config, 
-        collection: ReportNodeCollection
+        report_node_collection: ReportNodeCollection
 ) -> ReportNodeCollection:
+    """
+    Processes and validates a collection of nodes, adding them to the appropriate section in the ReportNodeCollection.
+
+    Parameters
+    ----------
+    nodes : List[Any]
+        The list of nodes to process.
+    direction : NodeDirection
+        The direction of the nodes, either UPSTREAM or DOWNSTREAM.
+    user : ProtectedRole
+        The role of the user making the request, used for making requests to Registry API.
+    config : Config
+        A config object containing information about the different endpoints of the system.
+    report_node_collection : ReportNodeCollection
+        A collection to store and manage parsed nodes for report generation.
+
+    Returns
+    -------
+    ReportNodeCollection
+        The updated collection with nodes processed and validated for report generation.
+    """
     
     parsed_nodes = parse_nodes(nodes)
     node_type = NodeType.INPUTS if direction == NodeDirection.UPSTREAM else NodeType.OUTPUTS
@@ -277,11 +324,27 @@ async def process_node_collection(
                 config=config
             )
 
-            collection.add_node(node=loaded_item.item, node_type=node_type)
+            #This is typed ignored because we validate the properties of the response in the helper function.
+            report_node_collection.add_node(node=loaded_item.item, node_type=node_type) #type:ignore
 
-    return collection
+    return report_node_collection
 
 def should_load_node(node: Node, direction: NodeDirection) -> bool:
+    """Determines whether a node should be loaded into the ReportCollection
+       and fetches the loaded item if it should.
+
+    Parameters
+    ----------
+    node : Node
+        The node to validate.
+    direction : NodeDirection
+        The direction of the node (UPSTREAM OR DOWNSTREAM)
+
+    Returns
+    -------
+    bool
+        True if the node should be loaded, False otherwise.
+    """
     if direction == NodeDirection.UPSTREAM: 
         return node.item_subtype in{
             ItemSubType.MODEL_RUN,
@@ -291,43 +354,71 @@ def should_load_node(node: Node, direction: NodeDirection) -> bool:
     
     return node.item_subtype == ItemSubType.DATASET 
 
-def add_hyperlink(paragraph: Paragraph, text: str, url: str) -> Optional[docx.oxml.CT_Hyperlink]: 
-        # Sourced from: https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
+def add_hyperlink(paragraph: Paragraph, text: str, url: str) -> Optional[docx.oxml.CT_Hyperlink]:
+    # Python-docx does not have a native .add_hyperlink() functionality.
+    # Sourced from: https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
 
-        part = paragraph.part
-        r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+    """Adds a hyperlink to a Word document paragraph.
 
-        # Create the w:hyperlink tag and add needed values
-        hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
-        hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
+    Parameters
+    ----------
+    paragraph : Paragraph
+        The paragraph to which the hyperlink will be added.
+    text : str
+        The display text for the hyperlink.
+    url : str
+        The URL that the hyperlink points to.
 
-        # Create a new run object (a wrapper over a 'w:r' element)
-        new_run = docx.text.run.Run(
-            docx.oxml.shared.OxmlElement('w:r'), paragraph)
-        new_run.text = text
+    Returns
+    -------
+    Optional[docx.oxml.CT_Hyperlink]
+        The created hyperlink object.
+    """
 
-        # Set the run's style to the builtin hyperlink style, defining it if necessary
-        #new_run.style = get_or_create_hyperlink_style(part.document)
-        # Alternatively, set the run's formatting explicitly
-        new_run.font.color.rgb = docx.shared.RGBColor(0, 0, 255)
-        new_run.font.underline = True
+    part = paragraph.part
+    r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
 
-        # Join all the xml elements together
-        hyperlink.append(new_run._element)
-        paragraph._p.append(hyperlink)
-        return hyperlink
+    # Create the w:hyperlink tag and add needed values
+    hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
+    hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
+
+    # Create a new run object (a wrapper over a 'w:r' element)
+    new_run = docx.text.run.Run(
+        docx.oxml.shared.OxmlElement('w:r'), paragraph)
+    new_run.text = text
+
+    # Set the run's style to the builtin hyperlink style, defining it if necessary
+    #new_run.style = get_or_create_hyperlink_style(part.document)
+    # Alternatively, set the run's formatting explicitly
+    new_run.font.color.rgb = docx.shared.RGBColor(0, 0, 255)
+    new_run.font.underline = True
+
+    # Join all the xml elements together
+    hyperlink.append(new_run._element)
+    paragraph._p.append(hyperlink)
+    return hyperlink
 
 def generate_word_file(node_collection: ReportNodeCollection) -> str: 
-    """Generates and creates a temporary word file using Python-docx.
-   
+    """
+    Generates and saves a temporary Word document with data from a ReportNodeCollection.
+
+    Parameters
+    ----------
+    node_collection : ReportNodeCollection
+        A collection containing nodes to include in the Word document.
+
     Returns
     -------
     str
-        The newly created temporary file path.
+        The file path to the newly created Word document.
+
+    Raises
+    ------
+    HTTPException
+        If any error occurs during file generation.
     """
 
     try:
-        # Need to convert/parse into a suitable format that can be iterated through. 
         document = Document()
         document.add_heading('Model Run Study Close Out Report', 0)
 
@@ -376,12 +467,21 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
     
 
 def remove_file(file_path: str) -> None: 
-    """Deletes the specified file from the server.
+    """Deletes a specified file within the FAST API server.
+    Generic method can be used for any file, in this 
+    module used to delete the temporarily created word file.
 
     Parameters
     ----------
     file_path : str
-        The file path of the document to be deleted.
+        The path of the file.
+
+    Raises
+    ------
+    HTTPException
+        File Not Found.
+    HTTPException
+        Error during deletion of the file.
     """
 
     try:
@@ -394,12 +494,36 @@ def remove_file(file_path: str) -> None:
         raise HTTPException(status_code=500, detail=f"Something has gone wrong in deleting the file {str(e)}")
 
 def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -> List[Node]: 
-    
+    """
+    Fetches all model runs associated with the respective study.
+
+    Parameters
+    ----------
+    study_node_id : str
+        The ID of the study node.
+    config : Config
+        A config object containing information about the different endpoints of the system.
+    depth : int, optional
+        The depth of the downstream query to traverse to, by default 1
+
+    Returns
+    -------
+    List[Node]
+        A list of all model run nodes associated with the study.
+
+    Raises
+    ------
+    HTTPException
+        If no model run nodes are found in the downstream query.
+    HTTPException
+        If any error occurs during fetching.
+    """
+
     try:
         # Query downstream to get all linked model runs at depth 1. 
         # This may contain more than one model run.
         downstream_model_run_response = downstream_query(starting_id=study_node_id, depth=depth, config=config)
-        assert downstream_model_run_response.get('nodes'), "Downstream node collections not found!"
+        assert downstream_model_run_response.get('nodes'), f"The study with id {study_node_id} does not have any associated model runs."
 
         model_run_nodes: List[Node] = parse_nodes(downstream_model_run_response.get('nodes', []))
         return model_run_nodes
@@ -410,54 +534,151 @@ def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching downstream nodes from the provided study with id {study_node_id} - error: {str(e)}")
 
+async def populate_model_run_report(
+    user: ProtectedRole,
+    node_id: str,
+    upstream_depth: int,
+    config: Config,
+    report_node_collection: ReportNodeCollection
+) -> None:
+    """
+    A helper function wrapper around the "generate-report" helper and prepares the required parameters.
+
+    Parameters
+    ----------
+    user : ProtectedRole
+        The role of the user making the request, used for making requests to Registry API.
+    node_id : str
+        The ID of the model run node.
+    upstream_depth : int
+        The depth of the upstream query to traverse upto
+    config : Config
+        A config object containing information about the different endpoints of the system.
+    report_node_collection : ReportNodeCollection
+        A collection to store and manage parsed nodes for report generation.
+    """
+
+    await generate_report(
+        user=user,
+        starting_id=node_id,
+        upstream_depth=upstream_depth,
+        config=config,
+        report_node_collection=report_node_collection
+    )
+
+async def populate_study_report(
+    user:ProtectedRole,
+    study_node_id:str,
+    upstream_depth:int, 
+    config:Config, 
+    report_node_collection:ReportNodeCollection
+) -> None:
+    """
+    Populates with data from all model runs associated with a study node.
+    
+    Parameters
+    ----------
+    user : ProtectedRole
+        The role of the user making the request, used for making requests to Registry API.
+    study_node_id : str
+        The ID of the study node.
+    upstream_depth : int
+        The depth of the upstream query to traverse upto
+    config : Config
+        A config object containing information about the different endpoints of the system.
+    report_node_collection : ReportNodeCollection
+        A collection to store and manage parsed nodes for report generation.
+    """
+    
+    model_run_nodes = get_model_runs_from_study(study_node_id=study_node_id, config=config)
+
+    # Now branch out with the model runs in here and explore them as above (depth 1-3 upstream and depth 1 downstream)
+    # The model run will be the new updated starting id.
+    for node in model_run_nodes:
+        if node.item_subtype == ItemSubType.MODEL_RUN:
+            await populate_model_run_report(
+                user=user,
+                node_id=node.id,
+                upstream_depth=upstream_depth,
+                config=config,
+                report_node_collection=report_node_collection
+            )
+
+
 async def generate_report_helper(
         node_id: str, 
         upstream_depth: int, 
         item_subtype: ItemSubType, 
         roles: ProtectedRole, 
         config: Config
-) -> str: 
+) -> str:
     
+    """
+    Generates a study-close-out table for a specified node, supporting nodes with subtypes of model run and study.
+
+    Parameters
+    ----------
+    node_id : str
+        The ID of the node from which the report is generated.
+    upstream_depth : int
+        The depth of the upstream query to traverse upto from chosen node.
+    item_subtype : ItemSubType
+        The subtype of the node, indicating whether it's a model run or a study.
+    roles : ProtectedRole
+        The role of the user making the request, used for making requests to Registry API.
+    config : Config
+        A config object containing information about the different endpoints of the system.
+
+    Returns
+    -------
+    str
+        The file path to the generated report document.
+
+    Raises
+    ------
+    HTTPException
+        If an unsupported node subtype is requested.
+    HTTPException
+        Errors in generating word document.
+    HTTPException
+        HTTP Exceptions caught in other sub-functions.
+    HTTPException
+        Base Exceptions caught in other sub-functions.
+    """
+
     try:
-        
         # Create the request style, here we assert where the HTTP request came from. 
         request_style: RequestStyle = RequestStyle(
             user_direct=roles.user, service_account=None
         )
 
+        # Shared dataclass that is passed via reference to other helper functions. 
+        # Allows you to store multiple entries due to single instantiation.
         report_nodes: ReportNodeCollection = ReportNodeCollection()
 
         # do checks accordingly. 
         await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
 
         if item_subtype == ItemSubType.MODEL_RUN: 
-            report_nodes = await generate_report(user=roles, 
-                                                 starting_id=node_id, 
-                                                 upstream_depth=upstream_depth, 
-                                                 config=config,
-                                                 collection_shared=report_nodes)
-
+            await populate_model_run_report(
+                user=roles, 
+                node_id=node_id,
+                upstream_depth=upstream_depth,
+                config=config,
+                report_node_collection=report_nodes
+            )
         elif item_subtype == ItemSubType.STUDY: 
-
-            # Get all model runs associated with the study.
-            model_run_nodes = get_model_runs_from_study(study_node_id=node_id, config=config)
-
-            # Now branch out with the model runs in here and explore them as above (depth 1-3 upstream and depth 1 downstream)
-            # The model run will be the new updated starting id.
-            for model_run_node in model_run_nodes:
-                if model_run_node.item_subtype == ItemSubType.MODEL_RUN:
-                    model_run_id = model_run_node.id
-                    # Extract the upstream and downstream entities from this node. 
-                    report_nodes = await generate_report(user=roles, 
-                                                         starting_id=model_run_id, 
-                                                         upstream_depth=upstream_depth, 
-                                                         config=config,
-                                                         collection_shared=report_nodes)                
-
+            await populate_study_report(
+                user=roles, 
+                study_node_id=node_id,
+                upstream_depth=upstream_depth,
+                config=config,
+                report_node_collection=report_nodes
+            )      
         else: 
             raise HTTPException(status_code=400, detail=f"Unsupported node with item subtype {item_subtype.value} requested.\
                                 This endpoint only supports subtype of STUDY and MODEL_RUN.")
-
+        
         # All the nodes involved in the model run/study have been populated. 
         generated_doc_path = generate_word_file(report_nodes)
         
