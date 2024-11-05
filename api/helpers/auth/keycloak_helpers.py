@@ -78,10 +78,10 @@ def get_service_token(secret_cache: SecretCache, config: Config) -> str:
         --------
     """
     # Get the secret details (potentially cached)
-    assert config.service_account_secret_arn
+    assert config.auth_service_account_secret_arn
     secret_json = json.loads(
         retrieve_secret_value(
-            secret_arn=config.service_account_secret_arn,
+            secret_arn=config.auth_service_account_secret_arn,
             secret_cache=secret_cache
         )
     )

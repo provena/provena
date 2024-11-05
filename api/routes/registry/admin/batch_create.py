@@ -3,7 +3,7 @@ from config import get_settings, Config
 from KeycloakFastAPI.Dependencies import User
 from ProvenaInterfaces.RegistryAPI import *
 from fastapi import APIRouter, Depends
-from helpers.admin_helpers import *
+from helpers.registry.admin_helpers import *
 """
 # Setup fastAPI router for this sub route
 router = APIRouter()

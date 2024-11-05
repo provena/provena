@@ -1,6 +1,6 @@
 from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.RegistryAPI import *
-from helpers.item_type_route_generator import *
+from helpers.registry.item_type_route_generator import *
 from routes.registry.dataset import dataset
 from routes.registry.registry_general import registry_general    
 from routes.registry.admin import import_export_restore

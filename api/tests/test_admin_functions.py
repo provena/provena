@@ -43,20 +43,30 @@ def global_config_provider() -> Config:
         enforce_special_proxy_roles=False,
         auth_api_endpoint="",
         job_api_endpoint="",
-
-        keycloak_endpoint=base_config.keycloak_endpoint,
         stage=base_config.stage,
         registry_table_name=test_resource_table_name,
         auth_table_name=test_resource_table_name,
         lock_table_name=test_resource_table_name,
         handle_api_endpoint="",
-        service_account_secret_arn="",
+        registry_service_account_secret_arn="",
         mock_handle=True,
         # mocking validation to always succeed and then testing validation separately.
         perform_validation=False,
         # dont perform user link validation
         enforce_user_links=False,
-        test_mode=True
+        test_mode=True,
+        keycloak_endpoint=base_config.keycloak_endpoint,
+        access_request_table_name=test_access_request_table_name,
+        user_groups_table_name=test_user_group_table_name,
+
+        # disable registry lookups and set null values
+        link_update_registry_connection=False,
+        registry_api_endpoint="",
+        username_person_link_table_name="",
+        username_person_link_table_person_index_name="",
+
+        auth_service_account_secret_arn="",
+        access_request_email_address="",
     )
 
 

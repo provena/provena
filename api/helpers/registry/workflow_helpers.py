@@ -3,9 +3,9 @@ from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.AsyncJobModels import *
 from ProvenaInterfaces.RegistryAPI import VersionRequest
 from helpers.util import py_to_dict
-from helpers.job_api_helpers import *
+from helpers.registry.job_api_helpers import *
 from config import Config
-from helpers.dynamo_helpers import write_registry_dynamo_db_entry_raw
+from helpers.registry.dynamo_helpers import write_registry_dynamo_db_entry_raw
 
 
 async def spinoff_creation_job(linked_person_id: str, created_item: ItemBase, username: str, config: Config) -> str:

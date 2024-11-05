@@ -1,53 +1,51 @@
-from dependencies.dependencies import admin_user_protected_role_dependency
+from dependencies.dependencies import sys_admin_admin_dependency
 from config import get_settings, Config
 from KeycloakFastAPI.Dependencies import User
-from ProvenaInterfaces.RegistryAPI import *
+from ProvenaInterfaces.AuthAPI import *
 from fastapi import APIRouter, Depends
-from helpers.registry.admin_helpers import *
+from helpers.auth.admin_helpers import *
 
 # Setup fastAPI router for this sub route
 router = APIRouter()
 
 
-@router.get("/export", response_model=RegistryExportResponse, operation_id="registry_admin_export")
-async def export_items(
-    user: User = Depends(admin_user_protected_role_dependency),
+@router.get("/export", response_model=GroupsExportResponse, operation_id="groups_export")
+async def export_groups(
+    user: User = Depends(sys_admin_admin_dependency),
     config: Config = Depends(get_settings)
-) -> RegistryExportResponse:
+) -> GroupsExportResponse:
     """
-    Provides a mechanism for admins to dump the current contents of the registry
-    table without any validation/parsing.
+    export_groups 
     
-    Now returns bundled items which correspond to the resource, auth and lock
-    tables.
+    Exports the current groups table as an untyped list of dictionaries.
 
     Parameters
     ----------
 
     Returns
     -------
-    RegistryExportResponse
-        A status response including items in the payload.
+    GroupsExportResponse
+        Status response including items
     """
     # Use the admin helper function to dump all items
-    items : List[BundledItem] = export_all_items(config)
+    items = export_all_items(config)
     # Return success with length included in the status message
-    return RegistryExportResponse(
+    return GroupsExportResponse(
         status=Status(
             success=True, details=f"Successfully exported {len(items)} items."),
         items=items
     )
 
 
-@router.post("/import", response_model=RegistryImportResponse, operation_id="registry_admin_import")
+@router.post("/import", response_model=GroupsImportResponse, operation_id="groups_import")
 async def import_items(
-    import_request: RegistryImportRequest,
-    user: User = Depends(admin_user_protected_role_dependency),
+    import_request: GroupsImportRequest,
+    user: User = Depends(sys_admin_admin_dependency),
     config: Config = Depends(get_settings)
-) -> RegistryImportResponse:
+) -> GroupsImportResponse:
     """
     This admin only endpoint enables rapid restoration of items in into the
-    registry table. 
+    groups table. 
 
     The import mode describes what kind of rules you want to apply about items. 
 
@@ -57,12 +55,12 @@ async def import_items(
     Import mode - 
 
     ADD ONLY - will only add items - all items must be new and not exist in
-    current registry.
+    current groups.
 
     ADD_OR_OVERWRITE - will only add or overwrite existing items. This form of
     import will always validate as any items are valid.
 
-    OVERWRITE_ONLY - all items must already exist in the registry, update will
+    OVERWRITE_ONLY - all items must already exist in the groups, update will
     be applied with the new contents.
 
     SYNC_ADD_OR_OVERWRITE - sync mode is the same as ADD OR OVERRIDE but also
@@ -71,7 +69,7 @@ async def import_items(
     consider using the item below.
 
     SYNC_DELETION_ALLOWED - this will perform whatever is necessary to make the
-    current registry table be identical to the provided items, including
+    current groups table be identical to the provided items, including
     potentially deleting existing entries. USE WITH CAUTION. You must specify
     allow_entry_deletion explicitly to enable deletion.
 
@@ -91,12 +89,12 @@ async def import_items(
 
     Parameters
     ----------
-    import_request : RegistryImportRequest
+    import_request : GroupsImportRequest
         The import request payload, as described above.
 
     Returns
     -------
-    RegistryImportResponse
+    GroupsImportResponse
         Returns an import response which includes status + statistics.
 
     Raises
@@ -120,18 +118,19 @@ async def import_items(
             status_code=500, detail=f"Unhandled exception in import process : {e}.")
 
 
-@router.post("/restore_from_table", response_model=RegistryImportResponse, operation_id="registry_admin_restore")
+@router.post("/restore_from_table", response_model=GroupsImportResponse, operation_id="groups_restore")
 async def restore_from_table(
-    restore_request: RegistryRestoreRequest,
-    user: User = Depends(admin_user_protected_role_dependency),
+    restore_request: GroupsRestoreRequest,
+    table_name: str,
+    user: User = Depends(sys_admin_admin_dependency),
     config: Config = Depends(get_settings)
-) -> RegistryImportResponse:
+) -> GroupsImportResponse:
     """
     Provides an admin only mechanism for copying/restoring the contents from
-    another dynamoDB table into the currently active registry table. This
+    another dynamoDB table into the currently active groups table. This
     endpoint does not create any new tables - it just uses the items from a
     restored table (e.g. from a backup) as inputs to an import operation against
-    the current registry table.
+    the current groups table.
 
     This is achieved by dumping the contents of the external table, then using
     the contents in the item payload to the import operation. The options
@@ -142,7 +141,7 @@ async def restore_from_table(
 
     NOTE the admin runtime must have AWS permissions to read from the specified
     AWS dynamoDB table. This table cannot be the same as the currently active
-    registry table. If you are running the API locally then it is likely your
+    groups table. If you are running the API locally then it is likely your
     local runtime will have these permissions if you are signed into AWS.
     However, if you are running this against a live API, you may need to update
     the CDK deployment or the Lambda API service role to have read only
@@ -151,7 +150,7 @@ async def restore_from_table(
 
     Parameters
     ----------
-    restore_request : RegistryRestoreRequest
+    restore_request : GroupsRestoreRequest
         The restore request settings - these will be used when propagating the
         items from the external table.
     table_name : str
@@ -159,7 +158,7 @@ async def restore_from_table(
 
     Returns
     -------
-    RegistryImportResponse
+    GroupsImportResponse
         Returns information about the import, including status and statistics.
 
     Raises
@@ -170,13 +169,12 @@ async def restore_from_table(
         Otherwise a 500 error is returned with error details
     """
 
-    # check that the import tables != the current tables
-    table_names = restore_request.table_names
-    if table_names.resource_table_name == config.registry_table_name or table_names.auth_table_name == config.auth_table_name or table_names.lock_table_name == config.lock_table_name:
-        return RegistryImportResponse(
+    # check that the table != the groups table
+    if table_name == config.user_groups_table_name:
+        return GroupsImportResponse(
             status=Status(
                 success=False,
-                details=f"You supplied a table name which is the same as the current active registry table(s). This behaviour is not supported."
+                details=f"You supplied {table_name} as the table_name which is equal to the current active groups table name. This behaviour is not supported."
             ),
             trial_mode=restore_request.trial_mode
         )
@@ -187,10 +185,9 @@ async def restore_from_table(
     # expects that we have read permissions into the specified
     # table! Will fail with 500 code if not.
 
-    # Get the items from provided tables - this will consolidate!
-    items = export_all_items_external_tables(
-        table_names=table_names
-    )
+    # Get the table
+    items = export_from_external_table(table_name=table_name,
+                                       config=config)
 
     # Run a parsed import on the specified items - this uses shared admin helper
     # functions since a restore is effectively an import with item contents from
@@ -198,7 +195,7 @@ async def restore_from_table(
     try:
         if restore_request.parse_items:
             return import_parsed(
-                import_request=RegistryImportRequest(
+                import_request=GroupsImportRequest(
                     items=items,
                     import_mode=restore_request.import_mode,
                     parse_items=restore_request.parse_items,
@@ -208,7 +205,7 @@ async def restore_from_table(
                 config=config)
         else:
             return import_unparsed(
-                import_request=RegistryImportRequest(
+                import_request=GroupsImportRequest(
                     items=items,
                     import_mode=restore_request.import_mode,
                     parse_items=restore_request.parse_items,

@@ -2,8 +2,8 @@ from typing import Type, Dict, TypeVar, Any, Tuple, Union
 from ProvenaInterfaces.RegistryModels import ItemCategory, ItemSubType, ItemBase, RecordType, SeededItem, RecordInfo
 from fastapi import HTTPException
 from config import Config
-from helpers.dynamo_helpers import get_entry_raw
-from helpers.custom_exceptions import SeedItemError, ItemTypeError
+from helpers.registry.dynamo_helpers import get_entry_raw
+from helpers.registry.custom_exceptions import SeedItemError, ItemTypeError
 
 item_base_type = TypeVar('item_base_type', bound=ItemBase)
 

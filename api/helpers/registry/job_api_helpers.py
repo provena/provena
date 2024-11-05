@@ -1,9 +1,9 @@
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from helpers.util import py_to_dict
-from helpers.keycloak_helpers import get_service_token
+from helpers.registry.keycloak_helpers import get_service_token
 from dependencies.dependencies import secret_cache
-from helpers.async_requests import async_post_request
+from helpers.registry.async_requests import async_post_request
 
 
 async def launch_generic_job(payload: AdminLaunchJobRequest, config: Config) -> AdminLaunchJobResponse:

@@ -4,11 +4,11 @@ from dependencies.dependencies import read_user_protected_role_dependency, read_
 from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.SharedTypes import VersionDetails
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import PROV_SERVICE_ROLE_NAME, DATA_STORE_SERVICE_ROLE_NAME
-from helpers.action_helpers import *
-from helpers.action_helpers import list_items_paginated
-from helpers.dynamo_helpers import get_entry_raw
-from helpers.auth_helpers import special_permission_check
-from helpers.lock_helpers import get_lock_status
+from helpers.registry.action_helpers import *
+from helpers.registry.action_helpers import list_items_paginated
+from helpers.registry.dynamo_helpers import get_entry_raw
+from helpers.registry.auth_helpers import special_permission_check
+from helpers.registry.lock_helpers import get_lock_status
 from config import Config, get_settings
 
 router = APIRouter()

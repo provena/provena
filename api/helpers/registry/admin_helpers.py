@@ -1,6 +1,6 @@
 import json
 from typing import Callable, Set, Dict, List
-from helpers.dynamo_helpers import *
+from helpers.registry.dynamo_helpers import *
 from config import Config
 from fastapi import HTTPException
 from ProvenaInterfaces.SharedTypes import ImportMode

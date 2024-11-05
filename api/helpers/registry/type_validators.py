@@ -2,8 +2,8 @@ from typing import Callable, Dict, List
 from ProvenaInterfaces.RegistryModels import *
 from config import Config
 from pydantic import BaseModel
-from helpers.id_fetch_helpers import validate_id_helper
-from helpers.custom_exceptions import ItemTypeError, SeedItemError
+from helpers.registry.id_fetch_helpers import validate_id_helper
+from helpers.registry.custom_exceptions import ItemTypeError, SeedItemError
 from dataclasses import dataclass
 import pyproj
 import re

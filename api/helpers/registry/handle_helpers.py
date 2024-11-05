@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from config import Config, HDL_PREFIX
 import httpx
 from random import randint
-from helpers.keycloak_helpers import get_service_token
+from helpers.registry.keycloak_helpers import get_service_token
 from dependencies.dependencies import secret_cache
 from ProvenaInterfaces.HandleModels import *
 from ProvenaInterfaces.HandleAPI import MintRequest, MintResponse, ModifyRequest

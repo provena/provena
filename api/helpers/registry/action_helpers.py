@@ -2,18 +2,18 @@ from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.RegistryModels import *
 from dependencies.dependencies import user_is_admin
 from KeycloakFastAPI.Dependencies import ProtectedRole
-from helpers.dynamo_helpers import *
-from helpers.time_helpers import get_timestamp
-from helpers.handle_helpers import *
-from helpers.custom_exceptions import SeedItemError, ItemTypeError
-from helpers.auth_helpers import *
-from helpers.lock_helpers import *
+from helpers.registry.dynamo_helpers import *
+from helpers.registry.time_helpers import get_timestamp
+from helpers.registry.handle_helpers import *
+from helpers.registry.custom_exceptions import SeedItemError, ItemTypeError
+from helpers.registry.auth_helpers import *
+from helpers.registry.lock_helpers import *
 from helpers.util import py_to_dict
 import json
 from typing import TypeVar, Type, Callable, Any
 from jsonschema import validate  # type: ignore
-from helpers.id_fetch_helpers import parse_unknown_record_type, validate_item_type
-from helpers.type_validators import custom_type_validators, ValidatorFunc
+from helpers.registry.id_fetch_helpers import parse_unknown_record_type, validate_item_type
+from helpers.registry.type_validators import custom_type_validators, ValidatorFunc
 
 # Type var which captures the item base
 # can be used with Type[type var] to denote

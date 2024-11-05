@@ -40,7 +40,7 @@ class BaseConfig(BaseSettings):
     feature_number: Optional[str]
 
     # monitoring via sentry
-    monitoring_enabled: Optional[bool] = False 
+    monitoring_enabled: Optional[bool] = False
     sentry_dsn: Optional[str] = None
 
     @property
@@ -50,7 +50,7 @@ class BaseConfig(BaseSettings):
     # validate sentry dsn is provided if monitoring is enabled
     @root_validator
     def valide_sentry_config(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if values.get("monitoring_enabled")==True and values.get("sentry_dsn") is None:
+        if values.get("monitoring_enabled") == True and values.get("sentry_dsn") is None:
             raise ValueError(
                 "Sentry DSN is required if monitoring is enabled.")
         return values
@@ -90,7 +90,7 @@ class Config(BaseConfig):
 
     # Creds for the keycloak service account used to make
     # requests on behalf of user
-    service_account_secret_arn: str
+    registry_service_account_secret_arn: str
 
     # Should the handle ids be mocked?
     mock_handle: bool = False
@@ -120,11 +120,51 @@ class Config(BaseConfig):
     git_release_title: Optional[str]
     git_release_url: Optional[str]
 
+    # AUTH
+    # Auth API service account
+    auth_service_account_secret_arn: str
+
+    # Recipient email address for access requests
+    access_request_email_address: str
+
+    # Registry API endpoint (used for link service id validation)
+    registry_api_endpoint: str
+
+    # Dynamo db table name for access requests
+    access_request_table_name: str
+
+    # Dynamo db table name for user groups
+    user_groups_table_name: str
+
+    # Dynamo db table name for the username <-> registry person link table
+    username_person_link_table_name: str
+
+    # Name of the GSI on the link table which allows reverse lookup from person
+    # ID -> username
+    username_person_link_table_person_index_name: str
+
+    # How long should the requests last in the table
+    # before being killed
+    request_expiry_days: int = 30
+
+    # Wait at least 5 days on pending request before allowing another
+    minimum_request_waiting_time_days: int = 5
+
+    # validate person in registry when performing link updates
+    # DEBUG ONLY
+    link_update_registry_connection: bool = True
 
     # Derived property of token endpoint
     @property
     def keycloak_token_endpoint(self) -> str:
         return self.keycloak_endpoint + self.keycloak_token_postfix
+
+    # Admin console - derived dynamically from keycloak endpoint
+    @property
+    def admin_console_endpoint(self) -> str:
+        # remove /realms/* and add appropriate end point
+        realm_name = self.keycloak_endpoint.split("/realms/")[1].split("/")[0]
+        return self.keycloak_endpoint.split("/realms/")[0] + f"/admin/{realm_name}/console"
 
     # version details object
     @property

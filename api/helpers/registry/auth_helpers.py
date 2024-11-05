@@ -5,8 +5,8 @@ from dependencies.dependencies import user_is_admin
 from config import Config
 import requests
 from fastapi import HTTPException
-from helpers.dynamo_helpers import get_auth_entry, write_auth_table_entry
-from helpers.keycloak_helpers import get_service_token
+from helpers.registry.dynamo_helpers import get_auth_entry, write_auth_table_entry
+from helpers.registry.keycloak_helpers import get_service_token
 from dependencies.dependencies import secret_cache
 
 

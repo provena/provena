@@ -3,12 +3,12 @@ from KeycloakFastAPI.Dependencies import ProtectedRole
 from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
 from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.RegistryModels import *
-from helpers.action_helpers import *
-from helpers.lock_helpers import *
+from helpers.registry.action_helpers import *
+from helpers.registry.lock_helpers import *
 from typing import Type, Optional, cast
 from config import Config, get_settings
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import *
-from helpers.workflow_helpers import *
+from helpers.registry.workflow_helpers import *
 from route_models import *
 
 def get_correct_dependency(level: RouteAccessLevel) -> Any:

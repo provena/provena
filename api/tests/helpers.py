@@ -1395,11 +1395,11 @@ def mock_user_group_set(user_groups: List[str], monkeypatch: Any) -> None:
     """
     Used to setup the mocked "get_user_group_id_set" function to return the expected user groups.
     """
-    import helpers.action_helpers
+    import helpers.registry.action_helpers
     import routes.registry.registry_general.registry_general
     mocked_function = generate_mocked_user_group_set(user_groups)
     # maybe not using module where it is defined, but where it is used
-    monkeypatch.setattr(helpers.action_helpers,
+    monkeypatch.setattr(helpers.registry.action_helpers,
                         "get_user_group_id_set", mocked_function)
     # TODO understand why this won't type check
     monkeypatch.setattr(routes.registry.registry_general,

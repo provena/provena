@@ -6,13 +6,13 @@ from helpers.util import py_to_dict
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
-from helpers.handle_helpers import mint_self_describing_handle
-from helpers.auth_helpers import seed_auth_configuration
-from helpers.job_api_helpers import submit_lodge_create_activity, submit_lodge_version_activity
-from helpers.action_helpers import create_seed_history
-from helpers.lock_helpers import seed_lock_configuration
-from helpers.time_helpers import get_timestamp
-from helpers.dynamo_helpers import *
+from helpers.registry.handle_helpers import mint_self_describing_handle
+from helpers.registry.auth_helpers import seed_auth_configuration
+from helpers.registry.job_api_helpers import submit_lodge_create_activity, submit_lodge_version_activity
+from helpers.registry.action_helpers import create_seed_history
+from helpers.registry.lock_helpers import seed_lock_configuration
+from helpers.registry.time_helpers import get_timestamp
+from helpers.registry.dynamo_helpers import *
 from ProvenaInterfaces.RegistryModels import METADATA_READ_ROLE, ItemCreate, CreateDomainInfo, RecordType
 import json
 import asyncio
