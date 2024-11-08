@@ -94,7 +94,7 @@ def link_model_run_to_study(token: str, study_id: str, model_run_id: str) -> Res
         auth=BearerAuth(token)
     )
 
-def generate_report_successfully(token: str, node_id: str, upstream_depth: int, item_subtype: ItemSubType) -> ByteString:
+def generate_report(token: str, node_id: str, upstream_depth: int, item_subtype: ItemSubType) -> Response:
     """Helper function that calls the generate report endpoint.
 
     Parameters
@@ -129,9 +129,20 @@ def generate_report_successfully(token: str, node_id: str, upstream_depth: int, 
         auth=BearerAuth(token)
     )
 
-    assert response.content
+    return response
+
+
+def generate_report_successfully(token: str, node_id: str, upstream_depth: int, item_subtype: ItemSubType) -> ByteString: 
+
+    response = generate_report(
+        token=token,
+        node_id=node_id,
+        upstream_depth=upstream_depth,
+        item_subtype=item_subtype
+    )
+
+    assert response.status_code == 200, f"Expected a status code of 200, recieved {response.status_code}"
+    assert response.content is not None, f"Response did not contain a 'content' field."
 
     return response.content
-
-
 
