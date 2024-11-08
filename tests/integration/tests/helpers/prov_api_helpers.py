@@ -5,6 +5,7 @@ from ProvenaInterfaces.AsyncJobModels import JobStatus
 from KeycloakRestUtilities.Token import BearerAuth
 import requests
 from requests import Response
+from typing import ByteString
 
 from tests.helpers.async_job_helpers import wait_for_full_lifecycle
 
@@ -92,3 +93,45 @@ def link_model_run_to_study(token: str, study_id: str, model_run_id: str) -> Res
         },
         auth=BearerAuth(token)
     )
+
+def generate_report_successfully(token: str, node_id: str, upstream_depth: int, item_subtype: ItemSubType) -> ByteString:
+    """Helper function that calls the generate report endpoint.
+
+    Parameters
+    ----------
+    token : str
+        Auth token used to make API request.
+    node_id : str
+        ID of the respective node that the PROV-GRAPH report generation
+        will commence from. (Can be of TYPE STUDY OR MODEL_RUN)
+    upstream_depth : int
+        The upstream depth to traverse to.
+    item_subtype : ItemSubType
+        The category of the respective node (Can be of type of STUDY OR MODEL_RUN)
+
+    Returns
+    -------
+    Response
+        A raw response object returned server.
+    """
+
+    base_endpoint = config.PROV_API_ENDPOINT + '/explore'
+    complete_endpoint = base_endpoint + '/generate/report'
+    json_body = {
+        "id": node_id, 
+        "depth": upstream_depth,
+        "item_subtype": item_subtype
+    }
+
+    response: Response = requests.post(
+        url=complete_endpoint,
+        json=json_body,
+        auth=BearerAuth(token)
+    )
+
+    assert response.content
+
+    return response.content
+
+
+

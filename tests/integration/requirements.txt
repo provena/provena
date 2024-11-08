@@ -8,7 +8,6 @@ types-requests
 pydantic[email]==1.10.17
 networkx==3.*
 
-
 # from utilities packages.
 ../../utilities/packages/python/keycloak-utils
 ../../utilities/packages/python/provena-interfaces

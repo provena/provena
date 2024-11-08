@@ -1,12 +1,13 @@
 try:
     from ProvenaInterfaces.SharedTypes import StatusResponse
     from ProvenaInterfaces.ProvenanceModels import *
+    from ProvenaInterfaces.RegistryAPI import ItemSubType
 except:
     from .SharedTypes import StatusResponse
     from .ProvenanceModels import *
 
 from typing import Optional, Any, Dict, Type
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ProvenanceRecordInfo(BaseModel):

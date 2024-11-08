@@ -1,3 +1,4 @@
+from io import BytesIO
 from time import sleep, time
 from ProvenaInterfaces.ProvenanceAPI import *
 from ProvenaInterfaces.RegistryAPI import *
@@ -12,7 +13,9 @@ from tests.helpers.registry_helpers import general_list_first_n
 from tests.helpers.async_job_helpers import wait_for_full_lifecycle
 from dataclasses import dataclass
 import networkx as nx  # type: ignore
-from typing import cast
+from typing import ByteString, cast
+from docx import Document
+from simplify_docx import simplify #type:ignore
 
 
 def register_model_run_from_record_info(token: str, model_run_record: ModelRunRecord) -> Response:
