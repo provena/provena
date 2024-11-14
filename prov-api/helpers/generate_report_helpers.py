@@ -529,7 +529,7 @@ def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -
         return model_run_nodes
     
     except AssertionError as e:
-        raise HTTPException(status_code=404, detail=f"The provided study run with id {study_node_id} - error: {str(e)}")
+        raise HTTPException(status_code=404, detail=f"{str(e)}")
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching downstream nodes from the provided study with id {study_node_id} - error: {str(e)}")

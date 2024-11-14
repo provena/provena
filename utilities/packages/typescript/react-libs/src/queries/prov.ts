@@ -7,7 +7,7 @@ import {
 import FileDownload from "js-file-download";
 
 import { GenerateReportParameters} from "react-libs/provena-interfaces/ProvenanceAPI";
-import { requestErrToMsg } from "../util";
+import { requestErrToMsg, readErrorFromFileBlob } from "../util";
 
 export const addStudyLink = (inputs: {
   modelRunId: string;
@@ -51,7 +51,7 @@ export const generateReport = (inputs: GenerateReportParameters) => {
   })
   .then((response) => {
     // Check the status of the response - The Response is a blob itself.
-
+    
     try{ 
 
       if(!response){
@@ -65,8 +65,10 @@ export const generateReport = (inputs: GenerateReportParameters) => {
     }
 
   })
-  .catch((err) => { 
-    return Promise.reject(requestErrToMsg(err))
+  .catch(async (error) => { 
+    // Read the blob file and extract the JSON error field.
+    const error_message = await readErrorFromFileBlob(error)
+    return Promise.reject(error_message)
   
   })
   

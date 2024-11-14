@@ -81,9 +81,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
                             An error occurred while running the Generate Report operation. Error:{" "}
                             {error
                             ? stripPossibleFullStop(error as string)
-                            : "Unknown"}
-                            . Try refreshing the page and performing the operation
-                            again, or contact an administrator for assistance.
+                            : "Unknown. Try refreshing the page and performing the operation again, or contact an administrator for assistance."}
                         </Typography>
                         </Alert>
                     )}

@@ -248,6 +248,32 @@ export function requestErrToMsg(err: any): string {
   }
 }
 
+export async function readErrorFromFileBlob(error: any): Promise<string> {
+  /* This helper functions allows you to read JSON content that is 
+  sent from the server when there are errors in generating/downloading 
+  files. Axios only allows one 'responseType', hence a blob file needs 
+  to be read and converted to JSON to retrieve the error message sent 
+  from the server */ 
+  
+  let error_message = "Something has gone wrong with generating your file."
+   
+  if (error.data) {
+      try {
+          const file = await error.data.text()
+          // Extract the "detail" field.
+          const { detail } = JSON.parse(file)
+          error_message = detail
+      } catch (convertError) {
+        console.log("Failed to decode error from server.")
+        // Keep default error message if conversion fails
+      }
+  }
+
+  return error_message
+}
+
+
+
 interface FormTitleDescription {
   title: string;
   description: string;
