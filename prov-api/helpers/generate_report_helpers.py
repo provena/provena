@@ -17,6 +17,7 @@ from tempfile import NamedTemporaryFile
 
 from docx import Document
 from docx.text.paragraph import Paragraph
+from docx.shared import Inches
 import docx
 
 class NodeType(str, Enum): 
@@ -425,6 +426,10 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
         table = document.add_table(rows=4, cols=2)
         table.style = 'Table Grid'
 
+        for row in table.rows:
+            row.cells[0].width = Inches(1)  # Narrower left column
+            row.cells[1].width = Inches(10)  # Wider right column
+
         # First row here is the modelling-team-name
         table.cell(0,0).text = "Modelling Team"
         table.cell(0,1).text = "TODO"
@@ -434,27 +439,30 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
         input_row.text = "Inputs:"
         input_data_cell = table.cell(1,1)
         for input_node in node_collection.inputs:
-            paragraph = input_data_cell.add_paragraph(input_node.display_name + ",")
+            paragraph = input_data_cell.add_paragraph(input_node.display_name + ", ")
             url = "http://hdl.handle.net/" + input_node.id
             add_hyperlink(paragraph, text=url, url=url)
-
+            paragraph.add_run(text = "\n")
+        
         # Third row here is the model runs
         model_run_row = table.rows[2].cells[0]
         model_run_row.text = "Model Runs:" 
         model_run_row_data_cell = table.cell(2,1)
         for model_run_node in node_collection.model_runs:
-            paragraph = model_run_row_data_cell.add_paragraph(model_run_node.display_name)
+            paragraph = model_run_row_data_cell.add_paragraph(model_run_node.display_name + ", ")
             url = "http://hdl.handle.net/" + model_run_node.id
             add_hyperlink(paragraph, text=url, url=url)
+            paragraph.add_run(text = "\n")
 
         # Fourth row here is the outputs
         output_row = table.rows[3].cells[0]
         output_row.text = "Outputs:"
         output_row_data_cell = table.cell(3,1)
         for output_node in node_collection.outputs:
-            paragraph = output_row_data_cell.add_paragraph(output_node.display_name)
+            paragraph = output_row_data_cell.add_paragraph(output_node.display_name + ", ")
             url = "http://hdl.handle.net/" + output_node.id
             add_hyperlink(paragraph, text=url, url=url)
+            paragraph.add_run(text = "\n")
 
         # Temporarily save the document to return it. 
         with NamedTemporaryFile(delete=False, suffix='.docx') as tmpFile: 
