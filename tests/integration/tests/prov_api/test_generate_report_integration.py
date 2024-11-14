@@ -42,9 +42,26 @@ def study_linked_to_model_run(
     cleanup_items.append((ItemSubType.DATASET_TEMPLATE,input_template.id))
     cleanup_items.append((ItemSubType.DATASET_TEMPLATE,output_template.id))
 
+    # Clean up create-activity of input-template
+    cleanup_create_activity_from_item_base(
+        item=input_template,
+        get_token=Tokens.user1
+    )
+
+    # Clean up create-activity of output-template
+    cleanup_create_activity_from_item_base(
+        item=output_template,
+        get_token=Tokens.user1
+    )
+
     # Create model
     model_item = create_item_successfully(ItemSubType.MODEL, token=Tokens.user1())
     cleanup_items.append((ItemSubType.MODEL,model_item.id))
+
+    cleanup_create_activity_from_item_base(
+        item=model_item,
+        get_token=Tokens.user1
+    )
 
     # Create model run workflow template
     required_annotation_key = "annotation_key1"
@@ -69,6 +86,10 @@ def study_linked_to_model_run(
         domain_info=model_run_workflow_template_domain_info
     )
     cleanup_items.append((ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE,model_run_workflow_template.id))
+    cleanup_create_activity_from_item_base(
+        item=model_run_workflow_template, 
+        get_token=Tokens.user1
+    )
 
     # Create study entity 
     study_item = create_item_successfully(item_subtype=ItemSubType.STUDY, token=Tokens.user1())
@@ -148,10 +169,24 @@ def study_linked_to_multiple_model_run(
     output_template = create_item_successfully(ItemSubType.DATASET_TEMPLATE, token=Tokens.user1())
     cleanup_items.append((ItemSubType.DATASET_TEMPLATE,input_template.id))
     cleanup_items.append((ItemSubType.DATASET_TEMPLATE,output_template.id))
+    
+    # Clean up create-activity for templates
+    cleanup_create_activity_from_item_base(
+        item=input_template,
+        get_token=Tokens.user1
+    )
+    cleanup_create_activity_from_item_base(
+        item=output_template,
+        get_token=Tokens.user1
+    )
 
     # Create model
     model_item = create_item_successfully(ItemSubType.MODEL, token=Tokens.user1())
     cleanup_items.append((ItemSubType.MODEL,model_item.id))
+    cleanup_create_activity_from_item_base(
+        item=model_item,
+        get_token=Tokens.user1
+    )
 
     # Create model run workflow template
     required_annotation_key = "annotation_key1"
@@ -176,6 +211,10 @@ def study_linked_to_multiple_model_run(
         domain_info=model_run_workflow_template_domain_info
     )
     cleanup_items.append((ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE,model_run_workflow_template.id))
+    cleanup_create_activity_from_item_base(
+        item=model_run_workflow_template,
+        get_token=Tokens.user1
+    )
 
     # Create study entity 
     study_item = create_item_successfully(item_subtype=ItemSubType.STUDY, token=Tokens.user1())
@@ -315,6 +354,10 @@ def test_generate_report_with_invalid_subtype(linked_person_fixture: ItemPerson,
         token=Tokens.user1()
     )
     cleanup_items.append((ItemSubType.MODEL,model_item.id))
+    cleanup_create_activity_from_item_base(
+        item=model_item,
+        get_token=Tokens.user1
+    )
 
     # Call endpoint with invalid subtype entity
     response: Response = generate_report(

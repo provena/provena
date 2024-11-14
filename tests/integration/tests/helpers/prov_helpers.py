@@ -14,9 +14,6 @@ from tests.helpers.async_job_helpers import wait_for_full_lifecycle
 from dataclasses import dataclass
 import networkx as nx  # type: ignore
 from typing import ByteString, cast
-from docx import Document
-from simplify_docx import simplify #type:ignore
-
 
 def register_model_run_from_record_info(token: str, model_run_record: ModelRunRecord) -> Response:
     """Register a model run from a model run record.
