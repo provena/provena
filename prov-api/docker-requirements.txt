@@ -18,6 +18,7 @@ neo4j
 networkx
 python-dotenv
 sentry-sdk[fastapi]
+python-docx
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package
