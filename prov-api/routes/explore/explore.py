@@ -374,5 +374,5 @@ async def generate_report(
 
     return FileResponse(
         path = generated_doc_path, 
-        filename= "generated-doc.docx"
+        filename= "Study Close Out Report.docx"
     )  

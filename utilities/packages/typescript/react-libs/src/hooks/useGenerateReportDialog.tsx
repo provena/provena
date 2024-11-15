@@ -35,7 +35,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
     const [depth, setDepth] = useState<number>(DEPTH_LIST[0]);
     
     // Call the react-query defined. 
-    const {mutate, isError, reset, isLoading, isSuccess, error, data, dataReady} = useGenerateReport({
+    const {mutate, isError, reset, isLoading, isSuccess, error, dataReady} = useGenerateReport({
         id: props.id, 
         itemSubType: props.itemSubType, 
         depth: depth
@@ -50,8 +50,11 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         // Clear state and close dialog
         setDepth(DEPTH_LIST[0])
         setPopupOpen(false);
-        // reset mutation
-        reset();
+        
+        if(dataReady){
+            // reset mutation
+            reset?.();
+        }
     }
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -62,7 +65,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         // Validate that a depth has been chosen.
         if (depth !== null && dataReady){ 
             // Proceed to submit... 
-            mutate();
+            mutate?.();
         }
     }
 

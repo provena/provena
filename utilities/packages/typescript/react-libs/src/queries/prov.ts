@@ -90,7 +90,7 @@ export const generateReport = (inputs: GenerateReportParameters) => {
       if(!response){
         return Promise.reject(response)
       } else{
-        return FileDownload(response, "study-close-out-report.docx")
+        return FileDownload(response, inputs.id + "- Study Close Out Report.docx")
       }
     } catch (e){ 
       return Promise.reject(response)
