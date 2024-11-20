@@ -440,7 +440,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
         for input_node in node_collection.inputs:
             paragraph = input_data_cell.add_paragraph(input_node.display_name + ", ")
             url = "http://hdl.handle.net/" + input_node.id
-            add_hyperlink(paragraph, text=url, url=url)
+            #add_hyperlink(paragraph, text=url, url=url)
             paragraph.add_run(text = "\n")
         
         # Third row here is the model runs
@@ -450,7 +450,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
         for model_run_node in node_collection.model_runs:
             paragraph = model_run_row_data_cell.add_paragraph(model_run_node.display_name + ", ")
             url = "http://hdl.handle.net/" + model_run_node.id
-            add_hyperlink(paragraph, text=url, url=url)
+            #add_hyperlink(paragraph, text=url, url=url)
             paragraph.add_run(text = "\n")
 
         # Fourth row here is the outputs
@@ -460,7 +460,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
         for output_node in node_collection.outputs:
             paragraph = output_row_data_cell.add_paragraph(output_node.display_name + ", ")
             url = "http://hdl.handle.net/" + output_node.id
-            add_hyperlink(paragraph, text=url, url=url)
+            #add_hyperlink(paragraph, text=url, url=url)
             paragraph.add_run(text = "\n")
 
         file_path = f"{config.TEMP_FILE_LOCATION}/generate_report{str(random.randint(1,100000))}).docx"
