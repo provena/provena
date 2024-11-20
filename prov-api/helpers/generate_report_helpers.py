@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Dict, List, Any, Callable, Set, Optional
 from dataclasses import dataclass, field
 from enum import Enum
@@ -12,8 +13,6 @@ from ProvenaInterfaces.RegistryAPI import ItemBase, ItemSubType, SeededItem, Nod
 from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id
 from helpers.prov_connector import upstream_query, downstream_query
 from helpers.registry_helpers import fetch_item_from_registry_with_subtype
-
-from tempfile import NamedTemporaryFile
 
 from docx import Document
 from docx.text.paragraph import Paragraph
@@ -399,7 +398,7 @@ def add_hyperlink(paragraph: Paragraph, text: str, url: str) -> Optional[docx.ox
     paragraph._p.append(hyperlink)
     return hyperlink
 
-def generate_word_file(node_collection: ReportNodeCollection) -> str: 
+def generate_word_file(config: Config, node_collection: ReportNodeCollection) -> str: 
     """
     Generates and saves a temporary Word document with data from a ReportNodeCollection.
 
@@ -464,11 +463,11 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
             add_hyperlink(paragraph, text=url, url=url)
             paragraph.add_run(text = "\n")
 
-        # Temporarily save the document to return it. 
-        with NamedTemporaryFile(delete=False, suffix='.docx', dir='/tmp') as tmpFile: 
-            document.save(tmpFile.name)
-            # Return the path of the temporary file.
-            return tmpFile.name
+        file_path = f"{config.TEMP_FILE_LOCATION}/generate_report{str(random.randint(1,100000))}).docx"
+        document.save(file_path)
+
+        # Return the file path.
+        return file_path
            
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error generating the word file: {str(e)}")
@@ -688,7 +687,7 @@ async def generate_report_helper(
                                 This endpoint only supports subtype of STUDY and MODEL_RUN.")
         
         # All the nodes involved in the model run/study have been populated. 
-        generated_doc_path = generate_word_file(report_nodes)
+        generated_doc_path = generate_word_file(config, report_nodes)
         
         if os.path.exists(generated_doc_path): 
             return generated_doc_path
