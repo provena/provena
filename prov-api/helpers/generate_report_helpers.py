@@ -465,7 +465,7 @@ def generate_word_file(node_collection: ReportNodeCollection) -> str:
             paragraph.add_run(text = "\n")
 
         # Temporarily save the document to return it. 
-        with NamedTemporaryFile(delete=False, suffix='.docx') as tmpFile: 
+        with NamedTemporaryFile(delete=False, suffix='.docx', dir='/tmp') as tmpFile: 
             document.save(tmpFile.name)
             # Return the path of the temporary file.
             return tmpFile.name
