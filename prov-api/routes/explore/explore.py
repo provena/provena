@@ -374,5 +374,6 @@ async def generate_report(
 
     return FileResponse(
         path = generated_doc_path, 
-        filename= "Study Close Out Report.docx"
+        filename= "Study Close Out Report.docx", 
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )  
