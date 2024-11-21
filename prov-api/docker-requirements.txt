@@ -19,6 +19,7 @@ networkx
 python-dotenv
 sentry-sdk[fastapi]
 python-docx
+awswrangler
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package

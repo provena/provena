@@ -419,6 +419,9 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
     """
 
     try:
+
+        print("Starting to generate the Word document...")
+
         document = Document()
         document.add_heading('Model Run Study Close Out Report', 0)
 
@@ -464,12 +467,20 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
             paragraph.add_run(text = "\n")
 
         file_path = f"{config.TEMP_FILE_LOCATION}/generate_report{str(random.randint(1,100000))}).docx"
+        print(f"Attempting to save the document to {file_path}...")
         document.save(file_path)
+
+        if os.path.exists(file_path):
+            print(f"File successfully saved at {file_path}")
+        else:
+            print("File was not saved successfully.")
+        
 
         # Return the file path.
         return file_path
            
-    except Exception as e: 
+    except Exception as e:
+        print(f"Error during file generation: {str(e)}") 
         raise HTTPException(status_code=500, detail=f"Error generating the word file: {str(e)}")
     
 
