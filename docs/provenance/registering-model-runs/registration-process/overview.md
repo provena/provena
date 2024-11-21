@@ -80,4 +80,6 @@ There are two primary methods of registering provenance in a scalable way.
 
 If you would like to work directly with the [Provenance Store API](https://prov-api.mds.gbrrestoration.org/docs) you can follow [this guide](./register-model-run-records-by-api).
 
+If you would prefer to record and lodge model runs using a visual form, you can follow [this guide](./register-model-run-records-with-form).
+
 If you would prefer to record and lodge model runs in a special system generated CSV template, you can follow [this guide](./register-model-run-records-by-csv-template).
