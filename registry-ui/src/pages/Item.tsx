@@ -546,6 +546,17 @@ const RecordView = observer((props: {}) => {
                     </Button>
                   </Grid>
                 )}
+                {isModelRun && (
+                  <Grid item>
+                    <Button 
+                      variant="outlined"
+                      className={classes.actionButton}
+                      href = {`${PROV_STORE_LINK}/tools?recordId=${handleId}`}
+                    >
+                    Edit Model Run
+                    </Button>
+                  </Grid>
+                )}
                 {seeAddStudyLinkButton && (
                   <Grid item>
                     <Button

@@ -25,7 +25,7 @@ import GenerateTemplate from "../subpages/GenerateTemplate";
 import LodgeTemplate from "../subpages/LodgeTemplate";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import { BoundedContainer } from "react-libs";
+import { BoundedContainer, useTypedQueryStringVariable } from "react-libs";
 import { CreateModelRunTool } from "./CreateModelRunTool";
 import { UpdateModelRunTool } from "./UpdateModelRunTool";
 
@@ -70,6 +70,19 @@ const RegistrationTools = observer(() => {
   const [currentTab, setCurrentTab] = useState(0);
   const [sideBar, setSideBar] = useState(true);
   const { keycloak, initialized } = useKeycloak();
+
+  // Query string parser
+  const {value} = useTypedQueryStringVariable({
+    queryStringKey: "recordId", 
+    defaultValue:undefined
+  })
+
+  // useEffect to change form tabs, that runs on component load.
+  useEffect(() => {
+    if (value !== undefined){
+      setCurrentTab(3)
+    }
+  }, [])
 
   // Firstly - make sure we have access
   useEffect(() => {
@@ -264,7 +277,11 @@ const RegistrationTools = observer(() => {
               <CreateModelRunTool />
             </TabPanel>
             <TabPanel index={3} currentIndex={currentTab}>
-              <UpdateModelRunTool />
+              if(value){
+                <UpdateModelRunTool modelRunId={value} />
+              } else {
+                <UpdateModelRunTool/>
+              }
             </TabPanel>
           </Grid>
         </Grid>
