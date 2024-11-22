@@ -165,6 +165,10 @@ export const UpdateModelRunTool = (props: UpdateModelRunOptionalProps | {}) => {
   const granted = !!auth.granted;
   const showUpdateForm = granted && canWriteToRecord && !showResult;
 
+  /* Use effect that runs once on component load to check whether 
+     a model run id was provided to the component. If model run id 
+     is provided, the state is set to the respective provided ID.
+  */
   useEffect(() => {
     if (typedProps && typedProps.modelRunId){
       setModelRunId(typedProps.modelRunId)
