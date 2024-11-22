@@ -326,7 +326,7 @@ async def effected_agents(
 @router.post("/generate/report", response_class = FileResponse, operation_id="export_prov_graph")
 async def generate_report(
     request: GenerateReportRequest,    
-    #background_tasks: BackgroundTasks,
+    background_tasks: BackgroundTasks,
     roles: ProtectedRole = Depends(read_user_protected_role_dependency),
     config: Config = Depends(get_settings),  
 ) -> FileResponse:
@@ -370,10 +370,10 @@ async def generate_report(
     )
 
     # Add the removal of the generated word doc as a background task.
-    #background_tasks.add_task(remove_file, file_path=generated_doc_path)
+    background_tasks.add_task(remove_file, file_path=generated_doc_path)
 
     return FileResponse(
         path = generated_doc_path, 
-        filename= "Study Close Out Report.txt", 
-        media_type="text/plain",
+        filename= "Study Close Out Report.docx", 
+        media_type="application/octet-stream",
     )  
