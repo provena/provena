@@ -372,8 +372,14 @@ async def generate_report(
     # Add the removal of the generated word doc as a background task.
     background_tasks.add_task(remove_file, file_path=generated_doc_path)
 
+    # Explicitly set the headers 
+    headers = {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": 'attachment; filename="Study Close Out Report.docx"',
+    }
+
     return FileResponse(
         path = generated_doc_path, 
         filename= "Study Close Out Report.docx", 
-        media_type="application/octet-stream",
+        headers = headers
     )  
