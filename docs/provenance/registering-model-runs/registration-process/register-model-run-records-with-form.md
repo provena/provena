@@ -202,7 +202,7 @@ Clicking on the green highlighted job will allow you to view the detailed result
 
 |                                                Job output                                                |
 | :------------------------------------------------------------------------------------------------------: |
-| <img src="../../../assets/images/provenance/create_model_run/job_output.png" alt="drawing" width="800"/> |
+| <img src="../../../assets/images/provenance/create_model_run/output.png" alt="drawing" width="800"/> |
 
 To see more information, such as viewing errors in jobs, see [job system](../../../getting-started-is/jobs).
 
