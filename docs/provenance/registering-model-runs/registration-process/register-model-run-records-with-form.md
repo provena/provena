@@ -120,7 +120,7 @@ Using search tools (similar to the tool you used to select your template in the 
 - A **Modeller**
 - An **Organisation** (optionally)
 
-In the image below, you will see that the search tool is indicating successful selection with the green tick icon:
+In the image below, you will see that the search tool is indicating successful selection with the green tick icon, as shown below.
 
 |                                                Associations                                                |
 | :--------------------------------------------------------------------------------------------------------: |
@@ -142,7 +142,7 @@ If the template includes deferred resources, you must provide values (3) for eac
 | :----------------------------------------------------------------------------------------------------: |
 | <img src="../../../assets/images/provenance/create_model_run/datasets.png" alt="drawing" width="800"/> |
 
-A successfully filled out dataset, could look like:
+A successfully filled out dataset, could look like the image below.
 
 |                                             Completed dataset                                             |
 | :-------------------------------------------------------------------------------------------------------: |

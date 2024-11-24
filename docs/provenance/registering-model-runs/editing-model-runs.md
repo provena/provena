@@ -62,7 +62,7 @@ Then navigate to the Registration Tools (1) (after which you may be prompted to 
 
 ## Select your model run record
 
-You will now see the "Select a Model Run" tool. You can select a model run using two approaches
+You will now see the "Select a Model Run" tool. You can select a model run using two approaches - you can search for a model run or enter it's identifier directly. These methods are described in the following two sections.
 
 ### Search for your model run
 
@@ -72,7 +72,7 @@ If you do not know the identifier, but you know other identifying words in the M
 | :---------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/edit_model_run/search.png" alt="drawing" width="800"/> |
 
-After selecting the model run, you should see a green tick indicating success:
+After selecting the model run, you should see a green tick indicating success, as shown below.
 
 |                                       Successful selection                                       |
 | :----------------------------------------------------------------------------------------------: |
@@ -86,7 +86,7 @@ If, instead, you know the [identifier](../../digital-object-identifiers) of your
 | :---------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/edit_model_run/direct.png" alt="drawing" width="800"/> |
 
-After selecting the model run, you should see a green tick indicating success:
+After selecting the model run, you should see a green tick indicating success, as shown below.
 
 |                                       Successful selection                                       |
 | :----------------------------------------------------------------------------------------------: |
@@ -110,13 +110,13 @@ The fields and tools will be familiar to you as a user of the [Registry](../../r
 
 ### Adding, removing or changing a study link
 
-This section of the form:
+The following section of the form is the Study selection tool.
 
 |                                           Study select tool                                            |
 | :----------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/edit_model_run/study_section.png" alt="drawing" width="800"/> |
 
-Is the Study selection tool. It follows the same principles as the Model Run selection tool above, except it selects from Studies.
+It follows the same principles as the Model Run selection tool previously shown, except it selects from Studies.
 
 If you would like to add a selection, then simply enter the search term and choose the result or enter the ID, and submit.
 
@@ -126,13 +126,11 @@ If you would like to change the selection, click the 'Clear Selection' button, t
 
 ### Adding, removing or changing a Modeller or Organisation association
 
-This section of the form:
+The following section of the form is where you specify associations for this model run record.
 
 |                                       Associations select tool                                        |
 | :---------------------------------------------------------------------------------------------------: |
 | <img src="../../assets/images/provenance/edit_model_run/associations.png" alt="drawing" width="800"/> |
-
-Is where you specify associations for this model run record.
 
 You can add, remove, or modify, these associations in the same manner as Studies above.
 
