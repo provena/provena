@@ -95,10 +95,30 @@ class ProvenaStack(Stack):
         # setup permissions for the key to enable configured account admins (if
         # any) to be able to decrypt/encrypt and manage
         for role_arn in (config.general.user_context_key_admins or []):
-            role = iam.Role.from_role_arn(
-                self, 'key-role' + role_arn[-5:], role_arn)
-            symmetric_key.grant_encrypt_decrypt(role)
-            symmetric_key.grant_admin(role)
+            symmetric_key.add_to_resource_policy(iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                principals=[iam.ArnPrincipal(role_arn)],
+                actions=[
+                    "kms:Create*",
+                    "kms:Describe*",
+                    "kms:Enable*",
+                    "kms:List*",
+                    "kms:Put*",
+                    "kms:Update*",
+                    "kms:Disable*",
+                    "kms:Get*",
+                    "kms:TagResource",
+                    "kms:UntagResource",
+                    "kms:ScheduleKeyDeletion",
+                    "kms:CancelKeyDeletion",
+                    "kms:Encrypt",
+                    "kms:Decrypt",
+                    "kms:ReEncrypt*",
+                    "kms:GenerateDataKey*",
+                    "kms:DescribeKey"
+                ],
+                resources=[symmetric_key.key_arn]
+            ))
 
         # DNS allocator helper
         dns_allocator = DNSAllocator(
