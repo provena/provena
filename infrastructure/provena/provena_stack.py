@@ -92,6 +92,14 @@ class ProvenaStack(Stack):
             removal_policy=RemovalPolicy.DESTROY
         )
 
+        # setup permissions for the key to enable configured account admins (if
+        # any) to be able to decrypt/encrypt and manage
+        for role_arn in (config.general.user_context_key_admins or []):
+            role = iam.Role.from_role_arn(
+                self, 'key-role' + role_arn[-5:], role_arn)
+            symmetric_key.grant_encrypt_decrypt(role)
+            symmetric_key.grant_admin(role)
+
         # DNS allocator helper
         dns_allocator = DNSAllocator(
             scope=self,

@@ -586,6 +586,10 @@ class GeneralConfig(BaseModel):
     # Prefix all routes with an optional prefix - will break application but is
     # useful to avoid route53 redeploy issues in some situations
     debug_route_prefix: Optional[str] = None
+    
+    # if you want the symmetric key used for user context encryption to be
+    # available to roles, specify a list of IAM Role ARNs
+    user_context_key_admins: Optional[List[str]] = None
 
 
 class TestType(str, Enum):
