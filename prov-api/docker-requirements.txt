@@ -18,6 +18,7 @@ neo4j
 networkx
 python-dotenv
 sentry-sdk[fastapi]
+mypy-boto3-kms
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package
