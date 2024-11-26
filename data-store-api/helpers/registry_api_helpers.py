@@ -11,6 +11,7 @@ from ProvenaInterfaces.DataStoreAPI import *
 from typing import Dict
 from dependencies.dependencies import User
 from helpers.util import py_to_dict
+from helpers.encryption_helpers import get_user_context_header
 
 
 def generate_service_token_for_registry_api(secret_cache: SecretCache, config: Config) -> str:
@@ -51,7 +52,8 @@ def validate_dataset_in_registry(collection_format: CollectionFormat, user: User
             collection_format=collection_format,
             s3=S3Location(bucket_name="fake", path="fake", s3_uri="fake"),
             release_status=ReleasedStatus.NOT_RELEASED,  # dummy value
-            access_info_uri=collection_format.dataset_info.access_info.uri, # dont use fake, must exactly match
+            # dont use fake, must exactly match
+            access_info_uri=collection_format.dataset_info.access_info.uri,
         )
     except Exception as e:
         raise HTTPException(
@@ -118,7 +120,7 @@ def validate_dataset_in_registry(collection_format: CollectionFormat, user: User
         return None
 
 
-def seed_dataset_in_registry(proxy_username: str, secret_cache: SecretCache, config: Config) -> str:
+def seed_dataset_in_registry(user_cipher: str, secret_cache: SecretCache, config: Config) -> str:
     """
     seed_dataset_in_registry 
 
@@ -150,19 +152,22 @@ def seed_dataset_in_registry(proxy_username: str, secret_cache: SecretCache, con
     seed_endpoint = config.REGISTRY_API_ENDPOINT + postfix
 
     # make the seed request
+
+    # auth header
     headers = {
         'Authorization': 'Bearer ' + token
     }
 
-    # params - add the proxy username
-    params = {
-        'proxy_username': proxy_username
-    }
+    # proxy header
+    proxy_headers = get_user_context_header(
+        user_cipher=user_cipher, config=config)
+
+    # merge
+    headers.update(proxy_headers)
 
     try:
         response = requests.post(
             url=seed_endpoint,
-            params=params,
             headers=headers
         )
     except Exception as e:
@@ -219,7 +224,7 @@ def seed_dataset_in_registry(proxy_username: str, secret_cache: SecretCache, con
 
 
 def update_dataset_in_registry(
-    proxy_username: str,
+    user_cipher: str,
     domain_info: DatasetDomainInfo,
     id: str,
     secret_cache: SecretCache,
@@ -239,8 +244,8 @@ def update_dataset_in_registry(
 
     Parameters
     ----------
-    proxy_username : str
-        The username to proxy on behalf of
+    user_cipher: str
+        The encrypted user context info to include in header for proxy route
     domain_info : DatasetDomainInfo
         The new domain info
     id : str
@@ -291,7 +296,6 @@ def update_dataset_in_registry(
     json_payload = py_to_dict(domain_info)
     params = {
         'id': id,
-        'proxy_username': proxy_username,
         'reason': reason,
         'bypass_item_lock': str(bypass_item_lock),
         "exclude_history_update": str(exclude_history_update),
@@ -302,6 +306,11 @@ def update_dataset_in_registry(
     headers = {
         'Authorization': 'Bearer ' + token
     }
+
+    context_headers = get_user_context_header(
+        user_cipher=user_cipher, config=config)
+
+    headers.update(context_headers)
 
     try:
         response = requests.put(
@@ -769,7 +778,7 @@ def user_list_datasets_from_registry(config: Config, user: User, list_request: N
     return list_response
 
 
-def version_dataset_in_registry(proxy_username: str, version_request: VersionRequest, secret_cache: SecretCache, config: Config) -> VersionResponse:
+def version_dataset_in_registry(user_cipher: str, version_request: VersionRequest, secret_cache: SecretCache, config: Config) -> VersionResponse:
     """
 
     Performs a versioning/version operation.
@@ -778,8 +787,8 @@ def version_dataset_in_registry(proxy_username: str, version_request: VersionReq
 
     Parameters
     ----------
-    proxy_username : str
-        The username to make request on - job and new item will be owned by this user.
+    user_cipher : str
+        Encrypted user context of requester
     version_request : VersionRequest
         The version request
     secret_cache : SecretCache
@@ -803,10 +812,9 @@ def version_dataset_in_registry(proxy_username: str, version_request: VersionReq
         config=config
     )
 
-    proxy_request = py_to_dict(ProxyVersionRequest(
+    proxy_request = py_to_dict(VersionRequest(
         id=version_request.id,
         reason=version_request.reason,
-        username=proxy_username
     ))
 
     # endpoint
@@ -817,6 +825,9 @@ def version_dataset_in_registry(proxy_username: str, version_request: VersionReq
     headers = {
         'Authorization': 'Bearer ' + token
     }
+    user_context_headers = get_user_context_header(
+        user_cipher=user_cipher, config=config)
+    headers.update(user_context_headers)
 
     try:
         response = requests.post(
@@ -995,8 +1006,8 @@ def ensure_user_roles_access_to_dataset(dataset_id: IdentifiedResource, user: Us
         401 - User does not have expected privileges for dataset with id
     """
     dataset_fetch = fetch_dataset_helper(dataset_id, user, config)
-    
-    # Bug. This requires metadata read to dataset to succeed. But roles could be just dataset data read. 
+
+    # Bug. This requires metadata read to dataset to succeed. But roles could be just dataset data read.
     # WHen would someone have dataset data read but not metadata read?
     if dataset_fetch.roles is None:
         raise HTTPException(
@@ -1011,11 +1022,9 @@ def ensure_user_roles_access_to_dataset(dataset_id: IdentifiedResource, user: Us
     ):
         raise HTTPException(
             status_code=401,  # unauthorised.
-            detail=f"User {user.username} does not have expected dataset data privileges for dataset with id '{dataset_id}'." + 
+            detail=f"User {user.username} does not have expected dataset data privileges for dataset with id '{dataset_id}'." +
             f"Expected roles of {str(roles)} but got {dataset_fetch.roles}"
         )
-    
 
     assert dataset_fetch.item, f"Expected an item to be fetched, but got None for dataset item."
     return dataset_fetch.item
-    

@@ -105,6 +105,30 @@ async def decrypt_user_info(cipher_text: str, encryption_service: EncryptionServ
         raise HTTPException(
             status_code=400, detail=f"Invalid payload for user info context. Decryption succeeded but payload was not parse-able.")
 
+async def encrypt_user(user: User, encryption_service: EncryptionService) -> str:
+    """
+
+    Takes an injected protected user fast API dependency and encrypts a UserInfo payload
+
+    Parameters
+    ----------
+    user : User
+        The user (from general dependency)
+    encryption_service : EncryptionService
+        The encryption service
+
+    Returns
+    -------
+    str
+        The ciphertext
+    """
+    # build the user info object
+    user_info = UserInfo(
+        username=user.username,
+        email=user.email,
+        roles=user.roles
+    )
+    return await encrypt_user_info(payload=user_info, encryption_service=encryption_service)
 
 async def encrypt_user_dep(user: ProtectedRole, encryption_service: EncryptionService) -> str:
     """

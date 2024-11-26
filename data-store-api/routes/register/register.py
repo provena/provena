@@ -5,7 +5,7 @@ from ProvenaInterfaces.RegistryAPI import DatasetDomainInfo, ItemRevertRequest, 
 from ProvenaInterfaces.RegistryModels import METADATA_WRITE_ROLE, ADMIN_ROLE, DATASET_WRITE_ROLE
 from config import get_settings, Config
 from typing import cast
-from dependencies.dependencies import read_write_user_protected_role_dependency
+from dependencies.dependencies import read_write_user_protected_role_dependency, get_user_cipher
 from dependencies.secret_cache import secret_cache
 from helpers.metadata_helpers import validate_against_schema, validate_fields
 from helpers.aws_helpers import construct_s3_path, update_metadata_at_s3, seed_s3_location_with_metadata
@@ -24,7 +24,8 @@ async def mint_dataset(
     collection_format: CollectionFormat,
     protected_roles: ProtectedRole = Depends(
         read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher: str = Depends(get_user_cipher)
 ) -> MintResponse:
     """
     Function Description
@@ -123,9 +124,8 @@ async def mint_dataset(
     # Mint a new seed dataset item
     handle = seed_dataset_in_registry(
         secret_cache=secret_cache,
-        # use the actual username in the proxy request
-        proxy_username=protected_roles.user.username,
-        config=config
+        config=config,
+        user_cipher=user_cipher
     )
 
     # Work out S3 location
@@ -161,10 +161,8 @@ async def mint_dataset(
     # now we can update the seeded item to a complete item with the appropriate
     # details
     update_response = update_dataset_in_registry(
+        user_cipher=user_cipher,
         domain_info=domain_info,
-        # use the actual users username - this ensures that resource level auth
-        # is enforced
-        proxy_username=protected_roles.user.username,
         id=handle,
         # reason is not required in this case as it's just an update from seed
         # -> complete
@@ -204,7 +202,8 @@ async def update_metadata(
     reason: str,
     protected_roles: ProtectedRole = Depends(
         read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher: str = Depends(get_user_cipher)
 ) -> UpdateMetadataResponse:
     """    get_dataset_schema
         Given the metadata and handle id, will re-parse the metadata
@@ -321,10 +320,10 @@ async def update_metadata(
 
     # this uses the service role - need to be sure we have access at this point
     update_dataset_in_registry(
+        user_cipher=user_cipher,
         id=handle_id,
         # use the actual username - this ensures user auth is enforced at
         # resource level
-        proxy_username=protected_roles.user.username,
         secret_cache=secret_cache,
         config=config,
         domain_info=DatasetDomainInfo(
@@ -366,7 +365,8 @@ async def revert_metadata(
     revert_request: ItemRevertRequest,
     protected_roles: ProtectedRole = Depends(
         read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher: str = Depends(get_user_cipher)
 ) -> ItemRevertResponse:
     """
 
@@ -468,16 +468,15 @@ async def revert_metadata(
 
     # Update the collection format
     revised_domain_info.collection_format = collection_format
-    
+
     # update the user metadata
     revised_domain_info.user_metadata = collection_format.dataset_info.user_metadata
 
     # Update the uri, if any.
     revised_domain_info.access_info_uri = collection_format.dataset_info.access_info.uri
 
-
     update_dataset_in_registry(
-        proxy_username=protected_roles.user.username,
+        user_cipher=user_cipher,
         domain_info=revised_domain_info,
         id=revert_request.id,
         secret_cache=secret_cache,
@@ -506,7 +505,8 @@ async def version_dataset(
     version_request: VersionRequest,
     protected_roles: ProtectedRole = Depends(
         read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher: str = Depends(get_user_cipher)
 ) -> VersionResponse:
     """
 
@@ -543,7 +543,7 @@ async def version_dataset(
     # subtype - so we don't need to manage that
     version_response = version_dataset_in_registry(
         version_request=version_request,
-        proxy_username=protected_roles.user.username,
+        user_cipher=user_cipher,
         secret_cache=secret_cache,
         config=config,
     )
@@ -618,10 +618,8 @@ async def version_dataset(
     # now we can update the seeded item to a complete item with the appropriate
     # details
     update_dataset_in_registry(
+        user_cipher=user_cipher,
         domain_info=domain_info,
-        # use the actual users username - this ensures that resource level auth
-        # is enforced
-        proxy_username=protected_roles.user.username,
         id=new_item.id,
         reason="(System) Dataset S3 path updated to new version's storage location",
         secret_cache=secret_cache,

@@ -3,9 +3,11 @@ from ProvenaInterfaces.AsyncJobModels import EmailSendEmailPayload
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config, Config, get_settings
 from interfaces.EmailClient import EmailClient, EmailContent
-from fastapi import Depends
+from fastapi import Depends, Request
 from typing import List, Tuple
 from helpers.job_api_helpers import submit_send_email_job
+from services.encryption import EncryptionService, KMSEncryptionService, KMSConfig
+from helpers.encryption_helpers import encrypt_user
 
 # Setup auth -> test mode means no sig enforcement on validation
 kc_auth = build_keycloak_auth(
@@ -103,3 +105,52 @@ class JobEmailClient(EmailClient):
 # Build the email dependency using config
 def email_dependency(config: Config = Depends(get_settings)) -> EmailClient:
     return JobEmailClient(config=config)
+
+
+def build_kms_service_from_config(config: Config) -> KMSEncryptionService:
+    """
+
+    Builds the AWS Key Management service encryption service from the config object.
+
+    Parameters
+    ----------
+    config : Config
+        Config to build from
+
+    Returns
+    -------
+    KMSEncryptionService
+        The encryption service
+    """
+    return KMSEncryptionService(KMSConfig(
+        key_id=config.user_key_id,
+        region=config.user_key_region
+    ))
+
+
+def get_encryption_service(config: Config = Depends(get_settings)) -> EncryptionService:
+    """
+    FastAPI dependency injection to get encryption service. This exposes
+    abstract base class implementation so we can swap out to other encryption
+    service implementations as needed.
+
+    Parameters
+    ----------
+    config : Config, optional
+        The config - this is injected prior to the encryption service, by default Depends(get_settings)
+
+    Returns
+    -------
+    EncryptionService
+        The resulting service as an EncryptionService type
+    """
+    return build_kms_service_from_config(config)
+
+
+async def get_user_cipher(
+    encryption_service: EncryptionService = Depends(get_encryption_service),
+    # check user is defined through dependency
+    user: User = Depends(user_general_dependency)
+) -> str:
+    # use the encryption service to build the cipher
+    return await encrypt_user(user=user, encryption_service=encryption_service)
