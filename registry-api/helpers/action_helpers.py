@@ -272,7 +272,7 @@ def fetch_helper(
             status=Status(
                 success=False, details=f"Could not find the given key ({id}) in the registry. Details {e}.")
         )
-    
+
     except ValueError as e:
         return GenericFetchResponse(
             status=Status(
@@ -1349,7 +1349,8 @@ def list_items_paginated_and_filter(
 
 
 def get_user_group_id_set(user: User, config: Config, service_proxy: bool = False) -> Set[str]:
-    # otherwise, get the groups of the user and check access for each protection type at each level
+    # otherwise, get the groups of the user and check access for each protection
+    # type at each level
     try:
         # depending on if service proxy mode, either make a user token request
         # or service token request asking by username
@@ -1402,9 +1403,8 @@ def describe_access_helper(
             roles=available_roles
         )
 
-    # if the user is admin - always return all roles if using a service proxy -
-    # we only want to check user's access so don't look at roles (i.e. admin)
-    if user_is_admin(user) and not service_proxy:
+    # if the user is admin - always return all roles
+    if user_is_admin(user):
         return DescribeAccessResponse(
             roles=available_roles
         )

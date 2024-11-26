@@ -91,6 +91,11 @@ class Config(BaseConfig):
     # Creds for the keycloak service account used to make
     # requests on behalf of user
     service_account_secret_arn: str
+    
+    # encryption service
+    user_key_id: str
+    user_key_region: str
+    user_context_header: str
 
     # Should the handle ids be mocked?
     mock_handle: bool = False
@@ -119,6 +124,7 @@ class Config(BaseConfig):
     git_tag_name: Optional[str]
     git_release_title: Optional[str]
     git_release_url: Optional[str]
+    
 
 
     # Derived property of token endpoint

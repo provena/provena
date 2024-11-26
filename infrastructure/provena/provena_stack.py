@@ -80,6 +80,18 @@ class ProvenaStack(Stack):
         for k, v in tags.items():
             Tags.of(self).add(key=k, value=v)
 
+        # Symmetric key used for encrypting user context payloads in custom
+        # headers for inter-service communication
+        symmetric_key = kms.Key(
+            self,
+            "interservice-key",
+            description="Symmetric KMS key for encrypt/decrypt between services to encrypt user context",
+            enabled=True,
+            enable_key_rotation=True,
+            pending_window=Duration.days(7),
+            removal_policy=RemovalPolicy.DESTROY
+        )
+
         # DNS allocator helper
         dns_allocator = DNSAllocator(
             scope=self,
@@ -430,6 +442,7 @@ class ProvenaStack(Stack):
                 auth_table=auth_table,
                 lock_table=lock_table,
                 cert_arn=cert_arn,
+                user_context_key=symmetric_key,
                 auth_api_endpoint=auth_api.endpoint,
                 api_rate_limiting=config.general.rate_limiting,
                 git_commit_id=config.deployment.git_commit_id,
@@ -588,6 +601,7 @@ class ProvenaStack(Stack):
                 service_account_secret_arn=prov_config.service_account_arn,
                 allocator=dns_allocator,
                 cert_arn=cert_arn,
+                user_context_key=symmetric_key,
                 neo4j_host=neo4j_ecs.neo4j_bolt_host,
                 api_rate_limiting=config.general.rate_limiting,
                 neo4j_port=str(neo4j_ecs.neo4j_bolt_port),

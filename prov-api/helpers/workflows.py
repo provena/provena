@@ -6,10 +6,11 @@ from helpers.registry_helpers import *
 from helpers.prov_helpers import model_run_to_graph
 from helpers.model_run_helpers import *
 from helpers.prov_connector import Neo4jGraphManager, GraphDiffApplier
+from services.encryption import EncryptionService
 from config import Config
 
 
-async def update_existing_model_run(model_run_record_id: str, reason: str, record: ModelRunRecord, config: Config, request_style: RequestStyle) -> ProvenanceRecordInfo:
+async def update_existing_model_run(model_run_record_id: str, reason: str, record: ModelRunRecord, config: Config, request_style: RequestStyle, proxy: UserCipherProxy) -> ProvenanceRecordInfo:
     """
     Updates and lodges a provenance record into the Registry and GraphDB.
 
@@ -31,17 +32,6 @@ async def update_existing_model_run(model_run_record_id: str, reason: str, recor
     ProvenanceRecordInfo
         The completed info
     """
-
-    # this seeds the item on behalf of the user - based on the request style
-    # this could be the proxied username or direct from the token
-    username: str
-    if request_style.service_account:
-        assert request_style.service_account.on_behalf_username
-        username = request_style.service_account.on_behalf_username
-    elif request_style.user_direct:
-        username = request_style.user_direct.username
-    else:
-        raise ValueError("Invalid validation settings")
 
     # ==========================
     # Update record in registry
@@ -104,11 +94,11 @@ async def update_existing_model_run(model_run_record_id: str, reason: str, recor
     # NOTE model run records do not have prov versioning enabled so this is
     # fully synchronous op
     model_run_item: ItemModelRun = await update_model_run_in_registry(
-        proxy_username=username,
         model_run_id=model_run_record_id,
         model_run_domain_info=updated_model_run_record,
         config=config,
-        reason=reason
+        reason=reason,
+        user_cipher=proxy.user_cipher
     )
 
     # ==========================================
@@ -134,11 +124,11 @@ async def update_existing_model_run(model_run_record_id: str, reason: str, recor
     model_run_item.record_status = WorkflowRunCompletionStatus.LODGED
     # update (from complete -> complete, reason required)
     updated_item: ItemModelRun = await update_model_run_in_registry(
-        proxy_username=username,
         model_run_id=model_run_record_id,
         model_run_domain_info=updated_model_run_record,
         reason="Updating item to mark completion of provenance lodge.",
-        config=config
+        config=config,
+        user_cipher=proxy.user_cipher
     )
 
     # ==============================================================
@@ -150,6 +140,7 @@ async def update_existing_model_run(model_run_record_id: str, reason: str, recor
         prov_json=serialisation,
         record=record
     )
+
 
 async def update_existing_model_run_lodge_only(model_run_record_id: str, record: ModelRunRecord, config: Config, request_style: RequestStyle) -> None:
     """
@@ -171,17 +162,6 @@ async def update_existing_model_run_lodge_only(model_run_record_id: str, record:
     ProvenanceRecordInfo
         The completed info
     """
-
-    # this seeds the item on behalf of the user - based on the request style
-    # this could be the proxied username or direct from the token
-    username: str
-    if request_style.service_account:
-        assert request_style.service_account.on_behalf_username
-        username = request_style.service_account.on_behalf_username
-    elif request_style.user_direct:
-        username = request_style.user_direct.username
-    else:
-        raise ValueError("Invalid validation settings")
 
     # ==========================
     # Update record in registry
@@ -229,7 +209,8 @@ async def update_existing_model_run_lodge_only(model_run_record_id: str, record:
         raise Exception(
             f"Failed to fetch existing graph or deploy diff. Error: {e}.") from e
 
-async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, request_style: RequestStyle) -> ProvenanceRecordInfo:
+
+async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, request_style: RequestStyle, proxy: UserCipherProxy) -> ProvenanceRecordInfo:
     """
 
     Registers and lodges a provenance record into the Registry and GraphDB.
@@ -252,21 +233,10 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
     # Seed identity in registry
     # ==========================
 
-    # this seeds the item on behalf of the user - based on the request style
-    # this could be the proxied username or direct from the token
-    username: str
-    if request_style.service_account:
-        assert request_style.service_account.on_behalf_username
-        username = request_style.service_account.on_behalf_username
-    elif request_style.user_direct:
-        username = request_style.user_direct.username
-    else:
-        raise ValueError("Invalid validation settings")
-
     # service account is always used for this request
     seeded_item: SeededItem = await seed_model_run(
-        proxy_username=username,
-        config=config
+        config=config,
+        user_cipher=proxy.user_cipher
     )
     handle_id = seeded_item.id
 
@@ -336,10 +306,10 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
     # NOTE model run records do not have prov versioning enabled so this is
     # fully synchronous op
     model_run_item: ItemModelRun = await update_model_run_in_registry(
-        proxy_username=username,
         model_run_id=handle_id,
         model_run_domain_info=model_run_record,
-        config=config
+        config=config,
+        user_cipher=proxy.user_cipher
     )
 
     # ==========================================
@@ -357,11 +327,11 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
     model_run_record.record_status = WorkflowRunCompletionStatus.LODGED
     # update (from complete -> complete, reason required)
     updated_item: ItemModelRun = await update_model_run_in_registry(
-        proxy_username=username,
         model_run_id=handle_id,
         model_run_domain_info=model_run_record,
         reason="Updating item to mark completion of provenance lodge.",
-        config=config
+        config=config,
+        user_cipher=proxy.user_cipher
     )
 
     # ==============================================================
@@ -376,21 +346,6 @@ async def register_and_lodge_provenance(record: ModelRunRecord, config: Config, 
 
 
 async def lodge_provenance(handle_id: str, record: ModelRunRecord, config: Config, request_style: RequestStyle) -> ProvenanceRecordInfo:
-    # ==========================
-    # Seed identity in registry
-    # ==========================
-
-    # this seeds the item on behalf of the user - based on the request style
-    # this could be the proxied username or direct from the token
-    username: str
-    if request_style.service_account:
-        assert request_style.service_account.on_behalf_username
-        username = request_style.service_account.on_behalf_username
-    elif request_style.user_direct:
-        username = request_style.user_direct.username
-    else:
-        raise ValueError("Invalid validation settings")
-
     # ==========================================================
     # Convert fully identified record into python-prov document
     # Integrate handle IDs into prov document

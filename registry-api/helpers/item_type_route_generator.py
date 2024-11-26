@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import ProtectedRole
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_user_context
 from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.RegistryModels import *
 from helpers.action_helpers import *
@@ -10,6 +10,7 @@ from config import Config, get_settings
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import *
 from helpers.workflow_helpers import *
 from route_models import *
+
 
 def get_correct_dependency(level: RouteAccessLevel) -> Any:
     if level == RouteAccessLevel.READ:
@@ -25,9 +26,9 @@ def get_correct_dependency(level: RouteAccessLevel) -> Any:
 def generate_router(
         route_config: RouteConfig,
 ) -> APIRouter:
-    
+
     router = APIRouter()
-    
+
     action: RouteActions
     action_config: RouteActionConfig
 
@@ -1513,9 +1514,9 @@ def generate_router(
     '''
     These methods are used when a service account acts on behalf of the user.
     They are not visible in the generated json schema/client libs. The
-    difference is that these methods observe an optional 'username' query string
-    parameter which overrides the User auth object. This is helpful when objects
-    are created which have ownership tied to the username. 
+    difference is that these methods observe a required header which is an
+    encrypted JSON object of the user's info.  This is helpful when objects are
+    created which have ownership tied to the username. 
 
     Access is checked via the following workflows
     
@@ -1530,9 +1531,6 @@ def generate_router(
 
     WARNING - these routes should be protected by a service role auth (see
     route_config.limited_access_roles).
-    
-    Currently only used for the data store - however the prov store might end up
-    using a lot of these patterns as well.
     '''
 
     action = RouteActions.PROXY_FETCH
@@ -1550,7 +1548,8 @@ def generate_router(
             seed_allowed: bool = False,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(action_config.access_level))
+                get_correct_dependency(action_config.access_level)),
+            proxy_user: ProtectedRole = Depends(get_user_context)
         ) -> GenericFetchResponse:
             """    fetch_item
                 Fetches the item specified by the id from the 
@@ -1589,8 +1588,7 @@ def generate_router(
             )
 
             # update the user username based on service proxy username
-            user = protected_roles.user
-            user.username = username
+            user = proxy_user.user
 
             # enforce user link service
             linked_person_id = enforce_user_link_check(
@@ -1610,6 +1608,8 @@ def generate_router(
                 available_roles=route_config.available_roles,
                 user=user,
                 config=config,
+                # even with updated user context - we still pass this through as
+                # the user's token is not actually valid
                 service_proxy=True
             )
             return route_config.fetch_response_type(

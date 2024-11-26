@@ -9,7 +9,7 @@ from aws_cdk import (
 )
 
 from constructs import Construct
-from typing import Any, Optional, List
+from typing import Any, Optional, List, cast
 from aws_cron_expression_validator.validator import AWSCronExpressionValidator  # type: ignore
 
 
@@ -80,21 +80,21 @@ class BackupService(Construct):
             self.vault_kms_key: kms.IKey
             if existing_vault_key is None:
                 # Create new key
-                self.vault_kms_key = kms.Key(
+                self.vault_kms_key = cast(kms.IKey, kms.Key(
                     scope=self,
                     id='key',
                     description=f'Encryption key for Provena backup vault, {vault_name=}.',
                     enabled=True,
                     enable_key_rotation=True,
                     admins=key_admins,
-                )
+                ))
                 
                 # add a kms key alias if either the alias name or vault name is provided
                 if alias_name:
-                    self.vault_kms_key.add_alias(alias_name=alias_name)
+                    self.vault_kms_key.add_alias(alias=alias_name)
                 elif vault_name:
                     self.vault_kms_key.add_alias(
-                        alias_name=f"{vault_name}_key")
+                        alias=f"{vault_name}_key")
 
                 if trusted_copy_destination_account_ids:
                     for account_id in trusted_copy_destination_account_ids:
@@ -142,7 +142,7 @@ class BackupService(Construct):
                             effect=iam.Effect.ALLOW,
                             resources=["*"],
                             principals=[
-                                iam.AccountPrincipal(account_id=account_id)
+                                cast(iam.IPrincipal, iam.AccountPrincipal(account_id=account_id))
                             ]
                         )
                     )

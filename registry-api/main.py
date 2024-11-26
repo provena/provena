@@ -268,8 +268,8 @@ route_configs: List[RouteConfig] = [
         available_roles=DATASET_ROLE_LIST,
         default_roles=dataset_default_roles,
         # the datasets can only be created and modified through the data store
-        # API in proxy mode where username is passed through - this is for all
-        # the proxy style routes
+        # API in proxy mode where user context is passed through - this is for
+        # all the proxy style routes
         limited_access_roles=dataset_limited_access_roles,
 
         # Datasets require linked Person before any modification actions
@@ -366,8 +366,8 @@ route_configs: List[RouteConfig] = [
         available_roles=ENTITY_BASE_ROLE_LIST,
         default_roles=normal_default_roles,
         # the model runs can only be created and modified through the prov API
-        # in proxy mode where username is passed through - this is for all the
-        # proxy style routes
+        # in proxy mode where user context is passed through - this is for all
+        # the proxy style routes
         limited_access_roles=model_run_limited_access_roles,
         enforce_username_person_link=False,
         provenance_enabled_versioning=False

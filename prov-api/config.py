@@ -82,6 +82,11 @@ class Config(BaseConfig):
     neo4j_test_username: Optional[str] = None
     neo4j_test_password: Optional[str] = None
 
+    # encryption service
+    user_key_id: str
+    user_key_region: str
+    user_context_header: str
+
     # default settings
     keycloak_token_postfix: str = "/protocol/openid-connect/token"
 

@@ -2,6 +2,7 @@ from aws_cdk import (
     Stack,
     aws_apigateway as api_gw,
     aws_certificatemanager as aws_cm,
+    aws_kms as kms,
     aws_secretsmanager as sm,
     Duration,
     RemovalPolicy,
@@ -37,6 +38,7 @@ class RegistryAPI(Construct):
                  registry_table: RegistryTable,
                  auth_table: IdIndexTable,
                  lock_table: IdIndexTable,
+                 user_context_key: kms.IKey,
                  api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
                  git_commit_id: Optional[str],
                  git_commit_url: Optional[str],
@@ -105,7 +107,9 @@ class RegistryAPI(Construct):
             "GIT_RELEASE_URL": git_release_url,
             "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
             "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
-            "FEATURE_NUMBER": str(feature_number)
+            "FEATURE_NUMBER": str(feature_number),
+            "USER_KEY_ID": user_context_key.key_id,
+            "USER_KEY_REGION": Stack.of(self).region
         }
 
         for key, val in api_environment.items():
@@ -161,6 +165,9 @@ class RegistryAPI(Construct):
 
             # let api func act as service acc
             service_secret.grant_read(grantee)
+
+            # let this service encrypt/decrypt user context headers
+            user_context_key.grant_encrypt_decrypt(grantee)
 
         # grant permissions to registry api
         grant_api_equivalent_permissions(api_func.function)

@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_certificatemanager as aws_cm,
     aws_secretsmanager as sm,
     aws_iam as iam,
+    aws_kms as kms,
     Duration,
     RemovalPolicy
 )
@@ -37,6 +38,7 @@ class ProvAPI(Construct):
                  registry_api_endpoint: str,
                  data_store_api_endpoint: str,
                  cert_arn: str,
+                 user_context_key: kms.Key,
                  api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
                  git_commit_id: Optional[str],
                  sentry_config: SentryConfig,
@@ -110,7 +112,9 @@ class ProvAPI(Construct):
             "DATA_STORE_API_ENDPOINT": data_store_api_endpoint,
             "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
             "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
-            "FEATURE_NUMBER": str(feature_number)
+            "FEATURE_NUMBER": str(feature_number),
+            "USER_KEY_ID": user_context_key.key_id,
+            "USER_KEY_REGION": Stack.of(self).region
         }
         api_environment = {k: v for k,
                            v in api_environment.items() if v is not None}
@@ -169,5 +173,8 @@ class ProvAPI(Construct):
 
             # Grant read to data store api role
             neo4j_auth_secret.grant_read(entity)
+
+            # let this service encrypt/decrypt user context headers
+            user_context_key.grant_encrypt_decrypt(entity)
 
         self.grant_equivalent_permissions = grant_equivalent_permissions

@@ -53,14 +53,15 @@ There are some opportunities for configuration of the generated subtype routes
 
 In some cases, it is inappropriate for a user to directly create/update etc items of a particular subtype. Key examples are datasets and model runs. Datasets cannot be registered directly because they have a tied in lifecycle with a data store S3 storage location. Model runs must be transformed and lodged by the Prov API.
 
-The Registry API has been setup to facilitate these inter API requirements through two mechanisms
+The Registry API has been setup to facilitate these inter API requirements through three mechanisms
 
 -   special per route role limitations
 -   proxy routes
+-   encrypted user context in request headers
 
 Role route limitations means we can enforce only specific Keycloak roles for particular actions - e.g. only the Data Store API service account can create/update/seed datasets.
 
-Proxy routes (such as proxy update, proxy create) etc, are also generally role limited to APIs, and enables the requesting party to request that the action be taken _as if_ the user was actually a different user (specified by username). For example, the proxy create action allows the Data Store API to mint a dataset which is owned by a real non service account system user - meaning they can administer the item as if they created it.
+Proxy routes (such as proxy update, proxy create) etc, are also generally role limited to APIs, and enables the requesting party to request that the action be taken _as if_ the user was actually a different user (specified by an encrypted UserInfo payload). For example, the proxy create action allows the Data Store API to mint a dataset which is owned by a real non service account system user - meaning they can administer the item as if they created it.
 
 # Local deployment
 

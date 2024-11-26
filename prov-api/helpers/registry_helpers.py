@@ -2,17 +2,22 @@ from ProvenaInterfaces.RegistryAPI import *
 from helpers.async_requests import *
 from config import Config, get_settings
 from helpers.keycloak_helpers import get_service_token
+from helpers.encryption_helpers import get_user_context_header
 from dependencies.dependencies import secret_cache
 from fastapi import HTTPException, Depends
 import json
 
+Headers = Dict[str, str]
 
-async def seed_model_run(proxy_username: str, config: Config) -> SeededItem:
+
+async def seed_model_run(user_cipher: str, config: Config) -> SeededItem:
     """    seed_model_run
         Performs a seed operation against the /registry/activity/model_run/seed
         endpoint which will produce an empty model run which can then be later 
         updated to include the provenance document and other details. Returns 
         the SeededItem object.
+
+        Must include the encrypted user cipher
 
         Returns
         -------
@@ -41,16 +46,15 @@ async def seed_model_run(proxy_username: str, config: Config) -> SeededItem:
     # ! Uses proxy endpoint so needs to pass through username of user
     endpoint = config.registry_api_endpoint + \
         '/registry/activity/model_run/proxy/seed'
-    params: Dict[str, str] = {
-        "proxy_username": proxy_username
-    }
     token = get_service_token(secret_cache, config)
 
     # make request
     response = await async_post_request(
         endpoint=endpoint,
         token=token,
-        params=params,
+        params={},
+        request_headers=get_user_context_header(
+            user_cipher=user_cipher, config=config),
         # No body for this post
         json_body=None
     )
@@ -94,10 +98,10 @@ async def seed_model_run(proxy_username: str, config: Config) -> SeededItem:
 
 
 async def update_model_run_in_registry(
-    proxy_username: str,
     model_run_id: str,
     model_run_domain_info: ModelRunDomainInfo,
     config: Config,
+    user_cipher: str,
     reason: Optional[str] = None,
 ) -> ItemModelRun:
     """    update_model_run_in_registry
@@ -135,7 +139,6 @@ async def update_model_run_in_registry(
         '/registry/activity/model_run/proxy/update'
     params: Dict[str, str] = {
         'id': model_run_id,
-        'proxy_username': proxy_username
     }
 
     # supply a reason if provided - this annotates the update history of the item
@@ -150,7 +153,8 @@ async def update_model_run_in_registry(
         endpoint=endpoint,
         token=token,
         params=params,
-        json_body=json_body
+        json_body=json_body,
+        request_headers=get_user_context_header(user_cipher=user_cipher, config=config)
     )
 
     # check status code

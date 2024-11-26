@@ -54,7 +54,7 @@ async def explore_upstream(
 
     # we want to make a proxied request directly using the service account
     request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
-        direct_service=True, on_behalf_username=None))
+        direct_service=True, user_cipher=None))
 
     # validate starting point
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
@@ -121,7 +121,7 @@ async def explore_downstream(
 
     # we want to make a proxied request directly using the service account
     request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
-        direct_service=True, on_behalf_username=None))
+        direct_service=True, user_cipher=None))
 
     # validate starting point
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
@@ -164,7 +164,7 @@ async def contributing_datasets(
 
     # we want to make a proxied request directly using the service account
     request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
-        direct_service=True, on_behalf_username=None))
+        direct_service=True, user_cipher=None))
 
     # validate starting point
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
@@ -207,7 +207,7 @@ async def effected_datasets(
 
     # we want to make a proxied request directly using the service account
     request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
-        direct_service=True, on_behalf_username=None))
+        direct_service=True, user_cipher=None))
 
     # validate starting point
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
@@ -250,7 +250,7 @@ async def contributing_agents(
 
     # we want to make a proxied request directly using the service account
     request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
-        direct_service=True, on_behalf_username=None))
+        direct_service=True, user_cipher=None))
 
     # validate starting point
     await unknown_validator(id=starting_id, config=config, request_style=request_style)
@@ -293,7 +293,7 @@ async def effected_agents(
 
     # we want to make a proxied request directly using the service account
     request_style = RequestStyle(user_direct=None, service_account=ServiceAccountProxy(
-        direct_service=True, on_behalf_username=None))
+        direct_service=True, user_cipher=None))
 
     # validate starting point
     await unknown_validator(id=starting_id, config=config, request_style=request_style)

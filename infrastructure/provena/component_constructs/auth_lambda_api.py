@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_secretsmanager as sm,
     aws_certificatemanager as aws_cm,
     aws_apigateway as api_gw,
+    aws_lambda as _lambda,
     RemovalPolicy,
 )
 from constructs import Construct
@@ -13,7 +14,7 @@ from provena.custom_constructs.access_request_table import AccessRequestTable
 from provena.custom_constructs.user_groups_table import UserGroupsTable
 from provena.custom_constructs.username_person_link_table import UsernamePersonLinkTable
 from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 
 
 class LambdaAuthApi(Construct):
@@ -134,7 +135,8 @@ class LambdaAuthApi(Construct):
         api = api_gw.LambdaRestApi(
             scope=self,
             id='apigw',
-            handler=api_func.function,
+            handler=cast(_lambda.IFunction, api_func.function),
+
             # Greedy proxy forwards all traffic at endpoint
             # to lambda
             proxy=True,
