@@ -168,7 +168,8 @@ async def perform_approval_request(
     datastore_url_resolver: IdUrlResolver,
     email_client: EmailClient,
     config: Config,
-    protected_roles: ProtectedRole
+    protected_roles: ProtectedRole,
+    user_cipher: str
 ) -> None:
 
     # It is assumed that user has data store write here as per API endpoint auth
@@ -285,8 +286,8 @@ async def perform_approval_request(
         )
     )
     update_response = update_dataset_in_registry(
+        user_cipher=user_cipher,
         id=dataset_id,
-        proxy_username=protected_roles.user.username,
         config=config,
         # reason="Marking dataset as pending review",
         secret_cache=secret_cache,
@@ -329,7 +330,8 @@ async def perform_action_of_approval_request(
     datastore_url_resolver: IdUrlResolver,
     email_client: EmailClient,
     config: Config,
-    protected_roles: ProtectedRole
+    protected_roles: ProtectedRole,
+    user_cipher: str
 ) -> Any:  # TODO response type here
 
     # validate user is a system reviewer and is assigned to review this dataset
@@ -401,8 +403,8 @@ async def perform_action_of_approval_request(
     # make the update request
     try:
         update_response = update_dataset_in_registry(
+            user_cipher=user_cipher,
             id=dataset_id,
-            proxy_username=protected_roles.user.username,
             config=config,
             # reason="Marking dataset as pending review",
             secret_cache=secret_cache,

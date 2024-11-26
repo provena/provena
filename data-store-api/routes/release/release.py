@@ -3,7 +3,7 @@ from KeycloakFastAPI.Dependencies import ProtectedRole
 from ProvenaInterfaces.DataStoreAPI import *
 from fastapi import APIRouter, Depends
 from config import get_settings, Config
-from dependencies.dependencies import read_write_user_protected_role_dependency, email_dependency, admin_user_protected_role_dependency, sys_admin_read_write_user_protected_role_dependency, sys_admin_admin_user_protected_role_dependency
+from dependencies.dependencies import read_write_user_protected_role_dependency, email_dependency, admin_user_protected_role_dependency, sys_admin_read_write_user_protected_role_dependency, sys_admin_admin_user_protected_role_dependency, get_user_cipher
 from helpers.registry_api_helpers import *
 from helpers.release_helpers import add_reviewer, delete_reviewer_by_id, get_all_reviewers, perform_action_of_approval_request, perform_approval_request
 from helpers.auth_helpers import get_user_link
@@ -53,7 +53,8 @@ async def approval_request(
     protected_roles: ProtectedRole = Depends(
         read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    email_client: EmailClient = Depends(email_dependency)
+    email_client: EmailClient = Depends(email_dependency),
+    user_cipher: str = Depends(get_user_cipher)
 ) -> ReleaseApprovalRequestResponse:
     # data store URL prefix for handles
     def datastore_url_resolver(id: str) -> str:
@@ -72,6 +73,7 @@ async def approval_request(
         )
 
     await perform_approval_request(
+        user_cipher=user_cipher,
         release_approval_request=release_approval_request,
         email_client=email_client,
         datastore_url_resolver=datastore_url_resolver,
@@ -94,12 +96,14 @@ async def action_approval_request(
     protected_roles: ProtectedRole = Depends(
         read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    email_client: EmailClient = Depends(email_dependency)
+    email_client: EmailClient = Depends(email_dependency),
+    user_cipher: str = Depends(get_user_cipher)
 ) -> ActionApprovalRequestResponse:
     # data store URL prefix for handles
     def datastore_url_resolver(id: str) -> str:
         return f"https://data.{config.domain_base}/dataset/{id}?view=approvals"
     await perform_action_of_approval_request(
+        user_cipher=user_cipher,
         config=config,
         email_client=email_client,
         datastore_url_resolver=datastore_url_resolver,
