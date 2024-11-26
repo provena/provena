@@ -114,7 +114,8 @@ class ProvAPI(Construct):
             "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
             "FEATURE_NUMBER": str(feature_number),
             "USER_KEY_ID": user_context_key.key_id,
-            "USER_KEY_REGION": Stack.of(self).region
+            "USER_KEY_REGION": Stack.of(self).region,
+            "USER_CONTEXT_HEADER" : "X-User-Context"
         }
         api_environment = {k: v for k,
                            v in api_environment.items() if v is not None}

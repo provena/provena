@@ -110,7 +110,8 @@ class SortOptions(BaseModel):
     def validate_sort_options(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
 
         # not all sort keys are 'begins_with' compatible
-        valid_begins_with_sort_types = [SortType.ACCESS_INFO_URI_BEGINS_WITH.name]
+        valid_begins_with_sort_types = [
+            SortType.ACCESS_INFO_URI_BEGINS_WITH.name]
 
         if values.get("begins_with"):
             if not values.get("sort_type"):
@@ -277,11 +278,6 @@ class VersionRequest(BaseModel):
 
     # Reason for the version being required
     reason: str
-
-
-class ProxyVersionRequest(VersionRequest):
-    username: str
-
 
 class UiSchemaResponse(StatusResponse):
     ui_schema: Optional[Dict[str, Any]]
