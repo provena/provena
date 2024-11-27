@@ -50,7 +50,7 @@ async def decrypt_json(cipher_text: str, encryption_service: EncryptionService) 
         The decrypted JSON object
     """
     try:
-        return await json.loads(await encryption_service.decrypt(ciphertext=cipher_text))
+        return json.loads(await encryption_service.decrypt(ciphertext=cipher_text))
     except EncryptionError as e:
         raise e
     except Exception as e:
