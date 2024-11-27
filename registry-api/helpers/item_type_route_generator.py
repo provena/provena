@@ -62,7 +62,7 @@ def generate_router(
                     detail=f"You are not authorised to take this action."
                 )
 
-    def enforce_user_link_check(action_enforcement: bool, type_enforcement: bool, user: User, config: Config, force_required: bool = False) -> Optional[str]:
+    def enforce_user_link_check(action_enforcement: bool, type_enforcement: bool, user: User, config: Config, force_required: bool = False, username: Optional[str] = None) -> Optional[str]:
         """
 
         Queries auth API link service for the username.
@@ -72,8 +72,9 @@ def generate_router(
         If there is no linked ID or any other error occurs then the request is rejected.
 
         Args:
-            user (User): The user - uses this username and token
+            user (User): The user who's token we should use
             config (Config): The config
+            username (Optional[str]): By default, the user's username is used, but can override
 
         Raises:
             HTTPException: Various exceptions, 400 if missing link, 500 for comms errors
@@ -82,7 +83,8 @@ def generate_router(
         # route and subtype level enforcement (or forced bypass)
         if (action_enforcement and type_enforcement) or force_required:
             if config.enforce_user_links:
-                possible_link = get_user_link(user=user, config=config)
+                possible_link = get_user_link(
+                    user=user, username=username or user.username, config=config)
 
                 # abort if no link
                 if possible_link is None:
@@ -1592,6 +1594,7 @@ def generate_router(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_FETCH].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
 
@@ -1668,6 +1671,7 @@ def generate_router(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_SEED].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
 
@@ -1763,12 +1767,13 @@ def generate_router(
                 route_action=RouteActions.PROXY_UPDATE,
                 config=config
             )
-            
+
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_UPDATE].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
 
@@ -1903,9 +1908,7 @@ def generate_router(
 
             Args:
                 revert_request (ItemRevertRequest): Contains the id, reason
-                and history id. proxy_username (Optional[str]): The username of
-                the proxy user - update will be under their username and access
-                is checked for them.
+                and history id. 
 
             Returns:
                 ItemRevertResponse: Status response
@@ -1923,6 +1926,7 @@ def generate_router(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_REVERT].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
 
@@ -1934,7 +1938,7 @@ def generate_router(
                 id=revert_request.id,
                 config=config
             )
-            
+
             return revert_item_helper(
                 id=revert_request.id,
                 reason=revert_request.reason,
@@ -1990,13 +1994,14 @@ def generate_router(
                 route_action=RouteActions.PROXY_VERSION,
                 config=config
             )
-            
+
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_VERSION].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 force_required=version_spinoff,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
 
@@ -2061,7 +2066,6 @@ def generate_router(
                           )
         async def proxy_create_item(
             item_domain_info: route_config.item_domain_info_type,  # type: ignore
-            proxy_username: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
                 get_correct_dependency(action_config.access_level)),
@@ -2105,7 +2109,7 @@ def generate_router(
                 route_action=RouteActions.PROXY_CREATE,
                 config=config
             )
-            
+
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_CREATE].enforce_linked_owner,
@@ -2113,6 +2117,7 @@ def generate_router(
                 # Will throw an error if unlinked and versioning enabled
                 force_required=creation_spinoff,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
 

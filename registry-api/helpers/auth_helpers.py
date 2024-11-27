@@ -417,7 +417,7 @@ def special_permission_check(user: User, special_roles: Roles) -> bool:
     return evaluate_user_access(user_roles=user_roles, acceptable_roles=special_roles)
 
 
-def get_user_link(user: User, config: Config) -> Optional[str]:
+def get_user_link(user: User, username: str, config: Config) -> Optional[str]:
     """
 
     Fetches the user linked person using the link service.
@@ -427,7 +427,9 @@ def get_user_link(user: User, config: Config) -> Optional[str]:
     Parameters
     ----------
     user : User
-        The user to fetch for
+        The user to use for auth
+    username: str
+        The username to check
     config : Config
         The API config
 
@@ -441,15 +443,11 @@ def get_user_link(user: User, config: Config) -> Optional[str]:
     HTTPException
         Managed http exception
     """
-    
-    # TODO This is not working for proxy routes due to the user token not being
-    # valid
-    
     # pass through user token
     headers = proxied_request(user=user)
 
     # username from the user (proxy username)
-    params = {'username': user.username}
+    params = {'username': username}
 
     # make a call to the admin version of list user membership auth api endpoint
     endpoint = config.auth_api_endpoint + "/link/user/lookup"
