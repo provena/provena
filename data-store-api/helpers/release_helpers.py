@@ -18,10 +18,11 @@ from helpers.util import py_to_dict  # type: ignore
 # Setup AWS secret cache (ensure you have AWS_DEFAULT_REGION if running locally)
 secret_cache = setup_secret_cache()
 
+
 def add_reviewer(reviewer_id: IdentifiedResource, config: Config) -> None:
 
     # TODO - verify the reviewer id belongs to a person entity
-    # ok for now, admin only, similar level of precaution to manual 
+    # ok for now, admin only, similar level of precaution to manual
     # management in the console.
 
     try:
@@ -32,7 +33,7 @@ def add_reviewer(reviewer_id: IdentifiedResource, config: Config) -> None:
             status_code=500,
             detail=(f"Failed to connect to the reviewers database. Error: {e}")
         )
-    
+
     try:
         reviewers_table.put_item(
             Item={
@@ -42,11 +43,13 @@ def add_reviewer(reviewer_id: IdentifiedResource, config: Config) -> None:
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=(f"Failed to add reviewer {reviewer_id} to the reviewers database. Error: {e}")
+            detail=(
+                f"Failed to add reviewer {reviewer_id} to the reviewers database. Error: {e}")
         )
 
+
 def connect_to_table(table_name: str) -> Any:
-    
+
     reviewers_table: Any
     try:
         ddb_resource = boto3.resource('dynamodb')
@@ -60,7 +63,7 @@ def connect_to_table(table_name: str) -> Any:
 
 
 def delete_reviewer_by_id(reviewer_id: IdentifiedResource, config: Config) -> None:
-    
+
     reviewers_table = connect_to_table(config.REVIEWERS_TABLE_NAME)
 
     try:
@@ -72,12 +75,13 @@ def delete_reviewer_by_id(reviewer_id: IdentifiedResource, config: Config) -> No
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=(f"Failed to delete reviewer {reviewer_id} from the reviewers database. Error: {e}")
+            detail=(
+                f"Failed to delete reviewer {reviewer_id} from the reviewers database. Error: {e}")
         )
 
 
 def get_all_reviewers(config: Config) -> Set[IdentifiedResource]:
-    
+
     reviewers_table = connect_to_table(config.REVIEWERS_TABLE_NAME)
 
     try:
@@ -124,6 +128,7 @@ def list_all_items_in_db(
     # Return the list of items that was retrieved
     return items
 
+
 def validate_release_for_edit(dataset_item: ItemDataset) -> bool:
     """
     Validates that the dataset is not currently released or under review for
@@ -140,6 +145,7 @@ def validate_release_for_edit(dataset_item: ItemDataset) -> bool:
 
     """
     return dataset_item.release_status not in [ReleasedStatus.PENDING, ReleasedStatus.RELEASED]
+
 
 def validate_release_state_suitable_for_request(dataset_item: ItemDataset) -> bool:
     """
@@ -214,7 +220,8 @@ async def perform_approval_request(
     dataset_item: ItemDataset = dataset_fetch.item
 
     # validate data set is not already in review and not released (Pending State)
-    valid_for_release = validate_release_state_suitable_for_request(dataset_item=dataset_item)
+    valid_for_release = validate_release_state_suitable_for_request(
+        dataset_item=dataset_item)
     if not valid_for_release:
         raise HTTPException(
             status_code=400,
@@ -332,8 +339,7 @@ async def perform_action_of_approval_request(
     config: Config,
     protected_roles: ProtectedRole,
     user_cipher: str
-) -> Any:  # TODO response type here
-
+) -> None:
     # validate user is a system reviewer and is assigned to review this dataset
 
     # fetch handle for this user's person entity using link service

@@ -441,6 +441,10 @@ def get_user_link(user: User, config: Config) -> Optional[str]:
     HTTPException
         Managed http exception
     """
+    
+    # TODO This is not working for proxy routes due to the user token not being
+    # valid
+    
     # pass through user token
     headers = proxied_request(user=user)
 

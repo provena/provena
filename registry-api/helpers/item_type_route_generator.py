@@ -1587,16 +1587,16 @@ def generate_router(
                 config=config
             )
 
-            # use the proxy user - noting the token is not valid!
-            user = proxy_user.user
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_FETCH].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
-                user=user,
+                user=protected_roles.user,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             # this method ensures that the user has an appropriate fetch role
             response: GenericFetchResponse = fetch_helper(
@@ -1662,17 +1662,17 @@ def generate_router(
                 route_action=RouteActions.PROXY_SEED,
                 config=config
             )
-            
-            # use the proxy user - noting the token is not valid!
-            user = proxy_user.user
 
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_SEED].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
-                user=user,
+                user=protected_roles.user,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             assert route_config.seed_response_type
             return route_config.seed_response_type(
@@ -1764,16 +1764,16 @@ def generate_router(
                 config=config
             )
             
-            # use the proxy user - noting the token is not valid!
-            user = proxy_user.user
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_UPDATE].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
-                user=user,
+                user=protected_roles.user,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             # no specific access checks at an item role level are required for
             # creating new things
@@ -1917,7 +1917,15 @@ def generate_router(
                 route_action=RouteActions.PROXY_REVERT,
                 config=config
             )
-            
+
+            # enforce user link service
+            linked_person_id = enforce_user_link_check(
+                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_REVERT].enforce_linked_owner,
+                type_enforcement=route_config.enforce_username_person_link,
+                user=protected_roles.user,
+                config=config
+            )
+
             # use the proxy user - noting the token is not valid!
             user = proxy_user.user
 
@@ -1926,15 +1934,7 @@ def generate_router(
                 id=revert_request.id,
                 config=config
             )
-
-            # enforce user link service
-            linked_person_id = enforce_user_link_check(
-                action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_REVERT].enforce_linked_owner,
-                type_enforcement=route_config.enforce_username_person_link,
-                user=user,
-                config=config
-            )
-
+            
             return revert_item_helper(
                 id=revert_request.id,
                 reason=revert_request.reason,
@@ -1991,17 +1991,17 @@ def generate_router(
                 config=config
             )
             
-            # use the proxy user - noting the token is not valid!
-            user = proxy_user.user
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_VERSION].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 force_required=version_spinoff,
-                user=user,
+                user=protected_roles.user,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             if version_spinoff and linked_person_id is None:
                 raise HTTPException(
@@ -2105,19 +2105,19 @@ def generate_router(
                 route_action=RouteActions.PROXY_CREATE,
                 config=config
             )
-
-            # use the proxy user - noting the token is not valid!
-            user = proxy_user.user
-
+            
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_CREATE].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 # Will throw an error if unlinked and versioning enabled
                 force_required=creation_spinoff,
-                user=user,
+                user=protected_roles.user,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             # no specific access checks at an item role level are required for
             # creating new things
