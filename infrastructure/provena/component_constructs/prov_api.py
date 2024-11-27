@@ -82,18 +82,12 @@ class ProvAPI(Construct):
             secret_complete_arn=service_account_secret_arn
         )
 
-        # Grant read to data store api role
-        service_secret.grant_read(api_func.function.role)
-
         # Get the secret
         neo4j_auth_secret = sm.Secret.from_secret_complete_arn(
             scope=self,
             id='neo4j-secret',
             secret_complete_arn=neo4j_auth_arn
         )
-
-        # Grant read to data store api role
-        neo4j_auth_secret.grant_read(api_func.function.role)
 
         # Environment
 
@@ -115,7 +109,7 @@ class ProvAPI(Construct):
             "FEATURE_NUMBER": str(feature_number),
             "USER_KEY_ID": user_context_key.key_id,
             "USER_KEY_REGION": Stack.of(self).region,
-            "USER_CONTEXT_HEADER" : "X-User-Context"
+            "USER_CONTEXT_HEADER": "X-User-Context"
         }
         api_environment = {k: v for k,
                            v in api_environment.items() if v is not None}
@@ -178,4 +172,6 @@ class ProvAPI(Construct):
             # let this service encrypt/decrypt user context headers
             user_context_key.grant_encrypt_decrypt(entity)
 
+        # grant relevant permissions
+        grant_equivalent_permissions(api_func.function.role)
         self.grant_equivalent_permissions = grant_equivalent_permissions

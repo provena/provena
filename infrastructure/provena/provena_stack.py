@@ -520,6 +520,7 @@ class ProvenaStack(Stack):
             data_api = LambdaDataStoreAPI(
                 self,
                 construct_id="data-api",
+                user_context_key=symmetric_key,
                 domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
@@ -1021,28 +1022,29 @@ class ProvenaStack(Stack):
 
         # setup permissions for the key to enable configured account admins (if
         # any) to be able to decrypt/encrypt and manage
-        for role_arn in (config.general.user_context_key_admins or []):
-            symmetric_key.add_to_resource_policy(iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                principals=[iam.ArnPrincipal(role_arn)],
-                actions=[
-                    "kms:Create*",
-                    "kms:Describe*",
-                    "kms:Enable*",
-                    "kms:List*",
-                    "kms:Put*",
-                    "kms:Update*",
-                    "kms:Disable*",
-                    "kms:Get*",
-                    "kms:TagResource",
-                    "kms:UntagResource",
-                    "kms:ScheduleKeyDeletion",
-                    "kms:CancelKeyDeletion",
-                    "kms:Encrypt",
-                    "kms:Decrypt",
-                    "kms:ReEncrypt*",
-                    "kms:GenerateDataKey*",
-                    "kms:DescribeKey"
-                ],
-                resources=[symmetric_key.key_arn]
-            ))
+        # TODO bring this back - it's causing circular dependency issues
+        # for role_arn in (config.general.user_context_key_admins or []):
+        #    symmetric_key.add_to_resource_policy(iam.PolicyStatement(
+        #        effect=iam.Effect.ALLOW,
+        #        principals=[iam.ArnPrincipal(role_arn)],
+        #        actions=[
+        #            "kms:Create*",
+        #            "kms:Describe*",
+        #            "kms:Enable*",
+        #            "kms:List*",
+        #            "kms:Put*",
+        #            "kms:Update*",
+        #            "kms:Disable*",
+        #            "kms:Get*",
+        #            "kms:TagResource",
+        #            "kms:UntagResource",
+        #            "kms:ScheduleKeyDeletion",
+        #            "kms:CancelKeyDeletion",
+        #            "kms:Encrypt",
+        #            "kms:Decrypt",
+        #            "kms:ReEncrypt*",
+        #            "kms:GenerateDataKey*",
+        #            "kms:DescribeKey"
+        #        ],
+        #        resources=[symmetric_key.key_arn]
+        #    ))

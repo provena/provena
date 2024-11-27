@@ -1,6 +1,7 @@
 from aws_cdk import (
     Stack,
     aws_s3 as s3,
+    aws_kms as kms,
     aws_apigateway as api_gw,
     aws_certificatemanager as aws_cm,
     aws_iam as iam,
@@ -39,6 +40,7 @@ class LambdaDataStoreAPI(Construct):
                  reviewers_table: IdIndexTable,
                  github_build_token_arn: str,
                  cert_arn: str,
+                 user_context_key: kms.IKey,
                  api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
                  git_commit_id: Optional[str],
                  sentry_config: SentryConfig,
@@ -127,7 +129,10 @@ class LambdaDataStoreAPI(Construct):
             "GIT_COMMIT_ID": git_commit_id,
             "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
             "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
-            "FEATURE_NUMBER": str(feature_number)
+            "FEATURE_NUMBER": str(feature_number),
+            "USER_KEY_ID": user_context_key.key_id,
+            "USER_KEY_REGION": Stack.of(self).region,
+            "USER_CONTEXT_HEADER": "X-User-Context"
         }
 
         for key, val in api_environment.items():
@@ -182,3 +187,6 @@ class LambdaDataStoreAPI(Construct):
 
         # expose ability to add environment
         self.add_api_environment = api_func.function.add_environment
+
+        # Allow the data store API to use the key
+        user_context_key.grant_encrypt_decrypt(api_func.function.role)
