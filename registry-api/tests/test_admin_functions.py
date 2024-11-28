@@ -5,8 +5,9 @@ import pytest  # type: ignore
 import boto3  # type: ignore
 from moto import mock_dynamodb  # type: ignore
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_user_context
 from fastapi.testclient import TestClient
+from tests.helpers import put_context_mock
 from main import app, route_configs, ITEM_CATEGORY_ROUTE_MAP
 from config import Config, base_config, get_settings
 from typing import Generator, Any, Dict
@@ -75,6 +76,11 @@ def override_config_dependency(provide_global_config: Config) -> Generator:
 # ensure that fake creds are used to double check no real interactions with aws
 # resources
 
+@pytest.fixture(scope="function", autouse=True)
+def override_context_dependency() -> Generator:
+    put_context_mock(app, username=test_email, roles=['test-role'], access_token="faketoken1234", email=test_email)
+    yield
+    app.dependency_overrides = {}
 
 @pytest.fixture(scope='function')
 def aws_credentials() -> None:
@@ -295,6 +301,8 @@ def test_admin_export() -> None:
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[admin_user_protected_role_dependency] = user_protected_dependency_override
+    
+    
 
     # Successful conditions
 
