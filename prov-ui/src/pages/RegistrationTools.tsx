@@ -277,11 +277,11 @@ const RegistrationTools = observer(() => {
               <CreateModelRunTool />
             </TabPanel>
             <TabPanel index={3} currentIndex={currentTab}>
-              if(value){
+              {value ? (
                 <UpdateModelRunTool modelRunId={value} />
-              } else {
-                <UpdateModelRunTool/>
-              }
+              ) : (
+                <UpdateModelRunTool />
+              )}
             </TabPanel>
           </Grid>
         </Grid>
