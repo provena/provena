@@ -13,7 +13,8 @@ setup(
     install_requires=[
         'sentry-sdk[fastapi]',
         'boto3',
-        'mypy_boto3_kms'
+        'mypy_boto3_kms',
+        'pydantic[email]==1.10.17'
     ],
     package_data={
         'ProvenaSharedFunctionality': ['py.typed']

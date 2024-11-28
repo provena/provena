@@ -1,6 +1,7 @@
 from typing import Optional, Dict
 import re
 import os
+from pydantic import BaseModel
 
 # This allows users to refer to the value of the resolved variable in conditional statements e.g.
 # "${VALUE?'!!_postfix'||null}"
