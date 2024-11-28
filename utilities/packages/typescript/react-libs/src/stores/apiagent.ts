@@ -119,7 +119,10 @@ export const requests = {
       url: url, 
       method: "post",
       data: data,
-      responseType: "blob"
+      responseType: "blob",
+      headers: {
+      "Accept": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Set Accept header for Word document
+    }
     });
   },
   manual(config = {}) {
