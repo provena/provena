@@ -252,7 +252,7 @@ async def perform_approval_request(
             fetch_response = user_proxy_fetch_dataset_from_registry(
                 item_id=dataset_id,
                 config=config,
-                proxy_username=username,
+                user_cipher=user_cipher,
                 secret_cache=secret_cache
             )
         except HTTPException as e:

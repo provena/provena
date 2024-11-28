@@ -365,15 +365,15 @@ def update_dataset_in_registry(
     return update_response
 
 
-def revert_dataset_in_registry(proxy_username: str, revert_request: ItemRevertRequest, secret_cache: SecretCache, config: Config) -> None:
+def revert_dataset_in_registry(user_cipher: str, revert_request: ItemRevertRequest, secret_cache: SecretCache, config: Config) -> None:
     """
 
     Reverts dataset using the registry proxy revert operation.
 
     Parameters
     ----------
-    proxy_username : str
-        The username to proxy
+    user_cipher : str
+        The encrypted user info
     revert_request : ItemRevertRequest
         The full request
     secret_cache : SecretCache
@@ -396,18 +396,18 @@ def revert_dataset_in_registry(proxy_username: str, revert_request: ItemRevertRe
     postfix = "/registry/entity/dataset/proxy/revert"
     revert_endpoint = config.REGISTRY_API_ENDPOINT + postfix
     json_payload = json.loads(revert_request.json(exclude_none=True))
-    params = {'proxy_username': proxy_username}
 
     # make the seed request
     headers = {
         'Authorization': 'Bearer ' + token
     }
+    context_headers = get_user_context_header(user_cipher=user_cipher, config=config)
+    headers.update(context_headers)
 
     try:
         response = requests.put(
             url=revert_endpoint,
             json=json_payload,
-            params=params,
             headers=headers
         )
     except Exception as e:
@@ -475,7 +475,7 @@ def proxied_request(user: User) -> Dict[str, str]:
     }
 
 
-def user_proxy_fetch_dataset_from_registry(item_id: str, config: Config, secret_cache: SecretCache, proxy_username: str) -> DatasetFetchResponse:
+def user_proxy_fetch_dataset_from_registry(user_cipher: str, item_id: str, config: Config, secret_cache: SecretCache) -> DatasetFetchResponse:
 
     # get service token - this includes special roles which the registry expects
     token = generate_service_token_for_registry_api(
@@ -489,11 +489,13 @@ def user_proxy_fetch_dataset_from_registry(item_id: str, config: Config, secret_
     headers = {
         'Authorization': 'Bearer ' + token
     }
+    context_headers = get_user_context_header(user_cipher=user_cipher, config=config)
+    headers.update(context_headers)
 
     try:
         response = requests.get(
             url=fetch_endpoint,
-            params={"id": item_id, "username": proxy_username},
+            params={"id": item_id},
             headers=headers
         )
     except Exception as e:
