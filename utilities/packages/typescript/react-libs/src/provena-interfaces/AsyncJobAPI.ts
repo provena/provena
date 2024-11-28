@@ -196,6 +196,7 @@ export interface AssociationInfo {
 }
 export interface ProvLodgeBatchSubmitPayload {
   records: ModelRunRecord[];
+  user_info: string;
 }
 export interface ProvLodgeBatchSubmitResult {
   batch_id: string;
@@ -211,6 +212,7 @@ export interface ProvLodgeModelRunLodgeOnlyPayload {
   model_run_record_id: string;
   record: ModelRunRecord;
   revalidate: boolean;
+  user_info: string;
 }
 export interface ProvLodgeModelRunLodgeOnlyResult {
   record: ProvenanceRecordInfo;
@@ -223,6 +225,7 @@ export interface ProvenanceRecordInfo {
 export interface ProvLodgeModelRunPayload {
   record: ModelRunRecord;
   revalidate: boolean;
+  user_info: string;
 }
 export interface ProvLodgeModelRunResult {
   record: ProvenanceRecordInfo;
@@ -231,6 +234,7 @@ export interface ProvLodgeUpdateLodgeOnlyPayload {
   model_run_record_id: string;
   updated_record: ModelRunRecord;
   revalidate: boolean;
+  user_info: string;
 }
 export interface ProvLodgeUpdateLodgeOnlyResult {}
 export interface ProvLodgeUpdatePayload {
@@ -238,6 +242,7 @@ export interface ProvLodgeUpdatePayload {
   updated_record: ModelRunRecord;
   reason: string;
   revalidate: boolean;
+  user_info: string;
 }
 export interface ProvLodgeUpdateResult {
   record: ProvenanceRecordInfo;
@@ -273,6 +278,11 @@ export interface RegistryRegisterVersionActivityResult {
 }
 export interface RetryJobResponse {
   session_id: string;
+}
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
 }
 export interface WakeUpPayload {
   reason?: string;

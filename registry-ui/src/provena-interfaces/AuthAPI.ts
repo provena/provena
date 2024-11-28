@@ -1269,6 +1269,11 @@ export interface SeededItem {
   workflow_links?: WorkflowLinks;
   versioning_info?: VersioningInfo;
 }
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
+}
 export interface VersionDetails {
   commit_id?: string;
   commit_url?: string;
