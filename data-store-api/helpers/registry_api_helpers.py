@@ -11,7 +11,7 @@ from ProvenaInterfaces.DataStoreAPI import *
 from typing import Dict
 from dependencies.dependencies import User
 from helpers.util import py_to_dict
-from helpers.encryption_helpers import get_user_context_header
+from dependencies.dependencies import get_user_context_header
 
 
 def generate_service_token_for_registry_api(secret_cache: SecretCache, config: Config) -> str:

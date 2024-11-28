@@ -1,5 +1,4 @@
-from dependencies.dependencies import read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_encryption_service
-from services.encryption import EncryptionService
+from dependencies.dependencies import read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_user_cipher
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException
 from ProvenaInterfaces.ProvenanceAPI import *
@@ -10,7 +9,7 @@ from ProvenaInterfaces.SharedTypes import Status
 from ProvenaInterfaces.RegistryModels import ItemModelRun
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.auth_helpers import *
-from helpers.encryption_helpers import encrypt_user_dep
+from ProvenaSharedFunctionality.Helpers.encryption_helpers import encrypt_user_info
 from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
 from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
 from config import get_settings, Config
@@ -25,7 +24,7 @@ async def register_model_run_complete(
     record: ModelRunRecord,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    encryption_service: EncryptionService = Depends(get_encryption_service)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> RegisterModelRunResponse:
     """    register_model_run_complete
         Given the model run record object (schema/model) will:
@@ -67,9 +66,6 @@ async def register_model_run_complete(
     # no proxy - user direct
     request_style = RequestStyle(
         service_account=None, user_direct=roles.user)
-
-    # encrypt the user info payload
-    user_cipher = await encrypt_user_dep(user=roles, encryption_service=encryption_service)
 
     valid, error_message = await validate_model_run_record(
         record=record,
@@ -114,7 +110,7 @@ async def register_batch(
     request: RegisterBatchModelRunRequest,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    encryption_service: EncryptionService = Depends(get_encryption_service)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> RegisterBatchModelRunResponse:
     # TODO should we validate items first? No - validate at batch time?
     # Then produce job using Job API and return session ID
@@ -125,8 +121,7 @@ async def register_batch(
             payload=ProvLodgeBatchSubmitPayload(
                 records=request.records,
                 # encrypted user info
-                user_info=encrypt_user_dep(
-                    user=roles, encryption_service=encryption_service)
+                user_info=user_cipher
             ),
             config=config
         )
@@ -149,7 +144,7 @@ async def register_model_run_sync(
     # admin only for this endpoint
     roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    encryption_service: EncryptionService = Depends(get_encryption_service)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> SyncRegisterModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -173,8 +168,7 @@ async def register_model_run_sync(
         record=record,
         config=config,
         request_style=request_style,
-        proxy=UserCipherProxy(user_cipher=await encrypt_user_dep(
-            user=roles, encryption_service=encryption_service))
+        proxy=UserCipherProxy(user_cipher=user_cipher)
     )
 
     return SyncRegisterModelRunResponse(
@@ -190,7 +184,7 @@ async def link_to_study(
     study_id: str,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    encryption_service: EncryptionService = Depends(get_encryption_service)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> AddStudyLinkResponse:
 
     # validate model_run_id and study_id to be linked.
@@ -204,8 +198,6 @@ async def link_to_study(
         config=config
     )
     model_run: ItemModelRun
-
-    user_cipher = await encrypt_user_dep(user=roles, encryption_service=encryption_service)
 
     # all valid, make the link in the registry and then in the provenance graph
     try:
@@ -261,7 +253,7 @@ async def update_model_run(
     payload: PostUpdateModelRunInput,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    encryption_service: EncryptionService = Depends(get_encryption_service)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> PostUpdateModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -288,10 +280,7 @@ async def update_model_run(
             reason=payload.reason,
             revalidate=True,
             # encrypted user info
-            user_info=encrypt_user_dep(
-                user=roles,
-                encryption_service=encryption_service
-            )
+            user_info=user_cipher
         ),
         config=config)
 

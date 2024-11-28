@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages #type: ignore
+from setuptools import setup, find_packages  # type: ignore
 
 setup(
     name='provena-shared-functionality',
@@ -12,6 +12,8 @@ setup(
     ),
     install_requires=[
         'sentry-sdk[fastapi]',
+        'boto3',
+        'mypy_boto3_kms'
     ],
     package_data={
         'ProvenaSharedFunctionality': ['py.typed']

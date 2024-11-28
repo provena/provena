@@ -6,14 +6,12 @@ from helpers.util import py_to_dict
 from helpers.workflows import register_and_lodge_provenance, lodge_provenance, update_existing_model_run, update_existing_model_run_lodge_only
 from helpers.entity_validators import RequestStyle, UserCipherProxy, ServiceAccountProxy
 from helpers.validate_model_run_record import validate_model_run_record
-from helpers.encryption_helpers import encrypt_user_info
 from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
 from helpers.prov_connector import Neo4jGraphManager
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
-from dependencies.dependencies import build_kms_service_from_config
 import asyncio
 
 ProvJobHandler = CallbackFunc

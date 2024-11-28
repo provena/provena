@@ -1,9 +1,8 @@
 from ProvenaInterfaces.RegistryAPI import *
 from helpers.async_requests import *
-from config import Config, get_settings
+from config import Config
 from helpers.keycloak_helpers import get_service_token
-from helpers.encryption_helpers import get_user_context_header
-from dependencies.dependencies import secret_cache
+from dependencies.dependencies import secret_cache, get_user_context_header
 from fastapi import HTTPException, Depends
 import json
 
@@ -154,7 +153,8 @@ async def update_model_run_in_registry(
         token=token,
         params=params,
         json_body=json_body,
-        request_headers=get_user_context_header(user_cipher=user_cipher, config=config)
+        request_headers=get_user_context_header(
+            user_cipher=user_cipher, config=config)
     )
 
     # check status code

@@ -1,13 +1,14 @@
 from ProvenaInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, SYS_ADMIN_COMPONENT, AccessLevel
 from ProvenaInterfaces.AsyncJobModels import EmailSendEmailPayload
+from ProvenaInterfaces.SharedTypes import UserInfo
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config, Config, get_settings
 from interfaces.EmailClient import EmailClient, EmailContent
-from fastapi import Depends, Request
-from typing import List, Tuple
+from fastapi import Depends
+from typing import List, Tuple, Dict
 from helpers.job_api_helpers import submit_send_email_job
-from services.encryption import EncryptionService, KMSEncryptionService, KMSConfig
-from helpers.encryption_helpers import encrypt_user
+from ProvenaSharedFunctionality.Services.encryption import EncryptionService, KMSEncryptionService, KMSConfig
+from ProvenaSharedFunctionality.Helpers.encryption_helpers import encrypt_user_info
 
 # Setup auth -> test mode means no sig enforcement on validation
 kc_auth = build_keycloak_auth(
@@ -153,4 +154,30 @@ async def get_user_cipher(
     user: User = Depends(user_general_dependency)
 ) -> str:
     # use the encryption service to build the cipher
-    return await encrypt_user(user=user, encryption_service=encryption_service)
+    return await encrypt_user_info(
+        payload=UserInfo(
+            email=user.email,
+            roles=user.roles,
+            username=user.username
+        ),
+        encryption_service=encryption_service)
+
+def get_user_context_header(user_cipher: str, config: Config) -> Dict[str, str]:
+    """
+
+    Returns a dictionary intended to be merged with other headers which includes
+    the user cipher at the configured user context header field.
+
+    Parameters
+    ----------
+    user_cipher : str
+        The encrypted user context
+    config : Config
+        The config
+
+    Returns
+    -------
+    Dict[str, str]
+        The headers
+    """
+    return {config.user_context_header: user_cipher}

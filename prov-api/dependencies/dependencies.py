@@ -1,9 +1,13 @@
 from ProvenaInterfaces.AuthAPI import ENTITY_REGISTRY_COMPONENT, AccessLevel
+from ProvenaInterfaces.SharedTypes import UserInfo
 from KeycloakFastAPI.Dependencies import User, build_keycloak_auth, build_test_keycloak_auth
 from config import base_config, get_settings, Config
 from fastapi import Depends
 from helpers.keycloak_helpers import setup_secret_cache
-from services.encryption import EncryptionService, KMSEncryptionService, KMSConfig
+from ProvenaSharedFunctionality.Services.encryption import EncryptionService, KMSEncryptionService, KMSConfig
+from ProvenaSharedFunctionality.Helpers.encryption_helpers import encrypt_user_info
+from typing import Dict
+
 
 # Setup auth -> test mode means no sig enforcement on validation
 kc_auth = build_keycloak_auth(
@@ -78,3 +82,39 @@ def get_encryption_service(config: Config = Depends(get_settings)) -> Encryption
         The resulting service as an EncryptionService type
     """
     return build_kms_service_from_config(config)
+
+
+def get_user_context_header(user_cipher: str, config: Config) -> Dict[str, str]:
+    """
+
+    Returns a dictionary intended to be merged with other headers which includes
+    the user cipher at the configured user context header field.
+
+    Parameters
+    ----------
+    user_cipher : str
+        The encrypted user context
+    config : Config
+        The config
+
+    Returns
+    -------
+    Dict[str, str]
+        The headers
+    """
+    return {config.user_context_header: user_cipher}
+
+
+async def get_user_cipher(
+    encryption_service: EncryptionService = Depends(get_encryption_service),
+    # check user is defined through dependency
+    user: User = Depends(user_general_dependency)
+) -> str:
+    # use the encryption service to build the cipher
+    return await encrypt_user_info(
+        payload=UserInfo(
+            email=user.email,
+            roles=user.roles,
+            username=user.username
+        ),
+        encryption_service=encryption_service)

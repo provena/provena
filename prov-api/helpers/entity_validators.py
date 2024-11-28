@@ -4,7 +4,7 @@ from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.RegistryAPI import *
 from dependencies.dependencies import secret_cache, User
 from helpers.keycloak_helpers import get_service_token
-from helpers.encryption_helpers import get_user_context_header
+from dependencies.dependencies import get_user_context_header
 from helpers.async_requests import async_get_request
 from config import Config
 from aiocache import cached, Cache  # type: ignore
@@ -87,7 +87,7 @@ async def untyped_validate_by_id(
     params = {
         'id': id
     }
-    
+
     # add user cipher if proxy endpoint
     headers = {}
     if using_proxy:
@@ -236,7 +236,7 @@ async def validate_by_id(
     params = {
         'id': id
     }
-    
+
     # add user cipher if proxy endpoint
     headers = {}
     if using_proxy:
