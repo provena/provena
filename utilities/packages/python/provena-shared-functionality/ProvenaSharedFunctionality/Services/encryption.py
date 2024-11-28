@@ -140,7 +140,6 @@ class KMSEncryptionService(EncryptionService):
     async def decrypt(
         self,
         ciphertext: str,
-        context: Optional[Dict[str, str]] = None
     ) -> str:
         """
         Decrypt data using KMS.
@@ -168,3 +167,24 @@ class KMSEncryptionService(EncryptionService):
 
         except Exception as e:
             raise EncryptionError(f"Decryption failed: {str(e)}") from e
+
+
+class MockEncryptionService(EncryptionService):
+    """
+    Mocked implementation - identity function.
+    """
+
+    async def encrypt(
+        self,
+        plaintext: Union[str, bytes],
+    ) -> str:
+        if isinstance(plaintext, str):
+            return plaintext
+        else:
+            return plaintext.decode('utf-8')
+
+    async def decrypt(
+        self,
+        ciphertext: str,
+    ) -> str:
+        return ciphertext

@@ -1,7 +1,16 @@
 from typing import Dict, Any
-from Services.encryption import EncryptionService, EncryptionError
-from utils import py_to_dict
 from ProvenaInterfaces.SharedTypes import UserInfo
+
+# have to do this stupid import due to how the package import works differently
+# for relative pip install vs from git install of package
+try:
+    from Services.encryption import EncryptionService, EncryptionError
+    from utils import py_to_dict
+except:
+    from ..Services.encryption import EncryptionService, EncryptionError
+    from ..utils import py_to_dict
+
+
 import json
 
 
@@ -97,4 +106,5 @@ async def decrypt_user_info(cipher_text: str, encryption_service: EncryptionServ
     try:
         return UserInfo.parse_obj(data)
     except Exception as e:
-        raise Exception("Invalid payload for user info context. Decryption succeeded but payload was not parse-able.")
+        raise Exception(
+            "Invalid payload for user info context. Decryption succeeded but payload was not parse-able.")
