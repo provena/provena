@@ -35,7 +35,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
     const [depth, setDepth] = useState<number>(DEPTH_LIST[0]);
     
     // Call the react-query defined. 
-    const {mutate, isError, reset, isLoading, isSuccess, error, dataReady} = useGenerateReport({
+    const {mutate, dataReady} = useGenerateReport({
         id: props.id, 
         itemSubType: props.itemSubType, 
         depth: depth
@@ -53,7 +53,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         
         if(dataReady){
             // reset mutation
-            reset?.();
+            mutate?.reset()
         }
     }
 
@@ -65,7 +65,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         // Validate that a depth has been chosen.
         if (depth !== null && dataReady){ 
             // Proceed to submit... 
-            mutate?.();
+            mutate?.mutate()
         }
     }
 
@@ -77,25 +77,25 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
             <DialogContent>
                 <Stack spacing={2} gap={2} direction="column">
 
-                    {isError && (
+                    {mutate?.isError && (
                         <Alert severity="error" variant="outlined">
                         <AlertTitle>An error occurred</AlertTitle>
                         <Typography variant="subtitle1">
                             An error occurred while running the Generate Report operation. Error:{" "}
-                            {error
-                            ? stripPossibleFullStop(error as string)
+                            {mutate?.error
+                            ? stripPossibleFullStop(mutate?.error as string)
                             : "Unknown. Try refreshing the page and performing the operation again, or contact an administrator for assistance."}
                         </Typography>
                         </Alert>
                     )}
 
-                    {isSuccess && (
+                    {mutate?.isSuccess && (
                         <Alert severity="success" variant="outlined">
                             <AlertTitle>Your file was downloaded successfully.</AlertTitle>
                         </Alert>
                     )}
 
-                    {!isSuccess && (
+                    {!mutate?.isSuccess && (
                         <>   
                         <DialogContentText>
                                 Generate a word document containing the associated inputs, model runs and outputs
@@ -127,15 +127,15 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
                     <Button
                         onClick={closeDialog}
                     >
-                        {isSuccess? "Close" : "Cancel"}
+                        {mutate?.isSuccess? "Close" : "Cancel"}
                     </Button>
-                    {!isSuccess && (
+                    {!mutate?.isSuccess && (
                     <Button
                         color="success"
                         disabled={submitDisabled}
                         onClick={onSubmit}
                     >
-                        {isLoading ? "Generating..." : "Generate Report"}
+                        {mutate?.isLoading ? "Generating..." : "Generate Report"}
                     </Button>
                     )}
                 </DialogActions>

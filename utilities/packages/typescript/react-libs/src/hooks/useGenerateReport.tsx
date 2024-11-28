@@ -11,19 +11,7 @@ export interface useGenerateReportProps {
     // Chosen depth by the user.
     depth: number
 }
-
-// Define the return type interface
-interface GenerateReportReturn {
-  dataReady: boolean;
-  error?: unknown;
-  isError?: boolean;
-  isLoading?: boolean;
-  isSuccess?: boolean;
-  mutate?: any
-  reset?: () => void;
-}
-
-export const useGenerateReport = (props: useGenerateReportProps): GenerateReportReturn => {
+export const useGenerateReport = (props: useGenerateReportProps) => {
 
     // Validate that everything is present correctly.
     const requiredItems = [props.id, props.itemSubType, props.depth]
@@ -44,9 +32,6 @@ export const useGenerateReport = (props: useGenerateReportProps): GenerateReport
     })
 
     // Return the values generated in the hook. 
-    return {
-        dataReady,
-        // Spreads out the return of the mutate object.
-        ...(dataReady ? generateReportQuery : {})
-    }
+    return {dataReady:dataReady, mutate: dataReady ? generateReportQuery: undefined}
+
 }
