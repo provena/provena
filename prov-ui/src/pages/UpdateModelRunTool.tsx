@@ -132,18 +132,16 @@ const MonitorResultComponent = (props: MonitorResultComponentProps) => {
 // Optional props to be used if a model run id is to be injected into the component.
 interface UpdateModelRunOptionalProps{
   modelRunId?: string
+  reset: () => void // Call back function that removes value from parent component.
 }
 
-export const UpdateModelRunTool = (props: UpdateModelRunOptionalProps | {}) => {
+export const UpdateModelRunTool = (props: UpdateModelRunOptionalProps) => {
   /**
     Component: UpdateModelRunTool
 
     Lodge form page. Allows updating an existing record.
     
     */
-
-  // Declare the type of props if provided.  
-  const typedProps = props as UpdateModelRunOptionalProps;
 
   const [modelRunId, setModelRunId] = useState<string | undefined>(undefined);
   const [modelRunRecord, setModelRunRecord] = useState<
@@ -167,12 +165,14 @@ export const UpdateModelRunTool = (props: UpdateModelRunOptionalProps | {}) => {
 
   /* Use effect that runs once on component load to check whether 
      a model run id was provided to the component. If model run id 
-     is provided, the state is set to the respective provided ID.
+     is provided, the state is set to the respective provided ID,
+     AND the model run id in the parent component is reset.
   */
   useEffect(() => {
-    if (typedProps && typedProps.modelRunId){
-      setModelRunId(typedProps.modelRunId)
-    }
+    if(props && props.modelRunId){
+      setModelRunId(props.modelRunId)
+      props.reset()
+  }
   }, [])
 
   useEffect(() => {

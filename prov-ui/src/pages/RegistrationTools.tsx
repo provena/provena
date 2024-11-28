@@ -71,18 +71,24 @@ const RegistrationTools = observer(() => {
   const [sideBar, setSideBar] = useState(true);
   const { keycloak, initialized } = useKeycloak();
 
+  // Parent component holds the requested edit model run id.
+  const [modelRunId, setModelRunId] = useState<string|undefined>(undefined)
+
   // Query string parser
-  const {value} = useTypedQueryStringVariable({
+  const {value, setValue} = useTypedQueryStringVariable({
     queryStringKey: "recordId", 
     defaultValue:undefined
   })
 
-  // useEffect to change form tabs, that runs on component load.
+  // useEffect to change form tabs if query string exists.
   useEffect(() => {
     if (value !== undefined){
       setCurrentTab(3)
-    }
-  }, [])
+      setModelRunId(value)
+      // Value of the query string is stripped, to prevent persistent auto-complete of the forms.
+      setValue?.(undefined)
+      } 
+  }, [value])
 
   // Firstly - make sure we have access
   useEffect(() => {
@@ -277,11 +283,7 @@ const RegistrationTools = observer(() => {
               <CreateModelRunTool />
             </TabPanel>
             <TabPanel index={3} currentIndex={currentTab}>
-              {value ? (
-                <UpdateModelRunTool modelRunId={value} />
-              ) : (
-                <UpdateModelRunTool />
-              )}
+              <UpdateModelRunTool modelRunId={modelRunId} reset={() => setModelRunId(undefined)}></UpdateModelRunTool>
             </TabPanel>
           </Grid>
         </Grid>
