@@ -1,18 +1,9 @@
 from typing import Dict, Any
 from ProvenaInterfaces.SharedTypes import UserInfo
-
-# have to do this stupid import due to how the package import works differently
-# for relative pip install vs from git install of package
-try:
-    from Services.encryption import EncryptionService, EncryptionError
-    from utils import py_to_dict
-except:
-    from ..Services.encryption import EncryptionService, EncryptionError
-    from ..utils import py_to_dict
-
+from ..Services.encryption import EncryptionService, EncryptionError
+from ..utils import py_to_dict
 
 import json
-
 
 async def encrypt_json(payload: Dict[str, Any], encryption_service: EncryptionService) -> str:
     """

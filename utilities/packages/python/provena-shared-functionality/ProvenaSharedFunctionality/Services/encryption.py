@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, Union, Dict
+from typing import  Union
 import base64
 import boto3  # type: ignore
 from botocore.config import Config  # type: ignore
