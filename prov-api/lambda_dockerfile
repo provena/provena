@@ -3,8 +3,7 @@ FROM public.ecr.aws/lambda/python:3.11
 
 # Install git for pip install which requires git packages
 RUN yum -y install git
-# RUN yum -y install build-dep libxml2-dev libxslt-dev
-RUN yum install -y Cython libxml2-devel libxslt-devel python-dev
+
 
 # Build arg input from deployment
 ARG github_token 
