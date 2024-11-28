@@ -1,5 +1,4 @@
 from typing import Optional, Any, Dict, List
-from requests import Response
 import requests
 from tests.config import *
 from ProvenaInterfaces.AuthAPI import UserLinkUserLookupResponse, UserLinkReverseLookupResponse

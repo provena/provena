@@ -1,4 +1,3 @@
-import os
 from requests import Response
 from tests.helpers.general_helpers import display_failed_cleanups
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions

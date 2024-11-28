@@ -1,11 +1,10 @@
 import requests
 from time import sleep
-from typing import Generator, cast
-import pytest
+from typing import cast
 import json
 from KeycloakRestUtilities.Token import BearerAuth
 from ProvenaInterfaces.DataStoreAPI import *
-from ProvenaInterfaces.RegistryAPI import DatasetListResponse, ItemSubType, IdentifiedResource, OptionallyRequiredCheck, ItemPerson, ItemOrganisation
+from ProvenaInterfaces.RegistryAPI import DatasetListResponse, ItemSubType, OptionallyRequiredCheck, ItemPerson, ItemOrganisation
 from ProvenaInterfaces.RegistryAPI import AccessInfo
 from tests.config import config, Tokens
 from tests.helpers.datastore_helpers import *
@@ -1152,3 +1151,37 @@ def test_access_info_uri_field_value_update(linked_person_fixture: ItemPerson, o
         )).item)
     assert dataset_item.access_info_uri == dataset_item.collection_format.dataset_info.access_info.uri, f"Expected {dataset_item.access_info_uri}, got {dataset_item.collection_format.dataset_info.access_info.uri}"
     assert dataset_item.access_info_uri == fake_url, f"Expected {fake_url}, got {dataset_item.access_info_uri}"
+    
+def test_admin_can_update_others_dataset(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
+    person = linked_person_fixture
+    organisation = organisation_fixture
+
+    # CREATE USER 1 DATASET
+    dataset_domain_info = cast(DatasetDomainInfo, get_item_subtype_domain_info_example(
+        item_subtype=ItemSubType.DATASET))
+
+    # use these in the dataset
+    # cleaned up fully
+    mint_response = mint_basic_dataset_successfully(
+        token=Tokens.user1(),
+        author_organisation_id=organisation.id,
+        publisher_organisation_id=organisation.id,
+    )
+
+    assert mint_response.handle, "Mint response does not contain a handle"
+    cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
+
+    cleanup_create_activity_from_dataset_mint(
+        mint_response=mint_response,
+        get_token=Tokens.user1
+    )
+    
+    handle = mint_response.handle
+
+    # swap to reposited using update
+    collection_format = dataset_domain_info.collection_format
+    collection_format.dataset_info.description += "more"
+    
+    # now update as admin
+    update_metadata_sucessfully(
+        dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=Tokens.admin())

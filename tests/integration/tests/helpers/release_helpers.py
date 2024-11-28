@@ -7,7 +7,7 @@ from ProvenaInterfaces.DataStoreAPI import *
 from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.RegistryModels import *
 from tests.helpers.general_helpers import py_to_dict
-from tests.helpers.general_helpers import assert_200_ok, assert_x_ok
+from tests.helpers.general_helpers import assert_x_ok
 from tests.helpers.registry_helpers import fetch_item_successfully_parse
 
 def request_dataset_review_desired_status_code(
