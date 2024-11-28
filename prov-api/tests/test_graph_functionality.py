@@ -9,7 +9,7 @@ import pytest
 from typing import Tuple, Generator, Any
 from fastapi.testclient import TestClient
 from main import app
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_user_cipher
 import json
 from helpers.entity_validators import RequestStyle
 from ProvenaInterfaces.RegistryModels import *
@@ -19,7 +19,10 @@ from ProvenaInterfaces.DataStoreAPI import *
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from config import Config, get_settings, base_config
 from tests.test_config import *
+from tests.helpers import mock_get_user_cipher
 
+def mock_context() -> None:
+    app.dependency_overrides[get_user_cipher] = mock_get_user_cipher
 
 def is_responsive(url: str) -> bool:
     """    is_responsive
@@ -292,7 +295,7 @@ async def fake_seed(config: Config) -> SeededItem:
 
 
 def id_fake_seed(id: str) -> Any:
-    async def fake_seed(config: Config, proxy_username: Optional[str] = None) -> SeededItem:
+    async def fake_seed(config: Config, user_cipher:str) -> SeededItem:
         return SeededItem(
             id=id,
             owner_username="1234",
@@ -309,7 +312,7 @@ async def fake_update_model_run(
     model_run_id: str,
     model_run_domain_info: ModelRunDomainInfo,
     config: Config,
-    proxy_username: Optional[str] = None,
+    user_cipher: str,
     reason: Optional[str] = None,
 ) -> ItemModelRun:
     record_info = RecordInfo(
@@ -432,6 +435,8 @@ def mocked_get_service_token(secret_cache: Any, config: Config) -> str:
 
 
 def test_upload_model_run(client: TestClient, service_config: Config, monkeypatch: Any) -> None:
+    mock_context()  
+    
     # path record_identities function
     async def mocked_validate(
         *args: Any,
@@ -705,6 +710,8 @@ def calculate_downstream_node_cardinality(chain: List[ModelRunRecord], position_
 
 
 def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatch: Any) -> None:
+    mock_context()  
+    
     # path record_identities function
     async def mocked_validate(
         *args: Any,
@@ -994,6 +1001,8 @@ def test_lineage_upstream(client: TestClient, service_config: Config, monkeypatc
 
 
 def test_lineage_downstream(client: TestClient, service_config: Config, monkeypatch: Any) -> None:
+    mock_context()  
+    
     # path record_identities function
     async def mocked_validate(
         *args: Any,
