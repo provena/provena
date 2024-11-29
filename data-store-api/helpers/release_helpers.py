@@ -239,9 +239,17 @@ async def perform_approval_request(
                     " entity pointing to a person who is a valid dataset reviewer for this system.")
         )
 
+    # RRAPIS-1178 removes this check as it's not feasible to run without
+    # reintroducing the bug as we don't have a token for this user which embeds
+    # the roles. We would need to fetch one from keycloak, which breaks our
+    # model of using JWTs rather than querying a user DB through some auth
+    # service specific interface.
+    """
     # validate desired reviewer has read permissions into the item use proxy
     # fetch with username of suggested reviewers. Person IDs can map to several
     # usernames for when a person is a member of multiple organisations.
+    # this is checking the username of the keycloak user associated with the
+    # reviewer through the link system. Currently this could be more than one.
     usernames = get_usernames_from_id(
         person_id=approver_id, config=config, secret_cache=secret_cache)
 
@@ -275,6 +283,7 @@ async def perform_approval_request(
                 status_code=400,
                 detail=(f"Desired reviewer '{username}' does not have read permissions into dataset {dataset_id}. Cannot request for dataset to be reviewed for release by a reviewer who cannot read it. Please provide {username} with dataset read and metadata read access to dataset for review.")
             )
+    """
 
     # done all neccessary checks
     # mark dataset as pending review and update its history

@@ -60,7 +60,7 @@ def test_integration_mint_and_fetch(linked_person_fixture: ItemPerson, organisat
                 display_name=valid_cf.dataset_info.name,
                 s3=S3Location(
                     bucket_name="", path="", s3_uri=""),
-                release_status=ReleasedStatus.NOT_RELEASED, 
+                release_status=ReleasedStatus.NOT_RELEASED,
                 access_info_uri=valid_cf.dataset_info.access_info.uri,
 
             )
@@ -195,7 +195,7 @@ def test_integration_mint_and_fetch(linked_person_fixture: ItemPerson, organisat
 
         assert fetched_revised_dataset.workflow_links, f"Empty workflow links"
         assert fetched_revised_dataset.workflow_links.version_activity_workflow_id == version_session_id, "Incorrect workflow link"
-        assert len(fetched_revised_dataset.history) == 2,\
+        assert len(fetched_revised_dataset.history) == 2, \
             f"Inappropriate history length for new version item, len={len(fetched_revised_dataset.history)}"
         v_info = fetched_revised_dataset.versioning_info
         assert v_info, f"Empty versioning info"
@@ -888,6 +888,14 @@ def test_dataset_release_process(dataset_io_fixture: Tuple[str, str], three_pers
 
     # hit /approval-request for a dataset that the reviewer does not have read access and ensure 400
     # remove general registry read and write from dataset
+    
+
+    # RRAPIS-1178 removes this check as it's not feasible to run without
+    # reintroducing the bug as we don't have a token for this user which embeds
+    # the roles. We would need to fetch one from keycloak, which breaks our
+    # model of using JWTs rather than querying a user DB through some auth
+    # service specific interface.
+    """
     original_auth_config = get_auth_config(
         id=dataset_id_2, item_subtype=ItemSubType.DATASET, token=owner.token())
     restrictive_auth_config = AccessSettings.parse_obj(
@@ -912,6 +920,7 @@ def test_dataset_release_process(dataset_io_fixture: Tuple[str, str], three_pers
     # allow general user to read
     put_auth_config(id=dataset_id_2, auth_payload=py_to_dict(original_auth_config),
                     item_subtype=ItemSubType.DATASET, token=owner.token())
+    """
 
     # ensure request works now.
     request_dataset_review_desired_status_code(
@@ -1029,7 +1038,7 @@ def test_list_by_access_info_uri(linked_person_fixture: ItemPerson, organisation
         cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
         cleanup_create_activity_from_dataset_mint(
             mint_response=mint_response, get_token=Tokens.user1)
-        
+
         # keep track for fetching later
         handle_uri_map[mint_response.handle] = uri
         uri_handle_map[uri] = mint_response.handle
@@ -1037,32 +1046,35 @@ def test_list_by_access_info_uri(linked_person_fixture: ItemPerson, organisation
     # register one more as reposited
     collection_format.dataset_info.access_info = AccessInfo(reposited=True)
     mint_response = mint_basic_dataset_successfully(
-            token=Tokens.user1(),
-            author_organisation_id=organisation.id,
-            publisher_organisation_id=organisation.id,
-            model=dataset_domain_info
-        )
-    
+        token=Tokens.user1(),
+        author_organisation_id=organisation.id,
+        publisher_organisation_id=organisation.id,
+        model=dataset_domain_info
+    )
+
     assert mint_response.handle, "Mint response does not contain a handle"
     cleanup_items.append((ItemSubType.DATASET, mint_response.handle))
     cleanup_create_activity_from_dataset_mint(
         mint_response=mint_response, get_token=Tokens.user1)
     basic_id = mint_response.handle
-    
-    
+
     # fetch by full URI, ensure only 1 returned and the correct one
     uri = access_info_URIs[0]
     list_resp = list_by_uri_starts_with(uri=uri, token=Tokens.user1())
-    assert check_ids_in_list_resp(ids=[uri_handle_map[uri]], list_resp=list_resp), f"List response does not contain the correct handle for URI: {uri}"
-    
+    assert check_ids_in_list_resp(
+        ids=[uri_handle_map[uri]], list_resp=list_resp), f"List response does not contain the correct handle for URI: {uri}"
+
     # check they all present for the base uri
     list_resp = list_by_uri_starts_with(uri=base_uri, token=Tokens.user1())
-    assert check_ids_in_list_resp(ids=list(uri_handle_map.values()), list_resp=list_resp)
-    
+    assert check_ids_in_list_resp(
+        ids=list(uri_handle_map.values()), list_resp=list_resp)
+
     uri_begins_with = base_uri + "1"
-    list_resp = list_by_uri_starts_with(uri=uri_begins_with, token=Tokens.user1())
-    assert check_ids_in_list_resp(ids=[uri_handle_map[uri] for uri in get_starts_withs(uri_begins_with, access_info_URIs)], list_resp=list_resp)
-    
+    list_resp = list_by_uri_starts_with(
+        uri=uri_begins_with, token=Tokens.user1())
+    assert check_ids_in_list_resp(ids=[uri_handle_map[uri] for uri in get_starts_withs(
+        uri_begins_with, access_info_URIs)], list_resp=list_resp)
+
     # update_metadata_sucessfully(
     #     dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=token())
 
@@ -1071,9 +1083,10 @@ def test_list_by_access_info_uri(linked_person_fixture: ItemPerson, organisation
         token=Tokens.user1(),
         general_list_request=GeneralListRequest(
             filter_by=FilterOptions(item_subtype=ItemSubType.DATASET),
-            )
+        )
     )
-    assert check_ids_in_list_resp(ids=list(uri_handle_map.values())+[basic_id], list_resp=list_resp)
+    assert check_ids_in_list_resp(
+        ids=list(uri_handle_map.values())+[basic_id], list_resp=list_resp)
 
 
 def test_access_info_uri_field_value_update(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
@@ -1111,11 +1124,11 @@ def test_access_info_uri_field_value_update(linked_person_fixture: ItemPerson, o
     handle = mint_response.handle
     # fetch dataset and check ok
     dataset_item = cast(ItemDataset, cast(DatasetFetchResponse, fetch_item_successfully_parse(
-            item_subtype=ItemSubType.DATASET,
-            id=handle,
-            token=Tokens.user1(),
-            model=DatasetFetchResponse
-        )).item)
+        item_subtype=ItemSubType.DATASET,
+        id=handle,
+        token=Tokens.user1(),
+        model=DatasetFetchResponse
+    )).item)
     assert dataset_item.access_info_uri == dataset_item.collection_format.dataset_info.access_info.uri
     assert dataset_item.access_info_uri == fake_url
 
@@ -1125,11 +1138,11 @@ def test_access_info_uri_field_value_update(linked_person_fixture: ItemPerson, o
         dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=token())
 
     dataset_item = cast(ItemDataset, cast(DatasetFetchResponse, fetch_item_successfully_parse(
-            item_subtype=ItemSubType.DATASET,
-            id=handle,
-            token=Tokens.user1(),
-            model=DatasetFetchResponse
-        )).item)
+        item_subtype=ItemSubType.DATASET,
+        id=handle,
+        token=Tokens.user1(),
+        model=DatasetFetchResponse
+    )).item)
     assert dataset_item.access_info_uri == dataset_item.collection_format.dataset_info.access_info.uri, f"Expected {dataset_item.access_info_uri}, got {dataset_item.collection_format.dataset_info.access_info.uri}"
     assert dataset_item.access_info_uri == None, f"Expected None, got {dataset_item.access_info_uri}"
 
@@ -1144,14 +1157,15 @@ def test_access_info_uri_field_value_update(linked_person_fixture: ItemPerson, o
         dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=token())
 
     dataset_item = cast(ItemDataset, cast(DatasetFetchResponse, fetch_item_successfully_parse(
-            item_subtype=ItemSubType.DATASET,
-            id=handle,
-            token=Tokens.user1(),
-            model=DatasetFetchResponse
-        )).item)
+        item_subtype=ItemSubType.DATASET,
+        id=handle,
+        token=Tokens.user1(),
+        model=DatasetFetchResponse
+    )).item)
     assert dataset_item.access_info_uri == dataset_item.collection_format.dataset_info.access_info.uri, f"Expected {dataset_item.access_info_uri}, got {dataset_item.collection_format.dataset_info.access_info.uri}"
     assert dataset_item.access_info_uri == fake_url, f"Expected {fake_url}, got {dataset_item.access_info_uri}"
-    
+
+
 def test_admin_can_update_others_dataset(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
     person = linked_person_fixture
     organisation = organisation_fixture
@@ -1175,13 +1189,13 @@ def test_admin_can_update_others_dataset(linked_person_fixture: ItemPerson, orga
         mint_response=mint_response,
         get_token=Tokens.user1
     )
-    
+
     handle = mint_response.handle
 
     # swap to reposited using update
     collection_format = dataset_domain_info.collection_format
     collection_format.dataset_info.description += "more"
-    
+
     # now update as admin
     update_metadata_sucessfully(
         dataset_id=handle, updated_metadata=py_to_dict(collection_format), token=Tokens.admin())
