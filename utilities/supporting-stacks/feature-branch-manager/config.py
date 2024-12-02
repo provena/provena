@@ -108,7 +108,7 @@ def load_and_validate_config(path: str) -> Optional[FeatureBranchManagerConfig]:
         substituted_config = perform_config_substitution(raw_config)
 
         # Parse and validate using Pydantic model
-        return FeatureBranchManagerConfig.model_validate_json(substituted_config)
+        return FeatureBranchManagerConfig.parse_raw(substituted_config)
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON in {path}: {e}")
     except Exception as e:
