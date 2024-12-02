@@ -920,8 +920,7 @@ def test_dataset_release_process(dataset_io_fixture: Tuple[str, str], three_pers
     # allow general user to read
     put_auth_config(id=dataset_id_2, auth_payload=py_to_dict(original_auth_config),
                     item_subtype=ItemSubType.DATASET, token=owner.token())
-    """
-
+                    
     # ensure request works now.
     request_dataset_review_desired_status_code(
         release_approval_request=release_request,
@@ -929,6 +928,8 @@ def test_dataset_release_process(dataset_io_fixture: Tuple[str, str], three_pers
         config=config,
         desired_status_code=200,
     )
+    """
+
 
 
 def test_presigned_url(dataset_io_fixture: Tuple[str, str]) -> None:
