@@ -12,9 +12,8 @@ In Provena, services are deployed in a microservice type architecture. Sometimes
 
 A pertinent example is creating a dataset. Currently, the `data-store-api` is responsible for this task. Consider the high-level steps needed to undertake this process
 
-1. validate the item doesn't exist (requires fetching from the registry, through the `registry-api`)
 2. validate the payload is valid
-3. establish a suitable storage location and add to the dataset metadata this location (only the data store can do this)
+3. establish a suitable storage location and add to the dataset metadata to this location (only the data store can do this)
 4. create the item in the registry (requires a POST operation into the registry, through the `registry-api`)
 5. seed the dataset location with a metadata file (requires S3 privileges which only the data store has)
 6. launch a job (requires talking to the `job-api`)
@@ -115,4 +114,11 @@ sequenceDiagram
     Service A-->>User: 200 OK
 ```
 
-The symmetric encryption key is managed through AWS - this takes care of ensuring the key is managed securely, it can be automatically rotated etc.
+The symmetric encryption key is managed through AWS's Key Management Service (KMS) - this takes care of ensuring the key is managed securely, it can be automatically rotated etc.
+
+## Service dependency injection approach
+
+The encryption service is mocked as an Abstract Base Class, then implemented with the AWS KMS implementation. This is then injected under the type of the service interface using FastAPI's dependency injection approach. This complexity is warranted for two reasons, at least
+
+1. you can swap out the implementation for something else later without changing any route code, only the service implementation
+2. you can mock the service easily for unit tests, which we do currently do
