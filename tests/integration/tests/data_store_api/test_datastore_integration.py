@@ -888,7 +888,6 @@ def test_dataset_release_process(dataset_io_fixture: Tuple[str, str], three_pers
 
     # hit /approval-request for a dataset that the reviewer does not have read access and ensure 400
     # remove general registry read and write from dataset
-    
 
     # RRAPIS-1178 removes this check as it's not feasible to run without
     # reintroducing the bug as we don't have a token for this user which embeds
@@ -929,7 +928,6 @@ def test_dataset_release_process(dataset_io_fixture: Tuple[str, str], three_pers
         desired_status_code=200,
     )
     """
-
 
 
 def test_presigned_url(dataset_io_fixture: Tuple[str, str]) -> None:
@@ -1168,6 +1166,11 @@ def test_access_info_uri_field_value_update(linked_person_fixture: ItemPerson, o
 
 
 def test_admin_can_update_others_dataset(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
+    """
+    Ensures that an admin of the registry is able to update someone else's dataset. 
+
+    This is the bug from RRAPIS-1178
+    """
     person = linked_person_fixture
     organisation = organisation_fixture
 
@@ -1181,6 +1184,7 @@ def test_admin_can_update_others_dataset(linked_person_fixture: ItemPerson, orga
         token=Tokens.user1(),
         author_organisation_id=organisation.id,
         publisher_organisation_id=organisation.id,
+        model=dataset_domain_info
     )
 
     assert mint_response.handle, "Mint response does not contain a handle"
