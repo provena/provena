@@ -366,12 +366,16 @@ const RecordView = observer((props: {}) => {
     isModelRun &&
     typedPayload &&
     !!(typedPayload.item as ItemModelRun).record.study_id;
+  const showEditModelRunButton =
+    // Must have metadata write permission
+    writeCheck.fallbackGranted &&
+    // Must have entity loaded and subtype parsed
+    item !== undefined &&
+    subtype === "MODEL_RUN";
 
   // Checking whether we should render the "Generate Report Button"
-  const isStudy = subtype === "STUDY"
-  const isModelRunOrStudy =
-    isStudy || isModelRun &&
-    typedPayload
+  const isStudy = subtype === "STUDY";
+  const isModelRunOrStudy = isStudy || (isModelRun && typedPayload);
 
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
@@ -457,9 +461,9 @@ const RecordView = observer((props: {}) => {
   });
 
   const { openDialog, renderedDialog } = useGenerateReportDialog({
-    id: typedPayload?.item?.id, 
-    itemSubType: typedPayload?.item?.item_subtype
-  })
+    id: typedPayload?.item?.id,
+    itemSubType: typedPayload?.item?.item_subtype,
+  });
 
   return (
     <Grid container>
@@ -562,15 +566,23 @@ const RecordView = observer((props: {}) => {
 
                 {isModelRunOrStudy && (
                   <Grid item>
-                    <Button
-                      variant="outlined"
-                      onClick={openDialog}
-                    >
+                    <Button variant="outlined" onClick={openDialog}>
                       Generate Report
                     </Button>
                   </Grid>
                 )}
 
+                {showEditModelRunButton && (
+                  <Grid item>
+                    <Button
+                      variant="outlined"
+                      className={classes.actionButton}
+                      href={`${PROV_STORE_LINK}/tools?recordId=${handleId}`}
+                    >
+                      Edit Model Run
+                    </Button>
+                  </Grid>
+                )}
                 {seeAddStudyLinkButton && (
                   <Grid item>
                     <Button
