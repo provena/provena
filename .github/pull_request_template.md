@@ -1,5 +1,7 @@
 # (feat|fix|chore): title
 
+## Ticket: RRAPIS-XXXX
+
 ## Checklist
 
 -   [ ] If tests are required for this change, are they implemented?
@@ -24,3 +26,7 @@ _Description here_
 ## Notes for reviewer
 
 _... (Optional) Notes here..._
+
+## Feature branch
+
+Include the output of `./fb md` here if you are using a feature branch.
