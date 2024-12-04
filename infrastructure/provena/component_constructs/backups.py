@@ -88,13 +88,12 @@ class BackupService(Construct):
                     enable_key_rotation=True,
                     admins=key_admins,
                 ))
-                
+
                 # add a kms key alias if either the alias name or vault name is provided
                 if alias_name:
-                    self.vault_kms_key.add_alias(alias=alias_name)
+                    self.vault_kms_key.add_alias(alias_name)
                 elif vault_name:
-                    self.vault_kms_key.add_alias(
-                        alias=f"{vault_name}_key")
+                    self.vault_kms_key.add_alias(f"{vault_name}_key")
 
                 if trusted_copy_destination_account_ids:
                     for account_id in trusted_copy_destination_account_ids:
@@ -142,7 +141,8 @@ class BackupService(Construct):
                             effect=iam.Effect.ALLOW,
                             resources=["*"],
                             principals=[
-                                cast(iam.IPrincipal, iam.AccountPrincipal(account_id=account_id))
+                                cast(iam.IPrincipal, iam.AccountPrincipal(
+                                    account_id=account_id))
                             ]
                         )
                     )
