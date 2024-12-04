@@ -365,6 +365,12 @@ const RecordView = observer((props: {}) => {
     isModelRun &&
     typedPayload &&
     !!(typedPayload.item as ItemModelRun).record.study_id;
+  const showEditModelRunButton =
+    // Must have metadata write permission
+    writeCheck.fallbackGranted &&
+    // Must have entity loaded and subtype parsed
+    item !== undefined &&
+    subtype === "MODEL_RUN";
 
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
@@ -543,6 +549,17 @@ const RecordView = observer((props: {}) => {
                     >
                       View In Datastore{" "}
                       <LaunchIcon style={{ marginLeft: "10px" }} />
+                    </Button>
+                  </Grid>
+                )}
+                {showEditModelRunButton && (
+                  <Grid item>
+                    <Button
+                      variant="outlined"
+                      className={classes.actionButton}
+                      href={`${PROV_STORE_LINK}/tools?recordId=${handleId}`}
+                    >
+                      Edit Model Run
                     </Button>
                   </Grid>
                 )}
