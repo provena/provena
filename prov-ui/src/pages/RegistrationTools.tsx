@@ -29,6 +29,13 @@ import { BoundedContainer, useTypedQueryStringVariable } from "react-libs";
 import { CreateModelRunTool } from "./CreateModelRunTool";
 import { UpdateModelRunTool } from "./UpdateModelRunTool";
 
+export const TOOL_TAB_IDS = {
+  GENERATE_TEMPLATE: 0,
+  LODGE_TEMPLATE: 1,
+  CREATE: 2,
+  EDIT: 3,
+};
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -72,23 +79,26 @@ const RegistrationTools = observer(() => {
   const { keycloak, initialized } = useKeycloak();
 
   // Parent component holds the requested edit model run id.
-  const [modelRunId, setModelRunId] = useState<string|undefined>(undefined)
+  const [modelRunId, setModelRunId] = useState<string | undefined>(undefined);
 
-  // Query string parser
-  const {value, setValue} = useTypedQueryStringVariable({
-    queryStringKey: "recordId", 
-    defaultValue:undefined
-  })
+  // Query string parser for model run record Id
+  const { value: modelRunIdQString, setValue: setModelRunIdQString } =
+    useTypedQueryStringVariable({
+      queryStringKey: "recordId",
+      defaultValue: undefined,
+    });
 
-  // useEffect to change form tabs if query string exists.
+  // useEffect to change form tabs if query string exists and strip off the
+  // model run record id
   useEffect(() => {
-    if (value !== undefined){
-      setCurrentTab(3)
-      setModelRunId(value)
+    if (modelRunIdQString !== undefined) {
+      // move to model run edit tab
+      setCurrentTab(TOOL_TAB_IDS.EDIT);
+      setModelRunId(modelRunIdQString);
       // Value of the query string is stripped, to prevent persistent auto-complete of the forms.
-      setValue?.(undefined)
-      } 
-  }, [value])
+      setModelRunIdQString?.(undefined);
+    }
+  }, [modelRunIdQString]);
 
   // Firstly - make sure we have access
   useEffect(() => {
@@ -101,36 +111,6 @@ const RegistrationTools = observer(() => {
 
   if (!initialized) {
   }
-
-  // Define the error dialog fragment in case something goes wrong with the
-  // access check process
-  const dialogFragment = (
-    <React.Fragment>
-      {
-        //Error dialogue based on store state
-      }
-      <Dialog open={accessStore.error}>
-        <DialogTitle> Access check error! </DialogTitle>
-        <DialogContent>
-          <DialogContent>
-            <p>
-              The system experienced an issue while trying to check your system
-              access. <br />
-              Error message:{" "}
-              {accessStore.errorMessage ?? "No error message provided."}
-              <br />
-              Press <i>Dismiss</i> to attempt interacting with the prov store
-              anyway. If you are definitely authorised and still see this error,
-              please use the <i>Contact Us</i> link to report an issue.
-            </p>
-          </DialogContent>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => accessStore.dismissError()}>Dismiss</Button>
-        </DialogActions>
-      </Dialog>
-    </React.Fragment>
-  );
 
   // If there is an issue with access, prompt re-login
   if (accessStore.loading) {
@@ -273,17 +253,26 @@ const RegistrationTools = observer(() => {
             )}
           </Grid>
           <Grid item xs={sideBar ? 10 : 11.5} className={classes.tabPanel}>
-            <TabPanel index={0} currentIndex={currentTab}>
+            <TabPanel
+              index={TOOL_TAB_IDS.GENERATE_TEMPLATE}
+              currentIndex={currentTab}
+            >
               <GenerateTemplate />
             </TabPanel>
-            <TabPanel index={1} currentIndex={currentTab}>
+            <TabPanel
+              index={TOOL_TAB_IDS.LODGE_TEMPLATE}
+              currentIndex={currentTab}
+            >
               <LodgeTemplate />
             </TabPanel>
-            <TabPanel index={2} currentIndex={currentTab}>
+            <TabPanel index={TOOL_TAB_IDS.CREATE} currentIndex={currentTab}>
               <CreateModelRunTool />
             </TabPanel>
-            <TabPanel index={3} currentIndex={currentTab}>
-              <UpdateModelRunTool modelRunId={modelRunId} reset={() => setModelRunId(undefined)}></UpdateModelRunTool>
+            <TabPanel index={TOOL_TAB_IDS.EDIT} currentIndex={currentTab}>
+              <UpdateModelRunTool
+                modelRunId={modelRunId}
+                reset={() => setModelRunId(undefined)}
+              ></UpdateModelRunTool>
             </TabPanel>
           </Grid>
         </Grid>
