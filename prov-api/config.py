@@ -147,6 +147,7 @@ def prod_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
     prefix = "https://"
     options: List[str] = [
         f"{prefix}prov.{base_domain}",
+        f"{prefix}registry.{base_domain}",
         f"{prefix}data.{base_domain}"
     ]
     return options
