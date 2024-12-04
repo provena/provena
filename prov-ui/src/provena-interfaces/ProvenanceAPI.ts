@@ -92,6 +92,11 @@ export interface SyncRegisterModelRunResponse {
   status: Status;
   record_info: ProvenanceRecordInfo;
 }
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
+}
 export interface VersionDetails {
   commit_id?: string;
   commit_url?: string;

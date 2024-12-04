@@ -5,7 +5,7 @@ python-jose
 setuptools
 boto3
 jsonschema
-httpx
+httpx==0.27.2
 mangum
 aws-secretsmanager-caching
 types-requests
@@ -19,6 +19,7 @@ neo4j
 networkx
 python-dotenv
 sentry-sdk[fastapi]
+mypy-boto3-kms
 python-docx==1.1.2
 
 # this links to the utilities package deployed as part of 

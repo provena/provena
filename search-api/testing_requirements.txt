@@ -2,7 +2,7 @@
 
 # pytest
 pytest
-httpx
+httpx==0.27.2
 
 # pytest plugins
 pytest-dotenv

@@ -5,13 +5,14 @@ python-jose
 setuptools
 boto3
 jsonschema
-httpx
+httpx==0.27.2
 mangum
 aws-secretsmanager-caching
 pydantic==1.10.17
 python-dotenv
 aiocache
 sentry-sdk[fastapi]
+mypy-boto3-kms
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package

@@ -9,10 +9,12 @@ try:
     from ProvenaInterfaces.ProvenanceModels import ModelRunRecord
     from ProvenaInterfaces.ProvenanceAPI import ProvenanceRecordInfo
     from ProvenaInterfaces.RegistryModels import ItemSubType
+    from ProvenaInterfaces.SharedTypes import UserInfo, EncryptedUserInfo
 except:
     from .ProvenanceModels import ModelRunRecord
     from .ProvenanceAPI import ProvenanceRecordInfo
     from .RegistryModels import ItemSubType
+    from .SharedTypes import UserInfo, EncryptedUserInfo
 
 
 class JobType(str, Enum):
@@ -117,6 +119,8 @@ class WakeUpResult(BaseModel):
 class ProvLodgeModelRunPayload(BaseModel):
     record: ModelRunRecord
     revalidate: bool
+    # this includes encrypted user context information
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeModelRunResult(BaseModel):
@@ -130,6 +134,8 @@ class ProvLodgeUpdatePayload(BaseModel):
     updated_record: ModelRunRecord
     reason: str
     revalidate: bool
+    # this includes encrypted user context information
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeUpdateResult(BaseModel):
@@ -143,6 +149,7 @@ class ProvLodgeUpdateLodgeOnlyPayload(BaseModel):
     model_run_record_id: str
     updated_record: ModelRunRecord
     revalidate: bool
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeUpdateLodgeOnlyResult(BaseModel):
@@ -155,6 +162,7 @@ class ProvLodgeModelRunLodgeOnlyPayload(BaseModel):
     model_run_record_id: str
     record: ModelRunRecord
     revalidate: bool
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeModelRunLodgeOnlyResult(BaseModel):
@@ -167,6 +175,8 @@ class ProvLodgeModelRunLodgeOnlyResult(BaseModel):
 class ProvLodgeBatchSubmitPayload(BaseModel):
     # The list of records to lodge
     records: List[ModelRunRecord]
+    # this includes encrypted user context information
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeBatchSubmitResult(BaseModel):

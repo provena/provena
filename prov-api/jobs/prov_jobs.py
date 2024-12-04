@@ -4,7 +4,7 @@ from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
 from helpers.workflows import register_and_lodge_provenance, lodge_provenance, update_existing_model_run, update_existing_model_run_lodge_only
-from helpers.entity_validators import RequestStyle, ServiceAccountProxy
+from helpers.entity_validators import RequestStyle, UserCipherProxy, ServiceAccountProxy
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
@@ -57,6 +57,16 @@ def wake_up_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> Callba
     )
 
 
+"""
+    print(f"Initialising encryption service")
+    try:
+        encryption_service = build_kms_service_from_config(config)
+    except Exception as e:
+        return generate_failed_job(error=f"Failed to initialise encryption service. Error: {e}.")
+    print(f"Finished initialising encryption service")
+"""
+
+
 def model_run_lodge_only_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
     """
     Handles lodging the provenance graph data ONLY
@@ -104,7 +114,7 @@ def model_run_lodge_only_handler(payload: JobSnsPayload, settings: JobBaseSettin
     request_style = RequestStyle(
         user_direct=None,
         service_account=ServiceAccountProxy(
-            on_behalf_username=payload.username,
+            user_cipher=model_run_lodge_payload.user_info,
             direct_service=False
         )
     )
@@ -201,7 +211,7 @@ def model_run_update_handler(payload: JobSnsPayload, settings: JobBaseSettings) 
     request_style = RequestStyle(
         user_direct=None,
         service_account=ServiceAccountProxy(
-            on_behalf_username=payload.username,
+            user_cipher=model_run_update_payload.user_info,
             direct_service=False
         )
     )
@@ -236,9 +246,11 @@ def model_run_update_handler(payload: JobSnsPayload, settings: JobBaseSettings) 
         record_info = asyncio.run(update_existing_model_run(
             model_run_record_id=model_run_update_payload.model_run_record_id,
             record=model_run_update_payload.updated_record,
-            request_style=request_style,
             config=config,
-            reason=model_run_update_payload.reason
+            reason=model_run_update_payload.reason,
+            request_style=request_style,
+            proxy=UserCipherProxy(
+                user_cipher=model_run_update_payload.user_info)
         ))
     except Exception as e:
         return generate_failed_job(
@@ -299,7 +311,7 @@ def model_run_update_lodge_only_handler(payload: JobSnsPayload, settings: JobBas
     request_style = RequestStyle(
         user_direct=None,
         service_account=ServiceAccountProxy(
-            on_behalf_username=payload.username,
+            user_cipher=model_run_update_payload.user_info,
             direct_service=False
         )
     )
@@ -396,7 +408,7 @@ def model_run_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
     request_style = RequestStyle(
         user_direct=None,
         service_account=ServiceAccountProxy(
-            on_behalf_username=payload.username,
+            user_cipher=model_run_lodge_payload.user_info,
             direct_service=False
         )
     )
@@ -431,7 +443,9 @@ def model_run_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
         record_info = asyncio.run(register_and_lodge_provenance(
             record=model_run_lodge_payload.record,
             config=config,
-            request_style=request_style
+            request_style=request_style,
+            proxy=UserCipherProxy(
+                user_cipher=model_run_lodge_payload.user_info)
         ))
     except Exception as e:
         return generate_failed_job(
@@ -590,7 +604,9 @@ def model_run_batch_submit_handler(payload: JobSnsPayload, settings: JobBaseSett
             job_sub_type=JobSubType.MODEL_RUN_PROV_LODGE,
             job_payload=py_to_dict(ProvLodgeModelRunPayload(
                 record=record,
-                revalidate=True
+                revalidate=True,
+                # pass through encrypted payload for user info
+                user_info=batch_submit_payload.user_info
             )),
             request_batch_id=first,
             add_to_batch=batch_id

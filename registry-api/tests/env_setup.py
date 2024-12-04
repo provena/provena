@@ -11,3 +11,6 @@ os.environ['DOMAIN_BASE'] = "www.google.com"
 os.environ['TEST_MODE'] = "true"
 os.environ['AWS_DEFAULT_REGION'] = 'ap-southeast-2'
 os.environ['monitoring_enabled'] = "False"
+os.environ['USER_KEY_ID'] = '1234'
+os.environ['USER_KEY_REGION'] = 'us-east-1'
+os.environ['USER_CONTEXT_HEADER'] = 'X-User-Context'

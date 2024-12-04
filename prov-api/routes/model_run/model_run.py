@@ -1,19 +1,18 @@
-from dependencies.dependencies import read_write_user_protected_role_dependency, admin_user_protected_role_dependency
+from dependencies.dependencies import read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_user_cipher
 from KeycloakFastAPI.Dependencies import ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException
 from ProvenaInterfaces.ProvenanceAPI import *
 from helpers.registry_helpers import update_model_run_in_registry
 from helpers.workflows import register_and_lodge_provenance
-from helpers.entity_validators import RequestStyle, validate_model_run_study_linking
+from helpers.entity_validators import RequestStyle, validate_model_run_study_linking, UserCipherProxy
 from ProvenaInterfaces.SharedTypes import Status
 from ProvenaInterfaces.RegistryModels import ItemModelRun
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.auth_helpers import *
+from ProvenaSharedFunctionality.Helpers.encryption_helpers import encrypt_user_info
 from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
 from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
-from helpers.prov_connector import NodeGraph, Neo4jGraphManager, GraphDiffApplier
 from config import get_settings, Config
-from typing import Any
 
 router = APIRouter()
 
@@ -24,22 +23,23 @@ EDIT_ROOT_PREFIX = "/edit"
 async def register_model_run_complete(
     record: ModelRunRecord,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher : str = Depends(get_user_cipher)
 ) -> RegisterModelRunResponse:
     """    register_model_run_complete
         Given the model run record object (schema/model) will:
-        - validate the ids provided in the model 
+        - validate the ids provided in the model
             - Validate and retrieve the workflow definition
-            - Validate the templates for the input and output datasets 
+            - Validate the templates for the input and output datasets
             - Validate that the provided datasets satisfy all templates
             - Validate that datasets provided through data store exist
         - mint a model run record in the registry (acting as prov-api proxy on proxy endpoints)
             - This uses the user's username so that the user correctly owns the record
         - produce a prov-o document reflecting the input model run record
         - update the model run record in the registry with the prov serialisation
-          and other information 
+          and other information
         - lodge the model run record into the graph database store
-        - update the record to lodged status 
+        - update the record to lodged status
         - return information including the handle id from the model run record
 
         Arguments
@@ -87,7 +87,8 @@ async def register_model_run_complete(
             username=roles.user.username,
             payload=ProvLodgeModelRunPayload(
                 record=record,
-                revalidate=False
+                revalidate=False,
+                user_info=user_cipher
             ),
             config=config
         )
@@ -108,7 +109,8 @@ async def register_model_run_complete(
 async def register_batch(
     request: RegisterBatchModelRunRequest,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher : str = Depends(get_user_cipher)
 ) -> RegisterBatchModelRunResponse:
     # TODO should we validate items first? No - validate at batch time?
     # Then produce job using Job API and return session ID
@@ -117,7 +119,9 @@ async def register_batch(
         session_id = await submit_batch_lodge_job(
             username=roles.user.username,
             payload=ProvLodgeBatchSubmitPayload(
-                records=request.records
+                records=request.records,
+                # encrypted user info
+                user_info=user_cipher
             ),
             config=config
         )
@@ -139,7 +143,8 @@ async def register_model_run_sync(
     record: ModelRunRecord,
     # admin only for this endpoint
     roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher : str = Depends(get_user_cipher)
 ) -> SyncRegisterModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -162,7 +167,8 @@ async def register_model_run_sync(
     result = await register_and_lodge_provenance(
         record=record,
         config=config,
-        request_style=request_style
+        request_style=request_style,
+        proxy=UserCipherProxy(user_cipher=user_cipher)
     )
 
     return SyncRegisterModelRunResponse(
@@ -177,7 +183,8 @@ async def link_to_study(
     model_run_id: str,
     study_id: str,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher : str = Depends(get_user_cipher)
 ) -> AddStudyLinkResponse:
 
     # validate model_run_id and study_id to be linked.
@@ -196,11 +203,11 @@ async def link_to_study(
     try:
         model_run.record.study_id = study_id
         model_run_item: ItemModelRun = await update_model_run_in_registry(
-            proxy_username=roles.user.username,
             model_run_id=model_run_id,
             model_run_domain_info=model_run,
             config=config,
-            reason="Linking model run to study."
+            reason="Linking model run to study.",
+            user_cipher=user_cipher
         )
     except HTTPException as e:
         raise HTTPException(
@@ -220,7 +227,8 @@ async def link_to_study(
             payload=ProvLodgeModelRunLodgeOnlyPayload(
                 model_run_record_id=model_run_id,
                 record=model_run.record,
-                revalidate=False
+                revalidate=False,
+                user_info=user_cipher
             ),
             config=config
         )
@@ -239,11 +247,13 @@ async def link_to_study(
         session_id=session_id
     )
 
-@router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
+
+@ router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
 async def update_model_run(
     payload: PostUpdateModelRunInput,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
-    config: Config = Depends(get_settings)
+    config: Config = Depends(get_settings),
+    user_cipher : str = Depends(get_user_cipher)
 ) -> PostUpdateModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -268,7 +278,9 @@ async def update_model_run(
             model_run_record_id=payload.model_run_id,
             updated_record=payload.record,
             reason=payload.reason,
-            revalidate=True
+            revalidate=True,
+            # encrypted user info
+            user_info=user_cipher
         ),
         config=config)
 

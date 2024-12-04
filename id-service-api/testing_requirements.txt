@@ -8,7 +8,7 @@ pytest-dotenv
 pytest-depends
 pytest-mock
 pytest-asyncio
-httpx
+httpx==0.27.2
 
 # typing
 mypy

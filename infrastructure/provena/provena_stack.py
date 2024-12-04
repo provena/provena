@@ -80,6 +80,18 @@ class ProvenaStack(Stack):
         for k, v in tags.items():
             Tags.of(self).add(key=k, value=v)
 
+        # Symmetric key used for encrypting user context payloads in custom
+        # headers for inter-service communication
+        symmetric_key = kms.Key(
+            self,
+            "interservice-key",
+            description="Symmetric KMS key for encrypt/decrypt between services to encrypt user context",
+            enabled=True,
+            enable_key_rotation=True,
+            pending_window=Duration.days(7),
+            removal_policy=RemovalPolicy.DESTROY
+        )
+
         # DNS allocator helper
         dns_allocator = DNSAllocator(
             scope=self,
@@ -430,6 +442,7 @@ class ProvenaStack(Stack):
                 auth_table=auth_table,
                 lock_table=lock_table,
                 cert_arn=cert_arn,
+                user_context_key=symmetric_key,
                 auth_api_endpoint=auth_api.endpoint,
                 api_rate_limiting=config.general.rate_limiting,
                 git_commit_id=config.deployment.git_commit_id,
@@ -507,6 +520,7 @@ class ProvenaStack(Stack):
             data_api = LambdaDataStoreAPI(
                 self,
                 construct_id="data-api",
+                user_context_key=symmetric_key,
                 domain_base=config.general.root_domain,
                 stage=stage,
                 branch_name=branch_name,
@@ -588,6 +602,7 @@ class ProvenaStack(Stack):
                 service_account_secret_arn=prov_config.service_account_arn,
                 allocator=dns_allocator,
                 cert_arn=cert_arn,
+                user_context_key=symmetric_key,
                 neo4j_host=neo4j_ecs.neo4j_bolt_host,
                 api_rate_limiting=config.general.rate_limiting,
                 neo4j_port=str(neo4j_ecs.neo4j_bolt_port),
@@ -1004,3 +1019,32 @@ class ProvenaStack(Stack):
                         kc_construct.db_instance_construct.instance
                     ),
                 )
+
+        # setup permissions for the key to enable configured account admins (if
+        # any) to be able to decrypt/encrypt and manage
+        # TODO circular dependency - bring this back?
+        for role_arn in (config.general.user_context_key_admins or []):
+            symmetric_key.add_to_resource_policy(iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                principals=[iam.ArnPrincipal(role_arn)],
+                actions=[
+                    "kms:Create*",
+                    "kms:Describe*",
+                    "kms:Enable*",
+                    "kms:List*",
+                    "kms:Put*",
+                    "kms:Update*",
+                    "kms:Disable*",
+                    "kms:Get*",
+                    "kms:TagResource",
+                    "kms:UntagResource",
+                    "kms:ScheduleKeyDeletion",
+                    "kms:CancelKeyDeletion",
+                    "kms:Encrypt",
+                    "kms:Decrypt",
+                    "kms:ReEncrypt*",
+                    "kms:GenerateDataKey*",
+                    "kms:DescribeKey"
+                ],
+                resources=["*"]
+            ))

@@ -20,6 +20,7 @@ function run_mypy_tests() {
 
     # Install dependencies
     echo "Installing dependencies"
+    pip install --upgrade pip
     pip install -r "${requirement_file}"
 
     # Run mypy

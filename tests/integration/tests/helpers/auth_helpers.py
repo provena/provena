@@ -1,4 +1,3 @@
-import json
 from tests.config import config
 import requests
 from KeycloakRestUtilities.Token import BearerAuth

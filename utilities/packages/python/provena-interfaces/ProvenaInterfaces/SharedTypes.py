@@ -1,15 +1,28 @@
-from pydantic import BaseModel 
+from pydantic import BaseModel
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
+
+
+class UserInfo(BaseModel):
+    username: str
+    email: str
+    roles: List[str]
+
+
+# Encrypted user info is just a string - but indicates it will decrypt into
+# UserInfo
+EncryptedUserInfo = str
+
 
 class Status(BaseModel):
-    success : bool 
-    details : str
+    success: bool
+    details: str
+
 
 class StatusResponse(BaseModel):
     status: Status
-    
-    
+
+
 class ImportMode(str, Enum):
     # Will never change existing entries Can only add new entries
     ADD_ONLY = "ADD_ONLY"

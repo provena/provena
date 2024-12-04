@@ -1,7 +1,7 @@
 fastapi==0.88.0
 uvicorn
 requests
-httpx
+httpx==0.27.2
 python-jose
 setuptools
 boto3

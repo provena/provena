@@ -1,5 +1,6 @@
 from KeycloakRestUtilities.Token import get_token
 from pydantic import BaseSettings
+import time
 from functools import lru_cache
 from typing import Callable, Optional
 import jwt
@@ -48,14 +49,30 @@ def get_settings() -> Config:
 
 
 def check_expiry(token: str) -> bool:
+    """
+    
+    Checks token expiry, includes a one minute pessimistic period where it will 'refresh early'
+
+    Parameters
+    ----------
+    token : str
+        The token to check
+
+    Returns
+    -------
+    bool
+        True iff not expired
+    """
     try:
         decoded = jwt.decode(
             jwt=token,
-            # Don't bother verifying the signature, API  does that, just check
-            # expiry
             options={'verify_signature': False, 'verify_exp': True}
         )
-        return True
+        exp = decoded.get('exp', 0)
+        current_time = int(time.time())
+        buffer_seconds = 60  # 1 minute buffer
+        
+        return current_time + buffer_seconds < exp
     except jwt.ExpiredSignatureError:
         return False
 

@@ -67,7 +67,7 @@ def load_and_validate_config(path: str) -> Optional[GithubBootstrapConfig]:
         substituted_config = perform_config_substitution(raw_config)
 
         # Parse and validate using Pydantic model
-        return GithubBootstrapConfig.model_validate_json(substituted_config)
+        return GithubBootstrapConfig.parse_raw(substituted_config)
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON in {path}: {e}")
     except Exception as e:

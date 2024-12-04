@@ -1397,11 +1397,6 @@ export interface ProxyItemFetchRequest {
   item_id: string;
   username: string;
 }
-export interface ProxyVersionRequest {
-  id: string;
-  reason: string;
-  username: string;
-}
 export interface QueryFilter {
   item_category?: ItemCategory;
   item_subtype?: ItemSubType;
@@ -1567,6 +1562,11 @@ export interface VersionRequest {
 export interface VersionResponse {
   new_version_id: string;
   version_job_session_id: string;
+}
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
 }
 export interface VersionDetails {
   commit_id?: string;

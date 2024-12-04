@@ -203,7 +203,7 @@ route_params: List[RouteParameters] = [
                     collection_format=CollectionFormat(
                         associations=CollectionFormatAssociations(
                             organisation_id="1234",
-                            data_custodian_id="4678",
+                            data_custodian_id=None,
                             point_of_contact="Not Peter Baker.",
                         ),
                         approvals=CollectionFormatApprovals(

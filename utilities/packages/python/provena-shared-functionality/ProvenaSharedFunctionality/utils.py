@@ -1,10 +1,29 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
+import json
 import re
 import os
+from pydantic import BaseModel
 
-# This allows users to refer to the value of the resolved variable in conditional statements e.g. 
+# This allows users to refer to the value of the resolved variable in conditional statements e.g.
 # "${VALUE?'!!_postfix'||null}"
 SELF_REFERENCE_MARKER = "!!"
+
+
+def py_to_dict(item: BaseModel) -> Dict[str, Any]:
+    """
+    Safely converts a pydantic model into a Python JSON dictionary type
+
+    Parameters
+    ----------
+    item : BaseModel
+        The item which is a pydantic model
+
+    Returns
+    -------
+    Dict[str, Any]
+        The output dictionary
+    """
+    return json.loads(item.json(exclude_none=True))
 
 
 def perform_config_substitution(
@@ -59,8 +78,10 @@ def perform_config_substitution(
         var_name = match.group(1)
         value = get_replacement(var_name)
         if value is None:
-            print(f"Warning: Variable '{var_name}' not found and no default provided.")
-            return match.group(0)  # Return the original ${VARIABLE_NAME} unchanged
+            print(
+                f"Warning: Variable '{var_name}' not found and no default provided.")
+            # Return the original ${VARIABLE_NAME} unchanged
+            return match.group(0)
         return replace_quotes(value)
 
     def default_value_substitution(match: re.Match) -> str:
@@ -74,7 +95,8 @@ def perform_config_substitution(
         var_value = get_replacement(var_name)
         result = true_value if is_truthy(var_value) else false_value
         result = result.replace(
-            SELF_REFERENCE_MARKER, str(var_value) if var_value is not None else ""
+            SELF_REFERENCE_MARKER, str(
+                var_value) if var_value is not None else ""
         )
         return replace_quotes(result)
 

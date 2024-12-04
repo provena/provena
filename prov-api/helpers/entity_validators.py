@@ -4,6 +4,7 @@ from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.RegistryAPI import *
 from dependencies.dependencies import secret_cache, User
 from helpers.keycloak_helpers import get_service_token
+from dependencies.dependencies import get_user_context_header
 from helpers.async_requests import async_get_request
 from config import Config
 from aiocache import cached, Cache  # type: ignore
@@ -25,8 +26,17 @@ ItemBaseType = TypeVar(
 
 
 @dataclass
+class UserCipherProxy:
+    # this is the encrypted user info cipher
+    user_cipher: str
+
+
+@dataclass
 class ServiceAccountProxy:
-    on_behalf_username: Optional[str]
+    # user cipher to use in proxy requests in header
+    # if direct_service = False, user_cipher should be defined
+    user_cipher: Optional[str]
+    # should we use a normal endpoint, or use a special proxy endpoint?
     direct_service: bool
 
 
@@ -47,7 +57,6 @@ async def untyped_validate_by_id(
     proxy_endpoint: str = f"{base_endpoint}/proxy/fetch"
     using_proxy: bool = False
     endpoint = standard_endpoint
-    username: Optional[str] = None
 
     # proxy mode
     if request_style.service_account is not None:
@@ -60,8 +69,8 @@ async def untyped_validate_by_id(
             endpoint = standard_endpoint
             using_proxy = False
         else:
-            username = request_style.service_account.on_behalf_username
-            assert username
+            user_cipher = request_style.service_account.user_cipher
+            assert user_cipher
             # use a service token with proxy endpoint
             endpoint = proxy_endpoint
             using_proxy = True
@@ -78,15 +87,18 @@ async def untyped_validate_by_id(
     params = {
         'id': id
     }
-    # add username if proxy endpoint and username is being supplied
+
+    # add user cipher if proxy endpoint
+    headers = {}
     if using_proxy:
-        assert username is not None
-        params['username'] = username
+        assert user_cipher is not None
+        headers = get_user_context_header(
+            user_cipher=user_cipher, config=config)
 
     # Make request
     try:
         fetch_response = await async_get_request(
-            endpoint=endpoint, token=token, params=params
+            endpoint=endpoint, token=token, params=params, request_headers=headers
         )
     except Exception as e:
         raise HTTPException(
@@ -194,7 +206,6 @@ async def validate_by_id(
     proxy_endpoint: str = f"{base_endpoint}/proxy/fetch"
     using_proxy: bool = False
     endpoint = standard_endpoint
-    username: Optional[str] = None
 
     # proxy mode
     if request_style.service_account is not None:
@@ -207,8 +218,8 @@ async def validate_by_id(
             endpoint = standard_endpoint
             using_proxy = False
         else:
-            username = request_style.service_account.on_behalf_username
-            assert username
+            user_cipher = request_style.service_account.user_cipher
+            assert user_cipher
             # use a service token with proxy endpoint
             endpoint = proxy_endpoint
             using_proxy = True
@@ -225,15 +236,18 @@ async def validate_by_id(
     params = {
         'id': id
     }
-    # add username if proxy endpoint and username is being supplied
+
+    # add user cipher if proxy endpoint
+    headers = {}
     if using_proxy:
-        assert username is not None
-        params['username'] = username
+        assert user_cipher is not None
+        headers = get_user_context_header(
+            user_cipher=user_cipher, config=config)
 
     # Make request
     try:
         fetch_response = await async_get_request(
-            endpoint=endpoint, token=token, params=params
+            endpoint=endpoint, token=token, params=params, request_headers=headers
         )
     except Exception as e:
         raise HTTPException(
@@ -450,6 +464,7 @@ async def validate_person_id(id: str, request_style: RequestStyle, config: Confi
         return error_or_value
     elif isinstance(error_or_value, ItemBase):
         return ItemPerson(**error_or_value.dict())
+
 
 @cached(ttl=CACHE_TTL, cache=CACHE_TYPE)
 async def validate_study_id(id: str, request_style: RequestStyle, config: Config) -> Union[ItemStudy, SeededItem, str]:
@@ -752,13 +767,13 @@ async def validate_model_run_study_linking(model_run_id: str, study_id: str, req
 
     model_run = ItemModelRun(**model_run.dict())
     study = ItemStudy(**study.dict())
-    
+
     # check if model_run is already linked to a study
     if model_run.record.study_id != None:
         raise HTTPException(
             status_code=400,
             detail=f"ModelRun {model_run_id} already linked to a study. Study ID: {model_run.record.study_id}. Cannot link to another study."
         )
-    
+
     # all good.
     return model_run, study

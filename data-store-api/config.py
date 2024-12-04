@@ -4,6 +4,7 @@ from typing import List, Union, Callable, Dict, Optional, Any
 
 HDL_PREFIX = "https://hdl.handle.net/"
 
+
 class BaseConfig(BaseSettings):
     """BaseConfig defines a set of minimum required 
     configuration settings for start up of the app. 
@@ -33,12 +34,17 @@ class BaseConfig(BaseSettings):
     # enforcement in keycloak token validation
     test_mode: bool = False
 
-   # commit hash
+    # encryption service
+    user_key_id: str
+    user_key_region: str
+    user_context_header: str
+
+    # commit hash
     git_commit_id: Optional[str]
     feature_number: Optional[str]
 
     # monitoring via sentry
-    monitoring_enabled: Optional[bool] = False 
+    monitoring_enabled: Optional[bool] = False
     sentry_dsn: Optional[str] = None
 
     @property
@@ -47,8 +53,8 @@ class BaseConfig(BaseSettings):
 
     # validate sentry dsn is provided if monitoring is enabled
     @root_validator
-    def valide_sentry_config(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if values.get("monitoring_enabled")==True and values.get("sentry_dsn") is None:
+    def validate_sentry_config(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if values.get("monitoring_enabled") == True and values.get("sentry_dsn") is None:
             raise ValueError(
                 "Sentry DSN is required if monitoring is enabled.")
         return values
