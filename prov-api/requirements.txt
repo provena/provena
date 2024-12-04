@@ -20,7 +20,7 @@ networkx
 python-dotenv
 sentry-sdk[fastapi]
 mypy-boto3-kms
-
+python-docx==1.1.2
 
 # this links to the utilities package deployed as part of 
 # this provena repo - ensure this is correct in your 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, Union, List, Optional
 from copy import deepcopy
 import json
 from pydantic import BaseModel
@@ -16,6 +16,27 @@ def assert_x_ok(res: Response, desired_status_code: int = 200) -> None:
 def assert_200_ok(res: Response) -> None:
     assert_x_ok(res=res, desired_status_code=200)
 
+def parse_assert_json_response(
+    response: Response, 
+    expected_status_code: int, 
+    expected_error_message: Optional[str] = None, 
+    expected_field_key: Optional[str] = None
+) -> None: 
+    
+    # Parse response as a JSON
+    response_json = response.json()
+    assert response_json is not None, "Expected response JSON, but got None"
+    
+    if expected_field_key:
+        assert expected_field_key in response_json, f"Expected {expected_field_key} key in response"
+    
+    # Assert status codes. 
+    assert response.status_code == expected_status_code, f"Expected a status code of {expected_status_code}, received {response.status_code}"
+
+    # Assert expected message
+    if expected_error_message is not None and expected_field_key is not None:
+         assert expected_error_message in response_json[expected_field_key], f"Expected error message {expected_error_message} \
+                                                                               but got: {response_json[expected_field_key]}"
 
 def display_failed_cleanups(failed_cleanups: Any) -> None:
     print("--- FAILED CLEANUPS ---")

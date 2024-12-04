@@ -129,13 +129,20 @@ const MonitorResultComponent = (props: MonitorResultComponentProps) => {
   );
 };
 
-export const UpdateModelRunTool = () => {
+// Optional props to be used if a model run id is to be injected into the component.
+interface UpdateModelRunOptionalProps{
+  modelRunId?: string
+  reset: () => void // Call back function that removes value from parent component.
+}
+
+export const UpdateModelRunTool = (props: UpdateModelRunOptionalProps) => {
   /**
     Component: UpdateModelRunTool
 
     Lodge form page. Allows updating an existing record.
     
     */
+
   const [modelRunId, setModelRunId] = useState<string | undefined>(undefined);
   const [modelRunRecord, setModelRunRecord] = useState<
     ItemModelRun | undefined
@@ -155,6 +162,18 @@ export const UpdateModelRunTool = () => {
 
   const granted = !!auth.granted;
   const showUpdateForm = granted && canWriteToRecord && !showResult;
+
+  /* Use effect that runs once on component load to check whether 
+     a model run id was provided to the component. If model run id 
+     is provided, the state is set to the respective provided ID,
+     AND the model run id in the parent component is reset.
+  */
+  useEffect(() => {
+    if(props && props.modelRunId){
+      setModelRunId(props.modelRunId)
+      props.reset()
+  }
+  }, [])
 
   useEffect(() => {
     // TODO replace with useFormSetup once API returns the data - this is hack!

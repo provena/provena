@@ -19,6 +19,8 @@ networkx
 python-dotenv
 sentry-sdk[fastapi]
 mypy-boto3-kms
+python-docx==1.1.2
+
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package
