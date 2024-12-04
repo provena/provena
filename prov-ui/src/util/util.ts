@@ -83,7 +83,7 @@ export function stripPossibleFullStop(input: string): string {
         messages don't duplicate full stops.
 
      */
-  const trimmed = input.trimRight();
+  const trimmed = input.trimEnd();
   if (trimmed.endsWith(".")) {
     return trimmed.slice(0, trimmed.length - 1);
   } else if (trimmed.endsWith('."')) {
