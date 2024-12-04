@@ -140,7 +140,10 @@ class ProvAPI(Construct):
                 description="Prov API Docker Lambda FastAPI API Gateway",
                 throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
                 throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
-            )
+            ), 
+            binary_media_types = [
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" # Allows for word document.
+            ]
         )
         # API is non stateful - clean up
         api.apply_removal_policy(RemovalPolicy.DESTROY)

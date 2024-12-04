@@ -1,12 +1,13 @@
 try:
     from ProvenaInterfaces.SharedTypes import StatusResponse
     from ProvenaInterfaces.ProvenanceModels import *
+    from ProvenaInterfaces.RegistryAPI import ItemSubType
 except:
     from .SharedTypes import StatusResponse
     from .ProvenanceModels import *
 
 from typing import Optional, Any, Dict, Type
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ProvenanceRecordInfo(BaseModel):
@@ -73,3 +74,9 @@ class PostUpdateModelRunInput(BaseModel):
 
 class PostUpdateModelRunResponse(BaseModel):
     session_id: str
+
+class GenerateReportRequest(BaseModel):
+    id: str
+    item_subtype: ItemSubType
+    # Greater than or equal to 1 and less than equal to 3
+    depth: int = Field(ge=1, le=3)

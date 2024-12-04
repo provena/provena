@@ -142,10 +142,9 @@ prof
 temp
 
 # environments
-.env 
-.env.test
-.env.dev
-.env.stage
-.env.prod
 
 test.http
+
+.env 
+.env*
+!.env.example

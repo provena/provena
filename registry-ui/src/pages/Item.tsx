@@ -61,6 +61,7 @@ import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
 import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
 import { useAddStudyLinkDialog } from "hooks/useAddStudyLinkDialog";
+import { useGenerateReportDialog } from "react-libs/hooks/useGenerateReportDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -372,6 +373,10 @@ const RecordView = observer((props: {}) => {
     item !== undefined &&
     subtype === "MODEL_RUN";
 
+  // Checking whether we should render the "Generate Report Button"
+  const isStudy = subtype === "STUDY";
+  const isModelRunOrStudy = isStudy || (isModelRun && typedPayload);
+
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
     : undefined;
@@ -455,6 +460,11 @@ const RecordView = observer((props: {}) => {
     },
   });
 
+  const { openDialog, renderedDialog } = useGenerateReportDialog({
+    id: typedPayload?.item?.id,
+    itemSubType: typedPayload?.item?.item_subtype,
+  });
+
   return (
     <Grid container>
       {
@@ -463,6 +473,7 @@ const RecordView = observer((props: {}) => {
       {versionControls.render()}
       {revertControls.render()}
       {studyLinkDialog.render()}
+      {renderedDialog}
       <Grid container item className={classes.topPanelContainer}>
         <Stack
           direction="row"
@@ -552,6 +563,15 @@ const RecordView = observer((props: {}) => {
                     </Button>
                   </Grid>
                 )}
+
+                {isModelRunOrStudy && (
+                  <Grid item>
+                    <Button variant="outlined" onClick={openDialog}>
+                      Generate Report
+                    </Button>
+                  </Grid>
+                )}
+
                 {showEditModelRunButton && (
                   <Grid item>
                     <Button
