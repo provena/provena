@@ -480,14 +480,13 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
             row.cells[1].width = Inches(10)  # Wider right column
 
         # First row here is the modelling-team-name
-        table.cell(0,0).text = "Modelling Team"
+        table.cell(0, 0).paragraphs[0].add_run("Modelling Team").bold = True
         cell = table.cell(0,1)
         run = cell.paragraphs[0].add_run("<enter your team name here>")
         run.italic = True
 
         # Second row here is the inputs
-        input_row = table.rows[1].cells[0]
-        input_row.text = "Inputs:"
+        table.cell(1, 0).paragraphs[0].add_run("Inputs").bold = True
         input_data_cell = table.cell(1,1)
         for input_node in node_collection.inputs:
             paragraph = input_data_cell.add_paragraph()
@@ -501,8 +500,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
             paragraph.add_run(text = "\n")
         
         # Third row here is the model runs
-        model_run_row = table.rows[2].cells[0]
-        model_run_row.text = "Model Runs:" 
+        table.cell(2, 0).paragraphs[0].add_run("Model Runs").bold = True
         model_run_row_data_cell = table.cell(2,1)
         for model_run_node in node_collection.model_runs:
             paragraph = model_run_row_data_cell.add_paragraph()
@@ -516,8 +514,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
             paragraph.add_run(text = "\n")
 
         # Fourth row here is the outputs
-        output_row = table.rows[3].cells[0]
-        output_row.text = "Outputs:"
+        table.cell(3, 0).paragraphs[0].add_run("Outputs").bold = True
         output_row_data_cell = table.cell(3,1)
         for output_node in node_collection.outputs:
             paragraph = output_row_data_cell.add_paragraph()
