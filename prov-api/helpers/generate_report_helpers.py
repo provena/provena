@@ -18,6 +18,9 @@ from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.shared import Inches
 import docx
+from docx.shared import RGBColor
+
+BASE_HANDLE_URL = "http://hdl.handle.net/"
 
 class NodeType(str, Enum): 
     INPUTS = "inputs"
@@ -43,7 +46,8 @@ class ReportNodeCollection():
     inputs: List[ItemBase] = field(default_factory=list)
     model_runs: List[ItemBase] = field(default_factory=list)
     outputs: List[ItemBase] = field(default_factory=list)
-    
+    origin_node: ItemBase | None = None
+
     # Additional sets to track unique IDs for each category
     input_ids: Set[str] = field(default_factory=set)
     model_run_ids: Set[str] = field(default_factory=set)
@@ -66,7 +70,7 @@ class ReportNodeCollection():
             self.outputs.append(node)
             self.output_ids.add(node.id)
         
-async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_style: RequestStyle, config: Config) -> None: 
+async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_style: RequestStyle, config: Config) -> ItemBase: 
     """Validates that a provided node (id + subtype) does exist within the registry.
     This only currently works with Model Runs and Study Entities. 
 
@@ -112,6 +116,8 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
         
         if isinstance(response, SeededItem):
             raise HTTPException(status_code=400, detail=f"Seeded item with provided {item_subtype.value} cannot be used for this query!")
+        
+        return response
     
     except HTTPException as e: 
         raise e
@@ -354,7 +360,7 @@ def should_load_node(node: Node, direction: NodeDirection) -> bool:
     
     return node.item_subtype == ItemSubType.DATASET 
 
-def add_hyperlink(paragraph: Paragraph, text: str, url: str) -> Optional[docx.oxml.CT_Hyperlink]:
+def add_hyperlink(paragraph: Paragraph, text: str, url: str, color: Optional[RGBColor] = None) -> Optional[docx.oxml.CT_Hyperlink]:
     # Python-docx does not have a native .add_hyperlink() functionality.
     # Sourced from: https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
 
@@ -390,8 +396,8 @@ def add_hyperlink(paragraph: Paragraph, text: str, url: str) -> Optional[docx.ox
     # Set the run's style to the builtin hyperlink style, defining it if necessary
     #new_run.style = get_or_create_hyperlink_style(part.document)
     # Alternatively, set the run's formatting explicitly
-    new_run.font.color.rgb = docx.shared.RGBColor(0, 0, 255)
-    new_run.font.underline = True
+    new_run.font.color.rgb = color if color else docx.shared.RGBColor(0, 0, 255) # Default dark-blue color unless specified.
+    new_run.font.underline = True  
 
     # Join all the xml elements together
     hyperlink.append(new_run._element)
@@ -418,10 +424,54 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
         If any error occurs during file generation.
     """
 
+    def format_item_subtype_name(item_subtype: ItemSubType) -> str: 
+        """
+        Converts an item subtype's name into a more friendly readable format by replacing 
+        all underscores and converting all except the first letter into lowercases.
+
+        Parameters
+        ----------
+        item_subtype : ItemSubType
+            The ItemSubType ENUM.
+
+        Returns
+        -------
+        str
+            The formatted or prettified string representing an item subtype.
+
+        Examples
+        --------
+        format_item_subtype_name(ItemSubType.MODEL_RUN)
+
+        Result: 'Model Run'
+        """
+
+        item_subtype_name = item_subtype.name
+
+        # Splits the string by underscore, iterates through each word and capitalises accordingly.
+        return ' '.join(word.capitalize() for word in item_subtype_name.split('_'))
+    
     try:
         document = Document()
         document.add_heading('Model Run Study Close Out Report', 0)
 
+        # Origin Node Information. 
+        origin_node_item_subtype = format_item_subtype_name(node_collection.origin_node.item_subtype)
+        display_name = node_collection.origin_node.display_name
+        before_colon = f"Report for {origin_node_item_subtype}: "
+        after_colon = f"{display_name}"
+
+        # Coloring the origin node information
+        heading = document.add_heading(level=1)
+        run1 = heading.add_run(before_colon)
+        run1.font.color.rgb = RGBColor(0, 0, 255)  # Blue color before colon
+
+        # Add the hyperlink for the after_colon text
+        paragraph = heading
+        # Adds purple color to the hyperlink
+        add_hyperlink(paragraph, text=after_colon, url=BASE_HANDLE_URL + node_collection.origin_node.id, color=RGBColor(128,0,128))
+
+        # Remaining table generation/information.
         table = document.add_table(rows=4, cols=2)
         table.style = 'Table Grid'
 
@@ -430,37 +480,51 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
             row.cells[1].width = Inches(10)  # Wider right column
 
         # First row here is the modelling-team-name
-        table.cell(0,0).text = "Modelling Team"
-        table.cell(0,1).text = "TODO"
+        table.cell(0, 0).paragraphs[0].add_run("Modelling Team").bold = True
+        cell = table.cell(0,1)
+        run = cell.paragraphs[0].add_run("<enter your team name here>")
+        run.italic = True
 
         # Second row here is the inputs
-        input_row = table.rows[1].cells[0]
-        input_row.text = "Inputs:"
+        table.cell(1, 0).paragraphs[0].add_run("Inputs").bold = True
         input_data_cell = table.cell(1,1)
         for input_node in node_collection.inputs:
-            paragraph = input_data_cell.add_paragraph(input_node.display_name + ", ")
-            url = "http://hdl.handle.net/" + input_node.id
-            add_hyperlink(paragraph, text=url, url=url)
+            paragraph = input_data_cell.add_paragraph()
+            # Format the item subtype name in bold.
+            bold_run = paragraph.add_run(format_item_subtype_name(input_node.item_subtype))
+            bold_run.bold = True
+
+            # Add the rest of the remaining string.
+            paragraph.add_run(f": {input_node.display_name}, ")
+            add_hyperlink(paragraph, text=input_node.id, url=BASE_HANDLE_URL + input_node.id)
             paragraph.add_run(text = "\n")
         
         # Third row here is the model runs
-        model_run_row = table.rows[2].cells[0]
-        model_run_row.text = "Model Runs:" 
+        table.cell(2, 0).paragraphs[0].add_run("Model Runs").bold = True
         model_run_row_data_cell = table.cell(2,1)
         for model_run_node in node_collection.model_runs:
-            paragraph = model_run_row_data_cell.add_paragraph(model_run_node.display_name + ", ")
-            url = "http://hdl.handle.net/" + model_run_node.id
-            add_hyperlink(paragraph, text=url, url=url)
+            paragraph = model_run_row_data_cell.add_paragraph()
+            # Format the item subtype name in bold.
+            bold_run = paragraph.add_run(format_item_subtype_name(model_run_node.item_subtype))
+            bold_run.bold = True
+
+            # Add the rest of the remaining string.
+            paragraph.add_run(f": {model_run_node.display_name}, ")
+            add_hyperlink(paragraph, text=model_run_node.id, url=BASE_HANDLE_URL + model_run_node.id)
             paragraph.add_run(text = "\n")
 
         # Fourth row here is the outputs
-        output_row = table.rows[3].cells[0]
-        output_row.text = "Outputs:"
+        table.cell(3, 0).paragraphs[0].add_run("Outputs").bold = True
         output_row_data_cell = table.cell(3,1)
         for output_node in node_collection.outputs:
-            paragraph = output_row_data_cell.add_paragraph(output_node.display_name + ", ")
-            url = "http://hdl.handle.net/" + output_node.id
-            add_hyperlink(paragraph, text=url, url=url)
+            paragraph = output_row_data_cell.add_paragraph()
+            # Format the item subtype name in bold.
+            bold_run = paragraph.add_run(format_item_subtype_name(output_node.item_subtype))
+            bold_run.bold = True
+
+            # Add the rest of the remaining string.
+            paragraph.add_run(f": {model_run_node.display_name}, ")
+            add_hyperlink(paragraph, text=output_node.id, url=BASE_HANDLE_URL + output_node.id)
             paragraph.add_run(text = "\n")
 
         file_path = f"{config.TEMP_FILE_LOCATION}/generate_report{str(random.randint(1,100000))}).docx"
@@ -665,7 +729,10 @@ async def generate_report_helper(
         report_nodes: ReportNodeCollection = ReportNodeCollection()
 
         # do checks accordingly. 
-        await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
+        origin_node: ItemBase = await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
+
+        # Add origin node to dataclass, will be used later in word-doc generation. 
+        report_nodes.origin_node = origin_node
 
         if item_subtype == ItemSubType.MODEL_RUN: 
             await populate_model_run_report(
