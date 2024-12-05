@@ -426,13 +426,13 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
 
     def format_item_subtype_name(item_subtype: ItemSubType) -> str: 
         """
-        Converts an item subtype name into a more friendly readable format by replacing 
+        Converts an item subtype's name into a more friendly readable format by replacing 
         all underscores and converting all except the first letter into lowercases.
 
         Parameters
         ----------
-        text : str
-            The string representation of the item subtype name.
+        item_subtype : ItemSubType
+            The ItemSubType ENUM.
 
         Returns
         -------
@@ -441,7 +441,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
 
         Examples
         --------
-        format_item_subtype_name('MODEL_RUN')
+        format_item_subtype_name(ItemSubType.MODEL_RUN)
 
         Result: 'Model Run'
         """
