@@ -72,6 +72,7 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
+        attestations: false
 
     - name: TEST install package from TEST PyPI
       run: |
@@ -79,3 +80,5 @@ jobs:
 
     - name: Publish package distributions to PROD PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        attestations: false
