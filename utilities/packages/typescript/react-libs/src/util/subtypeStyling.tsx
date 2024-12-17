@@ -143,7 +143,7 @@ export const getSwatchForSubtype = (subtype: ItemSubType | undefined) => {
       baseSwatch = Swatches.softwareSwatch;
       break;
     case "WORKFLOW_TEMPLATE":
-      baseSwatch = Swatches.workflowDefinitonSwatch;
+      baseSwatch = Swatches.modelRunWorkflowDefinitionSwatch;
       break;
     case "WORKFLOW_RUN":
       baseSwatch = Swatches.workflowDefinitonSwatch;
