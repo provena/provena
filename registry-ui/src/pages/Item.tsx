@@ -347,7 +347,7 @@ const RecordView = observer((props: {}) => {
     item !== undefined &&
     subtype !== undefined &&
     // Must be editable type
-    nonEditEntityTypes.indexOf(subtype) === -1;
+    nonEditEntityTypes.includes(subtype);
 
   const seeCloneButton =
     // Must have metadata write
@@ -356,7 +356,7 @@ const RecordView = observer((props: {}) => {
     item !== undefined &&
     subtype !== undefined &&
     // Must be editable type
-    nonCloneEntityTypes.indexOf(subtype) === -1;
+    nonCloneEntityTypes.includes(subtype);
 
   const seeVersioning = !!subtype && subtypeHasVersioning(subtype);
 
