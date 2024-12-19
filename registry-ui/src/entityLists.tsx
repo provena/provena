@@ -1,7 +1,13 @@
 import { DATA_STORE_LINK, DOCUMENTATION_BASE_URL } from "react-libs";
 import { ItemSubType } from "./provena-interfaces/RegistryModels";
 
-export const nonEditEntityTypes: ItemSubType[] = ["DATASET", "MODEL_RUN"];
+export const nonEditEntityTypes: ItemSubType[] = [
+  "DATASET",
+  "MODEL_RUN",
+  "MODEL_RUN_WORKFLOW_TEMPLATE",
+  "WORKFLOW_TEMPLATE",
+  "DATASET_TEMPLATE"
+];
 
 export const entityTypes: ItemSubType[] = [
   "DATASET",
