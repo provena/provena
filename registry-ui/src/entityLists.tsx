@@ -9,6 +9,11 @@ export const nonEditEntityTypes: ItemSubType[] = [
   "DATASET_TEMPLATE"
 ];
 
+export const nonCloneEntityTypes: ItemSubType[] = [
+  "DATASET",
+  "MODEL_RUN",
+];
+
 export const entityTypes: ItemSubType[] = [
   "DATASET",
   "DATASET_TEMPLATE",
