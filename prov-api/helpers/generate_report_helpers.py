@@ -523,7 +523,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
             bold_run.bold = True
 
             # Add the rest of the remaining string.
-            paragraph.add_run(f": {model_run_node.display_name}, ")
+            paragraph.add_run(f": {output_node.display_name}, ")
             add_hyperlink(paragraph, text=output_node.id, url=BASE_HANDLE_URL + output_node.id)
             paragraph.add_run(text = "\n")
 
