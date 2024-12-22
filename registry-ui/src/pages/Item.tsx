@@ -355,7 +355,7 @@ const RecordView = observer((props: {}) => {
     // Must have entity loaded and subtype parsed
     item !== undefined &&
     subtype !== undefined &&
-    // Must be editable type
+    // Must be cloneable type
     !nonCloneEntityTypes.includes(subtype);
 
   const seeVersioning = !!subtype && subtypeHasVersioning(subtype);
