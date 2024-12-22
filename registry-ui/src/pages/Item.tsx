@@ -49,7 +49,10 @@ import {
 } from "react-libs";
 import { Link as RouteLink, useParams } from "react-router-dom";
 import { registryVersionIdLinkResolver } from "util/helper";
-import { nonEditEntityTypes } from "../entityLists";
+import {
+  nonEditEntityTypes,
+  nonCloneEntityTypes
+} from "../entityLists";
 import { ItemRevertResponse } from "../provena-interfaces/RegistryAPI";
 import {
   ItemBase,
@@ -344,7 +347,7 @@ const RecordView = observer((props: {}) => {
     item !== undefined &&
     subtype !== undefined &&
     // Must be editable type
-    nonEditEntityTypes.indexOf(subtype) === -1;
+    !nonEditEntityTypes.includes(subtype);
 
   const seeCloneButton =
     // Must have metadata write
@@ -352,8 +355,8 @@ const RecordView = observer((props: {}) => {
     // Must have entity loaded and subtype parsed
     item !== undefined &&
     subtype !== undefined &&
-    // Must be editable type
-    nonEditEntityTypes.indexOf(subtype) === -1;
+    // Must be cloneable type
+    !nonCloneEntityTypes.includes(subtype);
 
   const seeVersioning = !!subtype && subtypeHasVersioning(subtype);
 
