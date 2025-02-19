@@ -1,9 +1,9 @@
 {
-    "licences": [
+    "licenses": [
         {
             "name": "Copyright",
             "title": "All rights reserved",
-            "path": "https://gbrrestoration.github.io/rrap-mds-knowledge-hub/information-system/licenses.html#copyright-all-rights-reserved-"
+            "path": "https://docs.provena.io/licenses.html#copyright-all-rights-reserved-"
         },
         {
             "name": "CC0-1.0",
