@@ -58,7 +58,7 @@ export const LegendInformation: readonly LegendInformationProps[] = [
   },
   {
     colour: Swatches.modelRunWorkflowDefinitionSwatch.colour,
-    acronym: "MRWT",
+    acronym: "WT",
     name: "Model Run Workflow Template",
     href:
       DOCUMENTATION_BASE_URL +
