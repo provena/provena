@@ -115,7 +115,7 @@ const AutoCompleteLicense = (props: any) => {
 
   // Setup the initial license option list after initial load
   useEffect(() => {
-    fetch(`https://static.rrap-is.com/assets/cc_licenses.json`)
+    fetch(`/cc_licenses.json`)
       .then((res) => res.json())
       .then((json) => {
         // Get json API response

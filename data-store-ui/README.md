@@ -78,6 +78,20 @@ You could also update the documentation URL if desired - it defaults to the prov
 
 Once you have completed the env file, you should have a functional set of environment variables.
 
+### Customising dataset licence options
+
+The `cc_licenses.json` file located in the `./public` directory of this repository can be modified to add or remove dataset licence options as required.
+
+New licence entries should adhere to the following JSON format:
+
+```
+{
+    "name": "The short name or code of the chosen licence",
+    "title": "The formal title of the chosen licence",
+    "path": "The URL where the chosen licence details are published"
+}
+```
+
 ## Run
 
 To run the server locally (replacing provena with your chosen deployment target name as above)
