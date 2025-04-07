@@ -1,4 +1,4 @@
-from dependencies.dependencies import admin_user_protected_role_dependency
+from dependencies.dependencies import admin_user_protected_role_dependency, get_user_cipher, ProtectedRole
 from config import get_settings, Config
 from KeycloakFastAPI.Dependencies import User
 from ProvenaInterfaces.RegistryAPI import *
@@ -221,3 +221,27 @@ async def restore_from_table(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Unhandled exception in import process : {e}.")
+
+
+@router.post("/restore-prov-graph", response_model=ProvGraphRestoreResponse, operation_id="registry_admin_restore_prov_graph")
+async def restore_prov_graph(
+    restore_request: ProvGraphRestoreRequest,
+    user_protected_role: ProtectedRole = Depends(admin_user_protected_role_dependency),
+    config: Config = Depends(get_settings),
+    user_cipher : str = Depends(get_user_cipher)
+) -> ProvGraphRestoreResponse:
+    
+    try:
+        restore_response = await perform_graph_restore_helper(
+            restore_request=restore_request,
+            user=user_protected_role.user,
+            config=config,
+            user_cipher=user_cipher
+        )
+    except HTTPException as http_exception:
+        raise http_exception
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Unhandled exception in provenance graph restore : {e}.")
+        
+    return restore_response

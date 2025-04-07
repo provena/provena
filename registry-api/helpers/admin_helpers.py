@@ -1,9 +1,15 @@
 import json
-from typing import Callable, Set, Dict, List
+from typing import Callable, Set, Dict, List, Awaitable, TypeAlias
+from helpers.auth_helpers import get_user_link
 from helpers.dynamo_helpers import *
 from config import Config
 from fastapi import HTTPException
+from KeycloakFastAPI.Dependencies import User
 from ProvenaInterfaces.SharedTypes import ImportMode
+from ProvenaInterfaces.AsyncJobAPI import *
+import asyncio
+
+from helpers.job_api_helpers import launch_generic_job
 
 # action types
 
@@ -929,3 +935,256 @@ def export_from_external_table(table_name: str, config: Config) -> List[Dict[str
             status_code=500,
             detail=f"Unexpected exception occurred during database listing: {e}"
         )
+
+GetAuthFunction: TypeAlias = Callable[[], Any]
+UserCypher: TypeAlias = str
+# Restore lodge handlers take the item payload and return a job to launch
+Payload = Dict[str, Any]
+# set of async functions
+RestoreLodgeHandlerFuncType = Callable[
+    [ItemSubType, Payload, User, Config, UserCypher],
+    # Awaitable[AdminLaunchJobRequest]
+    # Optional[Awaitable[AdminLaunchJobRequest]]
+    # Optional[AdminLaunchJobRequest]
+    Awaitable[Optional[AdminLaunchJobRequest]]
+    # Optional[Coroutine[Any, Any, AdminLaunchJobRequest]]
+]
+
+# We map the item subtype to appropriate handler function
+RestoreHandlers = Dict[ItemSubType, RestoreLodgeHandlerFuncType]
+
+async def version_lodge_handler(subtype: ItemSubType, payload: Payload, user: User, config: Config, user_cipher: UserCypher) -> AdminLaunchJobRequest:
+    # Determine the job type and sub type
+    job_type = JobType.PROV_LODGE
+    job_sub_type = JobSubType.LODGE_VERSION_ACTIVITY
+
+    # Now determine the job payload by parsing info from the create node
+    parsed_node = ItemVersion.parse_obj(payload)
+
+    # get the owner username
+    username = parsed_node.owner_username
+
+    # look up connected created node to determine created node subtype
+    target_id = parsed_node.from_item_id
+
+    try:
+        result = get_entry_raw(id=target_id, config=config)
+    except KeyError as e:
+        raise KeyError(
+            f"Error fetching 'from item' for version activity with ID {parsed_node.id}.  Most likely the item no longer exists. Details: {e}")
+    except Exception as e:
+        raise Exception(
+            f"Error fetching 'from item' for version activity with ID {parsed_node.id}. Details: {e}")
+
+    # get the connected item subtype
+    conn_subtype = RecordInfo.parse_obj(result).item_subtype
+
+    # get the linked person id from the username
+    # TODO if this is not linked fail gracefully! (This should be contained in the payload)
+    username = parsed_node.owner_username
+
+    linked_person_id = get_user_link(
+        user=user, username=username, config=config)
+    if not linked_person_id:
+        raise Exception(
+            f"Failed to resolve linked person for username {username}. User does not have required linked person entity."
+        )
+
+    # construct job payload
+    job_payload = ProvLodgeVersionPayload(
+        from_version_id=parsed_node.from_item_id,
+        to_version_id=parsed_node.to_item_id,
+        version_activity_id=parsed_node.id,
+        linked_person_id=linked_person_id,
+        item_subtype=conn_subtype,
+    )
+
+    return AdminLaunchJobRequest(
+        username=username,
+        job_type=job_type,
+        job_sub_type=job_sub_type,
+        job_payload=job_payload
+    )
+
+async def create_lodge_handler(subtype: ItemSubType, payload: Payload, user: User, config: Config, user_cipher: UserCypher) -> AdminLaunchJobRequest:
+    # Determine the job type and sub type
+    job_type = JobType.PROV_LODGE
+    job_sub_type = JobSubType.LODGE_CREATE_ACTIVITY
+
+    # Now determine the job payload by parsing info from the create node
+    parsed_node = ItemCreate.parse_obj(payload)
+
+    # get the owner username
+    username = parsed_node.owner_username
+
+    # look up connected created node to determine created node subtype
+    target_id = parsed_node.created_item_id
+    try:
+        result = get_entry_raw(id=target_id, config=config)
+    except KeyError as e:
+        raise KeyError(
+            f"Error fetching connected node for create activity with ID {parsed_node.id}.  Most likely the connected item no longer exists. Details: {e}")
+    except Exception as e:
+        raise Exception(
+            f"Error fetching connected node for create activity with ID {parsed_node.id}. Details: {e}")
+
+    # get the connected item subtype
+    conn_subtype = RecordInfo.parse_obj(result).item_subtype
+
+    linked_person_id = get_user_link(
+        user=user, username=username, config=config
+    )
+    if not linked_person_id:
+        raise Exception(
+            f"Failed to resolve linked person for username {username}. User must have linked person entity for provenance creation."
+        )
+
+    # construct job payload
+    job_payload = ProvLodgeCreationPayload(
+        created_item_id=parsed_node.created_item_id,
+        creation_activity_id=parsed_node.id,
+        linked_person_id=linked_person_id,
+        created_item_subtype=conn_subtype
+    )
+
+    return AdminLaunchJobRequest(
+        username=username,
+        job_type=job_type,
+        job_sub_type=job_sub_type,
+        job_payload=job_payload
+    )
+
+async def model_run_lodge_handler(subtype: ItemSubType, payload: Payload, user: User, config: Config, user_cipher: UserCypher) -> AdminLaunchJobRequest:
+    # Determine the job type and sub type
+    job_type = JobType.PROV_LODGE
+    job_sub_type = JobSubType.MODEL_RUN_LODGE_ONLY
+
+    # Now determine the job payload by parsing info from the create node
+    parsed_node = ItemModelRun.parse_obj(payload)
+    # get the owner username
+    username = parsed_node.owner_username
+
+    # construct job payload
+    job_payload = ProvLodgeModelRunLodgeOnlyPayload(
+        model_run_record_id=parsed_node.id,
+        record=parsed_node.record,
+        revalidate=False,
+        user_info=user_cipher
+    )
+
+    return AdminLaunchJobRequest(
+        username=username,
+        job_type=job_type,
+        job_sub_type=job_sub_type,
+        job_payload=job_payload
+    )
+
+# Define handlers here for each subtype
+async def null_handler(subtype: ItemSubType, payload: Payload, user: User, config: Config, user_cipher: UserCypher) -> Optional[AdminLaunchJobRequest]:
+    return None
+
+RESTORE_LODGE_HANDLER_MAP: RestoreHandlers = {
+    # All of these types have no inherent provenance - described in other resources
+    ItemSubType.PERSON: null_handler,
+    ItemSubType.ORGANISATION: null_handler,
+    ItemSubType.STUDY: null_handler,
+    ItemSubType.MODEL: null_handler,
+    ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE: null_handler,
+    ItemSubType.DATASET: null_handler,
+    ItemSubType.DATASET_TEMPLATE: null_handler,
+    ItemSubType.STUDY: null_handler,
+
+    # PROV associated - spin off lodge tasks
+    ItemSubType.CREATE: create_lodge_handler,
+    ItemSubType.VERSION: version_lodge_handler,
+    ItemSubType.MODEL_RUN: model_run_lodge_handler,
+}
+
+async def perform_graph_restore_helper(
+    restore_request: ProvGraphRestoreRequest,
+    user: User,
+    config: Config,
+    user_cipher: str,
+) -> ProvGraphRestoreResponse:
+
+    bundled_items = restore_request.items
+    node_list = [item.item_payload for item in bundled_items]
+
+    # For each node, parse the item subtype - filter out seeds
+    subtype_to_node_list_map: Dict[ItemSubType, List[Dict[str, Any]]] = {
+    }
+
+    for node in node_list:
+        # parse as record info base item
+        record_base = RecordInfo.parse_obj(node)
+
+        # check its complete item
+        if record_base.record_type != RecordType.COMPLETE_ITEM:
+            print(f"Ignoring seed item {record_base.id}...")
+            continue
+
+        # update subtype list
+        sub = record_base.item_subtype
+        current = subtype_to_node_list_map.get(sub, [])
+        current.append(node)
+        subtype_to_node_list_map[sub] = current
+
+    # Optional for the null handlers
+    to_dispatch: List[Optional[AdminLaunchJobRequest]] = []
+    failures: List[str] = [] # list of failures
+    
+    for subtype, node_list in subtype_to_node_list_map.items():
+        dispatcher = RESTORE_LODGE_HANDLER_MAP.get(subtype)
+        if dispatcher is None:
+            raise Exception(f"No handler for restoring type {subtype}")
+
+        # generate pool of tasks
+        print(f"Gathering job pool for {subtype} nodes.")
+        for node in node_list:
+            try:
+                result = await dispatcher(subtype, node, user, config, user_cipher)
+                to_dispatch.append(result)
+            except Exception as e:
+                failures.append(f"DISPATCH CREATION FAILED FOR SUBTYPE {subtype}: {str(e)}")
+                # raise Exception(f"Error while trying to create dispatch job for {subtype} node. Details: {e}")
+            
+    if failures:
+        error_str = "\n".join(failures)
+        raise HTTPException(
+            status_code=400,
+            detail="Failed to parse the graph restore request. No provenance creation jobs were submitted. "\
+                "If many of the errors are because of user-person link errors with integration bots, or "\
+                "missing entities associated with test create/version entities, see the 'clean-provenance-payload' "\
+                f"tool in the admin-tooling/registry directory. Errors:\n{error_str}"
+        )
+
+
+    # checked entities are parsable, checked user links.
+    if restore_request.trial_mode:
+        return ProvGraphRestoreResponse(
+            status=Status(
+                success=True,
+                details="TRIAL: Successfully parsed the graph restore request. Run again with trial mode set to false to actually perform restore."
+            ),
+            trial_mode=restore_request.trial_mode,
+            task_ids=[],
+        )
+
+    job_launch_tasks = [
+        launch_generic_job(
+            payload=payload,
+            config=config
+        ) for payload in to_dispatch if payload is not None
+    ]
+    print(f"Running {len(job_launch_tasks)} tasks...")
+    tasks: List[AdminLaunchJobResponse] = await asyncio.gather(*job_launch_tasks)
+    task_ids = [task.session_id for task in tasks]
+
+    return ProvGraphRestoreResponse(
+        status=Status(
+            success=True,
+            details="Successfully parsed the graph restore request and submitted jobs for creating provenance records. Task IDs of the jobs provided in return payload."
+        ),
+        trial_mode=restore_request.trial_mode,
+        task_ids=task_ids,
+    )
