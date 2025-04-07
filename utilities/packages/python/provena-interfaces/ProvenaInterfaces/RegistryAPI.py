@@ -564,9 +564,11 @@ class RegistryImportResponse(StatusResponse):
     
 class ProvGraphRestoreRequest(BaseModel):
     trial_mode: bool = True
+    abort_if_failures: bool = True
     items: List[BundledItem]
 class ProvGraphRestoreResponse(StatusResponse):
     trial_mode: bool
+    abort_if_failures: bool
     task_ids: Optional[List[str]]
 
 # ==========================

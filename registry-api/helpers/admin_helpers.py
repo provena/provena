@@ -936,6 +936,7 @@ def export_from_external_table(table_name: str, config: Config) -> List[Dict[str
             detail=f"Unexpected exception occurred during database listing: {e}"
         )
 
+
 GetAuthFunction: TypeAlias = Callable[[], Any]
 UserCypher: TypeAlias = str
 # Restore lodge handlers take the item payload and return a job to launch
@@ -952,6 +953,7 @@ RestoreLodgeHandlerFuncType = Callable[
 
 # We map the item subtype to appropriate handler function
 RestoreHandlers = Dict[ItemSubType, RestoreLodgeHandlerFuncType]
+
 
 async def version_lodge_handler(subtype: ItemSubType, payload: Payload, user: User, config: Config, user_cipher: UserCypher) -> AdminLaunchJobRequest:
     # Determine the job type and sub type
@@ -1006,6 +1008,7 @@ async def version_lodge_handler(subtype: ItemSubType, payload: Payload, user: Us
         job_payload=job_payload
     )
 
+
 async def create_lodge_handler(subtype: ItemSubType, payload: Payload, user: User, config: Config, user_cipher: UserCypher) -> AdminLaunchJobRequest:
     # Determine the job type and sub type
     job_type = JobType.PROV_LODGE
@@ -1054,6 +1057,7 @@ async def create_lodge_handler(subtype: ItemSubType, payload: Payload, user: Use
         job_payload=job_payload
     )
 
+
 async def model_run_lodge_handler(subtype: ItemSubType, payload: Payload, user: User, config: Config, user_cipher: UserCypher) -> AdminLaunchJobRequest:
     # Determine the job type and sub type
     job_type = JobType.PROV_LODGE
@@ -1100,6 +1104,7 @@ RESTORE_LODGE_HANDLER_MAP: RestoreHandlers = {
     ItemSubType.MODEL_RUN: model_run_lodge_handler,
 }
 
+
 async def perform_graph_restore_helper(
     restore_request: ProvGraphRestoreRequest,
     user: User,
@@ -1131,8 +1136,8 @@ async def perform_graph_restore_helper(
 
     # Optional for the null handlers
     to_dispatch: List[Optional[AdminLaunchJobRequest]] = []
-    failures: List[str] = [] # list of failures
-    
+    failures: List[str] = []  # list of failures
+
     for subtype, node_list in subtype_to_node_list_map.items():
         dispatcher = RESTORE_LODGE_HANDLER_MAP.get(subtype)
         if dispatcher is None:
@@ -1145,46 +1150,60 @@ async def perform_graph_restore_helper(
                 result = await dispatcher(subtype, node, user, config, user_cipher)
                 to_dispatch.append(result)
             except Exception as e:
-                failures.append(f"DISPATCH CREATION FAILED FOR SUBTYPE {subtype}: {str(e)}")
+                failures.append(
+                    f"DISPATCH CREATION FAILED FOR SUBTYPE {subtype}: {str(e)}")
                 # raise Exception(f"Error while trying to create dispatch job for {subtype} node. Details: {e}")
-            
-    if failures:
-        error_str = "\n".join(failures)
+
+    warning = " <!!WARNING!!> Consider, if some invalid provenance runs should be fixed and not"\
+    "abandoned. Maybe person-links need to be fixed to validate provenance creation, "\
+    " or maybe some can actually be deleted if they are left over from integration "\
+    "tests that didn't clean up properly. See the 'clean-provenance-payload' tool in "\
+    "the admin-tooling/registry directory for help with removing correctly invalid "\
+    f"provenance from payload." 
+
+    failures_str = "\n".join(failures)
+    if failures and restore_request.abort_if_failures:
         raise HTTPException(
             status_code=400,
-            detail="Failed to parse the graph restore request. No provenance creation jobs were submitted. "\
-                "If many of the errors are because of user-person link errors with integration bots, or "\
-                "missing entities associated with test create/version entities, see the 'clean-provenance-payload' "\
-                f"tool in the admin-tooling/registry directory. Errors:\n{error_str}"
+            detail="Validation of provenance for creation failed, and abort_if_failures is True."
+            f" No provenance creation jobs were submitted. {warning}"
+            f" Inspect errors closely. Total failures: {len(failures)}. Details: {failures_str}"
         )
 
-
-    # checked entities are parsable, checked user links.
     if restore_request.trial_mode:
         return ProvGraphRestoreResponse(
             status=Status(
-                success=True,
-                details="TRIAL: Successfully parsed the graph restore request. Run again with trial mode set to false to actually perform restore."
+                success=failures == [],
+                details=f"TRIAL: {len(failures)} errors in validation of provenance records."
+                " Run again with trial mode set to false to actually perform restore." + 
+                (" Include abort_if_failures=False to skip over any errors caused by invalid provenance."
+                f"{warning} Errors: {failures_str}." if failures else "")
             ),
             trial_mode=restore_request.trial_mode,
+            abort_if_failures=restore_request.abort_if_failures,
             task_ids=[],
         )
-
+    # Not trial mode, continue with valid provenance.
     job_launch_tasks = [
         launch_generic_job(
             payload=payload,
             config=config
         ) for payload in to_dispatch if payload is not None
     ]
+    
     print(f"Running {len(job_launch_tasks)} tasks...")
     tasks: List[AdminLaunchJobResponse] = await asyncio.gather(*job_launch_tasks)
     task_ids = [task.session_id for task in tasks]
-
+    
     return ProvGraphRestoreResponse(
         status=Status(
             success=True,
-            details="Successfully parsed the graph restore request and submitted jobs for creating provenance records. Task IDs of the jobs provided in return payload."
+            details=f"Parsed the graph restore request with {len(failures)} provenance validation errors, "
+            f"submitted {len(task_ids)} jobs for creating valid provenance records. "
+            "Task IDs of the jobs provided in return payload." +
+            (f" ERRORS: {failures_str}" if failures else "")
         ),
         trial_mode=restore_request.trial_mode,
+        abort_if_failures=restore_request.abort_if_failures,
         task_ids=task_ids,
     )
