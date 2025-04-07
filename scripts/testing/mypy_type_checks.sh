@@ -83,7 +83,7 @@ locations_and_requirements=(
     "dev-requirements.txt"
     "admin-tooling/prov-store"
     "dev-requirements.txt"
-) # todo - add the admin tooling areas.
+)
 
 # Loop through the array and call the function
 for ((i = 0; i < ${#locations_and_requirements[@]}; i+=2)); do
