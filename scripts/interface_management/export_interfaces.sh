@@ -3,7 +3,7 @@ script_dir="scripts/interface_management"
 dep_file="dependencies.sh"
 py_script_file="export_interfaces.py"
 req_file="requirements.txt"
-python_command="python3.10"
+python_command="python3"
 
 # Move into working directory
 cd ${script_dir}

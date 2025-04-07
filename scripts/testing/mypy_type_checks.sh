@@ -41,7 +41,7 @@ echo "Running mypy python type checks"
 
 # Setup working dir and python command
 working_dir="${PWD}"
-python_command="python3.10"
+python_command="python3"
 
 # Check python is available
 ${python_command} --version
