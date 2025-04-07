@@ -230,6 +230,38 @@ async def restore_prov_graph(
     config: Config = Depends(get_settings),
     user_cipher : str = Depends(get_user_cipher)
 ) -> ProvGraphRestoreResponse:
+    """
+    Given a payload obtained from a registry export, this endpoint will attempt to
+    recreate the provenance graph in the registry from the items supplied in the payloads.
+    
+    Will only create valid provenance records. Invalid provenance records can be likely caused by:
+    - broken user-person links that should be fixed for true users (not bot users)
+    - create entities whose created item does not exist in the payload
+    - version entities whose versioned item does not exist in the payload
+    
+    Invalid create and version entities can occur from integration tests that fail to clean up after themselves.
+    See the admin-tooling/registry/misc_scripts.py valid_prov_records command to remove invalid provenance 
+    records from the payload and facilitate inspection of records that are removed (or skipped if this endpoint
+    is used with restore_request.abort_if_failures=False). Its best to inspect the invalid_prov.json produced by
+    the valid_prov_records command and then supply the valid_prov.json to this endpoint in the "items" field of 
+    restore_request body.
+
+    Parameters
+    ----------
+    restore_request : ProvGraphRestoreRequest
+        The restore request payload containing the items to restore, as well as some configuration options.
+
+    Returns
+    -------
+    ProvGraphRestoreResponse
+        Response object containing the status of the restore operation and any relevant details.
+        Details can include any failures and reasons for failure.
+
+    Raises
+    ------
+    HTTPException
+        If an invalid request is made, or an unhandled exception occurs.
+    """
     
     try:
         restore_response = await perform_graph_restore_helper(

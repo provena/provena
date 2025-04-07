@@ -1105,6 +1105,13 @@ RESTORE_LODGE_HANDLER_MAP: RestoreHandlers = {
 }
 
 
+invalid_prov_warning = " <!!WARNING!!> Consider, if some invalid provenance runs should be fixed and not"\
+"abandoned. Maybe person-links need to be fixed to validate provenance creation, "\
+" or maybe some can actually be deleted if they are left over from integration "\
+"tests that didn't clean up properly. See the 'valid_prov_records' tool in "\
+"the admin-tooling/registry/misc_scripts.py for help with inspecting/removing correctly invalid "\
+f"provenance from payload."
+
 async def perform_graph_restore_helper(
     restore_request: ProvGraphRestoreRequest,
     user: User,
@@ -1112,12 +1119,11 @@ async def perform_graph_restore_helper(
     user_cipher: str,
 ) -> ProvGraphRestoreResponse:
 
-    bundled_items = restore_request.items
-    node_list = [item.item_payload for item in bundled_items]
+    # get the item payloads out of the bundled items
+    node_list = [item.item_payload for item in restore_request.items]
 
     # For each node, parse the item subtype - filter out seeds
-    subtype_to_node_list_map: Dict[ItemSubType, List[Dict[str, Any]]] = {
-    }
+    subtype_to_node_list_map: Dict[ItemSubType, List[Dict[str, Any]]] = {}
 
     for node in node_list:
         # parse as record info base item
@@ -1151,22 +1157,14 @@ async def perform_graph_restore_helper(
                 to_dispatch.append(result)
             except Exception as e:
                 failures.append(
-                    f"DISPATCH CREATION FAILED FOR SUBTYPE {subtype}: {str(e)}")
-                # raise Exception(f"Error while trying to create dispatch job for {subtype} node. Details: {e}")
-
-    warning = " <!!WARNING!!> Consider, if some invalid provenance runs should be fixed and not"\
-    "abandoned. Maybe person-links need to be fixed to validate provenance creation, "\
-    " or maybe some can actually be deleted if they are left over from integration "\
-    "tests that didn't clean up properly. See the 'clean-provenance-payload' tool in "\
-    "the admin-tooling/registry directory for help with removing correctly invalid "\
-    f"provenance from payload." 
+                    f"DISPATCH CREATION FAILED FOR SUBTYPE {subtype}: {str(e)}") 
 
     failures_str = "\n".join(failures)
     if failures and restore_request.abort_if_failures:
         raise HTTPException(
             status_code=400,
             detail="Validation of provenance for creation failed, and abort_if_failures is True."
-            f" No provenance creation jobs were submitted. {warning}"
+            f" No provenance creation jobs were submitted. {invalid_prov_warning}"
             f" Inspect errors closely. Total failures: {len(failures)}. Details: {failures_str}"
         )
 
@@ -1177,19 +1175,17 @@ async def perform_graph_restore_helper(
                 details=f"TRIAL: {len(failures)} errors in validation of provenance records."
                 " Run again with trial mode set to false to actually perform restore." + 
                 (" Include abort_if_failures=False to skip over any errors caused by invalid provenance."
-                f"{warning} Errors: {failures_str}." if failures else "")
+                f"{invalid_prov_warning} Errors: {failures_str}." if failures else "")
             ),
             trial_mode=restore_request.trial_mode,
             abort_if_failures=restore_request.abort_if_failures,
             task_ids=[],
         )
     # Not trial mode, continue with valid provenance.
-    job_launch_tasks = [
-        launch_generic_job(
+    job_launch_tasks = [launch_generic_job(
             payload=payload,
             config=config
-        ) for payload in to_dispatch if payload is not None
-    ]
+        ) for payload in to_dispatch if payload is not None]
     
     print(f"Running {len(job_launch_tasks)} tasks...")
     tasks: List[AdminLaunchJobResponse] = await asyncio.gather(*job_launch_tasks)
