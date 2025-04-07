@@ -1096,7 +1096,6 @@ RESTORE_LODGE_HANDLER_MAP: RestoreHandlers = {
     ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE: null_handler,
     ItemSubType.DATASET: null_handler,
     ItemSubType.DATASET_TEMPLATE: null_handler,
-    ItemSubType.STUDY: null_handler,
 
     # PROV associated - spin off lodge tasks
     ItemSubType.CREATE: create_lodge_handler,
