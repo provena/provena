@@ -27,7 +27,6 @@ class RowEntry:
     model_combined: str
     model_name: str
     model_id: str
-    # model_version: str
 
     # model run information
     model_run_id: str
