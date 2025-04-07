@@ -41,7 +41,7 @@ echo "Running mypy python type checks"
 
 # Setup working dir and python command
 working_dir="${PWD}"
-python_command="python3"
+python_command="python3.10"
 
 # Check python is available
 ${python_command} --version
@@ -77,7 +77,13 @@ locations_and_requirements=(
     "requirements-dev.txt"
     "utilities/supporting-stacks/feature-branch-manager"
     "requirements-dev.txt"
-)
+    "admin-tooling/registry"
+    "requirements.txt"
+    "admin-tooling/prov-exporter"
+    "dev-requirements.txt"
+    "admin-tooling/prov-store"
+    "dev-requirements.txt"
+) # todo - add the admin tooling areas.
 
 # Loop through the array and call the function
 for ((i = 0; i < ${#locations_and_requirements[@]}; i+=2)); do

@@ -2,7 +2,7 @@
 
 # Run from top level dir
 echo "Working directory ${PWD}"
-python_command="python3"
+python_command="python3.10"
 
 # Check python is available at python
 ${python_command} --version

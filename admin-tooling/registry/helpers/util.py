@@ -55,7 +55,7 @@ class RateLimitedClient(AsyncClient):
         wait.add_done_callback(wait_cb)
 
     @wraps(AsyncClient.send)
-    async def send(self, *args: Any, **kwargs: Any) -> Any:
+    async def send(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
         await self.semaphore.acquire()
         send = asyncio.create_task(super().send(*args, **kwargs))
         self._schedule_semaphore_release()

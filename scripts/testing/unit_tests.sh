@@ -11,7 +11,7 @@ function run_pytest() {
 
     # setup python virtual environment
     echo "Setting up virtual environment"
-    python_command="python3"
+    python_command="python3.10"
     ${python_command} -m venv .venv
     # source virtual environment
     source .venv/bin/activate
@@ -43,7 +43,7 @@ fi
 
 # Run from top level dir
 echo "Working directory ${PWD}"
-python_command="python3"
+python_command="python3.10"
 
 # Check python is available at python
 ${python_command} --version

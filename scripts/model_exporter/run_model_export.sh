@@ -2,7 +2,7 @@
 script_dir="scripts/model_exporter"
 py_script_file="run_exports.py"
 req_file="requirements.txt"
-python_command="python3"
+python_command="python3.10"
 
 # Move into working directory
 cd ${script_dir}
