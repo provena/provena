@@ -227,6 +227,7 @@ def assert_successful_update_model_run_and_parse(
     assert (
         update_resp.status_code == 200
     ), f"Received non 200 status code ({update_resp.status_code}) to register model run. Details: {update_resp.json()}"
+    print(update_resp.json())
     parsed_update_resp = PostUpdateModelRunResponse.parse_obj(update_resp.json())
     assert (
         parsed_update_resp.status.success
