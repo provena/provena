@@ -77,6 +77,12 @@ locations_and_requirements=(
     "requirements-dev.txt"
     "utilities/supporting-stacks/feature-branch-manager"
     "requirements-dev.txt"
+    "admin-tooling/registry"
+    "requirements.txt"
+    "admin-tooling/prov-exporter"
+    "dev-requirements.txt"
+    "admin-tooling/prov-store"
+    "dev-requirements.txt"
 )
 
 # Loop through the array and call the function

@@ -455,6 +455,8 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
         document = Document()
         document.add_heading('Model Run Study Close Out Report', 0)
 
+        # assertion for typing.
+        assert node_collection.origin_node, "Origin node was None, but assumed it was ItemSubtype."
         # Origin Node Information. 
         origin_node_item_subtype = format_item_subtype_name(node_collection.origin_node.item_subtype)
         display_name = node_collection.origin_node.display_name
