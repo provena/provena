@@ -143,7 +143,7 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
             }
         )],
         associations=AssociationInfo(
-            modeller_id=person.id, 
+            modeller_id=person.id,
             requesting_organisation_id=organisation.id
         ),
         display_name="Integration test fake model run display name",
@@ -178,7 +178,7 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
 
     # - check the prov graph lineage is appropriate
 
-    # The lineage should have
+    # The lineage should have 
 
     activity_upstream_query = successful_basic_prov_query(
         start=model_run_id,
@@ -425,8 +425,7 @@ def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_p
 
     # fetch
     raw_item = raw_fetch_item_successfully(
-        item_subtype=ItemSubType.DATASET, id=id, token=write_token()
-    )
+        item_subtype=ItemSubType.DATASET, id=id, token=write_token())
     item = DatasetFetchResponse.parse_obj(raw_item).item
 
     assert item
@@ -491,8 +490,7 @@ def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_p
         id=id, item_subtype=ItemSubType.MODEL, token=write_token())
     auth_config.general.append("metadata-write")
     put_auth_config(id=id, auth_payload=py_to_dict(auth_config), 
-                    item_subtype=ItemSubType.MODEL, token=write_token(),
-    )
+                    item_subtype=ItemSubType.MODEL, token=write_token())
 
     # update (user 2)
     # --------------
