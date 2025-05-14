@@ -21,6 +21,7 @@ class JobType(str, Enum):
     PROV_LODGE = "PROV_LODGE"
     REGISTRY = "REGISTRY"
     EMAIL = "EMAIL"
+    REPORT = "REPORT"
 
 
 class JobSubType(str, Enum):
@@ -42,6 +43,9 @@ class JobSubType(str, Enum):
     # EMAIL
     EMAIL_WAKE_UP = "EMAIL_WAKE_UP"
     SEND_EMAIL = "SEND_EMAIL"
+
+    # REPORT
+    GENERATE_REPORT = "GENERATE_REPORT"
 
 
 class JobStatus(str, Enum):
@@ -275,6 +279,19 @@ class EmailSendEmailResult(BaseModel):
     pass
 
 
+# REPORT
+# ------
+
+class ReportGeneratePayload(BaseModel):
+    # TODO destub
+    pass
+
+
+class ReportGenerateResult(BaseModel):
+    # TODO destub
+    pass
+
+
 # ====================
 # JOB TYPE PAYLOAD MAP
 # ====================
@@ -297,6 +314,9 @@ JOB_TYPE_PAYLOAD_MAP: Dict[JobSubType, Type[BaseModel]] = {
     # Email
     JobSubType.EMAIL_WAKE_UP: WakeUpPayload,
     JobSubType.SEND_EMAIL: EmailSendEmailPayload,
+
+    # Report
+    JobSubType.GENERATE_REPORT: ReportGeneratePayload,
 }
 
 # ===================
@@ -322,4 +342,7 @@ JOB_TYPE_RESULT_MAP: Dict[JobSubType, Type[BaseModel]] = {
     # Email
     JobSubType.EMAIL_WAKE_UP: WakeUpResult,
     JobSubType.SEND_EMAIL: EmailSendEmailResult,
+
+    # Report
+    JobSubType.GENERATE_REPORT: ReportGenerateResult,
 }

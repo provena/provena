@@ -85,6 +85,9 @@ class Config(BaseConfig):
     # EMAIL
     email_topic_arn: str
 
+    # REPORT
+    report_topic_arn: str
+
     TEMP_FILE_LOCATION: str = "/tmp"
 
     class Config:
