@@ -40,25 +40,6 @@ def person_fixture() -> Generator[ItemPerson, None, None]:
 
 
 @pytest.fixture(scope='function', autouse=False)
-def model_run_template_fixture() -> Generator[ItemModelRunWorkflowTemplate, None, None]:
-    # Create model run template
-    model_run_template_domain_info = get_item_subtype_domain_info_example(item_subtype=ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE)
-    model_run_template = create_item_from_domain_info_successfully(
-        item_subtype=ItemSubType.MODEL_RUN_WORKFLOW_TEMPLATE,
-        domain_info=model_run_template_domain_info,
-        token=Tokens.user1()
-    )
-
-    # Provide to any test that uses it
-    yield cast(ItemModelRunWorkflowTemplate, model_run_template)
-
-    # Clean up
-    perform_entity_cleanup([
-        (model_run_template.item_subtype, model_run_template.id)
-    ], token=Tokens.admin())
-
-
-@pytest.fixture(scope='function', autouse=False)
 def manual_link_test_cleanup(person_fixture: ItemPerson) -> Generator[None, None, None]:
     # Retain current state of links
     # Delete links

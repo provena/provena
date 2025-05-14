@@ -1,11 +1,6 @@
 from ProvenaInterfaces.ProvenanceAPI import *
 from ProvenaInterfaces.RegistryAPI import *
-from ProvenaInterfaces.AsyncJobModels import (
-    JobStatusTable,
-    ProvLodgeModelRunResult,
-    ProvLodgeUpdateResult,
-    JobStatus,
-)
+from ProvenaInterfaces.AsyncJobModels import JobStatusTable, ProvLodgeModelRunResult, ProvLodgeUpdateResult, JobStatus
 from ProvenaInterfaces.ProvenanceModels import *
 import requests
 import json
@@ -14,12 +9,9 @@ from requests import Response
 from tests.config import config, TokenGenerator
 from tests.helpers.async_job_helpers import wait_for_full_lifecycle
 from dataclasses import dataclass
-from typing import cast
 
 
-def register_model_run_from_record_info(
-    token: str, model_run_record: ModelRunRecord
-) -> Response:
+def register_model_run_from_record_info(token: str, model_run_record: ModelRunRecord) -> Response:
     """Register a model run from a model run record.
 
     Parameters
@@ -38,13 +30,11 @@ def register_model_run_from_record_info(
     return requests.post(
         config.PROV_API_ENDPOINT + "/model_run/register",
         json=json.loads(model_run_record.json(exclude_none=True)),
-        auth=BearerAuth(token),
+        auth=BearerAuth(token)
     )
 
 
-def update_model_run_from_record_info(
-    token: str, update_model_run_input: PostUpdateModelRunInput
-) -> Response:
+def update_model_run_from_record_info(token: str, update_model_run_input: PostUpdateModelRunInput) -> Response:
     """Update a model run from a model run record.
 
     Parameters
@@ -63,13 +53,11 @@ def update_model_run_from_record_info(
     return requests.post(
         config.PROV_API_ENDPOINT + "/model_run/update",
         json=json.loads(update_model_run_input.json(exclude_none=True)),
-        auth=BearerAuth(token),
+        auth=BearerAuth(token)
     )
 
 
-def assert_succesfull_lodge_model_run_and_parse(
-    create_resp: Response,
-) -> RegisterModelRunResponse:
+def assert_succesfull_lodge_model_run_and_parse(create_resp: Response) -> RegisterModelRunResponse:
     """Assert that the model run was created successfully and parse the response.
 
     Parameters
@@ -82,19 +70,13 @@ def assert_succesfull_lodge_model_run_and_parse(
     ProvenanceRecordInfo
         The record info of the created model run
     """
-    assert (
-        create_resp.status_code == 200
-    ), f"Recieved non 200 status code ({create_resp.status_code}) to register model run. Details: {create_resp.json()}"
+    assert create_resp.status_code == 200, f"Recieved non 200 status code ({create_resp.status_code}) to register model run. Details: {create_resp.json()}"
     parsed_create_resp = RegisterModelRunResponse.parse_obj(create_resp.json())
-    assert (
-        parsed_create_resp.status.success
-    ), f"Recieved failed status to register model run. {parsed_create_resp.status.details}"
+    assert parsed_create_resp.status.success, f"Recieved failed status to register model run. {parsed_create_resp.status.details}"
     return parsed_create_resp
 
 
-def assert_succesfull_create_model_run_and_parse(
-    status: JobStatusTable,
-) -> ProvenanceRecordInfo:
+def assert_succesfull_create_model_run_and_parse(status: JobStatusTable) -> ProvenanceRecordInfo:
     """Assert that the model run was created successfully and parse the response.
 
     Parameters
@@ -107,22 +89,16 @@ def assert_succesfull_create_model_run_and_parse(
     ProvenanceRecordInfo
         The record info of the created model run
     """
-    assert (
-        status.status == JobStatus.SUCCEEDED
-    ), f"Expected successful prov lodge but had status {status.status}. Info: {status.info or 'None provided'}"
+    assert status.status == JobStatus.SUCCEEDED, f"Expected successful prov lodge but had status {status.status}. Info: {status.info or 'None provided'}"
 
     # parse the result payload from job status
     result = ProvLodgeModelRunResult.parse_obj(status.result)
 
-    assert (
-        result.record.record
-    ), "Recieved no record in record info to register model run."
+    assert result.record.record, "Recieved no record in record info to register model run."
     return result.record
 
 
-def register_modelrun_from_record_info_successfully(
-    get_token: TokenGenerator, model_run_record: ModelRunRecord
-) -> ProvenanceRecordInfo:
+def register_modelrun_from_record_info_successfully(get_token: TokenGenerator, model_run_record: ModelRunRecord) -> ProvenanceRecordInfo:
     """Register a model run and assert that it was successful.
 
     Will wait for job infra to dispatch and finish job.
@@ -322,7 +298,7 @@ Graph = Dict[str, Any]
 
 
 @dataclass
-class GraphProperty:
+class GraphProperty():
     type: str
     source: str
     target: str
@@ -337,12 +313,12 @@ def assert_graph_property(prop: GraphProperty, graph: Graph) -> None:
     Uses assertions to raise an assertion error if the property is not present.
 
     Args:
-        prop (GraphProperty): The desired property
+        prop (GraphProperty): The desired property 
 
         graph (Graph): The graph to analyse
     """
 
-    links = graph["links"]
+    links = graph['links']
     found = False
     for l in links:
         actual_prop = GraphProperty(**l)
@@ -353,9 +329,7 @@ def assert_graph_property(prop: GraphProperty, graph: Graph) -> None:
     assert found, f"Could not find relation specified {prop}."
 
 
-def assert_non_empty_graph_property(
-    prop: GraphProperty, lineage_response: LineageResponse
-) -> None:
+def assert_non_empty_graph_property(prop: GraphProperty, lineage_response: LineageResponse) -> None:
     """
     Determines if the desired graph property exists in the networkX JSON graph
     lineage response in the graph object.
