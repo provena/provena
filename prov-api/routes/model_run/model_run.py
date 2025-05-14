@@ -24,7 +24,7 @@ async def register_model_run_complete(
     record: ModelRunRecord,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher: str = Depends(get_user_cipher)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> RegisterModelRunResponse:
     """    register_model_run_complete
         Given the model run record object (schema/model) will:
@@ -37,7 +37,7 @@ async def register_model_run_complete(
             - This uses the user's username so that the user correctly owns the record
         - produce a prov-o document reflecting the input model run record
         - update the model run record in the registry with the prov serialisation
-        and other information
+          and other information
         - lodge the model run record into the graph database store
         - update the record to lodged status
         - return information including the handle id from the model run record
