@@ -489,7 +489,7 @@ def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_p
     auth_config = get_auth_config(
         id=id, item_subtype=ItemSubType.MODEL, token=write_token())
     auth_config.general.append("metadata-write")
-    put_auth_config(id=id, auth_payload=py_to_dict(auth_config), 
+    put_auth_config(id=id, auth_payload=py_to_dict(auth_config),
                     item_subtype=ItemSubType.MODEL, token=write_token())
 
     # update (user 2)
