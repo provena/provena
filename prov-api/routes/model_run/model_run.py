@@ -49,7 +49,7 @@ async def register_model_run_complete(
 
         Returns
         -------
-        : RegisterModelRunResponse
+         : RegisterModelRunResponse
             The response including the handle id and record information
 
         Raises
@@ -100,7 +100,7 @@ async def register_model_run_complete(
 
     return RegisterModelRunResponse(
         status=Status(
-            success=True,details=f"Job dispatched, monitor session ID using the job API to see progress."),
+            success=True, details=f"Job dispatched, monitor session ID using the job API to see progress."),
         session_id=session_id
     )
 
@@ -110,7 +110,7 @@ async def register_batch(
     request: RegisterBatchModelRunRequest,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher: str = Depends(get_user_cipher)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> RegisterBatchModelRunResponse:
     # TODO should we validate items first? No - validate at batch time?
     # Then produce job using Job API and return session ID
@@ -133,8 +133,8 @@ async def register_batch(
 
     return RegisterBatchModelRunResponse(
         status=Status(
-            success=True,details=f"Job dispatched, monitor session ID using the job API to see progress."),
-        session_id=session_id,
+            success=True, details=f"Job dispatched, monitor session ID using the job API to see progress."),
+        session_id=session_id
     )
 
 
@@ -144,7 +144,7 @@ async def register_model_run_sync(
     # admin only for this endpoint
     roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher: str = Depends(get_user_cipher)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> SyncRegisterModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -172,18 +172,19 @@ async def register_model_run_sync(
     )
 
     return SyncRegisterModelRunResponse(
-        status=Status(success=True, details=f"Provenance record lodged successfully."),
-        record_info=result,
+        status=Status(
+            success=True, details=f"Provenance record lodged successfully."),
+        record_info=result
     )
 
 
-@router.post(f"{EDIT_ROOT_PREFIX}/link_to_study",response_model=AddStudyLinkResponse,operation_id="add_study_link")
+@router.post(f"{EDIT_ROOT_PREFIX}/link_to_study", response_model=AddStudyLinkResponse, operation_id="add_study_link")
 async def link_to_study(
     model_run_id: str,
     study_id: str,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher: str = Depends(get_user_cipher)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> AddStudyLinkResponse:
 
     # validate model_run_id and study_id to be linked.
@@ -252,7 +253,7 @@ async def update_model_run(
     payload: PostUpdateModelRunInput,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher: str = Depends(get_user_cipher)
+    user_cipher : str = Depends(get_user_cipher)
 ) -> PostUpdateModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
