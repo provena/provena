@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Dict, Any, Type, Optional, List
 
@@ -283,13 +283,14 @@ class EmailSendEmailResult(BaseModel):
 # ------
 
 class ReportGeneratePayload(BaseModel):
-    # TODO destub
-    pass
+    id: str
+    item_subtype: ItemSubType
+    depth: int = Field(ge=1, le=3)
 
 
 class ReportGenerateResult(BaseModel):
-    # TODO destub
-    pass
+    # The presigned URL for the S3 bucket location of the generated report
+    report_url: str
 
 
 # ====================
