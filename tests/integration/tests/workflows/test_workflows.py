@@ -179,7 +179,7 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     # - check the prov graph lineage is appropriate
 
     # The lineage should have 
-
+    
     activity_upstream_query = successful_basic_prov_query(
         start=model_run_id,
         direction=Direction.UPSTREAM,
