@@ -253,6 +253,23 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     assert isinstance(model_run, ItemModelRun)
     assert model_run.record.study_id == study.id, f"Study id should be {study.id} but was {model_run.record.study_id}"
 
+    activity_upstream_query = successful_basic_prov_query(
+        start=model_run_id,
+        direction=Direction.UPSTREAM,
+        depth=1,
+        token=Tokens.user1()
+    )
+
+    # model run -wasInformedBy-> study
+    assert_non_empty_graph_property(
+        prop=GraphProperty(
+            type="wasInformedBy",
+            source=model_run_id,
+            target=study.id
+        ),
+        lineage_response=activity_upstream_query
+    )
+
     # update model run
     updated_display_name = "Updated model run display name"
     updated_description = "Updated model run description"
@@ -279,23 +296,6 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
     assert isinstance(model_run, ItemModelRun)
     assert model_run.record.display_name == updated_display_name, f"Model run display name should be {updated_display_name} but was {model_run.record.display_name}"
     assert model_run.record.description == updated_description, f"Model run description should be {updated_description} but was {model_run.record.description}"
-
-    activity_upstream_query = successful_basic_prov_query(
-        start=model_run_id,
-        direction=Direction.UPSTREAM,
-        depth=1,
-        token=Tokens.user1()
-    )
-
-    # model run -wasInformedBy-> study
-    assert_non_empty_graph_property(
-        prop=GraphProperty(
-            type="wasInformedBy",
-            source=model_run_id,
-            target=study.id
-        ),
-        lineage_response=activity_upstream_query
-    )
 
 
 def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
