@@ -14,7 +14,7 @@ from datetime import datetime
 import modifiers
 import misc_scripts
 import os
-from helpers.api_helpers import fetch_item, GetAuthFunction, resolve_linked_person, JobListManager
+from helpers.api_helpers import fetch_item, GetAuthFunction, resolve_linked_person, JobListManager, submit_graph_restore_request_print_response
 import asyncio
 from tqdm.asyncio import tqdm_asyncio as tqdm
 
@@ -169,21 +169,46 @@ def restore_graph(
         help="Force a token refresh, invalidating cached tokens. Can be used if you have updated" +
         " your token permissions and don't want to use an out-dated access token."
     ),
-    apply: bool = typer.Option(
-        False,
-        help="By default, will fetch all information to build jobs, but not actually submit jobs. Use --apply to deploy jobs.",
+    trial_mode: bool = typer.Option(
+        True,
+        help="By default, will fetch all information to build jobs, and validate the payload but not actually submit jobs. Use --no-trial-mode to deploy jobs.",
+    ),
+    abort_if_failures: bool = typer.Option(
+        True,
+        help="By default, do not launch provenance creation if there is at least one failure in validation of provenance items in the input file. Use --no-abort-if-failures to launch provenacne jobs for valid provenance records in payload.",
     ),
     param: ParametersType = typer.Option(
         [], help=f"List of tooling environment parameter replacements in the format 'id:value' e.g. 'feature_number:1234'. Specify multiple times if required.")
 ) -> None:
-
-
-    deprecation_warning = """
-    ################   DEPRECATION   ################
-    This command has been deprecated and replaced by an endpoint in the registry API for 
-    performing provenance graph restores.
     """
-    raise Exception(deprecation_warning)
+    Restores the provenance entities in the specified input file (in standard
+    dump format) using the lodge job types in the job system.
+
+    NOTE: you will need to ensure that users referenced as owners in the
+    specified entities have linked Person's which match the import data.
+    """
+    
+    # Process optional environment replacement parameters
+    params = process_params(param)
+    env = env_manager.get_environment(name=env_name, params=params)
+
+    # setup auth
+    auth = setup_auth(env=env, token_refresh=token_refresh)
+
+    raw_contents = json.loads(input.read())
+    payload = ProvGraphRestoreRequest(
+        trial_mode=trial_mode,
+        abort_if_failures=abort_if_failures,
+        items=raw_contents
+    )
+    
+    print("Submitting restore graph request...")
+    submit_graph_restore_request_print_response(
+        env=env,
+        payload=payload,
+        auth=auth,
+    )
+    
 
 @app.command()
 def import_items_from_tables(
