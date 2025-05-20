@@ -93,7 +93,7 @@ def import_items(
     ),
     input: typer.FileText = typer.Argument(
         ...,
-        help=f"The location and name of the input file with the extension. e.g. 'dumps/input_file_123.json'",
+        help=f"The location and name of the input file with the bundled items payload formatted as produced by the export command.",
     ),
     import_mode: ImportMode = typer.Argument(
         ...,
@@ -108,6 +108,10 @@ def import_items(
         False,
         help="By default, will not apply any changes to the registry." +
         " Include this flag to actually write changes to the registry to update it ",
+    ),
+    restore_graph: bool = typer.Option(
+        False,
+        help="Include this flag to also spin off lodge tasks for prov enabled nodes during importing. This will do so for all nodes included in the import file - not those already existing in the target destination AND will not take into account the results of the import mode."
     ),
     validate: bool = typer.Option(
         True,
@@ -131,6 +135,9 @@ def import_items(
     Provides import functionality to stage's data registry table.
     Provides control over allowing new entries and deleting entries from table.
     """
+    if restore_graph:
+        raise DeprecationWarning(
+            "The restore graph functionality has been moved to a seperate command 'restore_graph'. See: `python import_export.py restore-graph --help`")
 
     # Process optional environment replacement parameters
     params = process_params(param)
@@ -182,7 +189,7 @@ def restore_graph(
 ) -> None:
     """
     Restores the provenance entities in the specified input file (in standard
-    dump format) using the lodge job types in the job system.
+    dump format) using the lodge job types in the job system. Requires a restored registry otherwise will fail for provenance with items in payload are missing from registry tables.
 
     NOTE: you will need to ensure that users referenced as owners in the
     specified entities have linked Person's which match the import data.
