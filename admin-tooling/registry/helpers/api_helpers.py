@@ -1,5 +1,8 @@
+import requests as rq
 from typing import TypeAlias, Callable, Any, Optional, Dict, List
 from ProvenaInterfaces.AsyncJobAPI import *
+from ProvenaInterfaces.RegistryAPI import ProvGraphRestoreResponse, ProvGraphRestoreRequest
+import json
 from ToolingEnvironmentManager.Management import PopulatedToolingEnvironment
 import math
 import time
@@ -254,3 +257,25 @@ class JobListManager():
             return err_ids
         else:
             return []
+
+def submit_graph_restore_request_print_response(
+    env: PopulatedToolingEnvironment,
+    payload: ProvGraphRestoreRequest,
+    auth: GetAuthFunction,
+) -> None:
+    """
+    Submit a request to the registry API to restore the provenance graph"""    
+
+    restore_response = rq.post(
+        url = env.registry_api_endpoint + "/admin/restore-prov-graph",
+        data = payload.json(),
+        auth=auth()
+    )
+    
+    if restore_response.status_code != 200:
+        print(f"Failed to submit restore graph request. Status code: {restore_response.status_code}\n\n")
+        print(restore_response.content)
+        return
+    restore_resp: ProvGraphRestoreResponse = ProvGraphRestoreResponse.parse_obj(restore_response.json())
+    print("Restore graph request submitted successfully. Response:")
+    print(restore_resp.json(indent=4))
