@@ -23,32 +23,7 @@ Provena provides the ability to define groups and access to grant access to reso
 
 Currently groups apply to datasets in Provena. However, group access control functionality may be offered in other Provena components and resources in the future.
 
-# Requesting a new group
+Refer to [Group admin ](./admin/groups.html) for how to add and manage groups. You will need to have an activated user account on Provena with the admin role assigned as a pre-requisite to creating/managing groups.
 
-If you would like a new group, you will need to send request for a new group to be added.
+Once the group is created, users with admin roles for the dataset can add and manage group level permissions and access control. Refer to this guide for instructions: [Group access and configuration for datasets in the Data Store](./provenance/registry/access-control.html#group-access)
 
-Step 1. To request a new group, please submit a request via the Provena Issues tracker via this link:
-[https://github.com/provena/provena/issues](https://github.com/provena/provena/issues)
-
-Step 2. Click on the **New Issue** button to initiate a request issue (see screenshot below).
-
-|                       Request a group via the Github issue tracker                        |
-| :---------------------------------------------------------------------------------------: |
-| <img src="../assets/images/provena-request-a-group-issue-create.png" alt="drawing" width="600"/> |
-
-Step 3. Add details for the request for a new group (see screenshot below). It would be useful to add the group name in the issue title. In the body of the issue, edit the text to describe
-the group, and any additional context. For example, this might include a list of members needed in the group.
-
-|                              Add details for group request                               |
-| :--------------------------------------------------------------------------------------: |
-| <img src="../assets/images/provena-request-a-group-issue-create-step2.png" alt="drawing" width="600"/> |
-
-Step 4. Click the **submit new issue** button.
-
-Once submitted, a notification will be sent to the Provena team, who will administer the request. You will be contacted to confirm details for the group.
-
-Once the group is created, you may use it in the information system.
-
-## Related pages
-
-[Group access and configuration for datasets in the Data Store](./provenance/registry/access-control.html#group-access)
