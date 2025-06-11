@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Create/Manage Groups
+title: Group admin
 nav_order: 8
 parent: Admin tools
 ---
@@ -17,7 +17,7 @@ parent: Admin tools
 ____
 </details>
 
-# Create/Manage Groups
+# Group admin
 
 This page documents how to administer [Groups](../groups) in a Provena server in order 
 to [manage access](../registry/access-control). 
