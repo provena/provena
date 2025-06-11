@@ -30,7 +30,7 @@ Currently groups apply to datasets in Provena. However, group access control fun
 
 You will need to have an activated user account on Provena with the admin role assigned as a pre-requisite to creating/managing groups.
 
-## Create a group
+## 1. Create a group
 
 Navigate to the Provena landing portal.
 
@@ -66,7 +66,7 @@ Click on the "Submit" button to add the group. The group will now appear in the 
 | :------------------------------------------------------------------------------: |
 | <img src="../assets/images/admin/admin_group_5.png" alt="drawing" width="500"/> |
 
-## Add users to a group
+## 2. Add users to a group
 
 Select the group in the Group Management section of the Admin Console. Once selected, click on the "Add member" button. 
 
@@ -95,9 +95,9 @@ Users table in the Group admin page.
 | <img src="../assets/images/admin/admin_group_14.png" alt="drawing" width="500"/> |
 
 
-## Manage group
+## 3. Manage group
 
-## Update group metadata
+### 3.1. Update group metadata
 
 You can update the group metadata by clicking on "Update group" in the Group admin page. This provides the option for updating the Display name or Description.
 
@@ -106,7 +106,7 @@ You can update the group metadata by clicking on "Update group" in the Group adm
 | <img src="../assets/images/admin/admin_group_15.png" alt="drawing" width="500"/> |
 
 
-## Update user membership
+### 3.2. Update user membership
 
 Users can be added or removed from the group using the "Add member" and "Remove members" button. 
 
@@ -125,7 +125,7 @@ Confirming will remove the users from the group.
 
 
 
-## Delete group
+## 4. Delete group
 
 Click on the "Delete group" button. 
 
