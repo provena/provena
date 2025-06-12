@@ -270,6 +270,33 @@ def test_provenance_workflow(dataset_io_fixture: Tuple[str, str], linked_person_
         lineage_response=activity_upstream_query
     )
 
+    # update model run
+    updated_display_name = "Updated model run display name"
+    updated_description = "Updated model run description"
+
+    model_run.record.display_name = updated_display_name
+    model_run.record.description = updated_description
+
+    update_resp = update_modelrun_from_record_info_successfully(
+        get_token=write_token,
+        model_run_id=model_run_id,
+        model_run_record=model_run.record,
+        reason="Integration test model run update",
+    )
+
+    # fetch again and ensure the updates were successful
+    model_run_fetch = fetch_item_successfully_parse(
+        item_subtype=ItemSubType.MODEL_RUN,
+        id=model_run_id,
+        token=write_token(),
+        model=ModelRunFetchResponse,
+    )
+    assert isinstance(model_run_fetch, ModelRunFetchResponse)
+    model_run = model_run_fetch.item
+    assert isinstance(model_run, ItemModelRun)
+    assert model_run.record.display_name == updated_display_name, f"Model run display name should be {updated_display_name} but was {model_run.record.display_name}"
+    assert model_run.record.description == updated_description, f"Model run description should be {updated_description} but was {model_run.record.description}"
+
 
 def test_create_and_update_history(dataset_io_fixture: Tuple[str, str], linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
     write_token = Tokens.user1
