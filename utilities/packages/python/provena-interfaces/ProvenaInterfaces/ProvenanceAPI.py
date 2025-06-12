@@ -5,6 +5,7 @@ try:
 except:
     from .SharedTypes import StatusResponse
     from .ProvenanceModels import *
+    from .RegistryAPI import ItemSubType
 
 from typing import Optional, Any, Dict, Type
 from pydantic import BaseModel, Field

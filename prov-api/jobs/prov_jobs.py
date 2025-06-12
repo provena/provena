@@ -9,6 +9,7 @@ from helpers.validate_model_run_record import validate_model_run_record
 from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
 from helpers.prov_connector import Neo4jGraphManager
+from helpers.generate_report_helpers import generate_report_helper
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
@@ -720,6 +721,68 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     )
 
 
+def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+    """
+    Handles generating a report for the specified model run record.
+
+    Parameters
+    ----------
+    payload : JobSnsPayload
+        The payload which validates against subtype payload from map
+    settings : JobBaseSettings
+        The job settings
+
+    Returns
+    -------
+    CallbackResponse
+        The response indicating success/failure and reporting result payload
+    """
+    print(f"Running generate report job")
+ 
+    print("Parsing full API config from environment.")
+    try:
+        config = Config()
+    except Exception as e:
+        return CallbackResponse(
+            status=JobStatus.FAILED,
+            info=f"Failed to parse job configuration from the environment. Error: {e}."
+        )
+    print("Successfully parsed environment config.")
+ 
+    print(f"Parsing job specific payload")
+    try:
+        job_specific_payload = cast(ReportGeneratePayload, parse_job_specific_payload(
+            payload=payload, job_sub_type=JobSubType.GENERATE_REPORT))
+    except Exception as e:
+        return generate_failed_job(error=f"Failed to parse job payload from the event. Error: {e}.")
+ 
+    print(f"Parsed specific payload: {job_specific_payload}")
+    
+    print("Starting report generation.")
+    try: 
+        generated_doc_path:str = asyncio.run(generate_report_helper(
+            node_id=job_specific_payload.id,
+            upstream_depth=job_specific_payload.depth, 
+            item_subtype=job_specific_payload.item_subtype,
+            roles=roles,
+            config=config
+        ))
+    except Exception as e:
+        return generate_failed_job(
+            error=f"An error occurred while attempting to generate report. Error: {e}."
+        )
+ 
+    return CallbackResponse(
+        status=JobStatus.SUCCEEDED,
+        info=None,
+        result=py_to_dict(
+            ReportGenerateResult(
+                report_url=generated_doc_path,
+            )
+        )
+    )
+
+
 # Map from the job sub type to the prov handler
 PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
     JobSubType.PROV_LODGE_WAKE_UP: wake_up_handler,
@@ -730,6 +793,7 @@ PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
     JobSubType.LODGE_VERSION_ACTIVITY: version_lodge_handler,
     JobSubType.MODEL_RUN_UPDATE: model_run_update_handler,
     JobSubType.MODEL_RUN_UPDATE_LODGE_ONLY: model_run_update_lodge_only_handler,
+    JobSubType.GENERATE_REPORT: generate_report_handler,
 }
 
 
