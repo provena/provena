@@ -73,8 +73,8 @@ class PostUpdateModelRunInput(BaseModel):
     record: ModelRunRecord
 
 
-class PostUpdateModelRunResponse(StatusResponse):
-    session_id: Optional[str]
+class PostUpdateModelRunResponse(BaseModel):
+    session_id: str
 
 
 class GenerateReportRequest(BaseModel):

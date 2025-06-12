@@ -291,11 +291,7 @@ async def update_model_run(
             detail=f"Unexpected error while dispatching job. Error: {e}."
         )
 
-    return PostUpdateModelRunResponse(
-        status=Status(
-            success=True, details=f"Job dispatched, monitor session ID using the job API to see progress."),
-        session_id=res
-    )
+    return PostUpdateModelRunResponse(session_id=res)
 
 
 #

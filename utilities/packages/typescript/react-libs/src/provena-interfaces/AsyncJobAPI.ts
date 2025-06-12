@@ -1260,8 +1260,7 @@ export interface PostUpdateModelRunInput {
   record: ModelRunRecord;
 }
 export interface PostUpdateModelRunResponse {
-  status: Status;
-  session_id?: string;
+  session_id: string;
 }
 export interface RecordInfo {
   id: string;
