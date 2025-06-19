@@ -155,6 +155,7 @@ const SPECIAL_QUERY_BASE = PROV_API_URL + "/explore/special";
 export const PROV_API_ENDPOINTS = {
   ROOT_URL: PROV_API_URL,
   REGISTER_MODEL_RUN_COMPLETE: PROV_API_URL + "/model_run/register",
+  UPDATE_MODEL_RUN: PROV_API_URL + "/model_run/update",
   REGISTER_MODEL_RUN_BATCH: PROV_API_URL + "/model_run/register_batch",
   EXPLORE_UPSTREAM: PROV_API_URL + "/explore/upstream",
   EXPLORE_DOWNSTREAM: PROV_API_URL + "/explore/downstream",
@@ -166,6 +167,8 @@ export const PROV_API_ENDPOINTS = {
   DOWNSTREAM_DATASETS: SPECIAL_QUERY_BASE + "/effected_datasets",
   UPSTREAM_AGENTS: SPECIAL_QUERY_BASE + "/contributing_agents",
   DOWNSTREAM_AGENTS: SPECIAL_QUERY_BASE + "/effected_agents",
+  ADD_STUDY_LINK: PROV_API_URL + "/model_run/edit/link_to_study",
+  GENERATE_REPORT: PROV_API_URL + "/explore/generate/report"
 };
 
 export const DATA_STORE_API_ENDPOINTS = {

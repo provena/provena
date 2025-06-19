@@ -102,10 +102,10 @@ In the basic case, you should add an entry for your Provena deployment like so:
 
 This is the minimum viable environment to target.
 
--   name: The user defined name of the target - keep it short but easy to remember - not used anywhere else
--   stage: The application stage - e.g. DEV, STAGE, PROD
--   domain: The base domain of the provena deployment- this is postfixed onto the standard set of API endpoints
--   realm_name: The keycloak authorisation server realm name
+- name: The user defined name of the target - keep it short but easy to remember - not used anywhere else
+- stage: The application stage - e.g. DEV, STAGE, PROD
+- domain: The base domain of the provena deployment- this is postfixed onto the standard set of API endpoints
+- realm_name: The keycloak authorisation server realm name
 
 ### Advanced case
 
@@ -148,7 +148,7 @@ python script.py sub_command argument1 argument2 --param id1:value1 --param id2:
 For our feature deployment workflow, we can perform the replacement like so:
 
 ```
-python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_no}
+python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_number}
 ```
 
-where `ticket_no` is passed from the environment.
+where `ticket_number` is passed from the environment.

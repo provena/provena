@@ -6,7 +6,7 @@ moto[s3, dynamodb]==4.2.14
 
 # pytest
 pytest
-httpx
+httpx==0.27.2
 
 # pytest plugins
 pytest-dotenv

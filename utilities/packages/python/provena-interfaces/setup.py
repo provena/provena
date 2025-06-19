@@ -7,7 +7,7 @@ import re
 version = os.getenv('TAG_NAME', 'v0.1.0')
 
 setup(
-    name='provena-interfaces',
+    name='provena_interfaces',
     # format acceptably as 'v0.0.1' or '0.0.1',
     version=version,
     description='Interfaces for Provena Application (see https://provena.io)',
@@ -22,7 +22,7 @@ setup(
     ),
     install_requires=[
         'fastapi==0.88.0',
-        'pydantic[email]==1.10.12',
+        'pydantic[email]==1.10.17',
         'email-validator',
         'isodate',
     ],

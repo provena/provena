@@ -9,6 +9,9 @@ interface useSearchResultsProps {
   subtype?: ItemSubType;
   // What is the query?
   searchQuery?: string;
+  // How many results should be loaded from search?
+  // DEFAULT = 10
+  searchLimit?: number;
   // Enabled?
   enabled?: boolean;
 }
@@ -35,7 +38,8 @@ export const useSearchResults = (
   const searchQuery = useQuery({
     queryKey: [queryKey],
     queryFn: () => {
-      return searchRegistry(props.searchQuery ?? "", props.subtype);
+      // search including optional result limit count and subtype
+      return searchRegistry(props.searchQuery ?? "", props.searchLimit, props.subtype);
     },
     enabled: (props.enabled ?? true) && props.searchQuery !== undefined,
     staleTime: searchCacheTimeout,

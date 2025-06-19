@@ -232,17 +232,11 @@ export interface DatasetInformation {
   description: string;
   access_info: AccessInfo;
   /**
-   * Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below.
+   * Please provide information about the organisation which is publishing or producing this dataset. If this is your organisation, please select it again using the tool below.
    */
   publisher_id: string;
-  /**
-   * The date on which this version of the dataset was produced or generated.
-   */
-  created_date: string;
-  /**
-   * The date on which this version of the dataset was first published. If the data has never been published before - please use today's date.
-   */
-  published_date: string;
+  created_date: DatasetCreationDate;
+  published_date: DatasetPublicationDate;
   /**
    * Please select a standard license for usage, by default it will be 'Copyright'.
    */
@@ -279,6 +273,20 @@ export interface DatasetInformation {
   user_metadata?: {
     [k: string]: string;
   };
+}
+/**
+ * Has the dataset been created? If so, please provide the date on which this version of the dataset was produced or generated.
+ */
+export interface DatasetCreationDate {
+  relevant?: boolean;
+  value?: string;
+}
+/**
+ * Has the dataset been published? If so, please provide the date on which this version of the dataset was first published.
+ */
+export interface DatasetPublicationDate {
+  relevant?: boolean;
+  value?: string;
 }
 /**
  * If your dataset includes spatial data, you can indicate the coverage, resolution and extent of this spatial data.
@@ -1301,6 +1309,10 @@ export interface OptionallyRequiredCheck {
   relevant?: boolean;
   obtained?: boolean;
 }
+export interface OptionallyRequiredDate {
+  relevant?: boolean;
+  value?: string;
+}
 export interface OrganisationCreateResponse {
   status: Status;
   created_item?: ItemOrganisation;
@@ -1383,11 +1395,6 @@ export interface PersonSeedResponse {
 }
 export interface ProxyItemFetchRequest {
   item_id: string;
-  username: string;
-}
-export interface ProxyVersionRequest {
-  id: string;
-  reason: string;
   username: string;
 }
 export interface QueryFilter {
@@ -1555,6 +1562,11 @@ export interface VersionRequest {
 export interface VersionResponse {
   new_version_id: string;
   version_job_session_id: string;
+}
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
 }
 export interface VersionDetails {
   commit_id?: string;

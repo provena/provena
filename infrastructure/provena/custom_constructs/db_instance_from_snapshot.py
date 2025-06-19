@@ -18,8 +18,7 @@ NO_BACKUP_DURATION = Duration.days(0)
 # if you try to update from snapshot using a specified older version RDS service tries to "update" backwards from new version -> older.
 # make sure that this value reflects the actual current version of the restoring instance
 
-#RDS_POSTGRES_VERSION = rds.PostgresEngineVersion.VER_13_4
-RDS_POSTGRES_VERSION = rds.PostgresEngineVersion.VER_13_7
+RDS_POSTGRES_VERSION = rds.PostgresEngineVersion.VER_13_16
 
 DEV_INSTANCE_TYPE = ec2.InstanceType.of(
     instance_class=ec2.InstanceClass.BURSTABLE3,

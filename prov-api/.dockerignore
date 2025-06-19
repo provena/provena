@@ -7,3 +7,4 @@ requirements.txt
 .env
 JobDockerfile
 Dockerfile
+lambda_dockerfile

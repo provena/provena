@@ -54,6 +54,11 @@ export interface ValueRequestBase {
   value_type: ValueType;
   value: string;
 }
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
+}
 export interface VersionDetails {
   commit_id?: string;
   commit_url?: string;

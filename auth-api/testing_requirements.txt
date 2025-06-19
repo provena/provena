@@ -8,4 +8,4 @@ types-requests
 setuptools
 moto==4.2.14
 smtpdfix
-httpx
+httpx==0.27.2

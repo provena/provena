@@ -21,6 +21,11 @@ export interface useLoadedSearchProps {
   // Filter by subtype?
   subtype?: ItemSubType;
 
+
+  // How many results should be loaded from search?
+  // DEFAULT = 10
+  searchLimit?: number;
+
   // Enabled?
   enabled?: boolean;
 }
@@ -58,6 +63,7 @@ export const useLoadedSearch = (
     searchQuery: internalDebounceQuery,
     enabled: props.enabled ?? true,
     subtype: props.subtype,
+    searchLimit: props.searchLimit
   });
 
   // Manage a corresponding list of fetches for each result

@@ -49,11 +49,22 @@ import {
 } from "react-libs";
 import { Link as RouteLink, useParams } from "react-router-dom";
 import { registryVersionIdLinkResolver } from "util/helper";
-import { nonEditEntityTypes } from "../entityLists";
+import {
+  nonEditEntityTypes,
+  nonCloneEntityTypes
+} from "../entityLists";
 import { ItemRevertResponse } from "../provena-interfaces/RegistryAPI";
-import { ItemBase, ItemSubType } from "../provena-interfaces/RegistryModels";
+import {
+  ItemBase,
+  ItemSubType,
+  ItemModelRun,
+} from "../provena-interfaces/RegistryModels";
+
 import { AccessControl } from "../subpages/settings-panel/AccessSettings";
 import { LockSettings } from "../subpages/settings-panel/LockSettings";
+import { GenericFetchResponse } from "react-libs/provena-interfaces/RegistryAPI";
+import { useAddStudyLinkDialog } from "hooks/useAddStudyLinkDialog";
+import { useGenerateReportDialog } from "react-libs/hooks/useGenerateReportDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -137,7 +148,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
       paddingTop: theme.spacing(0),
     },
-  }),
+  })
 );
 
 type ItemParams = {
@@ -336,7 +347,7 @@ const RecordView = observer((props: {}) => {
     item !== undefined &&
     subtype !== undefined &&
     // Must be editable type
-    nonEditEntityTypes.indexOf(subtype) === -1;
+    !nonEditEntityTypes.includes(subtype);
 
   const seeCloneButton =
     // Must have metadata write
@@ -344,8 +355,8 @@ const RecordView = observer((props: {}) => {
     // Must have entity loaded and subtype parsed
     item !== undefined &&
     subtype !== undefined &&
-    // Must be editable type
-    nonEditEntityTypes.indexOf(subtype) === -1;
+    // Must be cloneable type
+    !nonCloneEntityTypes.includes(subtype);
 
   const seeVersioning = !!subtype && subtypeHasVersioning(subtype);
 
@@ -353,6 +364,22 @@ const RecordView = observer((props: {}) => {
   const headerName = subtype ? mapSubTypeToPrettyName(subtype) : "Entity";
 
   const isDataset = subtype === "DATASET";
+  const isModelRun = subtype === "MODEL_RUN";
+  const isLinkedToStudy =
+    isModelRun &&
+    typedPayload &&
+    !!(typedPayload.item as ItemModelRun).record.study_id;
+  const showEditModelRunButton =
+    // Must have metadata write permission
+    writeCheck.fallbackGranted &&
+    // Must have entity loaded and subtype parsed
+    item !== undefined &&
+    subtype === "MODEL_RUN";
+
+  // Checking whether we should render the "Generate Report Button"
+  const isStudy = subtype === "STUDY";
+  const isModelRunOrStudy = isStudy || (isModelRun && typedPayload);
+
   const datastoreLink = isDataset
     ? `${DATA_STORE_LINK}/dataset/${params.idPrefix}/${params.idSuffix}`
     : undefined;
@@ -424,6 +451,23 @@ const RecordView = observer((props: {}) => {
     </p>
   );
 
+  // You should be able to link study if model run and not linked to study
+  const seeAddStudyLinkButton =
+    isModelRun && !isLinkedToStudy && writeAccessGranted;
+
+  // Use the add study link component to manage adding
+  const studyLinkDialog = useAddStudyLinkDialog({
+    modelRunId: handleId,
+    onSuccess: () => {
+      refetchLoadedItem();
+    },
+  });
+
+  const { openDialog, renderedDialog } = useGenerateReportDialog({
+    id: typedPayload?.item?.id,
+    itemSubType: typedPayload?.item?.item_subtype,
+  });
+
   return (
     <Grid container>
       {
@@ -431,6 +475,8 @@ const RecordView = observer((props: {}) => {
       }
       {versionControls.render()}
       {revertControls.render()}
+      {studyLinkDialog.render()}
+      {renderedDialog}
       <Grid container item className={classes.topPanelContainer}>
         <Stack
           direction="row"
@@ -511,7 +557,7 @@ const RecordView = observer((props: {}) => {
                         window.open(
                           datastoreLink,
                           "_blank",
-                          "noopener,noreferrer",
+                          "noopener,noreferrer"
                         );
                       }}
                     >
@@ -521,6 +567,39 @@ const RecordView = observer((props: {}) => {
                   </Grid>
                 )}
 
+                {isModelRunOrStudy && (
+                  <Grid item>
+                    <Button variant="outlined" onClick={openDialog}>
+                      Generate Report
+                    </Button>
+                  </Grid>
+                )}
+
+                {showEditModelRunButton && (
+                  <Grid item>
+                    <Button
+                      variant="outlined"
+                      className={classes.actionButton}
+                      href={`${PROV_STORE_LINK}/tools?recordId=${handleId}`}
+                    >
+                      Edit Model Run
+                    </Button>
+                  </Grid>
+                )}
+                {seeAddStudyLinkButton && (
+                  <Grid item>
+                    <Button
+                      variant="outlined"
+                      onClick={() => {
+                        // Start if possible
+                        studyLinkDialog.startAddStudyLink &&
+                          studyLinkDialog.startAddStudyLink();
+                      }}
+                    >
+                      Link to Study
+                    </Button>
+                  </Grid>
+                )}
                 <Grid item>
                   <Button
                     variant="outlined"
@@ -538,7 +617,7 @@ const RecordView = observer((props: {}) => {
                       className={classes.actionButton}
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `https://hdl.handle.net/${item!.id}`,
+                          `https://hdl.handle.net/${item!.id}`
                         );
                         if (!handleCopied) {
                           setTimeout(() => {

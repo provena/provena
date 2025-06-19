@@ -1,13 +1,13 @@
 fastapi==0.88.0
 uvicorn
 requests
-httpx
+httpx==0.27.2
 python-jose
 setuptools
 boto3
 jsonschema
 mangum
-pydantic==1.10.12
+pydantic==1.10.17
 python-dotenv
 aws_secretsmanager_caching
 sentry-sdk[fastapi]

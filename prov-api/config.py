@@ -41,7 +41,7 @@ class BaseConfig(BaseSettings):
     feature_number: Optional[str]
 
     # monitoring via sentry
-    monitoring_enabled: Optional[bool] = False 
+    monitoring_enabled: Optional[bool] = False
     sentry_dsn: Optional[str] = None
 
     @property
@@ -51,7 +51,7 @@ class BaseConfig(BaseSettings):
     # validate sentry dsn is provided if monitoring is enabled
     @root_validator
     def valide_sentry_config(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if values.get("monitoring_enabled")==True and values.get("sentry_dsn") is None:
+        if values.get("monitoring_enabled") == True and values.get("sentry_dsn") is None:
             raise ValueError(
                 "Sentry DSN is required if monitoring is enabled.")
         return values
@@ -81,6 +81,11 @@ class Config(BaseConfig):
     neo4j_auth_arn: Optional[str] = None
     neo4j_test_username: Optional[str] = None
     neo4j_test_password: Optional[str] = None
+
+    # encryption service
+    user_key_id: str
+    user_key_region: str
+    user_context_header: str
 
     # default settings
     keycloak_token_postfix: str = "/protocol/openid-connect/token"
@@ -127,7 +132,7 @@ def dev_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
     http_prefix = "http:\/\/"
     safe_base = base_domain.replace(".", "\.")
     # https://*.base.com OR https://base.com OR http(s)://localhost:port
-    return f"({https_prefix}.*\.{safe_base}|{https_prefix}{safe_base}|{https_prefix}localhost:\d*|{http_prefix}localhost:\d*)"
+    return ".*"
 
 
 def stage_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
@@ -142,6 +147,7 @@ def prod_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
     prefix = "https://"
     options: List[str] = [
         f"{prefix}prov.{base_domain}",
+        f"{prefix}registry.{base_domain}",
         f"{prefix}data.{base_domain}"
     ]
     return options

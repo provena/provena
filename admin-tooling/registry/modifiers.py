@@ -11,6 +11,7 @@ from helpers.migrations.f1458_migration import f1458_migrator_function
 from helpers.migrations.f1339_migration import f1339_migration
 from helpers.migrations.f1545_migration import f1545_migrator_function
 from helpers.migrations.f1580_migration import f1580_migrator_function
+from helpers.migrations.f1699_migration import f1699_migrator_function
 
 
 from ToolingEnvironmentManager.Management import EnvironmentManager, process_params
@@ -525,6 +526,38 @@ def f1580_migration(
 
     # modify the items (f1458)
     input_content = f1580_migrator_function(
+        all_items=input_content, parse=False)
+
+    print(f"Writing output to specified output file {output_file.name}.")
+    write_output(
+        file=output_file,
+        content=input_content
+    )
+
+
+@ app.command()
+def f1699_migration(
+    stage: Stage = typer.Argument(
+        # "..."" to specify required option.
+        ...,
+        help=f"The Stage to migrate registry items on. This is not used for any endpoints - just as a check.",
+    ),
+    input_file: typer.FileText = typer.Argument(
+        ..., help="The location of the dump file to process as input. Include file extension."),
+    output_file: typer.FileTextWrite = typer.Argument(
+        ..., help="The location to write the output file to. Include file extension."),
+) -> None:
+    """
+    Changes the created_date and published_date in the dataset_info into their own objects
+    as per the new format for storing these (now optional) fields.
+    """
+
+    # input content
+    print(f"Reading input from specified input file {input_file.name}.")
+    input_content = read_input(input_file)
+
+    # modify the items (f1458)
+    input_content = f1699_migrator_function(
         all_items=input_content, parse=False)
 
     print(f"Writing output to specified output file {output_file.name}.")

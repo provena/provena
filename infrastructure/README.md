@@ -160,16 +160,11 @@ The Provena application cannot be deployed without a minimum set of existing res
 
 Provena has a workflow to manage configuration.
 
-In the `configs` folder you will see two files:
+The `configs` folder contains json files which configure the provena CDK application. We provide a `sample.json` file which shows the basic structure of the configuration, but the definition of the config class itself is visible in `provena/config/config_class.py`. 
 
--   `config_map.py`
--   `template_custom_deployment.py`
+Wherever a `CONFIG_ID` is referenced, it is assumed that the name of the corresponding config file is `${CONFIG_ID}.json`. For example, if your `CONFIG_ID` is "dev", then your json file must be named `dev.json`. 
 
-The config map defines a mapping from a config ID to a function which generates a `ProvenaConfig` object.
-
-The `template_custom_deployment` provides a scaffold to get started with your Provena application config.
-
-It is worth noting that all of the commands mentioned in 'Deploying and managing Provena' relate to a specific Config ID - so choose a helpful short hand for your application.
+CDK relies on the configuration approach used at the repo level for Provena, please see [the root README](../README.md) for more information.
 
 ## Deploying and managing Provena
 
@@ -177,16 +172,27 @@ It is worth noting that all of the commands mentioned in 'Deploying and managing
 
 The below steps assume that you have a defined Config ID which is setup as above. The commands will refer to the config ID as <config_id>.
 
+### Using the config script to setup your configuration
+
+Before running the below commands, use the config helper script in the root of the repo to setup your target deployment config, e.g. 
+
+```bash
+cd ..
+./config namespace stage
+```
+
+You should now refer to the stage's json file to configure the CDK application.
+
 ### How do we run CDK commands
 
-CDK includes a rich CLI which helps to deploy, update and diff applications. However, by default, we can only define a single app target - normally `app.py`. Due to Provena's deployment requirements, we have multiple CDK app files.
+CDK includes a rich CLI which helps to deploy, update and diff applications.
 
-The CLI tool enables the specification of a cdk file (`--app`) and and output cdk synth path (`--output`). These are customised as part of the config process.
+The CLI tool enables the specification of an output cdk synth path (`--output`). These are customised as part of the config process.
 
 We have defined a helper [typer cli](https://typer.tiangolo.com/typer-cli/) script which:
 
--   looks up the config id from the config map
--   generates the config with the specified generator function
+-   uses the config id and retrieves the corresponding JSON file
+-   generates the config by validating it against the Pydantic model, injecting some helpful environment variables as well in the pipeline (e.g. git hash/version information)
 -   reads the cdk app file, output path, and stack names
 -   generates a customised cdk command which has the required arguments and stack names, and includes the user's commands
 
@@ -215,7 +221,7 @@ python app_run.py <config_id> app diff
 This will result in a command with the following structure
 
 ```
-cdk --app "python provena_app.py" --output "<config_id>_cdk.out" diff <variable>Pipeline/deploy/<variable>
+cdk --output "<config_id>_cdk.out" diff <variable>Pipeline/deploy/<variable>
 ```
 
 Where some values have been omitted above.

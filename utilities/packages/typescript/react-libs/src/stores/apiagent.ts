@@ -114,6 +114,17 @@ export const requests = {
       params: params,
     });
   },
+  fileDownload(url: string, data = {}){
+    return apiagent({
+      url: url, 
+      method: "post",
+      data: data,
+      responseType: "blob",
+      headers: {
+      "Accept": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Set Accept header for Word document
+    }
+    });
+  },
   manual(config = {}) {
     return apiagent(config);
   },

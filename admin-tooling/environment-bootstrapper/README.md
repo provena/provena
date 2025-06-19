@@ -53,7 +53,7 @@ python environment_bootstrapper.py bootstrap-stage <tooling environment name>
 ```
 
 **Note**: To understand more about the tooling environments, see the parent folder's
-README and the directory in the parent folder named "tooling-environment-manager". 
+README and the directory in the parent folder named "tooling-environment-manager".
 
 To see options to customise behaviour and allowed values, use:
 
@@ -89,8 +89,8 @@ We use the --param option to pass in the feature number. This requires a feature
 environment to be defined in the admin-tooling/environments.json file.
 
 ```
-python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_no}
+python environment_bootstrapper.py bootstrap-stage feature --suppress-warnings --param feature_number:${ticket_number}
 ```
 
-where `ticket_no` is passed from the environment, or, you may directly provide the
+where `ticket_number` is passed from the environment, or, you may directly provide the
 ticket number in the command.

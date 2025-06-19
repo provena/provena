@@ -1,4 +1,6 @@
-# Provena PR (Major/Minor/Bug Fix): Short Description
+# (feat|fix|chore): title
+
+## Ticket: RRAPIS-XXXX
 
 ## Checklist
 
@@ -7,7 +9,7 @@
 -   [ ] If migrations are required, is the process documented below?
 -   [ ] If developer/system documentation updates are required, is there a task to track it and/or is it completed?
 -   [ ] At least one developer has reviewed this change (unless PR is being used to mark a commit point without need for review)?
--   [ ] If change requires update to the [manual testing runsheet](https://confluence.csiro.au/pages/viewpage.action?pageId=1701138616), is there a task to track it and/or is it completed?
+-   [ ] If this change requires updates to the [Provena Python Client](https://github.com/provena/provena-python-client), is this accounted for?
 
 ## Description
 
@@ -24,3 +26,7 @@ _Description here_
 ## Notes for reviewer
 
 _... (Optional) Notes here..._
+
+## Feature branch
+
+Include the output of `./fb md` here if you are using a feature branch.

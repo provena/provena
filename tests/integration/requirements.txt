@@ -5,7 +5,7 @@ requests
 pytest-dotenv
 mypy
 types-requests
-pydantic[email]==1.10.12
+pydantic[email]==1.10.17
 networkx==3.*
 
 

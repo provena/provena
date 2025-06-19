@@ -516,7 +516,7 @@ def test_remove_members(provide_global_config: Config, aws_credentials: Any) -> 
 
     _ = parse_status_response(
         response=client.request(
-            method="DELETE",
+            method="POST",
             url=group_admin_endpoints.REMOVE_MEMBERS,
             json=payload),
         model=RemoveMemberResponse

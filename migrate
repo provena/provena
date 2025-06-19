@@ -44,6 +44,7 @@ migrate_usage() {
   printf "  %s   CAUTION: Clears all items from the registry and graph store for a given stage. This does not allow PROD by default. You will need to manually clear PROD. This is a migration used when other forms of migration are too time intensive for test items (usually when manual intervention required).\n" "clear-app-stage                      "
   printf "  %s   Migrations required for f1545 feature - Access Info URI in non-reposited datasets for fetch\n" "f1545-migration                      "
   printf "  %s   Migrations required for f1580 feature - moves the software_version field from MRWT into model run(s) which use it\n" "f1580-migration                      "
+  printf "  %s   Migrations required for f1699 feature - Creates a subfield/dict for the now optional creation and published dates in dataset items.\n" "f1699-migration                      "
   echo
 
   # :command.long_usage
@@ -503,6 +504,55 @@ migrate_f1580_migration_usage() {
   printf "%s\n" "Usage:"
   printf "  migrate f1580-migration STAGE [OPTIONS]\n"
   printf "  migrate f1580-migration --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--apply"
+    printf "    Apply the changes - do not run in dry run mode.\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--reuse_venv"
+    printf "    Don't rebuild the python virtual environments\n"
+    echo
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "STAGE"
+    printf "    The application stage to target\n"
+    printf "    Allowed: TEST, DEV, STAGE, PROD\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+migrate_f1699_migration_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "migrate f1699-migration - Migrations required for f1699 feature - Creates a subfield/dict for the now optional creation and published dates in dataset items.\n"
+    echo
+
+  else
+    printf "migrate f1699-migration - Migrations required for f1699 feature - Creates a subfield/dict for the now optional creation and published dates in dataset items.\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  migrate f1699-migration STAGE [OPTIONS]\n"
+  printf "  migrate f1699-migration --help | -h\n"
   echo
 
   # :command.long_usage
@@ -1456,6 +1506,91 @@ migrate_f1580_migration_command() {
 
 }
 
+# :command.function
+migrate_f1699_migration_command() {
+  # src/f1699_migration_command.sh
+  function venv() {
+      # function to setup python venv
+      if [[ ! $reuse_venv ]]; then
+          echo "Setting up venv"
+
+          # clear any existing venv
+          rm -rf .venv
+
+          # create new and install requirements
+          python3.10 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      else
+          echo "Reusing existing virtual environment"
+          source .venv/bin/activate
+      fi
+
+  }
+
+  # Constants
+  pre_migration_prefix="f1699_pre"
+  post_migration_prefix="f1699_post"
+
+  apply=${args[--apply]}
+  stage=${args[stage]}
+  reuse_venv=${args[--reuse_venv]}
+
+  # generate the apply part of argument if supplied
+  apply_arg=""
+  if [[ $apply ]]; then
+      echo "Changes will be applied since --apply flag was specified"
+      apply_arg="--apply"
+  fi
+
+  # save starting point
+  current_dir=$(pwd)
+
+  # Step one  - export registry
+
+  echo "Moving to export tooling"
+  cd admin-tooling/registry
+
+  # setup venv
+  venv
+
+  echo "Running export, you may need to sign in"
+
+  export_output_name="dumps/${pre_migration_prefix}_${stage}.json"
+  migration_output_name="dumps/${post_migration_prefix}_${stage}.json"
+
+  python import_export.py export-items ${stage} --output ${export_output_name}
+
+  echo "Export completed"
+
+  # Step two - migrate the items (uses migrations script in admin tooling)
+  cd ${current_dir}
+
+  echo "Moving to migration tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running migration"
+  python import_export.py modifiers f1699-migration ${stage} ${export_output_name} ${migration_output_name}
+
+  echo "Migration completed locally - running import to registry"
+
+  # Step three - import the items
+  cd ${current_dir}
+
+  echo "Moving to import tooling"
+  cd admin-tooling/registry
+
+  echo "Venv already setup here"
+
+  echo "Running import"
+  python import_export.py import-items ${stage} ${migration_output_name} SYNC_ADD_OR_OVERWRITE ${apply_arg}
+
+  echo "Process completed"
+
+}
+
 # :command.parse_requirements
 parse_requirements() {
   # :command.fixed_flags_filter
@@ -1552,6 +1687,13 @@ parse_requirements() {
       action="f1580-migration"
       shift
       migrate_f1580_migration_parse_requirements "$@"
+      shift $#
+      ;;
+
+    f1699-migration)
+      action="f1699-migration"
+      shift
+      migrate_f1699_migration_parse_requirements "$@"
       shift $#
       ;;
 
@@ -2335,6 +2477,160 @@ migrate_f1580_migration_parse_requirements() {
 
 }
 
+# :command.parse_requirements
+migrate_f1580_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1580_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1580-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['stage']+x} ]]; then
+
+          args['stage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['stage']+x} ]]; then
+    printf "missing required argument: STAGE\nusage: migrate f1580-migration STAGE [OPTIONS]\n" >&2
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ ! ${args['stage']} =~ ^(TEST|DEV|STAGE|PROD)$ ]]; then
+    printf "%s\n" "stage must be one of: TEST, DEV, STAGE, PROD" >&2
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+migrate_f1699_migration_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        migrate_f1699_migration_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="f1699-migration"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --apply)
+
+        # :flag.case_no_arg
+        args['--apply']=1
+        shift
+        ;;
+
+      # :flag.case
+      --reuse_venv)
+
+        # :flag.case_no_arg
+        args['--reuse_venv']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['stage']+x} ]]; then
+
+          args['stage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['stage']+x} ]]; then
+    printf "missing required argument: STAGE\nusage: migrate f1699-migration STAGE [OPTIONS]\n" >&2
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ ! ${args['stage']} =~ ^(TEST|DEV|STAGE|PROD)$ ]]; then
+    printf "%s\n" "stage must be one of: TEST, DEV, STAGE, PROD" >&2
+    exit 1
+  fi
+
+}
+
 # :command.initialize
 initialize() {
   version="0.1.0"
@@ -2366,6 +2662,7 @@ run() {
     "clear-app-stage") migrate_clear_app_stage_command ;;
     "f1545-migration") migrate_f1545_migration_command ;;
     "f1580-migration") migrate_f1580_migration_command ;;
+    "f1699-migration") migrate_f1699_migration_command ;;
   esac
 }
 

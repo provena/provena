@@ -6,6 +6,7 @@ from aws_cdk import (
 from provena.provena_stack import ProvenaStack
 from provena.ui_only_provena_stack import ProvenaUIStack
 from provena.config.config_class import *
+from typing import Any
 
 
 class ProvenaDeploymentStage(CdkStage):
@@ -30,32 +31,32 @@ class ProvenaDeploymentStage(CdkStage):
             # deploying landing portal
             landing_ui_domain = config.components.landing_page.ui_domain
             if (landing_ui_domain == ""):
-                self.landing_portal_url = f"https://{config.dns.root_domain}"
+                self.landing_portal_url = f"https://{config.general.root_domain}"
             else:
-                self.landing_portal_url = f"https://{landing_ui_domain}.{config.dns.root_domain}"
+                self.landing_portal_url = f"https://{landing_ui_domain}.{config.general.root_domain}"
 
         # data store url
         self.data_store_url: Optional[str] = None
 
         if config.components.data_store:
-            self.data_store_url = f"https://{config.components.data_store.ui_domain}.{config.dns.root_domain}"
+            self.data_store_url = f"https://{config.components.data_store.ui_domain}.{config.general.root_domain}"
 
         # prov store url
         self.prov_store_url: Optional[str] = None
 
         if config.components.prov_store:
-            self.prov_store_url = f"https://{config.components.prov_store.ui_domain}.{config.dns.root_domain}"
+            self.prov_store_url = f"https://{config.components.prov_store.ui_domain}.{config.general.root_domain}"
 
         # registry url
         self.registry_url: Optional[str] = None
 
         if config.components.entity_registry:
-            self.registry_url = f"https://{config.components.entity_registry.ui_domain}.{config.dns.root_domain}"
+            self.registry_url = f"https://{config.components.entity_registry.ui_domain}.{config.general.root_domain}"
 
         self.infra = ProvenaStack(
             scope=self,
             id=config.deployment.deployment_stack_id,
-            env=config.deployment.deployment_environment,
+            env=config.deployment.deployment_environment.env,
             config=config
         )
 
@@ -97,7 +98,7 @@ class ProvenaUIOnlyStage(CdkStage):
         self.infra = ProvenaUIStack(
             scope=self,
             construct_id=config.deployment_stack_id,
-            env=config.aws_environment,
+            env=config.aws_environment.env,
             config=config
         )
 

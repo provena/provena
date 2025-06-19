@@ -2,88 +2,94 @@
 
 # Function to run mypy tests
 function run_mypy_tests() {
-    local requirement_file=$1
-    local location=$2
+    local location=$1
+    local requirement_file=$2
 
-    # goto test working environment
+    echo "Running tests for ${location} using ${requirement_file}"
+
+    # Go to test working environment
     cd "${location}"
     echo "Working in ${PWD}"
 
-    # setup python virtual environment
+    # Setup python virtual environment
     echo "Setting up virtual environment"
-    python_command="python3"
     ${python_command} -m venv .venv
-    # source virtual environment
+
+    # Source virtual environment
     source .venv/bin/activate
-    # install dependencies
+
+    # Install dependencies
     echo "Installing dependencies"
+    pip install --upgrade pip
     pip install -r "${requirement_file}"
-    # run pytest
+
+    # Run mypy
+    echo "Running mypy"
     mypy .
 
     # Return back to start
     echo "Tests complete, leaving ${PWD}"
     cd "${working_dir}"
+
+    # Deactivate virtual environment
+    deactivate
 }
 
-# Run from top level dir
+# Main script execution starts here
+
 echo "Running mypy python type checks"
+
+# Setup working dir and python command
+working_dir="${PWD}"
 python_command="python3"
 
-# Setup working dir
-working_dir="${PWD}"
-
-# Check python is available at python
+# Check python is available
 ${python_command} --version
 
-# Array of requirement files
-requirement_files=(
-    # search api
-    "testing_requirements.txt"
-    # integration
-    "requirements.txt"
-    # data store, identity service, prov api, registry api
-    "testing_requirements.txt"
-    "testing_requirements.txt"
-    "testing_requirements.txt"
-    "testing_requirements.txt"
-    # job api
-    "dev-requirements.txt"
-    # async utils (ddb connector)
-    "dev_requirements.txt"
-    # async utils (ecs sqs python tools)
-    "dev_requirements.txt"
-    # async utils (lambda invoker)
-    "dev_requirements.txt"
-    # Shared registry requirements
-    "dev_requirements.txt"
-    # Shared interfaces
-    "testing-requirements.txt"
-)
-
-# List of type checking locations
-mypy_check_locations=(
+# Array of locations and requirement files
+# Each odd index is a location, and the following even index is its corresponding requirement file
+locations_and_requirements=(
     "search-api"
+    "testing_requirements.txt"
     "tests/integration"
+    "requirements.txt"
     "data-store-api"
+    "testing_requirements.txt"
     "id-service-api"
+    "testing_requirements.txt"
     "prov-api"
+    "testing_requirements.txt"
     "registry-api"
+    "testing_requirements.txt"
     "job-api"
+    "dev-requirements.txt"
     "async-util/ddb_connector"
+    "dev_requirements.txt"
     "async-util/ecs-sqs-python-tools"
+    "dev_requirements.txt"
     "async-util/lambda_invoker"
+    "dev_requirements.txt"
     "utilities/packages/python/provena-shared-functionality"
+    "dev_requirements.txt"
     "utilities/packages/python/provena-interfaces"
+    "testing-requirements.txt"
+    "utilities/supporting-stacks/github-creds"
+    "requirements-dev.txt"
+    "utilities/supporting-stacks/feature-branch-manager"
+    "requirements-dev.txt"
+    "admin-tooling/registry"
+    "requirements.txt"
+    "admin-tooling/prov-exporter"
+    "dev-requirements.txt"
+    "admin-tooling/prov-store"
+    "dev-requirements.txt"
 )
 
-# Loop through the arrays and call the function
-for ((i = 0; i < ${#mypy_check_locations[@]}; i++)); do
-    requirement_file="${requirement_files[i]}"
-    mypy_check_location="${mypy_check_locations[i]}"
-
-    echo "Using requirement file ${requirement_file}"
-    run_mypy_tests "${requirement_file}" "${mypy_check_location}"
+# Loop through the array and call the function
+for ((i = 0; i < ${#locations_and_requirements[@]}; i+=2)); do
+    location="${locations_and_requirements[i]}"
+    requirement_file="${locations_and_requirements[i+1]}"
+    run_mypy_tests "${location}" "${requirement_file}"
 done
 
 echo "Mypy type checks complete"

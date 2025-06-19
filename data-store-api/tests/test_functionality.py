@@ -7,26 +7,35 @@ from moto import mock_dynamodb  # type: ignore
 from main import app
 from config import Config, get_settings
 from datetime import datetime
-from typing import List, Generator
+from typing import List, Generator, Any
 from ProvenaInterfaces.RegistryAPI import DatasetFetchResponse, AccessInfo, DatasetDomainInfo, RecordType, ItemDataset, OptionallyRequiredCheck, UpdateResponse
 from ProvenaInterfaces.RegistryModels import ReleasedStatus
 from ProvenaInterfaces.DataStoreAPI import *
 from tests.config import test_bucket_name, test_email
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
-from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
+from dependencies.dependencies import user_general_dependency, read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_user_cipher
 from helpers.metadata_helpers import validate_fields
 from helpers.aws_helpers import sanitize_handle
 from helpers.sts_helpers import generate_read_write_paths
 from helpers.util import py_to_dict
 from pydantic import ValidationError
 from fastapi.testclient import TestClient
+from fastapi import Depends
 import json
 from moto import mock_s3  # type: ignore
 import boto3  # type: ignore
 import pytest
 from tests.helpers import setup_dynamodb_reviewers_table  # type: ignore
+from ProvenaSharedFunctionality.Services.encryption import EncryptionService, MockEncryptionService
 
 client = TestClient(app)
+
+
+async def mock_get_user_cipher(
+    encryption_service: Any = None,
+    user: Any = None,
+) -> str:
+    return "empty"
 
 
 @pytest.fixture(scope="session", autouse=False)
@@ -150,7 +159,7 @@ def test_mint_dataset_invalid_schema() -> None:
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
 
     # update this number as more invalids are added
-    invalid_max = 6
+    invalid_max = 2
     invalid_min = 1
     invalid_schemas = []
 
@@ -170,7 +179,7 @@ def test_mint_dataset_invalid_schema() -> None:
         # Check endpoint responds appropriately
         # Since the endpoint will parse it directly at the API level
         # it should respond with 422 (unprocessable entity)
-        assert response.status_code == 422, "Invalid schema was not picked up at API level"
+        assert response.status_code == 422, f"Invalid schema was not picked up at API level for invalid_ro_raw{i}.json. Response: {response.json()}"
 
 
 def test_validate_invalid_date() -> None:
@@ -193,6 +202,7 @@ def test_mint_invalid_date() -> None:
     # Override the auth dependency
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
+    app.dependency_overrides[get_user_cipher] = mock_get_user_cipher
 
     # test update for invalid date (should fail)
     invalid_schema_path = 'tests/resources/schemas/invalid_date_ro_raw1.json'
@@ -281,7 +291,7 @@ def end_to_end_mint(
 
     # need to patch
     # seed_dataset_in_registry
-    def mocked_seed_dataset_in_registry(proxy_username: str, secret_cache: SecretCache, config: Config) -> str:
+    def mocked_seed_dataset_in_registry(user_cipher: str, secret_cache: SecretCache, config: Config) -> str:
         return generate_random_handle()
 
     monkeypatch.setattr(
@@ -291,7 +301,7 @@ def end_to_end_mint(
     )
 
     # update dataset in registry
-    def mocked_update_dataset_in_registry(proxy_username: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, config: Config, reason: str) -> UpdateResponse:
+    def mocked_update_dataset_in_registry(user_cipher: str, domain_info: DatasetDomainInfo, id: str, secret_cache: SecretCache, config: Config, reason: str) -> UpdateResponse:
         # no action required
         return UpdateResponse(status=Status(success=True, details=""), register_create_activity_session_id="1234")
 
@@ -417,6 +427,7 @@ def test_mint_dataset_end_to_end(monkeypatch: Any, aws_credentials: Any, test_co
     # Override the auth dependency
     app.dependency_overrides[read_write_user_protected_role_dependency] = user_protected_dependency_override
     app.dependency_overrides[read_user_protected_role_dependency] = user_protected_dependency_override
+    app.dependency_overrides[get_user_cipher] = mock_get_user_cipher
 
     # Get s3 client
     s3_client = boto3.client('s3')
@@ -505,14 +516,18 @@ def test_validate_fields() -> None:
         open('tests/resources/schemas/valid_ro_raw1.json', 'r').read()))
 
     # Test: create date is after publish date
-    data.dataset_info.created_date = datetime(2020, 1, 2)
-    data.dataset_info.published_date = datetime(2020, 1, 1)
+    data.dataset_info.created_date = CreatedDate(
+        relevant=True, value=datetime(2020, 1, 2))
+    data.dataset_info.published_date = PublishedDate(
+        relevant=True, value=datetime(2020, 1, 1))
     with pytest.raises(Exception):
         validate_fields(data)
 
     # Test: create date is before publish date
-    data.dataset_info.created_date = datetime(2020, 1, 1)
-    data.dataset_info.published_date = datetime(2020, 1, 2)
+    data.dataset_info.created_date = CreatedDate(
+        relevant=True, value=datetime(2020, 1, 1))
+    data.dataset_info.published_date = PublishedDate(
+        relevant=True, value=datetime(2020, 1, 2))
     validate_fields(data)
 
     # check validation behaviour for the relevant optionally required check

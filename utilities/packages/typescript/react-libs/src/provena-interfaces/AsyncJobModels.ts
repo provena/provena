@@ -13,6 +13,8 @@ export type JobSubType =
   | "MODEL_RUN_BATCH_SUBMIT"
   | "LODGE_CREATE_ACTIVITY"
   | "LODGE_VERSION_ACTIVITY"
+  | "MODEL_RUN_UPDATE"
+  | "MODEL_RUN_UPDATE_LODGE_ONLY"
   | "REGISTRY_WAKE_UP"
   | "REGISTER_CREATE_ACTIVITY"
   | "REGISTER_VERSION_ACTIVITY"
@@ -119,6 +121,7 @@ export interface AssociationInfo {
 }
 export interface ProvLodgeBatchSubmitPayload {
   records: ModelRunRecord[];
+  user_info: string;
 }
 export interface ProvLodgeBatchSubmitResult {
   batch_id: string;
@@ -134,6 +137,7 @@ export interface ProvLodgeModelRunLodgeOnlyPayload {
   model_run_record_id: string;
   record: ModelRunRecord;
   revalidate: boolean;
+  user_info: string;
 }
 export interface ProvLodgeModelRunLodgeOnlyResult {
   record: ProvenanceRecordInfo;
@@ -146,8 +150,26 @@ export interface ProvenanceRecordInfo {
 export interface ProvLodgeModelRunPayload {
   record: ModelRunRecord;
   revalidate: boolean;
+  user_info: string;
 }
 export interface ProvLodgeModelRunResult {
+  record: ProvenanceRecordInfo;
+}
+export interface ProvLodgeUpdateLodgeOnlyPayload {
+  model_run_record_id: string;
+  updated_record: ModelRunRecord;
+  revalidate: boolean;
+  user_info: string;
+}
+export interface ProvLodgeUpdateLodgeOnlyResult {}
+export interface ProvLodgeUpdatePayload {
+  model_run_record_id: string;
+  updated_record: ModelRunRecord;
+  reason: string;
+  revalidate: boolean;
+  user_info: string;
+}
+export interface ProvLodgeUpdateResult {
   record: ProvenanceRecordInfo;
 }
 export interface ProvLodgeVersionPayload {
@@ -179,19 +201,34 @@ export interface RegistryRegisterVersionActivityResult {
   version_activity_id: string;
   lodge_session_id: string;
 }
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
+}
 export interface WakeUpPayload {
   reason?: string;
 }
 export interface WakeUpResult {}
+export interface AddStudyLinkQueryParameters {
+  model_run_id: string;
+  study_id: string;
+}
+export interface AddStudyLinkResponse {
+  status: Status;
+  model_run_id: string;
+  study_id: string;
+  session_id: string;
+}
+export interface Status {
+  success: boolean;
+  details: string;
+}
 export interface ConvertModelRunsResponse {
   status: Status;
   new_records?: ModelRunRecord[];
   existing_records?: string[];
   warnings?: string[];
-}
-export interface Status {
-  success: boolean;
-  details: string;
 }
 export interface LineageResponse {
   status: Status;
@@ -199,6 +236,14 @@ export interface LineageResponse {
   graph?: {
     [k: string]: unknown;
   };
+}
+export interface PostUpdateModelRunInput {
+  model_run_id: string;
+  reason: string;
+  record: ModelRunRecord;
+}
+export interface PostUpdateModelRunResponse {
+  session_id: string;
 }
 export interface RegisterBatchModelRunRequest {
   records: ModelRunRecord[];
@@ -387,17 +432,11 @@ export interface DatasetInformation {
   description: string;
   access_info: AccessInfo;
   /**
-   * Please provide information about the organisation which published/produced this dataset. If your organisation produced this dataset, please select it again using the tool below.
+   * Please provide information about the organisation which is publishing or producing this dataset. If this is your organisation, please select it again using the tool below.
    */
   publisher_id: string;
-  /**
-   * The date on which this version of the dataset was produced or generated.
-   */
-  created_date: string;
-  /**
-   * The date on which this version of the dataset was first published. If the data has never been published before - please use today's date.
-   */
-  published_date: string;
+  created_date: DatasetCreationDate;
+  published_date: DatasetPublicationDate;
   /**
    * Please select a standard license for usage, by default it will be 'Copyright'.
    */
@@ -434,6 +473,20 @@ export interface DatasetInformation {
   user_metadata?: {
     [k: string]: string;
   };
+}
+/**
+ * Has the dataset been created? If so, please provide the date on which this version of the dataset was produced or generated.
+ */
+export interface DatasetCreationDate {
+  relevant?: boolean;
+  value?: string;
+}
+/**
+ * Has the dataset been published? If so, please provide the date on which this version of the dataset was first published.
+ */
+export interface DatasetPublicationDate {
+  relevant?: boolean;
+  value?: string;
 }
 /**
  * If your dataset includes spatial data, you can indicate the coverage, resolution and extent of this spatial data.
@@ -1139,6 +1192,10 @@ export interface LockTableEntry {
 export interface OptionallyRequiredCheck {
   relevant?: boolean;
   obtained?: boolean;
+}
+export interface OptionallyRequiredDate {
+  relevant?: boolean;
+  value?: string;
 }
 export interface RecordInfo {
   id: string;

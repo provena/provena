@@ -110,7 +110,8 @@ class SortOptions(BaseModel):
     def validate_sort_options(cls: Any, values: Dict[str, Any]) -> Dict[str, Any]:
 
         # not all sort keys are 'begins_with' compatible
-        valid_begins_with_sort_types = [SortType.ACCESS_INFO_URI_BEGINS_WITH.name]
+        valid_begins_with_sort_types = [
+            SortType.ACCESS_INFO_URI_BEGINS_WITH.name]
 
         if values.get("begins_with"):
             if not values.get("sort_type"):
@@ -277,11 +278,6 @@ class VersionRequest(BaseModel):
 
     # Reason for the version being required
     reason: str
-
-
-class ProxyVersionRequest(VersionRequest):
-    username: str
-
 
 class UiSchemaResponse(StatusResponse):
     ui_schema: Optional[Dict[str, Any]]
@@ -564,3 +560,22 @@ class RegistryImportResponse(StatusResponse):
     trial_mode: bool
     statistics: Optional[RegistryImportStatistics]
     failure_list: Optional[List[Tuple[str, Dict[str, Any]]]]
+    
+    
+class ProvGraphRestoreRequest(BaseModel):
+    trial_mode: bool = True
+    abort_if_failures: bool = True
+    items: List[BundledItem]
+class ProvGraphRestoreResponse(StatusResponse):
+    trial_mode: bool
+    abort_if_failures: bool
+    task_ids: Optional[List[str]]
+
+# ==========================
+# General Node Type
+# ==========================
+
+class Node(BaseModel): 
+    id: str
+    item_category: ItemCategory
+    item_subtype: ItemSubType

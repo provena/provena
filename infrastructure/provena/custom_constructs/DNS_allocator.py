@@ -1,5 +1,4 @@
 from aws_cdk import (
-    aws_ec2 as ec2,
     aws_elasticloadbalancingv2 as elb,
     aws_route53_targets as r53_targets,
     aws_route53 as r53,
@@ -20,6 +19,8 @@ class DNSAllocator(Construct):
                  construct_id: str,
                  hosted_zone_name: str,
                  hosted_zone_id: str,
+                 root_domain: str,
+                 debug_route_prefix: Optional[str] = None,
                  **kwargs: Any) -> None:
         """A construct which enables the dynamic subscription
         of ec2 instances with elastic IPs and statically hosted
@@ -31,13 +32,16 @@ class DNSAllocator(Construct):
             construct_id (str): The CDK id.
             zone_domain_name (str): The name of the hosted zone (domain name)
             hosted_zone_id (str): The hosted zone id (fixed)
+            root_domain (str): The fully qualified root domain of the application
+            debug_route_prefix (Optional[str]): DEBUG - A value to prefix to all routes created in order to enable redeployments safely.
         """
 
         # Super constructor
         super().__init__(scope, construct_id, **kwargs)
 
-        # Save some variables
-        self.zone_domain_name = hosted_zone_name
+        # the application root domain which routes will be respective to
+        self.root_domain = root_domain
+        self.debug_route_prefix = debug_route_prefix
 
         # Pull the existing Hosted Zone based on the hosted_zone_id
         self.hz = r53.PublicHostedZone.from_hosted_zone_attributes(
@@ -47,80 +51,35 @@ class DNSAllocator(Construct):
             zone_name=hosted_zone_name
         )
 
-    def add_instance(self,
-                     id: str,
-                     domain_prefix: str,
-                     target_eip: ec2.CfnEIP,
-                     comment: Optional[str] = None,
-                     route_ttl: Optional[Duration] = DEFAULT_TTL) -> None:
-        """Given some information, links the elastic IP of an ec2 instance
-        to a specified domain prefix on the given hosted zone.
-
-        Args:
-            id (str): The CDK id of the record you are creating (your choice)
-            domain_prefix (str): The prefix (including the full stop) of the
-            target e.g. if you want api.example.com and the domain is example.com,
-            you should include "api."
-            target_eip (ec2.CfnEIP): The elastic IP associated to the ec2 instance.
-            comment (Optional[str], optional): A comment to tie to the record.
-            Defaults to None.
-            route_ttl (Optional[Duration], optional): The time to live of the DNS result.
-            Defaults to DEFAULT_TTL.
-        """
-        # Adds a new record to the hosted zone (or updates current one)
-        r53.ARecord(
-            scope=self,
-            id=id,
-            zone=self.hz,
-            record_name=domain_prefix + self.zone_domain_name,
-            comment=comment,
-            ttl=route_ttl,
-            # This is the only way to get the elastic IP to resolve
-            # properly - no idea why this works?
-            # I think cloud formation is BTS resolving the reference to the
-            # newest IP. If you use the public_ip field of the ec2 instance, it is
-            # not usually correct.
-            target=r53.RecordTarget.from_ip_addresses(target_eip.ref)
-        )
-
-    def add_static_website(self,
-                           id: str,
-                           unqualified_bucket_name: str,
-                           comment: Optional[str] = None,
-                           route_ttl: Optional[Duration] = DEFAULT_TTL,
-                           region: Optional[str] = "ap-southeast-2") -> None:
-        """Links a static s3 bucket website to the provided hosted zone.
-
-        Args:
-            id (str): The CDK id of the record (your choice)
-            unqualified_bucket_name (str): The name of the bucket itself (without domain info.) E.g.
-            if you had a bucket named api but it was part of the domain my.app.com just provide
-            api, even though the bucket's full name was forced to be api.my.app.com.
-            comment (Optional[str], optional): Comment for the record. Defaults to None.
-            route_ttl (Optional[Duration], optional): Time to live of DNS record. Defaults to DEFAULT_TTL.
-            region (Optional[str], optional): The bucket region. Defaults to "ap-southeast-2".
+    def _generate_route(
+        self,
+        domain: str,
+    ) -> str:
         """
 
-        # Work out the full qualified domain name
-        full_domain_target = f"{unqualified_bucket_name}.{self.zone_domain_name}.s3-website-{region}.amazonaws.com"
+        Generates routes sensitive to the application root domain. Used in various functions within this class.
 
-        # Name of the record (desired URL) must be the qualified bucket name
-        record_name = f"{unqualified_bucket_name}.{self.zone_domain_name}"
+        Parameters
+        ----------
+        domain : str
+            The domain name to prefix
 
-        # Create the record
-        r53.CnameRecord(
-            scope=self,
-            id=id,
-            domain_name=full_domain_target,
-            record_name=record_name,
-            ttl=route_ttl,
-            zone=self.hz,
-            comment=comment
-        )
+        Returns
+        -------
+        str
+            The full domain name to use
+        """
+        # Apex record
+        if domain == "" and (self.debug_route_prefix is None or self.debug_route_prefix == ""):
+            # postfixed with . to be suitable for record name field
+            return f"{self.root_domain}."
+        else:
+            # postfixed with . to be suitable for record name field
+            return f"{self.debug_route_prefix or ''}{domain}.{self.root_domain}."
 
     def add_load_balancer(self,
                           id: str,
-                          domain_prefix: str,
+                          domain: str,
                           load_balancer: elb.ILoadBalancerV2,
                           comment: Optional[str] = None,
                           route_ttl: Optional[Duration] = DEFAULT_TTL) -> r53.ARecord:
@@ -142,7 +101,7 @@ class DNSAllocator(Construct):
             scope=self,
             id=id,
             zone=self.hz,
-            record_name=domain_prefix,
+            record_name=self._generate_route(domain),
             comment=comment,
             ttl=route_ttl,
             target=r53.RecordTarget.from_alias(target)
@@ -150,7 +109,7 @@ class DNSAllocator(Construct):
 
     def add_cname(self,
                   id: str,
-                  domain_prefix: str,
+                  domain: str,
                   dns_address: str,
                   comment: Optional[str] = None,
                   route_ttl: Optional[Duration] = DEFAULT_TTL) -> None:
@@ -169,7 +128,7 @@ class DNSAllocator(Construct):
             scope=self,
             id=id,
             zone=self.hz,
-            record_name=domain_prefix,
+            record_name=self._generate_route(domain),
             domain_name=dns_address,
             comment=comment,
             ttl=route_ttl
@@ -179,7 +138,7 @@ class DNSAllocator(Construct):
             self,
             id: str,
             target: api_gw.RestApiBase,
-            domain_prefix: str,
+            domain: str,
             comment: Optional[str] = None,
             route_ttl: Optional[Duration] = DEFAULT_TTL) -> None:
         """
@@ -216,14 +175,14 @@ class DNSAllocator(Construct):
             self, id,
             target=r53.RecordTarget.from_alias(r53_targets.ApiGateway(target)),
             zone=self.hz,
-            record_name=domain_prefix,
+            record_name=self._generate_route(domain),
             comment=comment,
             ttl=route_ttl)
 
     def add_cloudfront_distribution_target(
             self,
             id: str,
-            sub_domain: str,
+            domain: str,
             target: cloudfront.Distribution,
             comment: Optional[str] = None,
             route_ttl: Optional[Duration] = DEFAULT_TTL) -> None:
@@ -262,7 +221,7 @@ class DNSAllocator(Construct):
             target=r53.RecordTarget.from_alias(
                 r53_targets.CloudFrontTarget(target)),
             zone=self.hz,
-            record_name=sub_domain,
+            record_name=self._generate_route(domain),
             comment=comment,
             ttl=route_ttl)
 
@@ -303,6 +262,7 @@ class DNSAllocator(Construct):
         """
         r53.ARecord(
             self, id,
+            record_name=self._generate_route(""),
             target=r53.RecordTarget.from_alias(
                 r53_targets.CloudFrontTarget(target)),
             zone=self.hz,
@@ -312,15 +272,15 @@ class DNSAllocator(Construct):
     def add_subdomain_redirect(
             self,
             id: str,
-            from_sub_domain: str,
-            to_target: str,
+            from_domain: str,
+            to_domain: str,
             comment: Optional[str] = None,
             route_ttl: Optional[Duration] = DEFAULT_TTL) -> None:
         r53.CnameRecord(
             self,
             id,
-            domain_name=to_target,
+            domain_name=self._generate_route(to_domain),
             zone=self.hz,
             comment=comment,
-            record_name=from_sub_domain,
+            record_name=self._generate_route(from_domain),
             ttl=route_ttl)

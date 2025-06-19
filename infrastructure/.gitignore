@@ -10,3 +10,14 @@ __pycache__
 
 # this is a temporary generated file during build time and should not be included
 provena/keycloak/customised-realm.json
+
+# configuration - keycloak themes
+provena/keycloak/themes/*
+!provena/keycloak/themes/default/*
+!provena/keycloak/themes/default
+
+# CDK configs
+configs/*
+
+# cdk context
+cdk.context.json

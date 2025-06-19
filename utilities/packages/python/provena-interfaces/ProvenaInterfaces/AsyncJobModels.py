@@ -9,10 +9,12 @@ try:
     from ProvenaInterfaces.ProvenanceModels import ModelRunRecord
     from ProvenaInterfaces.ProvenanceAPI import ProvenanceRecordInfo
     from ProvenaInterfaces.RegistryModels import ItemSubType
+    from ProvenaInterfaces.SharedTypes import UserInfo, EncryptedUserInfo
 except:
     from .ProvenanceModels import ModelRunRecord
     from .ProvenanceAPI import ProvenanceRecordInfo
     from .RegistryModels import ItemSubType
+    from .SharedTypes import UserInfo, EncryptedUserInfo
 
 
 class JobType(str, Enum):
@@ -29,6 +31,8 @@ class JobSubType(str, Enum):
     MODEL_RUN_BATCH_SUBMIT = "MODEL_RUN_BATCH_SUBMIT"
     LODGE_CREATE_ACTIVITY = "LODGE_CREATE_ACTIVITY"
     LODGE_VERSION_ACTIVITY = "LODGE_VERSION_ACTIVITY"
+    MODEL_RUN_UPDATE = "MODEL_RUN_UPDATE"
+    MODEL_RUN_UPDATE_LODGE_ONLY = "MODEL_RUN_UPDATE_LODGE_ONLY"
 
     # REGISTRY
     REGISTRY_WAKE_UP = "REGISTRY_WAKE_UP"
@@ -115,10 +119,41 @@ class WakeUpResult(BaseModel):
 class ProvLodgeModelRunPayload(BaseModel):
     record: ModelRunRecord
     revalidate: bool
+    # this includes encrypted user context information
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeModelRunResult(BaseModel):
     record: ProvenanceRecordInfo
+
+# PROV UPDATE MODEL RUN
+
+
+class ProvLodgeUpdatePayload(BaseModel):
+    model_run_record_id: str
+    updated_record: ModelRunRecord
+    reason: str
+    revalidate: bool
+    # this includes encrypted user context information
+    user_info: EncryptedUserInfo
+
+
+class ProvLodgeUpdateResult(BaseModel):
+    # The updated record
+    record: ProvenanceRecordInfo
+
+# PROV UPDATE LODGE ONLY
+
+
+class ProvLodgeUpdateLodgeOnlyPayload(BaseModel):
+    model_run_record_id: str
+    updated_record: ModelRunRecord
+    revalidate: bool
+    user_info: EncryptedUserInfo
+
+
+class ProvLodgeUpdateLodgeOnlyResult(BaseModel):
+    pass
 
 # PROV LODGE ONLY MODEL RUN
 
@@ -127,10 +162,12 @@ class ProvLodgeModelRunLodgeOnlyPayload(BaseModel):
     model_run_record_id: str
     record: ModelRunRecord
     revalidate: bool
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeModelRunLodgeOnlyResult(BaseModel):
     record: ProvenanceRecordInfo
+
 
 # PROV LODGE BATCH SUBMIT
 
@@ -138,6 +175,8 @@ class ProvLodgeModelRunLodgeOnlyResult(BaseModel):
 class ProvLodgeBatchSubmitPayload(BaseModel):
     # The list of records to lodge
     records: List[ModelRunRecord]
+    # this includes encrypted user context information
+    user_info: EncryptedUserInfo
 
 
 class ProvLodgeBatchSubmitResult(BaseModel):
@@ -247,6 +286,8 @@ JOB_TYPE_PAYLOAD_MAP: Dict[JobSubType, Type[BaseModel]] = {
     JobSubType.MODEL_RUN_BATCH_SUBMIT: ProvLodgeBatchSubmitPayload,
     JobSubType.LODGE_CREATE_ACTIVITY: ProvLodgeCreationPayload,
     JobSubType.LODGE_VERSION_ACTIVITY: ProvLodgeVersionPayload,
+    JobSubType.MODEL_RUN_UPDATE: ProvLodgeUpdatePayload,
+    JobSubType.MODEL_RUN_UPDATE_LODGE_ONLY: ProvLodgeUpdateLodgeOnlyPayload,
 
     # Registry
     JobSubType.REGISTRY_WAKE_UP: WakeUpPayload,
@@ -270,6 +311,8 @@ JOB_TYPE_RESULT_MAP: Dict[JobSubType, Type[BaseModel]] = {
     JobSubType.MODEL_RUN_BATCH_SUBMIT: ProvLodgeBatchSubmitResult,
     JobSubType.LODGE_CREATE_ACTIVITY: ProvLodgeCreationResult,
     JobSubType.LODGE_VERSION_ACTIVITY: ProvLodgeVersionResult,
+    JobSubType.MODEL_RUN_UPDATE: ProvLodgeUpdateResult,
+    JobSubType.MODEL_RUN_UPDATE_LODGE_ONLY: ProvLodgeUpdateLodgeOnlyResult,
 
     # Registry
     JobSubType.REGISTRY_WAKE_UP: WakeUpResult,

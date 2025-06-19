@@ -24,7 +24,7 @@ from provena.pipeline.testing_setup.type_checking_shell_step import generate_typ
 from provena.config.config_class import *
 from provena.config.config_helpers import resolve_endpoints
 from provena.utility.cfn_output_helpers import get_output_name, get_stack_name
-from typing import List, Dict
+from typing import List, Dict, Any
 
 VERSION_INFO_FILE_PATH = "../repo-tools/github-version/version_info.json"
 
@@ -60,7 +60,7 @@ class ProvenaPipelineStack(Stack):
         """
 
         # Expose the stage
-        self.stage = config.deployment.stage
+        self.stage = config.stage
 
         # resolve the endpoints - this is used in UI build steps and is a critical process
         self.endpoints = resolve_endpoints(config=config)
@@ -108,6 +108,20 @@ class ProvenaPipelineStack(Stack):
             # node and npm version
             "node -v",
             "npm -v",
+            # Install AWS CLI and jq
+            "apt-get update && apt-get install -y awscli jq",
+           
+            # Retrieve OAuth token from AWS Secrets Manager
+            f"SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id {config.deployment.config.oauth_token_secret_arn} --query SecretString --output text)",
+            "USERNAME=$(echo $SECRET_JSON | jq -r '.username')",
+            "TOKEN=$(echo $SECRET_JSON | jq -r '.token')",
+           
+            # Run the config management script
+            "chmod +x ./config",
+            f"./config {config.deployment.config.namespace} {config.deployment.config.stage} --target https://$USERNAME:$TOKEN@{config.deployment.config.repo_clone_string.removeprefix('https://')} --branch {config.deployment.config.branch}",
+           
+            # Clean up sensitive information
+            "unset SECRET_JSON USERNAME TOKEN",
             # move to repo tooling
             "cd repo-tools/github-version",
             "pip install -r requirements.txt",
@@ -258,7 +272,7 @@ class ProvenaPipelineStack(Stack):
 
         # Determine shared library env requirements - still need to setup keycloak client ID for each static UI
         shared_lib_env_variables: Dict[str, str] = {
-            "VITE_STAGE": self.stage,
+            "VITE_STAGE": self.stage.value,
             "VITE_THEME_ID": config.general.ui_theme_id,
 
 
@@ -280,7 +294,7 @@ class ProvenaPipelineStack(Stack):
             "VITE_KEYCLOAK_AUTH_ENDPOINT": self.endpoints.keycloak_minimal,
             "VITE_KEYCLOAK_REALM": self.endpoints.keycloak_realm_name,
             "VITE_MONITORING_ENABLED": str(config.deployment.sentry_config.monitoring_enabled),
-            "VITE_FEATURE_NUMBER": str(config.deployment.ticket_no)
+            "VITE_FEATURE_NUMBER": str(config.deployment.ticket_number)
         }
 
         optional_shared_lib_env_variables: Dict[str, Optional[str]] = {
@@ -676,12 +690,13 @@ class ProvenaPipelineStack(Stack):
                 construct_id='allocator',
                 hosted_zone_id=config.dns.hosted_zone_id,
                 hosted_zone_name=config.dns.hosted_zone_name,
+                root_domain=config.general.root_domain
             )
             BuildBadgeLambda(
                 scope=self,
                 construct_id='deployment-build-badge',
                 domain=build_badge_config.build_domain,
-                stage=config.deployment.stage,
+                stage=config.stage.value,
                 cert_arn=config.dns.domain_certificate_arn,
                 allocator=allocator,
                 built_pipeline=finalized_code_pipeline
@@ -693,7 +708,7 @@ class ProvenaPipelineStack(Stack):
                     scope=self,
                     construct_id='interface-build-badge',
                     domain=build_badge_config.interface_domain,
-                    stage=config.deployment.stage,
+                    stage=config.stage.value,
                     cert_arn=config.dns.domain_certificate_arn,
                     allocator=allocator,
                     built_pipeline=interface_pipeline
@@ -714,7 +729,7 @@ class ProvenaPipelineStack(Stack):
             # Github source code for ci_projects and define triggers for the build.
             # Credentials are CodeBuild wide for GitHub.
             branch_name = config.deployment.git_branch_name
-            stage = config.deployment.stage
+            stage = config.stage.value
             github_source = build.Source.git_hub(
                 owner=config.deployment.git_owner_org,
                 repo=config.deployment.git_repo_name,
@@ -1283,7 +1298,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
         """
 
         # Expose the stage
-        self.stage = config.target_stage
+        self.stage = config.stage
 
         # expose config
         self.config = config
@@ -1440,7 +1455,7 @@ class ProvenaUIOnlyPipelineStack(Stack):
             "VITE_KEYCLOAK_REALM": self.config.domains.keycloak_realm_name,
 
             "VITE_MONITORING_ENABLED": str(self.config.sentry_config.monitoring_enabled),
-            "VITE_FEATURE_NUMBER": str(self.config.ticket_no)
+            "VITE_FEATURE_NUMBER": str(self.config.ticket_number)
         }
 
         optional_shared_lib_env_variables: Dict[str, Optional[str]] = {

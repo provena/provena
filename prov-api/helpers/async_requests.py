@@ -7,6 +7,7 @@ async def async_get_request(
         endpoint: str,
         token: str,
         params: Dict[str, str],
+        request_headers: Optional[Dict[str, str]] = None,
         timeout: float = 10.0
 ) -> httpx.Response:
     """    async_get_request
@@ -20,6 +21,8 @@ async def async_get_request(
         The token to include as Authorization header
         params : Dict[str, str]
         The query string parameters ({} for none)
+        request_headers: Optional[Dict[str, str]] = None
+            Any headers to merge into the request
         timeout : float, optional
         Optionally specify timeout (in seconds), by default 10.0
 
@@ -44,6 +47,7 @@ async def async_get_request(
         headers = {
             'Authorization': 'Bearer ' + token  # token
         }
+        headers.update(request_headers or {})
 
         try:
             # Make request
@@ -61,6 +65,7 @@ async def async_post_request(
         token: str,
         params: Dict[str, str],
         json_body: Optional[Dict[str, Any]],
+        request_headers: Optional[Dict[str, str]] = None,
         timeout: float = 10.0
 ) -> httpx.Response:
     """    async_post_request
@@ -76,6 +81,8 @@ async def async_post_request(
             The query string params ({} for none)
         json_body : Optional[Dict[str, Any]]
             The optional json body 
+        request_headers: Optional[Dict[str, str]] = None
+            Any headers to merge into the request
         timeout : float, optional
             Optionally specify timeout (in seconds), by default 10.0
 
@@ -100,6 +107,7 @@ async def async_post_request(
         headers = {
             'Authorization': 'Bearer ' + token  # token
         }
+        headers.update(request_headers or {})
         try:
             # Make POST request
             if json_body:
@@ -121,6 +129,7 @@ async def async_put_request(
         token: str,
         params: Dict[str, str],
         json_body: Optional[Dict[str, Any]],
+        request_headers: Optional[Dict[str, str]] = None,
         timeout: float = 10.0
 ) -> httpx.Response:
     """    async_put_request
@@ -136,6 +145,8 @@ async def async_put_request(
             The query string params ({} for none)
         json_body : Optional[Dict[str, Any]]
             The optional json body 
+        request_headers: Optional[Dict[str, str]] = None
+            Any headers to merge into the request
         timeout : float, optional
             Optionally specify timeout (in seconds), by default 10.0
 
@@ -160,6 +171,7 @@ async def async_put_request(
         headers = {
             'Authorization': 'Bearer ' + token  # token
         }
+        headers.update(request_headers or {})
         try:
             # Make PUT request
             if json_body:

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from KeycloakFastAPI.Dependencies import ProtectedRole
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, admin_user_protected_role_dependency, get_user_context
 from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.RegistryModels import *
 from helpers.action_helpers import *
@@ -10,6 +10,7 @@ from config import Config, get_settings
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import *
 from helpers.workflow_helpers import *
 from route_models import *
+
 
 def get_correct_dependency(level: RouteAccessLevel) -> Any:
     if level == RouteAccessLevel.READ:
@@ -25,9 +26,9 @@ def get_correct_dependency(level: RouteAccessLevel) -> Any:
 def generate_router(
         route_config: RouteConfig,
 ) -> APIRouter:
-    
+
     router = APIRouter()
-    
+
     action: RouteActions
     action_config: RouteActionConfig
 
@@ -61,7 +62,7 @@ def generate_router(
                     detail=f"You are not authorised to take this action."
                 )
 
-    def enforce_user_link_check(action_enforcement: bool, type_enforcement: bool, user: User, config: Config, force_required: bool = False) -> Optional[str]:
+    def enforce_user_link_check(action_enforcement: bool, type_enforcement: bool, user: User, config: Config, force_required: bool = False, username: Optional[str] = None) -> Optional[str]:
         """
 
         Queries auth API link service for the username.
@@ -71,8 +72,9 @@ def generate_router(
         If there is no linked ID or any other error occurs then the request is rejected.
 
         Args:
-            user (User): The user - uses this username and token
+            user (User): The user who's token we should use
             config (Config): The config
+            username (Optional[str]): By default, the user's username is used, but can override
 
         Raises:
             HTTPException: Various exceptions, 400 if missing link, 500 for comms errors
@@ -81,7 +83,8 @@ def generate_router(
         # route and subtype level enforcement (or forced bypass)
         if (action_enforcement and type_enforcement) or force_required:
             if config.enforce_user_links:
-                possible_link = get_user_link(user=user, config=config)
+                possible_link = get_user_link(
+                    user=user, username=username or user.username, config=config)
 
                 # abort if no link
                 if possible_link is None:
@@ -1513,9 +1516,9 @@ def generate_router(
     '''
     These methods are used when a service account acts on behalf of the user.
     They are not visible in the generated json schema/client libs. The
-    difference is that these methods observe an optional 'username' query string
-    parameter which overrides the User auth object. This is helpful when objects
-    are created which have ownership tied to the username. 
+    difference is that these methods observe a required header which is an
+    encrypted JSON object of the user's info.  This is helpful when objects are
+    created which have ownership tied to the username. 
 
     Access is checked via the following workflows
     
@@ -1530,9 +1533,6 @@ def generate_router(
 
     WARNING - these routes should be protected by a service role auth (see
     route_config.limited_access_roles).
-    
-    Currently only used for the data store - however the prov store might end up
-    using a lot of these patterns as well.
     '''
 
     action = RouteActions.PROXY_FETCH
@@ -1546,11 +1546,12 @@ def generate_router(
                           )
         async def proxy_fetch_item(
             id: str,
-            username: str,
             seed_allowed: bool = False,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(action_config.access_level))
+                get_correct_dependency(action_config.access_level)),
+            # this looks for header as configured and decrypts
+            proxy_user: ProtectedRole = Depends(get_user_context)
         ) -> GenericFetchResponse:
             """    fetch_item
                 Fetches the item specified by the id from the 
@@ -1588,17 +1589,17 @@ def generate_router(
                 config=config
             )
 
-            # update the user username based on service proxy username
-            user = protected_roles.user
-            user.username = username
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_FETCH].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             # this method ensures that the user has an appropriate fetch role
             response: GenericFetchResponse = fetch_helper(
@@ -1610,6 +1611,9 @@ def generate_router(
                 available_roles=route_config.available_roles,
                 user=user,
                 config=config,
+                # even with updated user context - we still pass this through as
+                # the user's token is not actually valid - for doing group
+                # access checks we need to make api req
                 service_proxy=True
             )
             return route_config.fetch_response_type(
@@ -1629,10 +1633,11 @@ def generate_router(
                           include_in_schema=not action_config.hide
                           )
         async def proxy_seed_item(
-            proxy_username: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(action_config.access_level))
+                get_correct_dependency(action_config.access_level)),
+            # this looks for header as configured and decrypts
+            proxy_user: ProtectedRole = Depends(get_user_context)
         ) -> GenericSeedResponse:
             """    seed_item
                 Posts a new empty item. This will mint a handle, 
@@ -1661,17 +1666,17 @@ def generate_router(
                 config=config
             )
 
-            # overwrite the username if provided
-            if proxy_username is not None:
-                protected_roles.user.username = proxy_username
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_SEED].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             assert route_config.seed_response_type
             return route_config.seed_response_type(
@@ -1680,7 +1685,7 @@ def generate_router(
                     subtype=route_config.desired_subtype,
                     default_roles=route_config.default_roles,
                     config=config,
-                    user=protected_roles.user,
+                    user=user,
                     versioning_enabled=route_config.provenance_enabled_versioning
                 )).dict()
             )
@@ -1701,13 +1706,14 @@ def generate_router(
             id: str,
             replacement_domain_info: route_config.item_domain_info_type,  # type: ignore
             reason: Optional[str] = None,
-            proxy_username: Optional[str] = None,
             bypass_item_lock: bool = False,
             exclude_history_update: bool = False,
             manual_grant: bool = False,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(action_config.access_level))
+                get_correct_dependency(action_config.access_level)),
+            # this looks for header as configured and decrypts
+            proxy_user: ProtectedRole = Depends(get_user_context)
         ) -> UpdateResponse:
             """    update_item
                 PUT method to apply an update to an existing item. The existing
@@ -1762,18 +1768,17 @@ def generate_router(
                 config=config
             )
 
-            # overwrite the username if provided - this ensures that the proxied
-            # user permissions are checked
-            if proxy_username is not None:
-                protected_roles.user.username = proxy_username
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_UPDATE].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             # no specific access checks at an item role level are required for
             # creating new things
@@ -1832,11 +1837,14 @@ def generate_router(
                 reason=reason,
                 replacement_domain_info=replacement_domain_info,
                 item_model_type=route_config.item_model_type,
-                user=protected_roles.user,
+                user=user,
                 available_roles=route_config.available_roles,
                 config=config,
                 service_proxy=True,
                 exclude_history_update=exclude_history_update,
+                # This is currently only used for review approval since the
+                # review user may not have write permissions but needs to update
+                # the record
                 manual_grant=manual_grant
             )
 
@@ -1859,7 +1867,7 @@ def generate_router(
                 session_id = await spinoff_creation_job(
                     linked_person_id=linked_person_id,
                     created_item=new_item,
-                    username=protected_roles.user.username,
+                    username=user.username,
                     config=config
                 )
 
@@ -1880,10 +1888,11 @@ def generate_router(
                           )
         async def proxy_revert_item(
             revert_request: ItemRevertRequest,
-            proxy_username: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(action_config.access_level))
+                get_correct_dependency(action_config.access_level)),
+            # this looks for header as configured and decrypts
+            proxy_user: ProtectedRole = Depends(get_user_context)
         ) -> ItemRevertResponse:
             """
             Reverts the given item to the previous history version as
@@ -1899,9 +1908,7 @@ def generate_router(
 
             Args:
                 revert_request (ItemRevertRequest): Contains the id, reason
-                and history id. proxy_username (Optional[str]): The username of
-                the proxy user - update will be under their username and access
-                is checked for them.
+                and history id. 
 
             Returns:
                 ItemRevertResponse: Status response
@@ -1914,22 +1921,21 @@ def generate_router(
                 config=config
             )
 
-            # check locked
-            locked_check(
-                id=revert_request.id,
-                config=config
-            )
-
-            # overwrite the username if provided - this ensures that the proxied
-            # user permissions are checked
-            if proxy_username is not None:
-                protected_roles.user.username = proxy_username
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_REVERT].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
+                config=config
+            )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
+
+            # check locked
+            locked_check(
+                id=revert_request.id,
                 config=config
             )
 
@@ -1941,7 +1947,7 @@ def generate_router(
                 item_model_type=route_config.item_model_type,
                 correct_category=route_config.desired_category,
                 correct_subtype=route_config.desired_subtype,
-                user=protected_roles.user,
+                user=user,
                 available_roles=route_config.available_roles,
                 config=config,
                 service_proxy=True
@@ -1958,10 +1964,12 @@ def generate_router(
                           include_in_schema=not action_config.hide
                           )
         async def proxy_version(
-            version_request: ProxyVersionRequest,
+            version_request: VersionRequest,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(action_config.access_level))
+                get_correct_dependency(action_config.access_level)),
+            # this looks for header as configured and decrypts
+            proxy_user: ProtectedRole = Depends(get_user_context)
         ) -> VersionResponse:
             """
             Runs a version versioning operation in proxy mode. 
@@ -1987,17 +1995,18 @@ def generate_router(
                 config=config
             )
 
-            # Overwrite proxy username in User class
-            protected_roles.user.username = version_request.username
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_VERSION].enforce_linked_owner,
                 type_enforcement=route_config.enforce_username_person_link,
                 force_required=version_spinoff,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             if version_spinoff and linked_person_id is None:
                 raise HTTPException(
@@ -2012,20 +2021,22 @@ def generate_router(
                 domain_info_type=route_config.item_domain_info_type,
                 correct_category=route_config.desired_category,
                 correct_subtype=route_config.desired_subtype,
-                user=protected_roles.user,
+                user=user,
                 available_roles=route_config.available_roles,
                 default_roles=route_config.default_roles,
                 service_proxy=True,
                 config=config
             )
 
+            # this is a mock session ID only relevant in test mode
             session_id = "1234"
             if version_spinoff:
                 assert linked_person_id
                 assert version_info.new_item
 
+                # TODO validate that this user proxy information is sufficient
                 session_id = await spinoff_version_job(
-                    username=protected_roles.user.username,
+                    username=user.username,
                     new_item=cast(ItemBase, version_info.new_item),
                     version_request=version_request,
                     version_number=version_info.version_number,
@@ -2055,10 +2066,11 @@ def generate_router(
                           )
         async def proxy_create_item(
             item_domain_info: route_config.item_domain_info_type,  # type: ignore
-            proxy_username: Optional[str] = None,
             config: Config = Depends(get_settings),
             protected_roles: ProtectedRole = Depends(
-                get_correct_dependency(action_config.access_level))
+                get_correct_dependency(action_config.access_level)),
+            # this looks for header as configured and decrypts
+            proxy_user: ProtectedRole = Depends(get_user_context)
         ) -> GenericCreateResponse:
             """    create_item
                 POSTs a new item to the registry of the given item type. 
@@ -2098,11 +2110,6 @@ def generate_router(
                 config=config
             )
 
-            # overwrite the username if provided - created item will have
-            # specified username as owner
-            if proxy_username is not None:
-                protected_roles.user.username = proxy_username
-
             # enforce user link service
             linked_person_id = enforce_user_link_check(
                 action_enforcement=ROUTE_ACTION_CONFIG_MAP[RouteActions.PROXY_CREATE].enforce_linked_owner,
@@ -2110,8 +2117,12 @@ def generate_router(
                 # Will throw an error if unlinked and versioning enabled
                 force_required=creation_spinoff,
                 user=protected_roles.user,
+                username=proxy_user.user.username,
                 config=config
             )
+
+            # use the proxy user - noting the token is not valid!
+            user = proxy_user.user
 
             # no specific access checks at an item role level are required for
             # creating new things
@@ -2138,7 +2149,7 @@ def generate_router(
                     category=route_config.desired_category,
                     subtype=route_config.desired_subtype,
                     default_roles=route_config.default_roles,
-                    user=protected_roles.user,
+                    user=user,
                     config=config,
                     versioning_enabled=route_config.provenance_enabled_versioning
                 )).dict()
@@ -2151,7 +2162,7 @@ def generate_router(
                 session_id = await spinoff_creation_job(
                     linked_person_id=linked_person_id,
                     created_item=cast(ItemBase, response.created_item),
-                    username=protected_roles.user.username,
+                    username=user.username,
                     config=config
                 )
                 # update session ID in response

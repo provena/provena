@@ -5,15 +5,16 @@ python-jose
 setuptools
 boto3
 jsonschema
-httpx
+httpx==0.27.2
 mangum
 aws-secretsmanager-caching
 types-requests
-pydantic[email]==1.10.12
+pydantic[email]==1.10.17
 python-dotenv
 shapely
 pyproj
 sentry-sdk[fastapi]
+mypy-boto3-kms
 
 # this links to the utilities package deployed as part of 
 # this provena repo - ensure this is correct in your 

@@ -25,8 +25,14 @@
             "keyword2",
             "coralLover"
         ],
-        "created_date": "2021-12-25",
-        "published_date": "2021-12-25",
+        "created_date": {
+            "relevant": true,
+            "value": "2021-12-25"
+        },
+        "published_date": {
+            "relevant": true,
+            "value": "2021-12-25"
+        },
         "publisher_id": "1234"
     }
 }

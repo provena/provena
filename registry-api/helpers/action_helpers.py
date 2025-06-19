@@ -272,7 +272,7 @@ def fetch_helper(
             status=Status(
                 success=False, details=f"Could not find the given key ({id}) in the registry. Details {e}.")
         )
-    
+
     except ValueError as e:
         return GenericFetchResponse(
             status=Status(
@@ -571,6 +571,42 @@ async def version_helper(
         config: Config,
         service_proxy: bool = False
 ) -> VersionHelperResponse:
+    """
+
+    Creates a new version of an existing item, checking the authorisation and
+    other constraints.
+
+    Parameters
+    ----------
+    id : str
+        The id of the item to version
+    reason : str
+        Reason for update
+    item_model_type : Type[item_base_type]
+        The item model type
+    domain_info_type : Type[item_domain_info_type]
+        The domain info model type
+    correct_category : ItemCategory
+        The category for item
+    correct_subtype : ItemSubType
+        The subtype to validate
+    available_roles : Roles
+        The roles available for the new item
+    default_roles : Roles
+        The default roles for the new item
+    user : User
+        The user to do this for
+    config : Config
+        Config
+    service_proxy : bool, optional
+        True if this is a proxy route, doesn't rely on user token, by default
+        False
+
+    Returns
+    -------
+    VersionHelperResponse
+        Response including the new ID etc
+    """
     # Try to read the raw item with given key from registry
     try:
         raw_item: Dict[str, Any] = get_entry_raw(id=id, config=config)
@@ -891,7 +927,6 @@ def update_item_helper(
         # user groups are looked up differently if we are in service proxy mode
         service_proxy=service_proxy,
         # add the manual granted roles if applicable
-
     ).roles
 
     authorised = evaluate_user_access(
@@ -931,9 +966,8 @@ def update_item_helper(
         else:  # exclude history update and use existing.
             history = record.history
 
-    # Construct new complete object using record info
-    # from existing record, and domain and other item info
-    # from the domain specialised item
+    # Construct new complete object using record info from existing record, and
+    # domain and other item info from the domain specialised item
     new_item = item_model_type(
         # record info
         id=id,
@@ -953,7 +987,7 @@ def update_item_helper(
     )
 
     # The provided item is in the store, with a matching ID, let's update it
-    friendly_format = json.loads(new_item.json(exclude_none=True))
+    friendly_format = py_to_dict(new_item)
 
     try:
         write_registry_dynamo_db_entry_raw(
@@ -1067,7 +1101,7 @@ async def create_item_helper(
     if user.email is None:
         raise HTTPException(
             status_code=400,
-            detail=f"User does not have an email address. Registration not possible."
+            detail=f"User does not have an email address. Item creation not possible."
         )
 
     # Create a handle which points to <registry URL>/item/<handle>
@@ -1111,7 +1145,7 @@ async def create_item_helper(
     )
 
     # write the object to the registry
-    friendly_format = json.loads(item.json(exclude_none=True))
+    friendly_format = py_to_dict(item)
     try:
         write_registry_dynamo_db_entry_raw(
             registry_item=friendly_format,
@@ -1349,7 +1383,8 @@ def list_items_paginated_and_filter(
 
 
 def get_user_group_id_set(user: User, config: Config, service_proxy: bool = False) -> Set[str]:
-    # otherwise, get the groups of the user and check access for each protection type at each level
+    # otherwise, get the groups of the user and check access for each protection
+    # type at each level
     try:
         # depending on if service proxy mode, either make a user token request
         # or service token request asking by username
@@ -1402,9 +1437,8 @@ def describe_access_helper(
             roles=available_roles
         )
 
-    # if the user is admin - always return all roles if using a service proxy -
-    # we only want to check user's access so don't look at roles (i.e. admin)
-    if user_is_admin(user) and not service_proxy:
+    # if the user is admin - always return all roles
+    if user_is_admin(user):
         return DescribeAccessResponse(
             roles=available_roles
         )

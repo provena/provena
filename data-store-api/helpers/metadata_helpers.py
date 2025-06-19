@@ -73,7 +73,7 @@ def get_schema(config: Config) -> Schema:
     return Schema(json_schema=json.loads(CollectionFormat.schema_json()))
 
 def validate_optionally_required_check(
-    check: OptionallyRequiredCheck,
+    check: OptionallyRequiredCheck, 
     need_obtained_err_message: str,
     unnecessary_obtained_err_message: str,
 ) -> None:
@@ -111,9 +111,10 @@ def validate_fields(data: CollectionFormat) -> None:
     """
 
     # Ensure date is reasonable
-    if data.dataset_info.published_date < data.dataset_info.created_date:
-        raise Exception(
-            "The published date cannot be before the creation date.")
+    if data.dataset_info.published_date.value and data.dataset_info.created_date.value:
+        if data.dataset_info.published_date.value < data.dataset_info.created_date.value:
+            raise Exception(
+                "The published date cannot be before the creation date.")
 
     # Check for ethics and privacy (registration)
     validate_optionally_required_check(

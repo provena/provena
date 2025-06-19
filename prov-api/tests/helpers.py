@@ -1,11 +1,19 @@
 import httpx
+from typing import Any
 
-def check_status_code(response:httpx.Response) -> None:
+async def mock_get_user_cipher(
+    encryption_service: Any = None,
+    user: Any = None,
+) -> str:
+    return "empty"
+
+
+def check_status_code(response: httpx.Response) -> None:
     """
     check_status_code 
-    
+
     Ensures that the httpx response is status code 200.
-    
+
     Prints out helpful error if not.
 
     Parameters
@@ -15,13 +23,12 @@ def check_status_code(response:httpx.Response) -> None:
     """
     if response.status_code != 200:
         # try and pull out error message
-        error_message = "Unknown" 
+        error_message = "Unknown"
         try:
-            error_message = response.json()['detail'] 
+            error_message = response.json()['detail']
         except:
             try:
                 error_message = response.text
             except:
                 None
         assert response.status_code == 200, f"Status code {response.status_code}. Error message: {error_message}."
-    

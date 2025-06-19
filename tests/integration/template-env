@@ -2,11 +2,11 @@ LEAVE_ITEMS_FOR_INITIALISATION=False
 DATA_STORE_API_ENDPOINT="https://data-api.your.domain.io"
 REGISTRY_API_ENDPOINT="https://registry-api.your.domain.io"
 PROV_API_ENDPOINT="https://prov-api.your.domain.io"
+JOB_API_ENDPOINT="https://job-api.your.domain.io"
 AUTH_API_ENDPOINT="https://auth-api.your.domain.io"
 KEYCLOAK_CLIENT_ID=integration-tests
 KEYCLOAK_ENDPOINT="https://auth.your.domain.io/auth/realms/realm_name" 
 INVALID_HANDLE=1234567890123
-
 SYSTEM_WRITE_USERNAME=""
 SYSTEM_WRITE_PASSWORD=""
 SYSTEM_WRITE_USERNAME_2=""

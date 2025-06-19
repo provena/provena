@@ -24,7 +24,7 @@ class ProvenaUIStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # pull out some common vars
-        stage = config.target_stage
+        stage = config.stage
         us_east_cert_arn = config.dns.us_east_certificate_arn
 
         # Create allocator to use
@@ -32,7 +32,8 @@ class ProvenaUIStack(Stack):
             scope=self,
             construct_id="dns",
             hosted_zone_id=config.dns.hosted_zone_id,
-            hosted_zone_name=config.dns.hosted_zone_name
+            hosted_zone_name=config.dns.hosted_zone_name,
+            root_domain=config.domains.root_domain
         )
 
         landing_page_ui = StaticCloudfrontDistribution(

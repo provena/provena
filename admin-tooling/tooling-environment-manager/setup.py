@@ -11,7 +11,7 @@ setup(
         ]
     ),
     install_requires=[
-        'pydantic==1.10.12'
+        'pydantic==1.10.17'
     ],
     package_data={
         'ToolingEnvironmentManager': ['py.typed']

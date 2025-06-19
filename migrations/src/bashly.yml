@@ -143,3 +143,16 @@ commands:
             help: Apply the changes - do not run in dry run mode.
           - long: --reuse_venv
             help: Don't rebuild the python virtual environments
+    - name: f1699-migration
+      help: Migrations required for f1699 feature - Creates a subfield/dict for the now optional creation and published dates in dataset items.
+      args:
+          - name: stage
+            required: true
+            help: The application stage to target
+            allowed: ["TEST", "DEV", "STAGE", "PROD"]
+      flags:
+          - long: --apply
+            help: Apply the changes - do not run in dry run mode.
+          - long: --reuse_venv
+            help: Don't rebuild the python virtual environments
+

@@ -7,6 +7,20 @@
 
 export type DatasetType = "DATA_STORE";
 
+export interface AddStudyLinkQueryParameters {
+  model_run_id: string;
+  study_id: string;
+}
+export interface AddStudyLinkResponse {
+  status: Status;
+  model_run_id: string;
+  study_id: string;
+  session_id: string;
+}
+export interface Status {
+  success: boolean;
+  details: string;
+}
 export interface AssociationInfo {
   modeller_id: string;
   requesting_organisation_id?: string;
@@ -16,10 +30,6 @@ export interface ConvertModelRunsResponse {
   new_records?: ModelRunRecord[];
   existing_records?: string[];
   warnings?: string[];
-}
-export interface Status {
-  success: boolean;
-  details: string;
 }
 export interface ModelRunRecord {
   workflow_template_id: string;
@@ -51,6 +61,14 @@ export interface LineageResponse {
     [k: string]: unknown;
   };
 }
+export interface PostUpdateModelRunInput {
+  model_run_id: string;
+  reason: string;
+  record: ModelRunRecord;
+}
+export interface PostUpdateModelRunResponse {
+  session_id: string;
+}
 export interface ProvenanceRecordInfo {
   id: string;
   prov_json: string;
@@ -73,6 +91,11 @@ export interface StatusResponse {
 export interface SyncRegisterModelRunResponse {
   status: Status;
   record_info: ProvenanceRecordInfo;
+}
+export interface UserInfo {
+  username: string;
+  email: string;
+  roles: string[];
 }
 export interface VersionDetails {
   commit_id?: string;

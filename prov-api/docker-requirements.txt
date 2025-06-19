@@ -6,20 +6,21 @@ python-multipart
 setuptools
 boto3
 jsonschema
-httpx
+httpx==0.27.2
 mangum
 aws-secretsmanager-caching
-pydantic==1.10.12
+pydantic==1.10.17
 cachetools
 aiocache
 types-cachetools
 prov
-# prov-db-connector (can't use original due to bug - this is forked version)
-git+https://github.com/gbrrestoration/prov-db-connector#egg=prov-db-connector
 neo4j
 networkx
 python-dotenv
 sentry-sdk[fastapi]
+mypy-boto3-kms
+python-docx==1.1.2
+
 
 # requires GITHUB_TOKEN as environment variable 
 # Keycloak auth test package

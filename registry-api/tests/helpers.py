@@ -1,12 +1,13 @@
 from copy import deepcopy
 from random import choice
 from typing import Any
+from fastapi import FastAPI
 from tests.config import *
 from dataclasses import dataclass
 import pytest
 from fastapi.testclient import TestClient
 from KeycloakFastAPI.Dependencies import ProtectedRole, User
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, get_user_context
 # from requests import Response
 from httpx._models import Response
 import json
@@ -14,7 +15,28 @@ from main import route_configs, ITEM_CATEGORY_ROUTE_MAP, ITEM_SUB_TYPE_ROUTE_MAP
 from pydantic import BaseModel
 import boto3  # type:ignore
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
-from ProvenaSharedFunctionality.Registry.TestConfig import route_params, RouteParameters
+from ProvenaInterfaces.TestConfig import route_params, RouteParameters
+
+
+def gen_user_context_mock(roles: List[str] = [], username: str = "fake", access_token: str = "", email: str = "fake@gmail.com") -> Any:
+    async def mock_get_user_context(
+        request: Any = None,
+        config: Any = None,
+        encryption_service: Any = None,
+        user: Any = None,
+    ) -> ProtectedRole:
+        return ProtectedRole(
+            access_roles=roles,
+            user=User(username=username, roles=roles,
+                      access_token=access_token, email=email)
+        )
+    return mock_get_user_context
+
+
+def put_context_mock(app: FastAPI, roles: List[str] = [], username: str = "fake", access_token: str = "", email: str = "fake@gmail.com") -> None:
+    app.dependency_overrides[get_user_context] = gen_user_context_mock(
+        roles=roles, username=username, access_token=access_token, email=email)
+
 
 # Which subtypes are excluded from regular comprehensive testing
 route_config_exclusions: List[ItemSubType] = [
@@ -152,6 +174,7 @@ def filtered_none_deep_copy(input: Any) -> Union[Dict[Any, Any], List[Any], Any]
         # Return a native copy of the leaf node
         return deepcopy(input)
 
+
 def seed_item_successfully(client: TestClient, item_subtype: ItemSubType) -> SeededItem:
     resp = seed_item(client, item_subtype)
     check_status_success_true(resp)
@@ -161,9 +184,12 @@ def seed_item_successfully(client: TestClient, item_subtype: ItemSubType) -> See
     assert item
     return item
 
+
 def seed_item(client: TestClient, item_subtype: ItemSubType) -> Response:
-    seed_route = get_route(action=RouteActions.SEED, params=get_item_subtype_route_params(item_subtype))
+    seed_route = get_route(action=RouteActions.SEED,
+                           params=get_item_subtype_route_params(item_subtype))
     return client.post(seed_route)
+
 
 def entity_list_exhaust(client: TestClient, params: RouteParameters, subtype_list_request: Optional[SubtypeListRequest] = None) -> Tuple[List[ItemBase], List[SeededItem]]:
     list_route = get_route(action=RouteActions.LIST, params=params)
@@ -1209,7 +1235,7 @@ def create_item_from_domain_info_not_successfully(client: TestClient, domain_inf
     create_resp: GenericCreateResponse = response_model.parse_obj(
         create_resp.json())
     assert not create_resp.status.success
-    
+
 
 class TestingUser():
 
@@ -1538,5 +1564,3 @@ def check_current_with_buffer(ts: int, buffer: int = 5) -> None:
     """
     current = get_timestamp()
     assert ts > current - buffer and ts < current + buffer
-
-

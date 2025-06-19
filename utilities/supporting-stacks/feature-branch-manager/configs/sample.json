@@ -1,0 +1,14 @@
+{
+    "env": {
+        "account": "your-account-id",
+        "region": "your-region"
+    },
+    "github_api_token_arn": "arn:aws:secretsmanager:your-github-token-secret-arn",
+    "repo_owner": "your-org",
+    "repo_name": "provena",
+    "branch_name": "main",
+    "ticket_pattern": "YOURTICKETNAME-(\\d+)",
+    "deploy_stack_pattern": "deploy-[f]?(\\d+)-your-stack-postfix",
+    "deploy_stack_prefix": "deploy-f",
+    "deploy_stack_postfix": "-your-stack-postfix"
+}

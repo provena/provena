@@ -1,5 +1,5 @@
 from ProvenaInterfaces.RegistryModels import *
-from ProvenaSharedFunctionality.Registry.TestConfig import route_params, RouteParameters
+from ProvenaInterfaces.TestConfig import route_params, RouteParameters
 
 
 def get_item_subtype_route_params(item_subtype: ItemSubType) -> RouteParameters:

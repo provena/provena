@@ -1,8 +1,7 @@
-import os
 from requests import Response
 from tests.helpers.general_helpers import display_failed_cleanups
 from ProvenaSharedFunctionality.Registry.RegistryRouteActions import ROUTE_ACTION_CONFIG_MAP, RouteActions
-from ProvenaSharedFunctionality.Registry.TestConfig import RouteParameters, route_params, non_test_route_params
+from ProvenaInterfaces.TestConfig import RouteParameters, route_params, non_test_route_params
 from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.RegistryAPI import *
 import requests
@@ -10,6 +9,7 @@ import json
 from KeycloakRestUtilities.Token import BearerAuth
 from tests.config import config
 from tests.helpers.general_helpers import py_to_dict
+from typing import cast
 
 
 def get_route(action: RouteActions, params: RouteParameters) -> str:
@@ -55,8 +55,17 @@ def get_item_subtype_route_params(item_subtype: ItemSubType) -> RouteParameters:
 
 
 def get_item_subtype_domain_info_example(item_subtype: ItemSubType) -> DomainInfoBase:
-    # may require re parsing of results with correct type outside of this to obtain full access to fields.
-    return get_item_subtype_route_params(item_subtype=item_subtype).model_examples.domain_info[0]
+    # get the route params
+    rp = get_item_subtype_route_params(item_subtype=item_subtype)
+
+    # get the model
+    model_class = cast(BaseModel, rp.typing_information.domain_info)
+
+    # get the example domain info
+    data = cast(BaseModel, rp.model_examples.domain_info[0])
+
+    # make a copy and reparse to ensure the item is not a memory ref to same object
+    return cast(DomainInfoBase, model_class.parse_obj(py_to_dict(data)))
 
 
 def create_item(item_subtype: ItemSubType, token: str) -> Response:
@@ -810,18 +819,18 @@ def check_ids_in_list_resp(ids: List[str], list_resp: List[Dict[str, Any]]) -> b
     ids : List[str]
         List of ids to check the presence of in list resp
     list_resp : List[Dict[str, Any]]
-        
+
 
     Returns
     -------
     bool
         True if all ids present.
     """
-    
+
     ids_in_list = set(item['id'] for item in list_resp)
 
     for id in ids:
         if id not in ids_in_list:
             return False
-    
+
     return True

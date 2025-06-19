@@ -11,6 +11,10 @@ import {
   IndigenousKnowledgeOverride,
 } from "../components/OptionallyRequiredConsents";
 import { PreferredCitationOverride } from "../components/PreferredCitationOverride";
+import {
+  CreatedDateOverride,
+  PublishedDateOverride,
+} from "components/OptionallyRequiredDatasetDates";
 
 export const uiSchema = {
   // This is used in the optional field override to disable the optional
@@ -45,6 +49,8 @@ export const uiSchema = {
     license: {
       "ui:field": "autoCompleteLicense",
     },
+    published_date: { "ui:field": "publishedDate" },
+    created_date: { "ui:field": "createdDate" },
     description: {
       "ui:widget": "textarea",
     },
@@ -66,4 +72,6 @@ export const fields: { [name: string]: any } = {
   indigenousKnowledge: IndigenousKnowledgeOverride,
   exportControls: ExportControlsConsentOverride,
   preferredCitation: PreferredCitationOverride,
+  publishedDate: PublishedDateOverride,
+  createdDate: CreatedDateOverride,
 };

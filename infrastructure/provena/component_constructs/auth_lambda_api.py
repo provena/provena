@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_secretsmanager as sm,
     aws_certificatemanager as aws_cm,
     aws_apigateway as api_gw,
+    aws_lambda as _lambda,
     RemovalPolicy,
 )
 from constructs import Construct
@@ -13,7 +14,7 @@ from provena.custom_constructs.access_request_table import AccessRequestTable
 from provena.custom_constructs.user_groups_table import UserGroupsTable
 from provena.custom_constructs.username_person_link_table import UsernamePersonLinkTable
 from provena.config.config_class import APIGatewayRateLimitingSettings, SentryConfig
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 
 
 class LambdaAuthApi(Construct):
@@ -134,12 +135,13 @@ class LambdaAuthApi(Construct):
         api = api_gw.LambdaRestApi(
             scope=self,
             id='apigw',
-            handler=api_func.function,
+            handler=cast(_lambda.IFunction, api_func.function),
+
             # Greedy proxy forwards all traffic at endpoint
             # to lambda
             proxy=True,
             domain_name=api_gw.DomainNameOptions(
-                domain_name=f"{domain}.{allocator.zone_domain_name}",
+                domain_name=f"{domain}.{allocator.root_domain}",
                 certificate=acm_cert
             ),
             deploy_options=api_gw.StageOptions(
@@ -155,12 +157,12 @@ class LambdaAuthApi(Construct):
         allocator.add_api_gateway_target(
             id="lambda-auth-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Auth API domain entry"
         )
 
         # Add rule to listener to hit this target group
-        target_host = domain + "." + allocator.zone_domain_name
+        target_host = domain + "." + allocator.root_domain
 
         # enable the API to read the service account secret
         auth_service_secret = sm.Secret.from_secret_complete_arn(

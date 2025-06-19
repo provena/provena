@@ -1,18 +1,22 @@
 from ProvenaInterfaces.RegistryAPI import *
 from helpers.async_requests import *
-from config import Config, get_settings
+from config import Config
 from helpers.keycloak_helpers import get_service_token
-from dependencies.dependencies import secret_cache
+from dependencies.dependencies import secret_cache, get_user_context_header
 from fastapi import HTTPException, Depends
 import json
 
+Headers = Dict[str, str]
 
-async def seed_model_run(proxy_username: str, config: Config) -> SeededItem:
+
+async def seed_model_run(user_cipher: str, config: Config) -> SeededItem:
     """    seed_model_run
         Performs a seed operation against the /registry/activity/model_run/seed
         endpoint which will produce an empty model run which can then be later 
         updated to include the provenance document and other details. Returns 
         the SeededItem object.
+
+        Must include the encrypted user cipher
 
         Returns
         -------
@@ -41,16 +45,15 @@ async def seed_model_run(proxy_username: str, config: Config) -> SeededItem:
     # ! Uses proxy endpoint so needs to pass through username of user
     endpoint = config.registry_api_endpoint + \
         '/registry/activity/model_run/proxy/seed'
-    params: Dict[str, str] = {
-        "proxy_username": proxy_username
-    }
     token = get_service_token(secret_cache, config)
 
     # make request
     response = await async_post_request(
         endpoint=endpoint,
         token=token,
-        params=params,
+        params={},
+        request_headers=get_user_context_header(
+            user_cipher=user_cipher, config=config),
         # No body for this post
         json_body=None
     )
@@ -94,10 +97,10 @@ async def seed_model_run(proxy_username: str, config: Config) -> SeededItem:
 
 
 async def update_model_run_in_registry(
-    proxy_username: str,
     model_run_id: str,
     model_run_domain_info: ModelRunDomainInfo,
     config: Config,
+    user_cipher: str,
     reason: Optional[str] = None,
 ) -> ItemModelRun:
     """    update_model_run_in_registry
@@ -135,7 +138,6 @@ async def update_model_run_in_registry(
         '/registry/activity/model_run/proxy/update'
     params: Dict[str, str] = {
         'id': model_run_id,
-        'proxy_username': proxy_username
     }
 
     # supply a reason if provided - this annotates the update history of the item
@@ -150,7 +152,9 @@ async def update_model_run_in_registry(
         endpoint=endpoint,
         token=token,
         params=params,
-        json_body=json_body
+        json_body=json_body,
+        request_headers=get_user_context_header(
+            user_cipher=user_cipher, config=config)
     )
 
     # check status code
@@ -239,3 +243,76 @@ async def update_model_run_in_registry(
         )
 
     return fetch_response.item
+
+
+async def fetch_item_from_registry_with_subtype(
+    proxy_username: str, 
+    id: str, 
+    item_subtype: ItemSubType, 
+    config: Config
+) -> GenericFetchResponse:
+    
+    endpoints_mapping: Dict[ItemSubType, str] = {
+        ItemSubType.MODEL_RUN: "/registry/activity/model_run/fetch", 
+        ItemSubType.DATASET: "/registry/entity/dataset/fetch",
+        ItemSubType.MODEL: "/registry/entity/model/fetch" 
+        }
+
+    # Setup request
+    assert config.registry_api_endpoint
+    # use proxy update endpoint
+    endpoint = config.registry_api_endpoint + endpoints_mapping[item_subtype]
+    
+    params: Dict[str, str] = {
+        'id': id, 
+        'proxy_username': proxy_username
+    }
+
+    # Fetch the actual thing and return it. 
+    token = get_service_token(secret_cache, config)
+
+    # make request
+    response = await async_get_request(
+        endpoint=endpoint,
+        token=token,
+        params=params
+    )
+
+    if response.status_code !=200:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Got status code {response.status_code} when trying to fetch item with subtype {item_subtype}!"
+        )
+    
+    # Get the JSON object. 
+    response_json = response.json()
+
+    # Parse the JSON into a pydantic object. 
+    try: 
+        fetch_response = GenericFetchResponse.parse_obj(response_json)
+    except: 
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to parse item with id {id} and subtype {item_subtype}"
+        )
+
+    if not fetch_response.status.success:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Response from registry API fetch for id {id} was parsed but had success==False with details: {fetch_response.status.details}"
+        )
+    
+    if not fetch_response.item:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Response from registry API fetch for id {id} with subtype {item_subtype} was successful, but no item was present."
+        )
+
+    # If the item is a seed item, that it cannot be used.
+    if fetch_response.item_is_seed:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Response from registry API fetch for id {id} is a seed object."
+        )
+
+    return fetch_response

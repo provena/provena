@@ -7,14 +7,14 @@ from config import Config, get_settings
 
 router = APIRouter()
 
+
 @router.post("/user/releases", response_model=PaginatedDatasetListResponse, operation_id="list_releasing_datasets")
 async def get_releasing_datasets(
     list_request: ListUserReviewingDatasetsRequest,
     config: Config = Depends(get_settings),
     protected_roles: ProtectedRole = Depends(
         read_user_protected_role_dependency),
-) -> PaginatedDatasetListResponse: #ItemDataset
-    
+) -> PaginatedDatasetListResponse:  # ItemDataset
 
     # deconstruct main payload
     filter_by = list_request.filter_by
@@ -25,10 +25,12 @@ async def get_releasing_datasets(
     # check this here because the list items paginated is generic and allows search without filters.
     # to return other registry items.
     if filter_by.release_reviewer is None:
-        raise HTTPException(status_code=400, detail="release reviewer id must be specified inside of filter_by")
-    
+        raise HTTPException(
+            status_code=400, detail="release reviewer id must be specified inside of filter_by")
+
     # fetch handle for this user's person entity using link service
-    user_id = get_user_link(user=protected_roles.user, config=config)
+    user_id = get_user_link(user=protected_roles.user,
+                            username=protected_roles.user.username, config=config)
     if user_id is None:
         raise HTTPException(
             status_code=400,
@@ -39,7 +41,7 @@ async def get_releasing_datasets(
         raise HTTPException(
             status_code=403,
             detail="You can only search for your own dataset releases. User requesting is not the same as the release reviewer id." +
-                f""" requesting username and ID are "{protected_roles.user.username}"" and "{user_id}". Reviewer ID filter is {filter_by.release_reviewer}."""
+            f""" requesting username and ID are "{protected_roles.user.username}"" and "{user_id}". Reviewer ID filter is {filter_by.release_reviewer}."""
         )
 
     items, returned_pagination_key = list_items_paginated_and_filter(
@@ -55,8 +57,9 @@ async def get_releasing_datasets(
         # TODO - make this on a per item basis?
         dataset_items = [ItemDataset.parse_obj(item) for item in items]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to parse item into ItemDataset. {e}")
-    
+        raise HTTPException(
+            status_code=500, detail=f"Failed to parse item into ItemDataset. {e}")
+
     return PaginatedDatasetListResponse(
         status=Status(
             success=True,

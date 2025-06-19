@@ -1,0 +1,30 @@
+name: config
+help: Configuration management tool for interacting with a private configuration repository
+version: 0.1.0
+
+environment_variables:
+  - name: DEBUG
+    help: Set to 'true' for verbose output
+
+args:
+  - name: namespace
+    required: true
+    help: The namespace to use (e.g., 'rrap')
+  - name: stage
+    required: true
+    help: The stage to use (e.g., 'dev', 'stage')
+
+flags:
+  - long: --target
+    short: -t
+    arg: repo_clone_string
+    help: The repository clone string
+  - long: --repo-dir
+    short: -d
+    arg: path
+    help: Path to the pre-cloned repository
+  - long: --branch
+    short: -b
+    arg: branch_name
+    help: "The branch to clone from the remote config repository (default: 'main')"
+    default: main

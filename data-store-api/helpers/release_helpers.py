@@ -18,10 +18,11 @@ from helpers.util import py_to_dict  # type: ignore
 # Setup AWS secret cache (ensure you have AWS_DEFAULT_REGION if running locally)
 secret_cache = setup_secret_cache()
 
+
 def add_reviewer(reviewer_id: IdentifiedResource, config: Config) -> None:
 
     # TODO - verify the reviewer id belongs to a person entity
-    # ok for now, admin only, similar level of precaution to manual 
+    # ok for now, admin only, similar level of precaution to manual
     # management in the console.
 
     try:
@@ -32,7 +33,7 @@ def add_reviewer(reviewer_id: IdentifiedResource, config: Config) -> None:
             status_code=500,
             detail=(f"Failed to connect to the reviewers database. Error: {e}")
         )
-    
+
     try:
         reviewers_table.put_item(
             Item={
@@ -42,11 +43,13 @@ def add_reviewer(reviewer_id: IdentifiedResource, config: Config) -> None:
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=(f"Failed to add reviewer {reviewer_id} to the reviewers database. Error: {e}")
+            detail=(
+                f"Failed to add reviewer {reviewer_id} to the reviewers database. Error: {e}")
         )
 
+
 def connect_to_table(table_name: str) -> Any:
-    
+
     reviewers_table: Any
     try:
         ddb_resource = boto3.resource('dynamodb')
@@ -60,7 +63,7 @@ def connect_to_table(table_name: str) -> Any:
 
 
 def delete_reviewer_by_id(reviewer_id: IdentifiedResource, config: Config) -> None:
-    
+
     reviewers_table = connect_to_table(config.REVIEWERS_TABLE_NAME)
 
     try:
@@ -72,12 +75,13 @@ def delete_reviewer_by_id(reviewer_id: IdentifiedResource, config: Config) -> No
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=(f"Failed to delete reviewer {reviewer_id} from the reviewers database. Error: {e}")
+            detail=(
+                f"Failed to delete reviewer {reviewer_id} from the reviewers database. Error: {e}")
         )
 
 
 def get_all_reviewers(config: Config) -> Set[IdentifiedResource]:
-    
+
     reviewers_table = connect_to_table(config.REVIEWERS_TABLE_NAME)
 
     try:
@@ -124,6 +128,7 @@ def list_all_items_in_db(
     # Return the list of items that was retrieved
     return items
 
+
 def validate_release_for_edit(dataset_item: ItemDataset) -> bool:
     """
     Validates that the dataset is not currently released or under review for
@@ -140,6 +145,7 @@ def validate_release_for_edit(dataset_item: ItemDataset) -> bool:
 
     """
     return dataset_item.release_status not in [ReleasedStatus.PENDING, ReleasedStatus.RELEASED]
+
 
 def validate_release_state_suitable_for_request(dataset_item: ItemDataset) -> bool:
     """
@@ -168,7 +174,8 @@ async def perform_approval_request(
     datastore_url_resolver: IdUrlResolver,
     email_client: EmailClient,
     config: Config,
-    protected_roles: ProtectedRole
+    protected_roles: ProtectedRole,
+    user_cipher: str
 ) -> None:
 
     # It is assumed that user has data store write here as per API endpoint auth
@@ -213,7 +220,8 @@ async def perform_approval_request(
     dataset_item: ItemDataset = dataset_fetch.item
 
     # validate data set is not already in review and not released (Pending State)
-    valid_for_release = validate_release_state_suitable_for_request(dataset_item=dataset_item)
+    valid_for_release = validate_release_state_suitable_for_request(
+        dataset_item=dataset_item)
     if not valid_for_release:
         raise HTTPException(
             status_code=400,
@@ -231,9 +239,17 @@ async def perform_approval_request(
                     " entity pointing to a person who is a valid dataset reviewer for this system.")
         )
 
+    # RRAPIS-1178 removes this check as it's not feasible to run without
+    # reintroducing the bug as we don't have a token for this user which embeds
+    # the roles. We would need to fetch one from keycloak, which breaks our
+    # model of using JWTs rather than querying a user DB through some auth
+    # service specific interface.
+    """
     # validate desired reviewer has read permissions into the item use proxy
     # fetch with username of suggested reviewers. Person IDs can map to several
     # usernames for when a person is a member of multiple organisations.
+    # this is checking the username of the keycloak user associated with the
+    # reviewer through the link system. Currently this could be more than one.
     usernames = get_usernames_from_id(
         person_id=approver_id, config=config, secret_cache=secret_cache)
 
@@ -244,7 +260,7 @@ async def perform_approval_request(
             fetch_response = user_proxy_fetch_dataset_from_registry(
                 item_id=dataset_id,
                 config=config,
-                proxy_username=username,
+                user_cipher=user_cipher,
                 secret_cache=secret_cache
             )
         except HTTPException as e:
@@ -267,6 +283,7 @@ async def perform_approval_request(
                 status_code=400,
                 detail=(f"Desired reviewer '{username}' does not have read permissions into dataset {dataset_id}. Cannot request for dataset to be reviewed for release by a reviewer who cannot read it. Please provide {username} with dataset read and metadata read access to dataset for review.")
             )
+    """
 
     # done all neccessary checks
     # mark dataset as pending review and update its history
@@ -285,8 +302,8 @@ async def perform_approval_request(
         )
     )
     update_response = update_dataset_in_registry(
+        user_cipher=user_cipher,
         id=dataset_id,
-        proxy_username=protected_roles.user.username,
         config=config,
         # reason="Marking dataset as pending review",
         secret_cache=secret_cache,
@@ -329,9 +346,9 @@ async def perform_action_of_approval_request(
     datastore_url_resolver: IdUrlResolver,
     email_client: EmailClient,
     config: Config,
-    protected_roles: ProtectedRole
-) -> Any:  # TODO response type here
-
+    protected_roles: ProtectedRole,
+    user_cipher: str
+) -> None:
     # validate user is a system reviewer and is assigned to review this dataset
 
     # fetch handle for this user's person entity using link service
@@ -401,8 +418,8 @@ async def perform_action_of_approval_request(
     # make the update request
     try:
         update_response = update_dataset_in_registry(
+            user_cipher=user_cipher,
             id=dataset_id,
-            proxy_username=protected_roles.user.username,
             config=config,
             # reason="Marking dataset as pending review",
             secret_cache=secret_cache,

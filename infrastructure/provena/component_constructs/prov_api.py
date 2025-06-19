@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_certificatemanager as aws_cm,
     aws_secretsmanager as sm,
     aws_iam as iam,
+    aws_kms as kms,
     Duration,
     RemovalPolicy
 )
@@ -37,6 +38,7 @@ class ProvAPI(Construct):
                  registry_api_endpoint: str,
                  data_store_api_endpoint: str,
                  cert_arn: str,
+                 user_context_key: kms.Key,
                  api_rate_limiting: Optional[APIGatewayRateLimitingSettings],
                  git_commit_id: Optional[str],
                  sentry_config: SentryConfig,
@@ -80,18 +82,12 @@ class ProvAPI(Construct):
             secret_complete_arn=service_account_secret_arn
         )
 
-        # Grant read to data store api role
-        service_secret.grant_read(api_func.function.role)
-
         # Get the secret
         neo4j_auth_secret = sm.Secret.from_secret_complete_arn(
             scope=self,
             id='neo4j-secret',
             secret_complete_arn=neo4j_auth_arn
         )
-
-        # Grant read to data store api role
-        neo4j_auth_secret.grant_read(api_func.function.role)
 
         # Environment
 
@@ -110,7 +106,10 @@ class ProvAPI(Construct):
             "DATA_STORE_API_ENDPOINT": data_store_api_endpoint,
             "MONITORING_ENABLED": str(sentry_config.monitoring_enabled),
             "SENTRY_DSN": sentry_config.sentry_dsn_back_end,
-            "FEATURE_NUMBER": str(feature_number)
+            "FEATURE_NUMBER": str(feature_number),
+            "USER_KEY_ID": user_context_key.key_id,
+            "USER_KEY_REGION": Stack.of(self).region,
+            "USER_CONTEXT_HEADER": "X-User-Context"
         }
         api_environment = {k: v for k,
                            v in api_environment.items() if v is not None}
@@ -133,14 +132,17 @@ class ProvAPI(Construct):
             # to lambda
             proxy=True,
             domain_name=api_gw.DomainNameOptions(
-                domain_name=f"{domain}.{allocator.zone_domain_name}",
+                domain_name=f"{domain}.{allocator.root_domain}",
                 certificate=acm_cert
             ),
             deploy_options=api_gw.StageOptions(
                 description="Prov API Docker Lambda FastAPI API Gateway",
                 throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
                 throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
-            )
+            ), 
+            binary_media_types = [
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" # Allows for word document.
+            ]
         )
         # API is non stateful - clean up
         api.apply_removal_policy(RemovalPolicy.DESTROY)
@@ -149,11 +151,11 @@ class ProvAPI(Construct):
         allocator.add_api_gateway_target(
             id="lambda-prov-api-route",
             target=api,
-            domain_prefix=domain,
+            domain=domain,
             comment="Lambda Prov API domain entry"
         )
 
-        target_host = domain + "." + allocator.zone_domain_name
+        target_host = domain + "." + allocator.root_domain
 
         # expose endpoint and function
         self.endpoint = f"https://{target_host}"
@@ -170,4 +172,9 @@ class ProvAPI(Construct):
             # Grant read to data store api role
             neo4j_auth_secret.grant_read(entity)
 
+            # let this service encrypt/decrypt user context headers
+            user_context_key.grant_encrypt_decrypt(entity)
+
+        # grant relevant permissions
+        grant_equivalent_permissions(api_func.function.role)
         self.grant_equivalent_permissions = grant_equivalent_permissions

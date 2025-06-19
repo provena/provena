@@ -3,12 +3,12 @@ from EcsSqsPythonTools.Types import *
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
-from helpers.workflows import register_and_lodge_provenance, lodge_provenance
-from helpers.entity_validators import RequestStyle, ServiceAccountProxy
+from helpers.workflows import register_and_lodge_provenance, lodge_provenance, update_existing_model_run, update_existing_model_run_lodge_only
+from helpers.entity_validators import RequestStyle, UserCipherProxy, ServiceAccountProxy
 from helpers.validate_model_run_record import validate_model_run_record
-from helpers.prov_helpers import produce_create_prov_document, produce_version_prov_document
+from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
-from helpers.graph_db_helpers import upload_prov_document
+from helpers.prov_connector import Neo4jGraphManager
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
@@ -55,6 +55,16 @@ def wake_up_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> Callba
             )
         )
     )
+
+
+"""
+    print(f"Initialising encryption service")
+    try:
+        encryption_service = build_kms_service_from_config(config)
+    except Exception as e:
+        return generate_failed_job(error=f"Failed to initialise encryption service. Error: {e}.")
+    print(f"Finished initialising encryption service")
+"""
 
 
 def model_run_lodge_only_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
@@ -104,7 +114,7 @@ def model_run_lodge_only_handler(payload: JobSnsPayload, settings: JobBaseSettin
     request_style = RequestStyle(
         user_direct=None,
         service_account=ServiceAccountProxy(
-            on_behalf_username=payload.username,
+            user_cipher=model_run_lodge_payload.user_info,
             direct_service=False
         )
     )
@@ -158,6 +168,199 @@ def model_run_lodge_only_handler(payload: JobSnsPayload, settings: JobBaseSettin
     )
 
 
+def model_run_update_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+    """
+
+    Updates an existing model run record.
+
+    Parameters
+    ----------
+    payload : JobSnsPayload
+        The payload which validates against subtype payload from map
+    settings : JobBaseSettings
+        The job settings
+
+    Returns
+    -------
+    CallbackResponse
+        The response indicating success/failure and reporting result payload
+    """
+    print(f"Running model run update handler.")
+
+    print("Parsing full API config from environment.")
+    try:
+        config = Config()
+    except Exception as e:
+        return CallbackResponse(
+            status=JobStatus.FAILED,
+            info=f"Failed to parse job configuration from the environment. Error: {e}."
+        )
+    print("Successfully parsed environment config.")
+
+    print(f"Parsing job specific payload")
+    try:
+        model_run_update_payload = cast(ProvLodgeUpdatePayload, parse_job_specific_payload(
+            payload=payload, job_sub_type=JobSubType.MODEL_RUN_UPDATE))
+    except Exception as e:
+        return generate_failed_job(error=f"Failed to parse job payload from the event. Error: {e}.")
+
+    print(f"Parsed specific payload: {model_run_update_payload}")
+
+    # What request style to use for lodge? We want to use the service account +
+    # proxy endpoint on behalf of user
+    request_style = RequestStyle(
+        user_direct=None,
+        service_account=ServiceAccountProxy(
+            user_cipher=model_run_update_payload.user_info,
+            direct_service=False
+        )
+    )
+
+    if model_run_update_payload.revalidate:
+        print("Validating record contents as specified in job payload.")
+        # We need to validate here
+        try:
+            valid, error_message = asyncio.run(validate_model_run_record(
+                record=model_run_update_payload.updated_record,
+                request_style=request_style,
+                config=config,
+            ))
+        except Exception as e:
+            return generate_failed_job(
+                error=f"Unhandled exception during model run lodging. Error: {e}."
+            )
+
+        if not valid:
+            assert error_message
+            return CallbackResponse(
+                status=JobStatus.FAILED,
+                info=f"Failed to validate an entity's ID in the record, error: {error_message}."
+            )
+
+        print("Record validation successful.")
+    else:
+        print("Validation skipped as specified in job payload.")
+
+    print("Starting lodge of updated model run record.")
+    try:
+        record_info = asyncio.run(update_existing_model_run(
+            model_run_record_id=model_run_update_payload.model_run_record_id,
+            record=model_run_update_payload.updated_record,
+            config=config,
+            reason=model_run_update_payload.reason,
+            request_style=request_style,
+            proxy=UserCipherProxy(
+                user_cipher=model_run_update_payload.user_info)
+        ))
+    except Exception as e:
+        return generate_failed_job(
+            error=f"An error occurred while lodging the provenance record. Error: {e}."
+        )
+
+    return CallbackResponse(
+        status=JobStatus.SUCCEEDED,
+        info=None,
+        result=py_to_dict(
+            ProvLodgeModelRunResult(
+                record=record_info
+            )
+        )
+    )
+
+
+def model_run_update_lodge_only_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+    """
+
+    Updates an existing model run record.
+
+    Parameters
+    ----------
+    payload : JobSnsPayload
+        The payload which validates against subtype payload from map
+    settings : JobBaseSettings
+        The job settings
+
+    Returns
+    -------
+    CallbackResponse
+        The response indicating success/failure and reporting result payload
+    """
+    print(f"Running model run update handler.")
+
+    print("Parsing full API config from environment.")
+    try:
+        config = Config()
+    except Exception as e:
+        return CallbackResponse(
+            status=JobStatus.FAILED,
+            info=f"Failed to parse job configuration from the environment. Error: {e}."
+        )
+    print("Successfully parsed environment config.")
+
+    print(f"Parsing job specific payload")
+    try:
+        model_run_update_payload = cast(ProvLodgeUpdateLodgeOnlyPayload, parse_job_specific_payload(
+            payload=payload, job_sub_type=JobSubType.MODEL_RUN_UPDATE_LODGE_ONLY))
+    except Exception as e:
+        return generate_failed_job(error=f"Failed to parse job payload from the event. Error: {e}.")
+
+    print(f"Parsed specific payload: {model_run_update_payload}")
+
+    # What request style to use for lodge? We want to use the service account +
+    # proxy endpoint on behalf of user
+    request_style = RequestStyle(
+        user_direct=None,
+        service_account=ServiceAccountProxy(
+            user_cipher=model_run_update_payload.user_info,
+            direct_service=False
+        )
+    )
+
+    if model_run_update_payload.revalidate:
+        print("Validating record contents as specified in job payload.")
+        # We need to validate here
+        try:
+            valid, error_message = asyncio.run(validate_model_run_record(
+                record=model_run_update_payload.updated_record,
+                request_style=request_style,
+                config=config,
+            ))
+        except Exception as e:
+            return generate_failed_job(
+                error=f"Unhandled exception during model run lodging. Error: {e}."
+            )
+
+        if not valid:
+            assert error_message
+            return CallbackResponse(
+                status=JobStatus.FAILED,
+                info=f"Failed to validate an entity's ID in the record, error: {error_message}."
+            )
+
+        print("Record validation successful.")
+    else:
+        print("Validation skipped as specified in job payload.")
+
+    print("Starting lodge of updated model run record.")
+    try:
+        asyncio.run(update_existing_model_run_lodge_only(
+            model_run_record_id=model_run_update_payload.model_run_record_id,
+            record=model_run_update_payload.updated_record,
+            request_style=request_style,
+            config=config,
+        ))
+    except Exception as e:
+        return generate_failed_job(
+            error=f"An error occurred while lodging the provenance record. Error: {e}."
+        )
+
+    return CallbackResponse(
+        status=JobStatus.SUCCEEDED,
+        info=None,
+        result={}
+    )
+
+
 def model_run_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
     """
     Handles registering in the registry AND lodging the provenance graph data
@@ -205,7 +408,7 @@ def model_run_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
     request_style = RequestStyle(
         user_direct=None,
         service_account=ServiceAccountProxy(
-            on_behalf_username=payload.username,
+            user_cipher=model_run_lodge_payload.user_info,
             direct_service=False
         )
     )
@@ -240,7 +443,9 @@ def model_run_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
         record_info = asyncio.run(register_and_lodge_provenance(
             record=model_run_lodge_payload.record,
             config=config,
-            request_style=request_style
+            request_style=request_style,
+            proxy=UserCipherProxy(
+                user_cipher=model_run_lodge_payload.user_info)
         ))
     except Exception as e:
         return generate_failed_job(
@@ -304,7 +509,7 @@ def creation_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) ->
     # Create prov document
     print("Converting details into prov document.")
     try:
-        document = produce_create_prov_document(
+        graph = create_to_graph(
             created_item_id=creation_lodge_payload.created_item_id,
             created_item_subtype=creation_lodge_payload.created_item_subtype,
             create_activity_id=creation_lodge_payload.creation_activity_id,
@@ -316,11 +521,14 @@ def creation_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) ->
     # Upload to the DB
     print("Uploading to DB.")
     try:
-        upload_prov_document(
-            id=creation_lodge_payload.creation_activity_id,
-            prov_document=document,
-            config=config
-        )
+        # ==========================================
+        # Upload provenance record into graph store
+        #
+        # This is an additive merge
+        # ==========================================
+
+        manager = Neo4jGraphManager(config=config)
+        manager.merge_add_graph_to_db(graph)
     except Exception as e:
         return generate_failed_job(error=f"Failed to lodge generated prov document into the Provenance graph database. Error: {e}.")
 
@@ -396,7 +604,9 @@ def model_run_batch_submit_handler(payload: JobSnsPayload, settings: JobBaseSett
             job_sub_type=JobSubType.MODEL_RUN_PROV_LODGE,
             job_payload=py_to_dict(ProvLodgeModelRunPayload(
                 record=record,
-                revalidate=True
+                revalidate=True,
+                # pass through encrypted payload for user info
+                user_info=batch_submit_payload.user_info
             )),
             request_batch_id=first,
             add_to_batch=batch_id
@@ -475,7 +685,7 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     # Create prov document
     print("Converting details into prov document.")
     try:
-        document = produce_version_prov_document(
+        graph = version_to_graph(
             from_version_id=version_payload.from_version_id,
             to_version_id=version_payload.to_version_id,
             version_activity_id=version_payload.version_activity_id,
@@ -488,11 +698,14 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     # Upload to the DB
     print("Uploading to DB.")
     try:
-        upload_prov_document(
-            id=version_payload.version_activity_id,
-            prov_document=document,
-            config=config
-        )
+        # ==========================================
+        # Upload provenance record into graph store
+        #
+        # This is an additive merge
+        # ==========================================
+
+        manager = Neo4jGraphManager(config=config)
+        manager.merge_add_graph_to_db(graph)
     except Exception as e:
         return generate_failed_job(error=f"Failed to lodge generated prov document into the Provenance graph database. Error: {e}.")
 
@@ -514,7 +727,9 @@ PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
     JobSubType.MODEL_RUN_LODGE_ONLY: model_run_lodge_only_handler,
     JobSubType.MODEL_RUN_BATCH_SUBMIT: model_run_batch_submit_handler,
     JobSubType.LODGE_CREATE_ACTIVITY: creation_lodge_handler,
-    JobSubType.LODGE_VERSION_ACTIVITY: version_lodge_handler
+    JobSubType.LODGE_VERSION_ACTIVITY: version_lodge_handler,
+    JobSubType.MODEL_RUN_UPDATE: model_run_update_handler,
+    JobSubType.MODEL_RUN_UPDATE_LODGE_ONLY: model_run_update_lodge_only_handler,
 }
 
 
