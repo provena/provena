@@ -1,10 +1,11 @@
 try:
     from ProvenaInterfaces.SharedTypes import StatusResponse
     from ProvenaInterfaces.ProvenanceModels import *
-    from ProvenaInterfaces.RegistryAPI import ItemSubType
+    from ProvenaInterfaces.RegistryModels import *
 except:
     from .SharedTypes import StatusResponse
     from .ProvenanceModels import *
+    from .RegistryModels import *
 
 from typing import Optional, Any, Dict, Type
 from pydantic import BaseModel, Field
@@ -74,6 +75,7 @@ class PostUpdateModelRunInput(BaseModel):
 
 class PostUpdateModelRunResponse(BaseModel):
     session_id: str
+
 
 class GenerateReportRequest(BaseModel):
     id: str
