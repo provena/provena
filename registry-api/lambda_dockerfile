@@ -1,12 +1,8 @@
 # Includes lambda runtime 
 FROM public.ecr.aws/lambda/python:3.11
 
-# Install git and PROJ dependencies for geospatial packages
-RUN yum -y install git \
-    proj-devel \
-    proj \
-    geos-devel \
-    && yum clean all
+# Install git
+RUN yum -y install git
 
 # Build arg input from deployment
 ARG github_token 
