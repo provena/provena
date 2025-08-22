@@ -24,7 +24,7 @@ async def register_model_run_complete(
     record: ModelRunRecord,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> RegisterModelRunResponse:
     """    register_model_run_complete
         Given the model run record object (schema/model) will:
@@ -110,7 +110,7 @@ async def register_batch(
     request: RegisterBatchModelRunRequest,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> RegisterBatchModelRunResponse:
     # TODO should we validate items first? No - validate at batch time?
     # Then produce job using Job API and return session ID
@@ -144,7 +144,7 @@ async def register_model_run_sync(
     # admin only for this endpoint
     roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> SyncRegisterModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -184,7 +184,7 @@ async def link_to_study(
     study_id: str,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> AddStudyLinkResponse:
 
     # validate model_run_id and study_id to be linked.
@@ -248,12 +248,12 @@ async def link_to_study(
     )
 
 
-@ router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
+@router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
 async def update_model_run(
     payload: PostUpdateModelRunInput,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> PostUpdateModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -286,46 +286,40 @@ async def update_model_run(
 
     return PostUpdateModelRunResponse(session_id=res)
 
-#
-#
-# class DeleteGraph(BaseModel):
-#    record_id: str
-#
-#
-# @router.post("/delete_graph", operation_id="delete_graph", include_in_schema=False)
-# async def delete_graph(
-#    delete: DeleteGraph,
-#    # admin only for this endpoint
-#    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
-#    config: Config = Depends(get_settings)
-# ) -> Any:
-#    # no proxy - user direct
-#    request_style = RequestStyle(
-#        service_account=None, user_direct=roles.user)
-#
-#    # dummy delete graph
-#    delete_dummy_graph = NodeGraph(record_id=delete.record_id, links=[])
-#
-#    print("Setting up neo4j client")
-#    neo4j_manager = Neo4jGraphManager(config=config)
-#    print("Done")
-#
-#    # Getting old graph
-#    print("Retrieving graph")
-#    old_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
-#    print("Done")
-#
-#    # get the graph diff
-#    print("Building diff and applying...")
-#    diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
-#    diff_generator.apply_diff(
-#        old_graph=old_graph, new_graph=delete_dummy_graph)
-#    print("Done")
-#
-#    # get the updated graph
-#    print("Retrieving updated graph")
-#    updated_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
-#    print("Done")
-#
-#    return {"old_graph": old_graph.to_json_pretty(), "updated": updated_graph.to_json_pretty()}
-#
+
+@router.post("/delete_graph", operation_id="delete_graph", include_in_schema=False)
+async def delete_graph(
+    delete: PostDeleteGraphRequest,
+    # admin only for this endpoint
+    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
+    config: Config = Depends(get_settings)
+) -> None:
+    # no proxy - user direct
+    request_style = RequestStyle(
+        service_account=None, user_direct=roles.user)
+
+    # dummy delete graph
+    delete_dummy_graph = NodeGraph(record_id=delete.record_id, links=[])
+
+    print("Setting up neo4j client")
+    neo4j_manager = Neo4jGraphManager(config=config)
+    print("Done")
+
+    # Getting old graph
+    print("Retrieving graph")
+    old_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
+    print("Done")
+
+    # get the graph diff
+    print("Building diff and applying...")
+    diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
+    diff_generator.apply_diff(
+        old_graph=old_graph, new_graph=delete_dummy_graph)
+    print("Done")
+
+    # get the updated graph
+    print("Retrieving updated graph")
+    updated_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
+    print("Done")
+
+    return None

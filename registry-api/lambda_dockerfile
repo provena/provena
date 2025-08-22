@@ -1,8 +1,12 @@
 # Includes lambda runtime 
 FROM public.ecr.aws/lambda/python:3.11
 
-# Install git for pip install which requires git packages
-RUN yum -y install git
+# Install git and PROJ dependencies for geospatial packages
+RUN yum -y install git \
+    proj-devel \
+    proj \
+    geos-devel \
+    && yum clean all
 
 # Build arg input from deployment
 ARG github_token 
@@ -15,9 +19,7 @@ ENV BRANCH_NAME=$branch_name
 ENV REPO_STRING=$repo_string
 
 WORKDIR ${LAMBDA_TASK_ROOT}
-
 COPY . .
-
 RUN python3 -m ensurepip
 
 # add cache buster layer which can be injected with hash of extra dirs or other changed things

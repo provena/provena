@@ -75,8 +75,13 @@ class PostUpdateModelRunInput(BaseModel):
 class PostUpdateModelRunResponse(BaseModel):
     session_id: str
 
+
 class GenerateReportRequest(BaseModel):
     id: str
     item_subtype: ItemSubType
     # Greater than or equal to 1 and less than equal to 3
     depth: int = Field(ge=1, le=3)
+
+
+class PostDeleteGraphRequest(BaseModel):
+    record_id: str
