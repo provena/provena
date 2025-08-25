@@ -309,3 +309,5 @@ admin-tooling/environments.json
 
 # the config targets
 env.json
+
+.python-version

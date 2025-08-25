@@ -963,28 +963,28 @@ class DiffActionType(str, Enum):
     """
 
     # Add a new node to the graph
-    ADD_NEW_NODE = auto()
+    ADD_NEW_NODE = "ADD_NEW_NODE"
 
     # Completely remove a node from the graph
-    REMOVE_NODE = auto()
+    REMOVE_NODE = "REMOVE_NODE"
 
     # Add a brand new link to the graph
-    ADD_NEW_LINK = auto()
+    ADD_NEW_LINK = "ADD_NEW_LINK"
 
     # Remove a link completely from the graph
-    REMOVE_LINK = auto()
-
+    REMOVE_LINK = "REMOVE_LINK"
+    
     # Remove a record id on link from the CSV list of record ids
-    REMOVE_RECORD_ID_FROM_LINK = auto()
+    REMOVE_RECORD_ID_FROM_LINK = "REMOVE_RECORD_ID_FROM_LINK"
 
     # Remove a record id on node from the CSV list of record ids
-    REMOVE_RECORD_ID_FROM_NODE = auto()
+    REMOVE_RECORD_ID_FROM_NODE = "REMOVE_RECORD_ID_FROM_NODE"
 
     # Add record id on link to the CSV list of record ids
-    ADD_RECORD_ID_TO_LINK = auto()
+    ADD_RECORD_ID_TO_LINK = "ADD_RECORD_ID_TO_LINK"
 
     # Add record id on node to the CSV list of record ids
-    ADD_RECORD_ID_TO_NODE = auto()
+    ADD_RECORD_ID_TO_NODE = "ADD_RECORD_ID_TO_NODE"
 
 # ==============
 # ACTION CLASSES
@@ -1465,7 +1465,7 @@ class GraphDiffApplier:
         """
         # Diff the graphs
         diff_actions = diff_graphs(old_graph, new_graph)
-        # sort thea ctions
+        # sort the actions
         sorted_actions = self._sort_diff_actions(diff_actions)
         # apply all actions
 

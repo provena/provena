@@ -45,19 +45,31 @@ async def seed_model_run(user_cipher: str, config: Config) -> SeededItem:
     # ! Uses proxy endpoint so needs to pass through username of user
     endpoint = config.registry_api_endpoint + \
         '/registry/activity/model_run/proxy/seed'
+    print("Getting service token")
     token = get_service_token(secret_cache, config)
+    print("Got service token")
 
     # make request
-    response = await async_post_request(
-        endpoint=endpoint,
-        token=token,
-        params={},
-        request_headers=get_user_context_header(
-            user_cipher=user_cipher, config=config),
-        # No body for this post
-        json_body=None
-    )
+    print("Seeding model run in registry")
+    try:
+        response = await async_post_request(
+            endpoint=endpoint,
+            token=token,
+            params={},
+            request_headers=get_user_context_header(
+                user_cipher=user_cipher, config=config),
+            # No body for this post
+            json_body=None
+        )
+    except Exception as e:
+        print(
+            f"Exception occurred when trying to seed model run identity! Exception: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Exception occurred when trying to seed model run identity! Exception: {e}"
+        )
 
+    print("Seeded model run in registry")
     # check status code
     if response.status_code != 200:
         raise HTTPException(
@@ -70,7 +82,9 @@ async def seed_model_run(user_cipher: str, config: Config) -> SeededItem:
 
     # parse as seed response
     try:
+        print("Parsing seed response")
         seed_response = ModelRunSeedResponse.parse_obj(json_content)
+        print("Parsed seed response")
     except:
         raise HTTPException(
             status_code=500,
@@ -246,29 +260,29 @@ async def update_model_run_in_registry(
 
 
 async def fetch_item_from_registry_with_subtype(
-    proxy_username: str, 
-    id: str, 
-    item_subtype: ItemSubType, 
+    proxy_username: str,
+    id: str,
+    item_subtype: ItemSubType,
     config: Config
 ) -> GenericFetchResponse:
-    
+
     endpoints_mapping: Dict[ItemSubType, str] = {
-        ItemSubType.MODEL_RUN: "/registry/activity/model_run/fetch", 
+        ItemSubType.MODEL_RUN: "/registry/activity/model_run/fetch",
         ItemSubType.DATASET: "/registry/entity/dataset/fetch",
-        ItemSubType.MODEL: "/registry/entity/model/fetch" 
-        }
+        ItemSubType.MODEL: "/registry/entity/model/fetch"
+    }
 
     # Setup request
     assert config.registry_api_endpoint
     # use proxy update endpoint
     endpoint = config.registry_api_endpoint + endpoints_mapping[item_subtype]
-    
+
     params: Dict[str, str] = {
-        'id': id, 
+        'id': id,
         'proxy_username': proxy_username
     }
 
-    # Fetch the actual thing and return it. 
+    # Fetch the actual thing and return it.
     token = get_service_token(secret_cache, config)
 
     # make request
@@ -278,21 +292,21 @@ async def fetch_item_from_registry_with_subtype(
         params=params
     )
 
-    if response.status_code !=200:
+    if response.status_code != 200:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Got status code {response.status_code} when trying to fetch item with subtype {item_subtype}!"
         )
-    
-    # Get the JSON object. 
+
+    # Get the JSON object.
     response_json = response.json()
 
-    # Parse the JSON into a pydantic object. 
-    try: 
+    # Parse the JSON into a pydantic object.
+    try:
         fetch_response = GenericFetchResponse.parse_obj(response_json)
-    except: 
+    except:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Failed to parse item with id {id} and subtype {item_subtype}"
         )
 
@@ -301,10 +315,10 @@ async def fetch_item_from_registry_with_subtype(
             status_code=500,
             detail=f"Response from registry API fetch for id {id} was parsed but had success==False with details: {fetch_response.status.details}"
         )
-    
+
     if not fetch_response.item:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Response from registry API fetch for id {id} with subtype {item_subtype} was successful, but no item was present."
         )
 
