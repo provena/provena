@@ -13,6 +13,7 @@ from ProvenaSharedFunctionality.Helpers.encryption_helpers import encrypt_user_i
 from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
 from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
 from config import get_settings, Config
+from helpers.prov_connector import NodeGraph, Neo4jGraphManager, GraphDiffApplier
 
 router = APIRouter()
 
@@ -298,7 +299,7 @@ async def delete_graph(
     request_style = RequestStyle(
         service_account=None, user_direct=roles.user)
 
-    # dummy delete graph
+    # dummy delete graph which is just an empty graph with the record id to delete
     delete_dummy_graph = NodeGraph(record_id=delete.record_id, links=[])
 
     print("Setting up neo4j client")
@@ -306,20 +307,15 @@ async def delete_graph(
     print("Done")
 
     # Getting old graph
-    print("Retrieving graph")
+    print("Retrieving existing graph")
     old_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
     print("Done")
 
     # get the graph diff
-    print("Building diff and applying...")
+    print("Building diff (empty) and applying...")
     diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
     diff_generator.apply_diff(
         old_graph=old_graph, new_graph=delete_dummy_graph)
-    print("Done")
-
-    # get the updated graph
-    print("Retrieving updated graph")
-    updated_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
     print("Done")
 
     return None
