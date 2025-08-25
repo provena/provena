@@ -1,13 +1,25 @@
 @API_ENDPOINT = {{$dotenv API_ENDPOINT}}
 @TOKEN = {{$dotenv TOKEN}}
-
-### Test Model Run Delete Endpoint
+ 
+### Test Model Run Delete Endpoint (trial)
 POST {{API_ENDPOINT}}/model_run/delete
 Content-Type: application/json
 Authorization: Bearer {{TOKEN}}
 
 {
-  "record_id": "real-handle-here"
+  "record_id": "10378.1/1983186",
+  "trial_mode": true
+}
+
+
+### Test Model Run Delete Endpoint (apply)
+POST {{API_ENDPOINT}}/model_run/delete
+Content-Type: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+  "record_id": "real-handle-here",
+  "trial_mode": false
 }
 
 ### Test with invalid/non-existent ID (should return 400)

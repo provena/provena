@@ -85,3 +85,9 @@ class GenerateReportRequest(BaseModel):
 
 class PostDeleteGraphRequest(BaseModel):
     record_id: str
+    trial_mode: bool = False
+
+
+class PostDeleteGraphResponse(BaseModel):
+    # Diff list - each entry is a diff action with possible other metadata
+    diff: List[Dict[str, Any]]

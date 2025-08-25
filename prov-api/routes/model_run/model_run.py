@@ -13,7 +13,8 @@ from helpers.registry_helpers import fetch_item_from_registry_with_subtype
 from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
 from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
 from config import get_settings, Config
-from helpers.prov_connector import NodeGraph, Neo4jGraphManager, GraphDiffApplier
+from helpers.prov_connector import NodeGraph, Neo4jGraphManager, GraphDiffApplier, diff_graphs
+from helpers.util import py_to_dict
 
 router = APIRouter()
 
@@ -294,7 +295,7 @@ async def delete_model_run(
     # admin only for this endpoint
     roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
     config: Config = Depends(get_settings)
-) -> None:
+) -> PostDeleteGraphResponse:
     # grab and ensure it exists and is a model run
     try:
         await fetch_item_from_registry_with_subtype(proxy_username=roles.user.username, id=delete.record_id, item_subtype=ItemSubType.MODEL_RUN, config=config)
@@ -316,11 +317,36 @@ async def delete_model_run(
     old_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
     print("Done")
 
-    # get the graph diff
-    print("Building diff (empty) and applying...")
-    diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
-    diff_generator.apply_diff(
-        old_graph=old_graph, new_graph=delete_dummy_graph)
-    print("Done")
+    if (delete.trial_mode):
+        print("Trial mode, not applying delete")
+        print("Building diff")
+        try:
+            diff_list = diff_graphs(
+                old_graph=old_graph, new_graph=delete_dummy_graph)
+            print(f"Diff list generated with {len(diff_list)} entries")
+            return PostDeleteGraphResponse(
+                diff=list(map(lambda diff: py_to_dict(diff), diff_list))
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Exception: could not produce graph diff: {e}"
+            ) from e
 
-    return None
+    else:
+        try:
+            # get the graph diff
+            print("Building diff (empty) and applying...")
+            diff_list = diff_graphs(
+                old_graph=old_graph, new_graph=delete_dummy_graph)
+            diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
+            diff_generator.apply_diff(
+                old_graph=old_graph, new_graph=delete_dummy_graph)
+            return PostDeleteGraphResponse(
+                diff=list(map(lambda diff: py_to_dict(diff), diff_list))
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Exception: could not apply graph diff: {e}"
+            ) from e
