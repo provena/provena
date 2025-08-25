@@ -9,7 +9,7 @@ from ProvenaInterfaces.SharedTypes import Status
 from ProvenaInterfaces.RegistryModels import ItemModelRun
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.auth_helpers import *
-from ProvenaSharedFunctionality.Helpers.encryption_helpers import encrypt_user_info
+from helpers.registry_helpers import fetch_item_from_registry_with_subtype
 from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
 from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
 from config import get_settings, Config
@@ -288,16 +288,21 @@ async def update_model_run(
     return PostUpdateModelRunResponse(session_id=res)
 
 
-@router.post("/delete_graph", operation_id="delete_graph", include_in_schema=False)
-async def delete_graph(
+@router.post("/delete", operation_id="delete_model_run", include_in_schema=False)
+async def delete_model_run(
     delete: PostDeleteGraphRequest,
     # admin only for this endpoint
     roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
     config: Config = Depends(get_settings)
 ) -> None:
-    # no proxy - user direct
-    request_style = RequestStyle(
-        service_account=None, user_direct=roles.user)
+    # grab and ensure it exists and is a model run
+    try:
+        await fetch_item_from_registry_with_subtype(proxy_username=roles.user.username, id=delete.record_id, item_subtype=ItemSubType.MODEL_RUN, config=config)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Exception: could not delete model run as error occurred when fetching the record from the registry: {e}"
+        ) from e
 
     # dummy delete graph which is just an empty graph with the record id to delete
     delete_dummy_graph = NodeGraph(record_id=delete.record_id, links=[])
