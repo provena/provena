@@ -7,7 +7,7 @@ Content-Type: application/json
 Authorization: Bearer {{TOKEN}}
 
 {
-  "record_id": "10378.1/1983187"
+  "record_id": "real-handle-here"
 }
 
 ### Test with invalid/non-existent ID (should return 400)
