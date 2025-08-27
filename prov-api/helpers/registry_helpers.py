@@ -330,3 +330,82 @@ async def fetch_item_from_registry_with_subtype(
         )
 
     return fetch_response
+
+
+async def fetch_item_from_registry(
+    id: str,
+    config: Config
+) -> ItemBase:
+    """
+    Fetches an item from the registry API using the /registry/general/fetch
+    endpoint.
+
+    Parameters
+    ----------
+    id : str
+        The id
+    config : Config
+        Config object
+
+    Returns
+    -------
+    ItemBase
+        Parsed item base object
+    """
+    # Setup request
+    assert config.registry_api_endpoint
+    # make a generic fetch request
+    endpoint = config.registry_api_endpoint + '/registry/general/fetch'
+    params: Dict[str, str] = {
+        'id': id
+    }
+
+    # Fetch the actual thing and return it.
+    token = get_service_token(secret_cache, config)
+
+    # make request
+    response = await async_get_request(
+        endpoint=endpoint,
+        token=token,
+        params=params
+    )
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Got status code {response.status_code} when trying to fetch item with id {id}!"
+        )
+
+    # Get the JSON object.
+    response_json = response.json()
+
+    # Parse the JSON into a pydantic object.
+    try:
+        fetch_response = UntypedFetchResponse.parse_obj(response_json)
+    except:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to parse item with id {id}."
+        )
+
+    if not fetch_response.status.success:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Response from registry API fetch for id {id} was parsed but had success==False with details: {fetch_response.status.details}"
+        )
+
+    if not fetch_response.item:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Response from registry API fetch for id {id} was successful, but no item was present."
+        )
+
+    # If the item is a seed item, that it cannot be used.
+    try:
+        item: ItemBase = ItemBase.parse_obj(fetch_response.item)
+        return item
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Response from registry API fetch for id {id} could not be parsed as an item. Exception {e}."
+        )

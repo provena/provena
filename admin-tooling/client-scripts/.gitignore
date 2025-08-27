@@ -144,4 +144,4 @@ thunder-tests
 dumps
 
 # any kind of text file output to try and avoid adding tokens
-# *.txt
+*.txt
