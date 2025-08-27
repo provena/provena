@@ -40,7 +40,9 @@ async def trigger_error(
 # We can expand this list in future if we want to allow deletion of other types
 ALLOWED_DELETION_TYPES: List[ItemSubType] = [
     ItemSubType.MODEL_RUN,
-    ItemSubType.STUDY
+    # You actually cannot directly delete a study since it isn't a 'document' or
+    # 'record' in the prov store, it is instead a side effect of model runs
+    # ItemSubType.STUDY
 ]
 
 
