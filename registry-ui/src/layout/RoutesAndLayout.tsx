@@ -68,6 +68,11 @@ const useStyles = makeStyles((theme: DefaultTheme) =>
     appBar: {
       zIndex: theme.zIndex.drawer + 1,
       color: "white",
+      marginTop: 75,
+    },
+    appBarContent: {
+      zIndex: theme.zIndex.drawer + 1,
+      color: "white",
     },
     routerButtonDefault: {
       color: "white",
@@ -100,7 +105,7 @@ const useStyles = makeStyles((theme: DefaultTheme) =>
         backgroundColor: `rgba(255,255,255,0.1)`,
       },
     },
-  }),
+  })
 );
 
 function RoutesAndLayout() {
@@ -159,7 +164,7 @@ function RoutesAndLayout() {
                   <Typography
                     variant="h6"
                     component="div"
-                    className={classes.appBar}
+                    className={classes.appBarContent}
                   >
                     {themeConfig.currentPageThemeConfig.appBarTitle}
                   </Typography>

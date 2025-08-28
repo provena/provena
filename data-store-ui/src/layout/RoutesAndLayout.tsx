@@ -15,10 +15,12 @@ import createStyles from "@mui/styles/createStyles";
 import makeStyles from "@mui/styles/makeStyles";
 import { useKeycloak } from "@react-keycloak/web";
 import { observer } from "mobx-react-lite";
-import { useContext, useEffect, useState } from "react";
+import { ApprovalAction } from "pages/ApprovalAction";
+import { Approvals } from "pages/Approvals";
+import { ApprovalSubmission } from "pages/ApprovalSubmission";
+import { useContext, useState } from "react";
 import {
   CONTACT_US_BUTTON_LINK,
-  DOCUMENTATION_BASE_URL,
   JOB_LIST_ROUTE,
   JOB_ROUTE_PREFIX,
   JobSubRouteComponent,
@@ -30,8 +32,8 @@ import {
   REGISTRY_LINK,
   SideNavBox,
 } from "react-libs";
-import { Link, Route, Link as RouterLink, Switch } from "react-router-dom";
 import { Footer } from "react-libs/components/Footer";
+import { Link, Route, Link as RouterLink, Switch } from "react-router-dom";
 import "../css/Parent.css";
 import { ThemeConfigContext } from "../index";
 import DatasetDetail from "../pages/DatasetDetail";
@@ -40,9 +42,7 @@ import Frontmatter from "../pages/Frontmatter";
 import NewDataset from "../pages/NewDataset";
 import Profile from "../pages/Profile";
 import UpdateMetadata from "../pages/UpdateMetadata";
-import { ApprovalSubmission } from "pages/ApprovalSubmission";
-import { ApprovalAction } from "pages/ApprovalAction";
-import { Approvals } from "pages/Approvals";
+import { WarningBanner } from "react-libs/components/WarningBanner";
 
 const useStyles = makeStyles((theme: DefaultTheme) =>
   createStyles({
@@ -66,11 +66,16 @@ const useStyles = makeStyles((theme: DefaultTheme) =>
       color: "white",
     },
     container: {
-      marginTop: 100,
+      marginTop: 175,
       marginBottom: 20,
       minHeight: "60vh",
     },
     appBar: {
+      zIndex: theme.zIndex.drawer + 1,
+      color: "white",
+      marginTop: 75,
+    },
+    appBarContent: {
       zIndex: theme.zIndex.drawer + 1,
       color: "white",
     },
@@ -105,7 +110,7 @@ const useStyles = makeStyles((theme: DefaultTheme) =>
         backgroundColor: `rgba(255,255,255,0.1)`,
       },
     },
-  }),
+  })
 );
 
 function RoutesAndLayout() {
@@ -164,7 +169,7 @@ function RoutesAndLayout() {
                   <Typography
                     variant="h6"
                     component="div"
-                    className={classes.appBar}
+                    className={classes.appBarContent}
                   >
                     {themeConfig.currentPageThemeConfig.appBarTitle}
                   </Typography>

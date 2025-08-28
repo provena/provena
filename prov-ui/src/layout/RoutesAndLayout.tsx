@@ -66,6 +66,7 @@ const useStyles = makeStyles((theme: DefaultTheme) =>
     appBar: {
       zIndex: theme.zIndex.drawer + 1,
       color: "white",
+      marginTop: 75,
     },
     routerButtonDefault: {
       color: "white",

@@ -51,7 +51,17 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
       backgroundColor: "white",
     },
+    container: {
+      marginTop: 100,
+      marginBottom: 20,
+      minHeight: "60vh",
+    },
     appBar: {
+      zIndex: theme.zIndex.drawer + 1,
+      color: "white",
+      marginTop: 75,
+    },
+    appBarContent: {
       zIndex: theme.zIndex.drawer + 1,
       color: "white",
     },
@@ -66,11 +76,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     menuBtn: {
       color: "white",
-    },
-    container: {
-      marginTop: 100,
-      marginBottom: 20,
-      minHeight: "60vh",
     },
     appHeader: {
       color: "white",
