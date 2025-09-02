@@ -9,7 +9,7 @@ from helpers.validate_model_run_record import validate_model_run_record
 from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
 from helpers.prov_connector import Neo4jGraphManager
-from helpers.generate_report_helpers import generate_report_helper
+from helpers.generate_report_helpers import generate_report_helper, remove_file
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
@@ -764,8 +764,10 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
             node_id=job_specific_payload.id,
             upstream_depth=job_specific_payload.depth, 
             item_subtype=job_specific_payload.item_subtype,
-            roles=roles,
-            config=config
+            config=config,
+            proxy=UserCipherProxy(
+                user_cipher=job_specific_payload.user_info
+            )
         ))
     except Exception as e:
         return generate_failed_job(

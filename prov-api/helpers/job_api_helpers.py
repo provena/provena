@@ -151,6 +151,29 @@ async def submit_batch_lodge_job(username: str, payload: ProvLodgeBatchSubmitPay
     )).session_id
 
 
+async def submit_generate_report_job(username: str, payload: ReportGeneratePayload, config: Config) -> str: 
+    """
+    Lodges generate report payload using the job API, returns the session ID
+    to monitor result
+
+    Args:
+        payload (ProvLodgeModelRunPayload): The prov lodge model run job payload
+
+    Returns:
+        str: The session_id
+    """
+    job_launch_request = AdminLaunchJobRequest(
+        username=username,
+        job_type=JobType.REPORT,
+        job_sub_type=JobSubType.GENERATE_REPORT,
+        job_payload=py_to_dict(payload)
+    )
+    return (await launch_generic_job(
+        payload=job_launch_request,
+        config=config
+    )).session_id
+
+
 async def fetch_job_by_id_admin(session_id: str, config: Config) -> Optional[JobStatusTable]:
     base = config.job_api_endpoint
     postfix = "/jobs/admin/fetch"

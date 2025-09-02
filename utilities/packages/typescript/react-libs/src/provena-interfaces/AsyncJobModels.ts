@@ -220,6 +220,7 @@ export interface ReportGeneratePayload {
   id: string;
   item_subtype: ItemSubType;
   depth: number;
+  user_info: string;
 }
 export interface ReportGenerateResult {
   report_url: string;
@@ -257,6 +258,9 @@ export interface GenerateReportRequest {
   id: string;
   item_subtype: ItemSubType;
   depth: number;
+}
+export interface GenerateReportResponse {
+  session_id: string;
 }
 export interface LineageResponse {
   status: Status;

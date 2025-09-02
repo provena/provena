@@ -94,6 +94,9 @@ export interface GenerateReportRequest {
   item_subtype: ItemSubType;
   depth: number;
 }
+export interface GenerateReportResponse {
+  session_id: string;
+}
 export interface LineageResponse {
   status: Status;
   record_count?: number;

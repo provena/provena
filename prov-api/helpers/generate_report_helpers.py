@@ -8,9 +8,8 @@ from pydantic import ValidationError
 from config import Config
 from fastapi import HTTPException
 
-from KeycloakFastAPI.Dependencies import ProtectedRole
 from ProvenaInterfaces.RegistryAPI import ItemBase, ItemSubType, SeededItem, Node
-from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id
+from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id, UserCipherProxy, ServiceAccountProxy
 from helpers.prov_connector import upstream_query, downstream_query
 from helpers.registry_helpers import fetch_item_from_registry_with_subtype
 
@@ -177,7 +176,13 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
     return node_list_parsed
 
 
-async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth: int, config: Config, report_node_collection: ReportNodeCollection) -> ReportNodeCollection:
+async def generate_report(
+        user_cipher: str,
+        starting_id: str,
+        upstream_depth: int,
+        config: Config,
+        report_node_collection: ReportNodeCollection
+) -> ReportNodeCollection:
     """Generates the report by querying upstream and downstream data, parsing nodes, and filtering results.
 
     This helper function performs upstream and downstream queries, parses the node responses, filters them 
@@ -203,7 +208,7 @@ async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth:
     """
 
     collection = await fetch_parse_all_upstream_downstream_nodes(
-        user=user,
+        user_cipher=user_cipher,
         starting_id=starting_id,
         upstream_depth=upstream_depth,
         config=config,
@@ -213,7 +218,7 @@ async def generate_report(user: ProtectedRole, starting_id: str, upstream_depth:
     return collection
 
 async def fetch_parse_all_upstream_downstream_nodes(
-    user: ProtectedRole,
+    user_cipher: str,
     starting_id: str,
     upstream_depth: int,
     config: Config,
@@ -267,7 +272,7 @@ async def fetch_parse_all_upstream_downstream_nodes(
         await process_node_collection(
             nodes = nodes_upstream, 
             direction = NodeDirection.UPSTREAM,
-            user = user,
+            user_cipher = user_cipher,
             config = config,
             report_node_collection = report_node_collection
         )
@@ -275,7 +280,7 @@ async def fetch_parse_all_upstream_downstream_nodes(
         await process_node_collection(
             nodes = nodes_downstream,
             direction = NodeDirection.DOWNSTREAM,
-            user = user, 
+            user_cipher = user_cipher, 
             config = config,
             report_node_collection = report_node_collection
         )
@@ -292,7 +297,7 @@ async def fetch_parse_all_upstream_downstream_nodes(
 async def process_node_collection(
         nodes: List[Any], 
         direction: NodeDirection,
-        user: ProtectedRole, 
+        user_cipher: str, 
         config: Config, 
         report_node_collection: ReportNodeCollection
 ) -> ReportNodeCollection:
@@ -324,7 +329,7 @@ async def process_node_collection(
     for node in parsed_nodes:
         if should_load_node(node, direction):
             loaded_item = await fetch_item_from_registry_with_subtype(
-                proxy_username=user.user.username, 
+                user_cipher=user_cipher, 
                 id=node.id,
                 item_subtype=node.item_subtype,
                 config=config
@@ -607,7 +612,7 @@ def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -
         raise HTTPException(status_code=500, detail=f"Error fetching downstream nodes from the provided study with id {study_node_id} - error: {str(e)}")
 
 async def populate_model_run_report(
-    user: ProtectedRole,
+    user_cipher: str,
     node_id: str,
     upstream_depth: int,
     config: Config,
@@ -631,7 +636,7 @@ async def populate_model_run_report(
     """
 
     await generate_report(
-        user=user,
+        user_cipher=user_cipher,
         starting_id=node_id,
         upstream_depth=upstream_depth,
         config=config,
@@ -639,7 +644,7 @@ async def populate_model_run_report(
     )
 
 async def populate_study_report(
-    user:ProtectedRole,
+    user_cipher: str,
     study_node_id:str,
     upstream_depth:int, 
     config:Config, 
@@ -669,7 +674,7 @@ async def populate_study_report(
     for node in model_run_nodes:
         if node.item_subtype == ItemSubType.MODEL_RUN:
             await populate_model_run_report(
-                user=user,
+                user_cipher=user_cipher,
                 node_id=node.id,
                 upstream_depth=upstream_depth,
                 config=config,
@@ -681,8 +686,8 @@ async def generate_report_helper(
         node_id: str, 
         upstream_depth: int, 
         item_subtype: ItemSubType, 
-        roles: ProtectedRole, 
-        config: Config
+        config: Config,
+        proxy: UserCipherProxy
 ) -> str:
     
     """
@@ -720,8 +725,12 @@ async def generate_report_helper(
 
     try:
         # Create the request style, here we assert where the HTTP request came from. 
-        request_style: RequestStyle = RequestStyle(
-            user_direct=roles.user, service_account=None
+        request_style = RequestStyle(
+            user_direct=None,
+            service_account=ServiceAccountProxy(
+                user_cipher=proxy.user_cipher,
+                direct_service=False
+            )
         )
 
         # Shared dataclass that is passed via reference to other helper functions. 
@@ -729,14 +738,19 @@ async def generate_report_helper(
         report_nodes: ReportNodeCollection = ReportNodeCollection()
 
         # do checks accordingly. 
-        origin_node: ItemBase = await validate_node_id(node_id=node_id, item_subtype=item_subtype, request_style=request_style, config=config)
+        origin_node: ItemBase = await validate_node_id(
+            node_id=node_id,
+            item_subtype=item_subtype,
+            request_style=request_style,
+            config=config
+        )
 
         # Add origin node to dataclass, will be used later in word-doc generation. 
         report_nodes.origin_node = origin_node
 
         if item_subtype == ItemSubType.MODEL_RUN: 
             await populate_model_run_report(
-                user=roles, 
+                user_cipher=proxy.user_cipher, 
                 node_id=node_id,
                 upstream_depth=upstream_depth,
                 config=config,
@@ -744,7 +758,7 @@ async def generate_report_helper(
             )
         elif item_subtype == ItemSubType.STUDY: 
             await populate_study_report(
-                user=roles, 
+                user_cipher=proxy.user_cipher, 
                 study_node_id=node_id,
                 upstream_depth=upstream_depth,
                 config=config,
