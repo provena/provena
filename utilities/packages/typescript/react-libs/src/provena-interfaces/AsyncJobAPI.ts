@@ -288,6 +288,59 @@ export interface WakeUpPayload {
   reason?: string;
 }
 export interface WakeUpResult {}
+export interface AddStudyLinkQueryParameters {
+  model_run_id: string;
+  study_id: string;
+}
+export interface AddStudyLinkResponse {
+  status: Status;
+  model_run_id: string;
+  study_id: string;
+  session_id: string;
+}
+export interface Status {
+  success: boolean;
+  details: string;
+}
+export interface ConvertModelRunsResponse {
+  status: Status;
+  new_records?: ModelRunRecord[];
+  existing_records?: string[];
+  warnings?: string[];
+}
+export interface LineageResponse {
+  status: Status;
+  record_count?: number;
+  graph?: {
+    [k: string]: unknown;
+  };
+}
+export interface PostUpdateModelRunInput {
+  model_run_id: string;
+  reason: string;
+  record: ModelRunRecord;
+}
+export interface PostUpdateModelRunResponse {
+  session_id: string;
+}
+export interface RegisterBatchModelRunRequest {
+  records: ModelRunRecord[];
+}
+export interface RegisterBatchModelRunResponse {
+  status: Status;
+  session_id?: string;
+}
+export interface RegisterModelRunResponse {
+  status: Status;
+  session_id?: string;
+}
+export interface StatusResponse {
+  status: Status;
+}
+export interface SyncRegisterModelRunResponse {
+  status: Status;
+  record_info: ProvenanceRecordInfo;
+}
 /**
  * Please specify whether data is going to be stored in the Data Store, or referenced from an existing, externally hosted, source.
  */
@@ -356,20 +409,6 @@ export interface VersioningInfo {
   version: number;
   reason?: string;
   next_version?: string;
-}
-export interface AddStudyLinkQueryParameters {
-  model_run_id: string;
-  study_id: string;
-}
-export interface AddStudyLinkResponse {
-  status: Status;
-  model_run_id: string;
-  study_id: string;
-  session_id: string;
-}
-export interface Status {
-  success: boolean;
-  details: string;
 }
 export interface AgentBase {
   history: HistoryEntryDomainInfoBase[];
@@ -567,12 +606,6 @@ export interface TemporalDuration {
    */
   end_date: string;
 }
-export interface ConvertModelRunsResponse {
-  status: Status;
-  new_records?: ModelRunRecord[];
-  existing_records?: string[];
-  warnings?: string[];
-}
 export interface CreateDomainInfo {
   display_name: string;
   created_item_id: string;
@@ -674,11 +707,6 @@ export interface EntityBase {
   record_type: RecordType;
   workflow_links?: WorkflowLinks;
   versioning_info?: VersioningInfo;
-}
-export interface GenerateReportRequest {
-  id: string;
-  item_subtype: ItemSubType;
-  depth: number;
 }
 export interface HistoryBaseDomainInfoBase {
   history: HistoryEntryDomainInfoBase[];
@@ -1224,13 +1252,6 @@ export interface WorkflowTemplateDomainInfo {
   output_templates?: TemplateResource[];
   annotations?: WorkflowTemplateAnnotations;
 }
-export interface LineageResponse {
-  status: Status;
-  record_count?: number;
-  graph?: {
-    [k: string]: unknown;
-  };
-}
 export interface LockEvent {
   action_type: LockActionType;
   username: string;
@@ -1254,14 +1275,6 @@ export interface OptionallyRequiredDate {
   relevant?: boolean;
   value?: string;
 }
-export interface PostUpdateModelRunInput {
-  model_run_id: string;
-  reason: string;
-  record: ModelRunRecord;
-}
-export interface PostUpdateModelRunResponse {
-  session_id: string;
-}
 export interface RecordInfo {
   id: string;
   owner_username: string;
@@ -1272,17 +1285,6 @@ export interface RecordInfo {
   record_type: RecordType;
   workflow_links?: WorkflowLinks;
   versioning_info?: VersioningInfo;
-}
-export interface RegisterBatchModelRunRequest {
-  records: ModelRunRecord[];
-}
-export interface RegisterBatchModelRunResponse {
-  status: Status;
-  session_id?: string;
-}
-export interface RegisterModelRunResponse {
-  status: Status;
-  session_id?: string;
 }
 export interface ResourceSpatialMetadata {}
 export interface ResourceTemporalMetadata {
@@ -1299,13 +1301,6 @@ export interface SeededItem {
   record_type: RecordType;
   workflow_links?: WorkflowLinks;
   versioning_info?: VersioningInfo;
-}
-export interface StatusResponse {
-  status: Status;
-}
-export interface SyncRegisterModelRunResponse {
-  status: Status;
-  record_info: ProvenanceRecordInfo;
 }
 export interface VersionDetails {
   commit_id?: string;
