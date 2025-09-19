@@ -1305,11 +1305,6 @@ export interface NoFilterSubtypeListRequest {
   };
   page_size?: number;
 }
-export interface Node {
-  id: string;
-  item_category: ItemCategory;
-  item_subtype: ItemSubType;
-}
 export interface OptionallyRequiredCheck {
   relevant?: boolean;
   obtained?: boolean;
