@@ -1,5 +1,5 @@
-from ProvenaInterfaces.AsyncJobModels import *
-from EcsSqsPythonTools.Types import *
+from ProvenaInterfaces.AsyncJobModels import JobSnsPayload, JobStatus, JobSubType
+from EcsSqsPythonTools.Types import CallbackFunc, CallbackResponse, CallbackFileResponse, CallbackBase
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
@@ -14,6 +14,7 @@ from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
 import asyncio
+from starlette.background import BackgroundTask
 
 ProvJobHandler = CallbackFunc
 
@@ -721,7 +722,7 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     )
 
 
-def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackBase:
     """
     Handles generating a report for the specified model run record.
 
@@ -734,8 +735,8 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
 
     Returns
     -------
-    CallbackResponse
-        The response indicating success/failure and reporting result payload
+    CallbackBase
+        The response indicating success/failure and returning the generated report if successful
     """
     print(f"Running generate report job")
  
@@ -773,20 +774,19 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
         return generate_failed_job(
             error=f"An error occurred while attempting to generate report. Error: {e}."
         )
- 
-    return CallbackResponse(
+    
+    return CallbackFileResponse(
+        path=generated_doc_path,
+        filename="report.pdf",
+        media_type="application/pdf",
         status=JobStatus.SUCCEEDED,
         info=None,
-        result=py_to_dict(
-            ReportGenerateResult(
-                report_url=generated_doc_path,
-            )
-        )
+        background=BackgroundTask(lambda: remove_file(generated_doc_path))
     )
 
 
 # Map from the job sub type to the prov handler
-PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
+PROV_LODGE_HANDLER_MAP: Dict[JobSubType, CallbackFunc] = {
     JobSubType.PROV_LODGE_WAKE_UP: wake_up_handler,
     JobSubType.MODEL_RUN_PROV_LODGE: model_run_lodge_handler,
     JobSubType.MODEL_RUN_LODGE_ONLY: model_run_lodge_only_handler,
@@ -799,7 +799,7 @@ PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
 }
 
 
-def job_dispatcher(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+def job_dispatcher(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackBase:
     # dispatch into function
     print(f"Dispatching into handler.")
     handler = PROV_LODGE_HANDLER_MAP[payload.job_sub_type]

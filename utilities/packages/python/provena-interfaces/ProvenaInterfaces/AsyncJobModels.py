@@ -290,8 +290,7 @@ class ReportGeneratePayload(BaseModel):
 
 
 class ReportGenerateResult(BaseModel):
-    # The presigned URL for the S3 bucket location of the generated report
-    report_url: str
+    pass
 
 
 # ====================

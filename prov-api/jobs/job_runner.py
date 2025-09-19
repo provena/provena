@@ -1,11 +1,11 @@
 from EcsSqsPythonTools.JobRunner import ecs_job_worker
 from EcsSqsPythonTools.Settings import JobBaseSettings
-from EcsSqsPythonTools.Types import CallbackResponse
+from EcsSqsPythonTools.Types import CallbackBase
 from jobs.prov_jobs import job_dispatcher
 from ProvenaInterfaces.AsyncJobModels import *
 
 
-def worker_callback(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+def worker_callback(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackBase:
     print(f"WORKER LAUNCHED")
     print(f"Received job {payload}")
     print(f"Dispatching into job dispatcher")
