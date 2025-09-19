@@ -775,10 +775,16 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
             error=f"An error occurred while attempting to generate report. Error: {e}."
         )
     
+    # # Explicitly set the headers 
+    headers = {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": 'attachment; filename="Study Close Out Report.docx"',
+    }
+
     return CallbackFileResponse(
         path=generated_doc_path,
-        filename="report.pdf",
-        media_type="application/pdf",
+        filename="Study Close Out Report.docx",
+        headers=headers,
         status=JobStatus.SUCCEEDED,
         info=None,
         background=BackgroundTask(lambda: remove_file(generated_doc_path))

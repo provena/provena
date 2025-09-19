@@ -29,9 +29,10 @@ class CallbackFileResponse(FileResponse):
         info: Optional[str] = None,
         background: Optional[BackgroundTask] = None,
         filename: Optional[str] = None,
-        media_type: Optional[str] = None
+        media_type: Optional[str] = None,
+        headers: Optional[Dict[str, str]] = None
     ):
-        super().__init__(path=path, filename=filename, media_type=media_type, background=background)
+        super().__init__(path=path, filename=filename, media_type=media_type, background=background, headers=headers)
         self.status = status
         self.info = info
     
