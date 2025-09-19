@@ -334,7 +334,7 @@ async def generate_report(
 ) -> GenerateReportResponse:
     
     """Exports the provenance graph upto a certain upstream depth and fixed downstream depth (1) for Study and Model Run based entities.  
-    This generates a Word Document (.docx) and contains the input, outputs and model runs involved within the Study or within the Model Run. 
+    This lodges a asynchronous task to generate a Word Document (.docx) that contains the input, outputs and model runs involved within the Study or within the Model Run. 
 
     Parameters
     ----------
@@ -349,8 +349,8 @@ async def generate_report(
 
     Returns
     -------
-    FileResponse
-        A FileResponse object that contains the generated word-document and is sent to the front-end. 
+    GenerateReportResponse
+        A GenerateReportResponse object that contains a session ID for the lodged generate report job. 
 
     Raises
     ------
@@ -359,7 +359,7 @@ async def generate_report(
     HTTPException
         Raised if an unsupported item subtype is provided.
     HTTPException
-        Raised if there is an error in generating the word document.
+        Raised if there is an error lodging the generate report job.
 
     """
 
@@ -373,27 +373,4 @@ async def generate_report(
         ),
         config=config)
     
-    return GenerateReportResponse(session_id=res)
-
-    # generated_doc_path:str = await generate_report_helper(
-    #     node_id=request.id,
-    #     upstream_depth=request.depth, 
-    #     item_subtype=request.item_subtype,
-    #     roles=roles,
-    #     config=config
-    # )
-
-    # # Add the removal of the generated word doc as a background task.
-    # background_tasks.add_task(remove_file, file_path=generated_doc_path)
-
-    # # Explicitly set the headers 
-    # headers = {
-    #     "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    #     "Content-Disposition": 'attachment; filename="Study Close Out Report.docx"',
-    # }
-
-    # return FileResponse(
-    #     path = generated_doc_path, 
-    #     filename= "Study Close Out Report.docx", 
-    #     headers = headers
-    # )  
+    return GenerateReportResponse(session_id=res) 
