@@ -9,10 +9,12 @@ from ProvenaInterfaces.SharedTypes import Status
 from ProvenaInterfaces.RegistryModels import ItemModelRun
 from helpers.validate_model_run_record import validate_model_run_record
 from helpers.auth_helpers import *
-from ProvenaSharedFunctionality.Helpers.encryption_helpers import encrypt_user_info
+from helpers.registry_helpers import fetch_item_from_registry_with_subtype
 from helpers.job_api_helpers import submit_model_run_lodge_job, submit_batch_lodge_job, submit_model_run_lodge_only_job, submit_model_run_update_job
 from ProvenaInterfaces.AsyncJobModels import ProvLodgeModelRunPayload, ProvLodgeBatchSubmitPayload, ProvLodgeModelRunLodgeOnlyPayload, ProvLodgeUpdatePayload
 from config import get_settings, Config
+from helpers.prov_connector import NodeGraph, Neo4jGraphManager, GraphDiffApplier, diff_graphs
+from helpers.util import py_to_dict
 
 router = APIRouter()
 
@@ -24,7 +26,7 @@ async def register_model_run_complete(
     record: ModelRunRecord,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> RegisterModelRunResponse:
     """    register_model_run_complete
         Given the model run record object (schema/model) will:
@@ -110,7 +112,7 @@ async def register_batch(
     request: RegisterBatchModelRunRequest,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> RegisterBatchModelRunResponse:
     # TODO should we validate items first? No - validate at batch time?
     # Then produce job using Job API and return session ID
@@ -144,7 +146,7 @@ async def register_model_run_sync(
     # admin only for this endpoint
     roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> SyncRegisterModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -184,7 +186,7 @@ async def link_to_study(
     study_id: str,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> AddStudyLinkResponse:
 
     # validate model_run_id and study_id to be linked.
@@ -248,12 +250,12 @@ async def link_to_study(
     )
 
 
-@ router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
+@router.post("/update", response_model=PostUpdateModelRunResponse, operation_id="update_model_run", include_in_schema=True)
 async def update_model_run(
     payload: PostUpdateModelRunInput,
     roles: ProtectedRole = Depends(read_write_user_protected_role_dependency),
     config: Config = Depends(get_settings),
-    user_cipher : str = Depends(get_user_cipher)
+    user_cipher: str = Depends(get_user_cipher)
 ) -> PostUpdateModelRunResponse:
     # no proxy - user direct
     request_style = RequestStyle(
@@ -286,46 +288,65 @@ async def update_model_run(
 
     return PostUpdateModelRunResponse(session_id=res)
 
-#
-#
-# class DeleteGraph(BaseModel):
-#    record_id: str
-#
-#
-# @router.post("/delete_graph", operation_id="delete_graph", include_in_schema=False)
-# async def delete_graph(
-#    delete: DeleteGraph,
-#    # admin only for this endpoint
-#    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
-#    config: Config = Depends(get_settings)
-# ) -> Any:
-#    # no proxy - user direct
-#    request_style = RequestStyle(
-#        service_account=None, user_direct=roles.user)
-#
-#    # dummy delete graph
-#    delete_dummy_graph = NodeGraph(record_id=delete.record_id, links=[])
-#
-#    print("Setting up neo4j client")
-#    neo4j_manager = Neo4jGraphManager(config=config)
-#    print("Done")
-#
-#    # Getting old graph
-#    print("Retrieving graph")
-#    old_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
-#    print("Done")
-#
-#    # get the graph diff
-#    print("Building diff and applying...")
-#    diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
-#    diff_generator.apply_diff(
-#        old_graph=old_graph, new_graph=delete_dummy_graph)
-#    print("Done")
-#
-#    # get the updated graph
-#    print("Retrieving updated graph")
-#    updated_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
-#    print("Done")
-#
-#    return {"old_graph": old_graph.to_json_pretty(), "updated": updated_graph.to_json_pretty()}
-#
+
+@router.post("/delete", operation_id="delete_model_run", include_in_schema=False)
+async def delete_model_run(
+    delete: PostDeleteGraphRequest,
+    # admin only for this endpoint
+    roles: ProtectedRole = Depends(admin_user_protected_role_dependency),
+    config: Config = Depends(get_settings)
+) -> PostDeleteGraphResponse:
+    # grab and ensure it exists and is a model run
+    try:
+        await fetch_item_from_registry_with_subtype(proxy_username=roles.user.username, id=delete.record_id, item_subtype=ItemSubType.MODEL_RUN, config=config)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Exception: could not delete model run as error occurred when fetching the record from the registry: {e}"
+        ) from e
+
+    # dummy delete graph which is just an empty graph with the record id to delete
+    delete_dummy_graph = NodeGraph(record_id=delete.record_id, links=[])
+
+    print("Setting up neo4j client")
+    neo4j_manager = Neo4jGraphManager(config=config)
+    print("Done")
+
+    # Getting old graph
+    print("Retrieving existing graph")
+    old_graph = neo4j_manager.get_graph_by_record_id(delete.record_id)
+    print("Done")
+
+    if (delete.trial_mode):
+        print("Trial mode, not applying delete")
+        print("Building diff")
+        try:
+            diff_list = diff_graphs(
+                old_graph=old_graph, new_graph=delete_dummy_graph)
+            print(f"Diff list generated with {len(diff_list)} entries")
+            return PostDeleteGraphResponse(
+                diff=list(map(lambda diff: py_to_dict(diff), diff_list))
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Exception: could not produce graph diff: {e}"
+            ) from e
+
+    else:
+        try:
+            # get the graph diff
+            print("Building diff (empty) and applying...")
+            diff_list = diff_graphs(
+                old_graph=old_graph, new_graph=delete_dummy_graph)
+            diff_generator = GraphDiffApplier(neo4j_manager=neo4j_manager)
+            diff_generator.apply_diff(
+                old_graph=old_graph, new_graph=delete_dummy_graph)
+            return PostDeleteGraphResponse(
+                diff=list(map(lambda diff: py_to_dict(diff), diff_list))
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Exception: could not apply graph diff: {e}"
+            ) from e
