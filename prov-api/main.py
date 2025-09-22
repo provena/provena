@@ -14,6 +14,16 @@ from typing import Dict
 from ProvenaSharedFunctionality.SentryMonitoring import init_sentry
 import sentry_sdk
 
+# Patch for HTTPException to improve string representation
+from fastapi import HTTPException
+
+def httpexception_str_patch(self: HTTPException) -> str:
+    return f"Status code: {self.status_code}, details: {self.detail}."
+
+# Apply the patch
+HTTPException.__str__ = httpexception_str_patch  # type: ignore
+
+
 # Setup app
 app = FastAPI()
 init_sentry(
