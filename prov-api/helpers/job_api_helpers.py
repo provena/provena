@@ -157,7 +157,7 @@ async def submit_generate_report_job(username: str, payload: ReportGeneratePaylo
     to monitor result
 
     Args:
-        payload (ProvLodgeModelRunPayload): The prov lodge model run job payload
+        payload (ReportGeneratePayload): The generate report job payload
 
     Returns:
         str: The session_id

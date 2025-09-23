@@ -703,10 +703,10 @@ async def generate_report_helper(
         The depth of the upstream query to traverse upto from chosen node.
     item_subtype : ItemSubType
         The subtype of the node, indicating whether it's a model run or a study.
-    roles : ProtectedRole
-        The role of the user making the request, used for making requests to Registry API.
     config : Config
         A config object containing information about the different endpoints of the system.
+    proxy : UserCipherProxy
+        An encrypted cipher string containing details of the user who has lodged the report generation job.
 
     Returns
     -------
@@ -740,12 +740,12 @@ async def generate_report_helper(
         report_nodes: ReportNodeCollection = ReportNodeCollection()
 
         # do checks accordingly. 
-        origin_node: ItemBase = await validate_node_id(
+        origin_node: ItemBase = (await validate_node_id(
             node_id=node_id,
             item_subtype=item_subtype,
             request_style=request_style,
             config=config
-        )
+        ))
 
         # Add origin node to dataclass, will be used later in word-doc generation. 
         report_nodes.origin_node = origin_node
