@@ -27,7 +27,6 @@ class RowEntry:
     model_combined: str
     model_name: str
     model_id: str
-    model_version: str
 
     # model run information
     model_run_id: str
@@ -56,7 +55,6 @@ BaseRowDict = TypedDict(
         'model': str,
         'model name': str,
         'model id': str,
-        'model version': str,
         'start time': str,
         'end time': str,
         'model run id': str,
@@ -170,9 +168,8 @@ def create_row_entry_from_record(
         model_run_description=record.description or "",
         model_run_annotations=[(k, v)
                                for k, v in (record.annotations or {}).items()],
-        model_combined=render_model_info(model=model, template=template),
+        model_combined=render_model_info(model=model),
         model_name=model.display_name,
-        model_version=model_run_record.model_version or "",
         model_id=model.id,
         input_ids=input_ids,
         output_ids=output_ids,
@@ -217,7 +214,6 @@ def row_entry_to_csv_row(entry: RowEntry) -> List[CSVRow]:
             'model': entry.model_combined,
             'model name': entry.model_name,
             'model id': entry.model_id,
-            'model version': entry.model_version,
             'start time': entry.start_time,
             'end time': entry.end_time,
             'model run id': entry.model_run_id,

@@ -136,7 +136,7 @@ def create_row_entry_from_record(
         model_run_description=record.description or "",
         model_run_annotations=render_annotations(
             record.annotations) if record.annotations else "",
-        model_and_version=render_model_info(model=model, template=template),
+        model_and_version=render_model_info(model=model),
         inputs=inputs,
         outputs=outputs
     )
