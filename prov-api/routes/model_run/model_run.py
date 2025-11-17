@@ -274,17 +274,24 @@ async def update_model_run(
             detail=f"Failed to validate an entity's ID in the record, error: {error_message}."
         )
 
-    res = await submit_model_run_update_job(
-        username=roles.user.username,
-        payload=ProvLodgeUpdatePayload(
-            model_run_record_id=payload.model_run_id,
-            updated_record=payload.record,
-            reason=payload.reason,
-            revalidate=True,
-            # encrypted user info
-            user_info=user_cipher
-        ),
-        config=config)
+    try:
+        res = await submit_model_run_update_job(
+            username=roles.user.username,
+            payload=ProvLodgeUpdatePayload(
+                model_run_record_id=payload.model_run_id,
+                updated_record=payload.record,
+                reason=payload.reason,
+                revalidate=True,
+                # encrypted user info
+                user_info=user_cipher
+            ),
+            config=config
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error while dispatching job. Error: {e}."
+        )
 
     return PostUpdateModelRunResponse(session_id=res)
 
