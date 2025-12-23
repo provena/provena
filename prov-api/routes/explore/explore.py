@@ -324,7 +324,7 @@ async def effected_agents(
     )
 
 
-@router.post("/generate/report", response_class = FileResponse, operation_id="export_prov_graph")
+@router.post("/generate/report", response_model=GenerateReportResponse, operation_id="export_prov_graph")
 async def generate_report(
     request: GenerateReportRequest,    
     background_tasks: BackgroundTasks,
