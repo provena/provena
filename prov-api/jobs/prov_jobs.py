@@ -755,6 +755,7 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
         job_specific_payload = cast(ReportGeneratePayload, parse_job_specific_payload(
             payload=payload, job_sub_type=JobSubType.GENERATE_REPORT))
     except Exception as e:
+        print(f"Error parsing job specific payload: {e}")
         return generate_failed_job(error=f"Failed to parse job payload from the event. Error: {e}.")
  
     print(f"Parsed specific payload: {job_specific_payload}")
