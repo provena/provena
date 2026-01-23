@@ -95,6 +95,7 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
     """
 
     try:
+        print(f"[generate_report] validate_node_id START id={node_id} subtype={item_subtype}")
         
         validation_mapping: Dict[ItemSubType, Callable] = {
             ItemSubType.MODEL_RUN: validate_model_run_id,
@@ -109,6 +110,7 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
                                 are {','.join(validation_mapping.keys())}")
         
         response = await validator_func(id=node_id, request_style=request_style, config=config)
+        print(f"[generate_report] validate_node_id response type={type(response)}")
 
         if isinstance(response, str):
             raise HTTPException(status_code=400, detail=f"Validation error with provided {item_subtype.value}: {response}")
@@ -116,12 +118,14 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
         if isinstance(response, SeededItem):
             raise HTTPException(status_code=400, detail=f"Seeded item with provided {item_subtype.value} cannot be used for this query!")
         
+        print(f"[generate_report] validate_node_id SUCCESS id={node_id}")
         return response
     
     except HTTPException as e: 
         raise e
     
     except Exception as e: 
+        print(f"[generate_report] validate_node_id EXCEPTION id={node_id} err={e}")
         raise HTTPException(status_code=500, detail=f"Error when validating study or model run entities: {str(e)}")
 
 
@@ -149,6 +153,7 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
         Raised if validation fails while parsing any node in the list.
     """
 
+    print(f"[generate_report] parse_nodes START list_len={len(node_list)}")
     node_list_parsed: List[Node] = []
 
     # Worst case scenario handling, this is unlikely to happen.
@@ -173,6 +178,7 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error during node parsing - {str(e)}")
     
+    print(f"[generate_report] parse_nodes PARSED parsed_len={len(node_list_parsed)}")
     return node_list_parsed
 
 
@@ -207,6 +213,7 @@ async def generate_report(
         A collection containing the parsed and filtered nodes, organized by type.
     """
 
+    print(f"[generate_report] START starting_id={starting_id} upstream_depth={upstream_depth}")
     collection = await fetch_parse_all_upstream_downstream_nodes(
         user_cipher=user_cipher,
         starting_id=starting_id,
@@ -215,6 +222,7 @@ async def generate_report(
         report_node_collection=report_node_collection
     )
 
+    print(f"[generate_report] COMPLETE starting_id={starting_id} collected_inputs={len(collection.inputs)} model_runs={len(collection.model_runs)} outputs={len(collection.outputs)}")
     return collection
 
 async def fetch_parse_all_upstream_downstream_nodes(
@@ -258,15 +266,20 @@ async def fetch_parse_all_upstream_downstream_nodes(
     """
     
     try:
+        print(f"[generate_report] fetch_parse_all_upstream_downstream_nodes START id={starting_id} upstream_depth={upstream_depth} downstream_depth={downstream_depth}")
         # Fetch both upstream and downstream nodes.
         upstream_response: Dict[str, Any] = upstream_query(starting_id=starting_id, depth=upstream_depth, config=config)
         downstream_response: Dict[str, Any] = downstream_query(starting_id=starting_id, depth=downstream_depth, config=config)
+
+        print(f"[generate_report] upstream_response keys={list(upstream_response.keys())} downstream_response keys={list(downstream_response.keys())}")
 
         assert upstream_response.get('nodes'), "Upstream node collections not found!"
         assert downstream_response.get('nodes'), "Downstream node collections not found!"
 
         nodes_upstream: List[Any] = upstream_response.get('nodes', [])
         nodes_downstream: List[Any] = downstream_response.get('nodes', [])
+
+        print(f"[generate_report] fetched nodes upstream={len(nodes_upstream)} downstream={len(nodes_downstream)}")
 
         # Process the nodes in both directions 
         await process_node_collection(
@@ -285,6 +298,7 @@ async def fetch_parse_all_upstream_downstream_nodes(
             report_node_collection = report_node_collection
         )
 
+        print(f"[generate_report] fetch_parse_all_upstream_downstream_nodes COMPLETE id={starting_id}")
         return report_node_collection
             
     except AssertionError as e: 
@@ -323,11 +337,14 @@ async def process_node_collection(
         The updated collection with nodes processed and validated for report generation.
     """
     
+    print(f"[generate_report] process_node_collection START direction={direction} nodes_len={len(nodes)}")
     parsed_nodes = parse_nodes(nodes)
+    print(f"[generate_report] process_node_collection parsed_nodes_len={len(parsed_nodes)}")
     node_type = NodeType.INPUTS if direction == NodeDirection.UPSTREAM else NodeType.OUTPUTS
 
     for node in parsed_nodes:
         if should_load_node(node, direction):
+            print(f"[generate_report] process_node_collection loading node id={node.id} subtype={node.item_subtype}")
             loaded_item = await fetch_item_from_registry_with_subtype(
                 user_cipher=user_cipher, 
                 id=node.id,
@@ -337,6 +354,7 @@ async def process_node_collection(
 
             #This is typed ignored because we validate the properties of the response in the helper function.
             report_node_collection.add_node(node=loaded_item.item, node_type=node_type) #type:ignore
+            print(f"[generate_report] process_node_collection added node id={node.id}")
 
     return report_node_collection
 
@@ -457,6 +475,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
         return ' '.join(word.capitalize() for word in item_subtype_name.split('_'))
     
     try:
+        print(f"[generate_report] generate_word_file START origin_node_id={getattr(node_collection.origin_node, 'id', None)} inputs={len(node_collection.inputs)} model_runs={len(node_collection.model_runs)} outputs={len(node_collection.outputs)}")
         document = Document()
         document.add_heading('Model Run Study Close Out Report', 0)
 
@@ -535,9 +554,11 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
             paragraph.add_run(text = "\n")
 
         file_path = f"{config.TEMP_FILE_LOCATION}/generate_report{str(random.randint(1,100000))}).docx"
+        print(f"[generate_report] generate_word_file saving to {file_path}")
         document.save(file_path)
 
         # Return the file path.
+        print(f"[generate_report] generate_word_file SAVED {file_path}")
         return file_path
            
     except Exception as e:
@@ -599,12 +620,14 @@ def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -
     """
 
     try:
+        print(f"[generate_report] get_model_runs_from_study START study_id={study_node_id} depth={depth}")
         # Query downstream to get all linked model runs at depth 1. 
         # This may contain more than one model run.
         downstream_model_run_response = downstream_query(starting_id=study_node_id, depth=depth, config=config)
         assert downstream_model_run_response.get('nodes'), f"The study with id {study_node_id} does not have any associated model runs."
 
         model_run_nodes: List[Node] = parse_nodes(downstream_model_run_response.get('nodes', []))
+        print(f"[generate_report] get_model_runs_from_study found model_runs={len(model_run_nodes)}")
         return model_run_nodes
     
     except AssertionError as e:
@@ -637,6 +660,7 @@ async def populate_model_run_report(
         A collection to store and manage parsed nodes for report generation.
     """
 
+    print(f"[generate_report] populate_model_run_report START node_id={node_id} upstream_depth={upstream_depth}")
     await generate_report(
         user_cipher=user_cipher,
         starting_id=node_id,
@@ -644,6 +668,7 @@ async def populate_model_run_report(
         config=config,
         report_node_collection=report_node_collection
     )
+    print(f"[generate_report] populate_model_run_report COMPLETE node_id={node_id}")
 
 async def populate_study_report(
     user_cipher: str,
@@ -669,6 +694,7 @@ async def populate_study_report(
         A collection to store and manage parsed nodes for report generation.
     """
     
+    print(f"[generate_report] populate_study_report START study_node_id={study_node_id} upstream_depth={upstream_depth}")
     model_run_nodes = get_model_runs_from_study(study_node_id=study_node_id, config=config)
 
     # Now branch out with the model runs in here and explore them as above (depth 1-3 upstream and depth 1 downstream)
@@ -682,6 +708,7 @@ async def populate_study_report(
                 config=config,
                 report_node_collection=report_node_collection
             )
+    print(f"[generate_report] populate_study_report COMPLETE study_node_id={study_node_id}")
 
 
 async def generate_report_helper(
@@ -726,6 +753,7 @@ async def generate_report_helper(
     """
 
     try:
+        print(f"[generate_report] generate_report_helper START node_id={node_id} item_subtype={item_subtype} upstream_depth={upstream_depth}")
         # Create the request style, here we assert where the HTTP request came from. 
         request_style = RequestStyle(
             user_direct=None,
@@ -746,6 +774,7 @@ async def generate_report_helper(
             request_style=request_style,
             config=config
         ))
+        print(f"[generate_report] validate_node_id returned origin id={getattr(origin_node, 'id', None)}")
 
         # Add origin node to dataclass, will be used later in word-doc generation. 
         report_nodes.origin_node = origin_node
@@ -772,10 +801,13 @@ async def generate_report_helper(
         
         # All the nodes involved in the model run/study have been populated. 
         generated_doc_path = generate_word_file(config, report_nodes)
+        print(f"[generate_report] generate_word_file returned path={generated_doc_path}")
         
         if os.path.exists(generated_doc_path): 
+            print(f"[generate_report] generate_report_helper SUCCESS returning {generated_doc_path}")
             return generated_doc_path
         else: 
+            print(f"[generate_report] generate_report_helper ERROR file not found {generated_doc_path}")
             raise HTTPException(status_code=400, detail= "Error generating your study-closeout document")
         
     except HTTPException as e: 
