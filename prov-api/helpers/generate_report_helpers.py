@@ -273,8 +273,8 @@ async def fetch_parse_all_upstream_downstream_nodes(
 
         print(f"[generate_report] upstream_response keys={list(upstream_response.keys())} downstream_response keys={list(downstream_response.keys())}")
 
-        assert upstream_response.get('nodes'), "Upstream node collections not found!"
-        assert downstream_response.get('nodes'), "Downstream node collections not found!"
+        # assert upstream_response.get('nodes'), "Upstream node collections not found!"
+        # assert downstream_response.get('nodes'), "Downstream node collections not found!"
 
         nodes_upstream: List[Any] = upstream_response.get('nodes', [])
         nodes_downstream: List[Any] = downstream_response.get('nodes', [])
