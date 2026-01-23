@@ -891,6 +891,12 @@ class ProvenaStack(Stack):
             async_infra.task_roles[JobType.PROV_LODGE]
         )
 
+        # Also grant equivalent permissions to the REPORT job task role
+        # so report tasks can read service secrets and use the user context key
+        prov_api.grant_equivalent_permissions(
+            async_infra.task_roles[JobType.REPORT]
+        )
+
         # Add permissions to job
 
         # Configure AWS backup if required
