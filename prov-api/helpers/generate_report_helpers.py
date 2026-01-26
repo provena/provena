@@ -157,8 +157,8 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
     node_list_parsed: List[Node] = []
 
     # Worst case scenario handling, this is unlikely to happen.
-    if len(node_list) == 0:
-        raise HTTPException(status_code=400, detail="Cannot process the report generation. Node list is empty.")
+    # if len(node_list) == 0:
+    #     raise HTTPException(status_code=400, detail="Cannot process the report generation. Node list is empty.")
     
     try:
         
