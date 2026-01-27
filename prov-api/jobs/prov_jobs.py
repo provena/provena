@@ -795,8 +795,7 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
         info=None,
         result={
             "report_file": report_data_b64
-        },
-        background=BackgroundTask(lambda: remove_file(generated_doc_path))
+        }
     )
 
     # return CallbackFileResponse(
