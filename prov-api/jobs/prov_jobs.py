@@ -10,12 +10,15 @@ from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
 from helpers.prov_connector import Neo4jGraphManager
 from helpers.generate_report_helpers import generate_report_helper, remove_file
+from helpers.s3_helpers import upload_file_to_s3, generate_presigned_url_for_report
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
 import asyncio
 from starlette.background import BackgroundTask
 import base64
+import os
+import uuid
 
 ProvJobHandler = CallbackFunc
 
@@ -777,36 +780,43 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
             error=f"An error occurred while attempting to generate report. Error: {e}."
         )
     
-    # # Explicitly set the headers 
-    headers = {
-        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": 'attachment; filename="Study Close Out Report.docx"',
-    }
+    # Upload the report to S3 and generate a presigned URL for download
+    try:
+        bucket = config.get("REPORT_BUCKET_NAME", None)
+        prefix = config.get("REPORT_S3_PREFIX", "").rstrip('/')
+        if not bucket:
+            raise RuntimeError("REPORT_BUCKET_NAME is not configured")
 
-    # Open the generated report file and read its contents
-    with open(generated_doc_path, "rb") as report_file:
-        report_data = report_file.read()
+        filename = os.path.basename(generated_doc_path)
+        unique_key = f"{prefix}/{uuid.uuid4().hex}_{filename}" if prefix else f"{uuid.uuid4().hex}_{filename}"
 
-    # Base64 encode the report file and 
-    report_data_b64 = base64.b64encode(report_data).decode('utf-8')
+        upload_file_to_s3(path=generated_doc_path, bucket=bucket, key=unique_key)
 
-    return CallbackResponse(
-        status=JobStatus.SUCCEEDED,
-        info=None,
-        result={
-            "report_file": report_data_b64
-        }
-    )
+        expiry = int(config.get('REPORT_PRESIGNED_EXPIRY_SECONDS', 3600))
+        presigned_url = generate_presigned_url_for_report(unique_key, expiry, config)
 
-    # return CallbackFileResponse(
-    #     path=generated_doc_path,
-    #     filename="Study Close Out Report.docx",
-    #     headers=headers,
-    #     status=JobStatus.SUCCEEDED,
-    #     info=None,
-    #     background=BackgroundTask(lambda: remove_file(generated_doc_path)),
-    #     result=None
-    # )
+        # remove local file
+        try:
+            remove_file(generated_doc_path)
+        except Exception:
+            pass
+
+        return CallbackResponse(
+            status=JobStatus.SUCCEEDED,
+            info=None,
+            result=py_to_dict(
+                ReportGenerateResult(
+                    report_url=presigned_url
+                )
+            )
+        )
+    except Exception as e:
+        # ensure local file is removed on failure
+        try:
+            remove_file(generated_doc_path)
+        except Exception:
+            pass
+        return generate_failed_job(error=f"Failed to upload or presign report. Error: {e}")
 
 
 # Map from the job sub type to the prov handler

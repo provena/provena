@@ -290,7 +290,7 @@ class ReportGeneratePayload(BaseModel):
 
 
 class ReportGenerateResult(BaseModel):
-    pass
+    report_url: str
 
 
 # ====================

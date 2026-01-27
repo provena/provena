@@ -9,7 +9,6 @@ from starlette.background import BackgroundTask
 class CallbackBase(Protocol):
     status: JobStatus
     info: Optional[str]
-    result: Optional[Dict[str, Any]]
 
 
 @dataclass
@@ -20,24 +19,6 @@ class CallbackResponse():
     info: Optional[str] = None
     # The result payload - must adhere to typed interface in shared interfaces
     result: Optional[Dict[str, Any]] = None
-
-
-class CallbackFileResponse(FileResponse):
-    def __init__(
-        self,
-        path: str,
-        status: JobStatus,
-        info: Optional[str] = None,
-        result: Optional[Dict[str, Any]] = None,
-        background: Optional[BackgroundTask] = None,
-        filename: Optional[str] = None,
-        media_type: Optional[str] = None,
-        headers: Optional[Dict[str, str]] = None
-    ):
-        super().__init__(path=path, filename=filename, media_type=media_type, background=background, headers=headers)
-        self.status = status
-        self.info = info
-        self.result = result
     
 
 # A callback function takes a payload and settings, and returns the callback

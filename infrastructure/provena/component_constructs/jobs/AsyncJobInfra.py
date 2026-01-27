@@ -9,6 +9,7 @@ from aws_cdk import (
     aws_sns_subscriptions as sns_subs,
     aws_ecs as ecs,
     aws_iam as iam,
+    aws_s3 as s3,
     aws_apigateway as api_gw,
     aws_secretsmanager as sm,
     aws_certificatemanager as aws_cm,
@@ -291,6 +292,18 @@ class AsyncJobInfra(Construct):
         # JOBS SETUP
         # ==========
 
+        # Create a bucket to hold generated reports for REPORT jobs
+        reports_bucket = s3.Bucket(
+            scope=self,
+            id="reportsBucket",
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+        )
+        # expose on the construct for other stacks if necessary
+        self.reports_bucket = reports_bucket
+
         # Need an SNS topic for each job type (each)
         topics: Dict[JobType, sns.Topic] = {}
         queues: Dict[JobType, sqs.Queue] = {}
@@ -374,6 +387,15 @@ class AsyncJobInfra(Construct):
                     "IDLE_TIMEOUT": str(idle_timeout),
                 }
             )
+            # If this job type produces reports, inject S3 details
+            if job.type == JobType.REPORT:
+                base_environment.update(
+                    {
+                        "REPORT_BUCKET_NAME": reports_bucket.bucket_name,
+                        "REPORT_S3_PREFIX": "reports",
+                        "REPORT_PRESIGNED_EXPIRY_SECONDS": "10800",
+                    }
+                )
             task_dfn.add_container(
                 id="jobcontainer" + job.type,
                 image=job.image,
@@ -381,6 +403,11 @@ class AsyncJobInfra(Construct):
                 secrets=job.secrets,
                 logging=ecs.LogDriver.aws_logs(stream_prefix=job.type),
             )
+
+            # Grant S3 permissions to the fargate task role for REPORT jobs
+            if job.type == JobType.REPORT:
+                reports_bucket.grant_put(task_dfn.task_role)
+                reports_bucket.grant_read(task_dfn.task_role)
 
             # Update dicts
             queues[job.type] = queue
