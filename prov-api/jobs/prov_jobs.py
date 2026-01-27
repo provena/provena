@@ -1,5 +1,5 @@
 from ProvenaInterfaces.AsyncJobModels import JobSnsPayload, JobStatus, JobSubType
-from EcsSqsPythonTools.Types import CallbackFunc, CallbackResponse, CallbackFileResponse, CallbackBase
+from EcsSqsPythonTools.Types import CallbackFunc, CallbackResponse, CallbackBase
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
