@@ -788,7 +788,7 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
             raise RuntimeError("REPORT_BUCKET_NAME is not configured")
 
         filename = os.path.basename(generated_doc_path)
-        unique_key = f"{prefix}/{uuid.uuid4().hex}_{filename}" if prefix else f"{uuid.uuid4().hex}_{filename}"
+        unique_key = f"{prefix}/{filename}" if prefix else f"{filename}"
 
         upload_file_to_s3(path=generated_doc_path, bucket=bucket, key=unique_key)
 
