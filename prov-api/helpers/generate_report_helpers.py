@@ -105,18 +105,16 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
         validator_func = validation_mapping.get(item_subtype)
 
         if not validator_func:
-            raise HTTPException(status_code=400, detail=f"Unsupported item subtype for validation.\
-                                Received subtype {item_subtype.value}, but the supported subtypes\
-                                are {','.join(validation_mapping.keys())}")
+            raise ValueError(f"Unsupported item subtype for validation. Received subtype {item_subtype.value}, supported: {','.join(str(k) for k in validation_mapping.keys())}")
         
         response = await validator_func(id=node_id, request_style=request_style, config=config)
         print(f"[generate_report] validate_node_id response type={type(response)}")
 
         if isinstance(response, str):
-            raise HTTPException(status_code=400, detail=f"Validation error with provided {item_subtype.value}: {response}")
-        
+            raise ValueError(f"Validation error with provided {item_subtype.value}: {response}")
+
         if isinstance(response, SeededItem):
-            raise HTTPException(status_code=400, detail=f"Seeded item with provided {item_subtype.value} cannot be used for this query!")
+            raise ValueError(f"Seeded item with provided {item_subtype.value} cannot be used for this query!")
         
         print(f"[generate_report] validate_node_id SUCCESS id={node_id}")
         return response
@@ -126,7 +124,7 @@ async def validate_node_id(node_id: str, item_subtype: ItemSubType, request_styl
     
     except Exception as e: 
         print(f"[generate_report] validate_node_id EXCEPTION id={node_id} err={e}")
-        raise HTTPException(status_code=500, detail=f"Error when validating study or model run entities: {str(e)}")
+        raise RuntimeError(f"Error when validating study or model run entities: {str(e)}")
 
 
 def parse_nodes(node_list: List[Any]) -> List[Node]: 
@@ -168,15 +166,15 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
             except ValidationError as e:
                 # The node object has not been parsed, so not safe to get it directly. 
                 node_id = node.get('id', 'undefined id')
-                raise HTTPException(status_code=400, detail=f"Validation error in node with id {node_id}. Error {str(e)}")
+                raise ValueError(f"Validation error in node with id {node_id}. Error {str(e)}")
             except Exception as e: 
-                raise HTTPException(status_code=500, detail=f"Error parsing nodes - {str(e)}")
+                raise RuntimeError(f"Error parsing nodes - {str(e)}")
     
     except HTTPException as e:
         raise e
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error during node parsing - {str(e)}")
+        raise RuntimeError(f"Unexpected error during node parsing - {str(e)}")
     
     print(f"[generate_report] parse_nodes PARSED parsed_len={len(node_list_parsed)}")
     return node_list_parsed
@@ -302,10 +300,10 @@ async def fetch_parse_all_upstream_downstream_nodes(
         return report_node_collection
             
     except AssertionError as e: 
-        raise HTTPException(status_code=404, detail=f"The provided model run with id {starting_id} - error: {str(e)}")
+        raise LookupError(f"The provided model run with id {starting_id} - error: {str(e)}")
     
     except Exception as e: 
-        raise HTTPException(status_code=500, detail=f"Error fetching upstream/downstream nodes - error: {str(e)}")
+        raise RuntimeError(f"Error fetching upstream/downstream nodes - error: {str(e)}")
 
 
 async def process_node_collection(
@@ -563,7 +561,7 @@ def generate_word_file(config: Config, node_collection: ReportNodeCollection) ->
            
     except Exception as e:
         print(f"Error during file generation: {str(e)}") 
-        raise HTTPException(status_code=500, detail=f"Error generating the word file: {str(e)}")
+        raise RuntimeError(f"Error generating the word file: {str(e)}")
     
 
 def remove_file(file_path: str) -> None: 
@@ -588,10 +586,10 @@ def remove_file(file_path: str) -> None:
         os.remove(file_path)
 
     except FileNotFoundError as e: 
-        raise HTTPException(status_code=500, detail=f"Unable to delete the file with path {file_path} - {str(e)}")
+        raise FileNotFoundError(f"Unable to delete the file with path {file_path} - {str(e)}")
     
     except Exception as e: 
-        raise HTTPException(status_code=500, detail=f"Something has gone wrong in deleting the file {str(e)}")
+        raise RuntimeError(f"Something has gone wrong in deleting the file {str(e)}")
 
 def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -> List[Node]: 
     """
@@ -631,10 +629,10 @@ def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -
         return model_run_nodes
     
     except AssertionError as e:
-        raise HTTPException(status_code=404, detail=f"{str(e)}")
+        raise LookupError(f"{str(e)}")
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching downstream nodes from the provided study with id {study_node_id} - error: {str(e)}")
+        raise RuntimeError(f"Error fetching downstream nodes from the provided study with id {study_node_id} - error: {str(e)}")
 
 async def populate_model_run_report(
     user_cipher: str,

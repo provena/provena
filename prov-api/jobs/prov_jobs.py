@@ -788,7 +788,8 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
         headers=headers,
         status=JobStatus.SUCCEEDED,
         info=None,
-        background=BackgroundTask(lambda: remove_file(generated_doc_path))
+        background=BackgroundTask(lambda: remove_file(generated_doc_path)),
+        result=None
     )
 
 
