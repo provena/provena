@@ -782,8 +782,8 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
     
     # Upload the report to S3 and generate a presigned URL for download
     try:
-        bucket = config.get("REPORT_BUCKET_NAME", None)
-        prefix = config.get("REPORT_S3_PREFIX", "").rstrip('/')
+        bucket = config.REPORT_BUCKET_NAME
+        prefix = config.REPORT_S3_PREFIX.rstrip('/')
         if not bucket:
             raise RuntimeError("REPORT_BUCKET_NAME is not configured")
 
@@ -792,7 +792,7 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
 
         upload_file_to_s3(path=generated_doc_path, bucket=bucket, key=unique_key)
 
-        expiry = int(config.get('REPORT_PRESIGNED_EXPIRY_SECONDS', 3600))
+        expiry = int(config.REPORT_PRESIGNED_EXPIRY_SECONDS)
         presigned_url = generate_presigned_url_for_report(unique_key, expiry, config)
 
         # remove local file
