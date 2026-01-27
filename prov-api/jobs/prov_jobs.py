@@ -15,6 +15,7 @@ from config import Config
 from typing import cast
 import asyncio
 from starlette.background import BackgroundTask
+import base64
 
 ProvJobHandler = CallbackFunc
 
@@ -782,15 +783,31 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
         "Content-Disposition": 'attachment; filename="Study Close Out Report.docx"',
     }
 
-    return CallbackFileResponse(
-        path=generated_doc_path,
-        filename="Study Close Out Report.docx",
-        headers=headers,
+    # Open the generated report file and read its contents
+    with open(generated_doc_path, "rb") as report_file:
+        report_data = report_file.read()
+
+    # Base64 encode the report file and 
+    report_data_b64 = base64.b64encode(report_data).decode('utf-8')
+
+    return CallbackResponse(
         status=JobStatus.SUCCEEDED,
         info=None,
-        background=BackgroundTask(lambda: remove_file(generated_doc_path)),
-        result=None
+        result={
+            "report_file": report_data_b64
+        },
+        background=BackgroundTask(lambda: remove_file(generated_doc_path))
     )
+
+    # return CallbackFileResponse(
+    #     path=generated_doc_path,
+    #     filename="Study Close Out Report.docx",
+    #     headers=headers,
+    #     status=JobStatus.SUCCEEDED,
+    #     info=None,
+    #     background=BackgroundTask(lambda: remove_file(generated_doc_path)),
+    #     result=None
+    # )
 
 
 # Map from the job sub type to the prov handler
