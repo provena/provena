@@ -873,7 +873,8 @@ class ProvenaStack(Stack):
 
         # Update auth API with job api endpoint
         assert auth_api
-        auth_api.add_api_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        auth_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
 
         # Update the registry API with the job API endpoint
         registry_api.add_to_environment(
@@ -1067,7 +1068,7 @@ class ProvenaStack(Stack):
                     "kms:Decrypt",
                     "kms:ReEncrypt*",
                     "kms:GenerateDataKey*",
-                    "kms:DescribeKey",
+                    "kms:DescribeKey"
                 ],
-                resources=["*"],
+                resources=["*"]
             ))

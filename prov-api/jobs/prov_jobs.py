@@ -15,10 +15,7 @@ from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
 import asyncio
-from starlette.background import BackgroundTask
-import base64
 import os
-import uuid
 
 ProvJobHandler = CallbackFunc
 
