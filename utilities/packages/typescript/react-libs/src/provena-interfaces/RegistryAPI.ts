@@ -1305,6 +1305,11 @@ export interface NoFilterSubtypeListRequest {
   };
   page_size?: number;
 }
+export interface Node {
+  id: string;
+  item_category: ItemCategory;
+  item_subtype: ItemSubType;
+}
 export interface OptionallyRequiredCheck {
   relevant?: boolean;
   obtained?: boolean;
@@ -1392,6 +1397,17 @@ export interface PersonListResponse {
 export interface PersonSeedResponse {
   status: Status;
   seeded_item?: SeededItem;
+}
+export interface ProvGraphRestoreRequest {
+  trial_mode?: boolean;
+  abort_if_failures?: boolean;
+  items: BundledItem[];
+}
+export interface ProvGraphRestoreResponse {
+  status: Status;
+  trial_mode: boolean;
+  abort_if_failures: boolean;
+  task_ids?: string[];
 }
 export interface ProxyItemFetchRequest {
   item_id: string;
