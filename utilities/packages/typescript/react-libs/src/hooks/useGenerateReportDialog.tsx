@@ -6,7 +6,6 @@ import {
     DialogActions,
     DialogContent,
     DialogContentText,
-    DialogTitle,
     Stack,
     Typography,
     MenuItem,
@@ -35,6 +34,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
     const [popUpOpen, setPopupOpen] = useState<boolean>(false);
     const [depth, setDepth] = useState<number>(DEPTH_LIST[0]);
     const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+    const [reportUrl, setReportUrl] = useState<string | undefined>(undefined);
 
     // Call the react-query defined. 
     const { mutate, dataReady } = useGenerateReport({
@@ -53,6 +53,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         setDepth(DEPTH_LIST[0])
         setPopupOpen(false);
         setSessionId(undefined);
+        setReportUrl(undefined);
         if (dataReady) {
             // reset mutation
             mutate?.reset()
@@ -89,10 +90,9 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         onJobSuccess: (entry: any) => {
             const url = entry?.result?.report_url ?? entry?.result?.reportUrl;
             if (url) {
-                window.open(url, "_blank");
+                // store the URL for explicit download by the user
+                setReportUrl(url);
             }
-            // close dialog after successful download
-            closeDialog();
         },
     });
 
@@ -145,17 +145,22 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
                     )}
                 </Stack>
                 <DialogActions>
-                    <Button
-                        onClick={closeDialog}
-                    >
-                        {sessionId ? "Close" : "Cancel"}
-                    </Button>
-                    {!sessionId && (
+                    <Button onClick={closeDialog}>{sessionId ? "Close" : "Cancel"}</Button>
+                    {sessionId && (
                         <Button
-                            color="success"
-                            disabled={submitDisabled}
-                            onClick={onSubmit}
+                            color="primary"
+                            disabled={!reportUrl}
+                            onClick={() => {
+                                if (reportUrl) {
+                                    window.open(reportUrl, "_blank", "noopener,noreferrer");
+                                }
+                            }}
                         >
+                            Download Report
+                        </Button>
+                    )}
+                    {!sessionId && (
+                        <Button color="success" disabled={submitDisabled} onClick={onSubmit}>
                             {mutate?.isLoading ? "Generating..." : "Generate Report"}
                         </Button>
                     )}
