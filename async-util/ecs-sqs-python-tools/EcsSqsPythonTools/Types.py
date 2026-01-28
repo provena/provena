@@ -1,14 +1,7 @@
 from dataclasses import dataclass
 from ProvenaInterfaces.AsyncJobModels import JobSnsPayload, JobStatus
-from typing import Callable, Protocol, Optional, Dict, Any
+from typing import Callable, Optional, Dict, Any
 from EcsSqsPythonTools.Settings import JobBaseSettings
-from fastapi.responses import FileResponse
-from starlette.background import BackgroundTask
-
-
-class CallbackBase(Protocol):
-    status: JobStatus
-    info: Optional[str]
 
 
 @dataclass
@@ -23,4 +16,4 @@ class CallbackResponse():
 
 # A callback function takes a payload and settings, and returns the callback
 # response
-CallbackFunc = Callable[[JobSnsPayload, JobBaseSettings], CallbackBase]
+CallbackFunc = Callable[[JobSnsPayload, JobBaseSettings], CallbackResponse]

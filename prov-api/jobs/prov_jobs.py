@@ -1,5 +1,5 @@
 from ProvenaInterfaces.AsyncJobModels import JobSnsPayload, JobStatus, JobSubType
-from EcsSqsPythonTools.Types import CallbackFunc, CallbackResponse, CallbackBase
+from EcsSqsPythonTools.Types import CallbackFunc, CallbackResponse
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
@@ -726,7 +726,7 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     )
 
 
-def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackBase:
+def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
     """
     Handles generating a report for the specified model run record.
 
@@ -739,8 +739,8 @@ def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -
 
     Returns
     -------
-    CallbackBase
-        The response indicating success/failure and returning the generated report if successful
+    CallbackResponse
+        The response indicating success/failure and returning a presigned S3 URL for the generated report if successful
     """
     print(f"Running generate report job")
  
@@ -833,7 +833,7 @@ PROV_LODGE_HANDLER_MAP: Dict[JobSubType, CallbackFunc] = {
 }
 
 
-def job_dispatcher(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackBase:
+def job_dispatcher(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
     # dispatch into function
     print(f"Dispatching into handler.")
     handler = PROV_LODGE_HANDLER_MAP[payload.job_sub_type]
