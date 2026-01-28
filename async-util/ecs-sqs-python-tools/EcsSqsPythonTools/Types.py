@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from ProvenaInterfaces.AsyncJobModels import JobSnsPayload, JobStatus
-from typing import Callable, Optional, Dict, Any
+from ProvenaInterfaces.AsyncJobModels import *
+from typing import Callable
 from EcsSqsPythonTools.Settings import JobBaseSettings
 
 
@@ -12,7 +12,6 @@ class CallbackResponse():
     info: Optional[str] = None
     # The result payload - must adhere to typed interface in shared interfaces
     result: Optional[Dict[str, Any]] = None
-    
 
 # A callback function takes a payload and settings, and returns the callback
 # response
