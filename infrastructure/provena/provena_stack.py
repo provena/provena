@@ -89,7 +89,7 @@ class ProvenaStack(Stack):
             enabled=True,
             enable_key_rotation=True,
             pending_window=Duration.days(7),
-            removal_policy=RemovalPolicy.DESTROY,
+            removal_policy=RemovalPolicy.DESTROY
         )
 
         # DNS allocator helper
@@ -99,7 +99,7 @@ class ProvenaStack(Stack):
             hosted_zone_name=config.dns.hosted_zone_name,
             hosted_zone_id=config.dns.hosted_zone_id,
             root_domain=config.general.root_domain,
-            debug_route_prefix=config.general.debug_route_prefix,
+            debug_route_prefix=config.general.debug_route_prefix
         )
 
         # work out keycloak endpoints
@@ -142,7 +142,8 @@ class ProvenaStack(Stack):
         # networking is required
         if config.components.networking:
             # Create basic network
-            network = NetworkConstruct(scope=self, construct_id="net", stage=stage)
+            network = NetworkConstruct(
+                scope=self, construct_id="net", stage=stage)
 
             balancers = network.balancers
 
@@ -254,9 +255,9 @@ class ProvenaStack(Stack):
             auth_config = config.components.auth_api
 
             # depends on the registry api component
-            assert config.components.entity_registry, (
-                "Cannot deploy auth API without registry"
-            )
+            assert (
+                config.components.entity_registry
+            ), "Cannot deploy auth API without registry"
             auth_api = LambdaAuthApi(
                 self,
                 domain_base=config.general.root_domain,
@@ -867,7 +868,8 @@ class ProvenaStack(Stack):
 
         # Update data store API with job api endpoint
         assert data_api
-        data_api.add_api_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        data_api.add_api_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
 
         # Update auth API with job api endpoint
         assert auth_api
@@ -884,7 +886,8 @@ class ProvenaStack(Stack):
         )
 
         # Update the prov API with the job API endpoint
-        prov_api.add_to_environment("job_api_endpoint", async_infra.job_api_endpoint)
+        prov_api.add_to_environment(
+            "job_api_endpoint", async_infra.job_api_endpoint)
         # This sets up the prov job ECS task dfn to have equivalent
         # permissions/rights as the prov API
         prov_api.grant_equivalent_permissions(
@@ -1043,30 +1046,28 @@ class ProvenaStack(Stack):
         # setup permissions for the key to enable configured account admins (if
         # any) to be able to decrypt/encrypt and manage
         # TODO circular dependency - bring this back?
-        for role_arn in config.general.user_context_key_admins or []:
-            symmetric_key.add_to_resource_policy(
-                iam.PolicyStatement(
-                    effect=iam.Effect.ALLOW,
-                    principals=[iam.ArnPrincipal(role_arn)],
-                    actions=[
-                        "kms:Create*",
-                        "kms:Describe*",
-                        "kms:Enable*",
-                        "kms:List*",
-                        "kms:Put*",
-                        "kms:Update*",
-                        "kms:Disable*",
-                        "kms:Get*",
-                        "kms:TagResource",
-                        "kms:UntagResource",
-                        "kms:ScheduleKeyDeletion",
-                        "kms:CancelKeyDeletion",
-                        "kms:Encrypt",
-                        "kms:Decrypt",
-                        "kms:ReEncrypt*",
-                        "kms:GenerateDataKey*",
-                        "kms:DescribeKey",
-                    ],
-                    resources=["*"],
-                )
-            )
+        for role_arn in (config.general.user_context_key_admins or []):
+            symmetric_key.add_to_resource_policy(iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                principals=[iam.ArnPrincipal(role_arn)],
+                actions=[
+                    "kms:Create*",
+                    "kms:Describe*",
+                    "kms:Enable*",
+                    "kms:List*",
+                    "kms:Put*",
+                    "kms:Update*",
+                    "kms:Disable*",
+                    "kms:Get*",
+                    "kms:TagResource",
+                    "kms:UntagResource",
+                    "kms:ScheduleKeyDeletion",
+                    "kms:CancelKeyDeletion",
+                    "kms:Encrypt",
+                    "kms:Decrypt",
+                    "kms:ReEncrypt*",
+                    "kms:GenerateDataKey*",
+                    "kms:DescribeKey",
+                ],
+                resources=["*"],
+            ))
