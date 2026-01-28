@@ -97,7 +97,7 @@ class AsyncJobInfra(Construct):
             build_args={
                 "github_token": oauth_token,
                 "repo_string": repo_string,
-                "branch_name": branch_name,
+                "branch_name": branch_name
             },
             extra_hash_dirs=job_api_extra_hash_dirs,
             memory_size=1024
@@ -131,7 +131,7 @@ class AsyncJobInfra(Construct):
                 description="Async Job API Docker Lambda FastAPI API Gateway",
                 throttling_burst_limit=api_rate_limiting.throttling_burst_limit if api_rate_limiting else None,
                 throttling_rate_limit=api_rate_limiting.throttling_rate_limit if api_rate_limiting else None,
-            ),
+            )
         )
         # API is non stateful - clean up
         api.apply_removal_policy(RemovalPolicy.DESTROY)
@@ -165,6 +165,7 @@ class AsyncJobInfra(Construct):
             scope=self,
             id='status',
             billing_mode=ddb.BillingMode.PAY_PER_REQUEST,
+
             # Primary key = session id
             partition_key=ddb.Attribute(
                 name=session_id_key, type=ddb.AttributeType.STRING),
@@ -206,9 +207,13 @@ class AsyncJobInfra(Construct):
         status_table.add_global_secondary_index(
             index_name=global_list_index_name,
             partition_key=ddb.Attribute(
-                name=gsi_field_key, type=ddb.AttributeType.STRING
+                name=gsi_field_key, 
+                type=ddb.AttributeType.STRING
             ),
-            sort_key=ddb.Attribute(name=timestamp_key, type=ddb.AttributeType.NUMBER),
+            sort_key=ddb.Attribute(
+                name=timestamp_key, 
+                type=ddb.AttributeType.NUMBER
+            ),
         )
 
         # Grant job API access into status table and provide table name
@@ -333,7 +338,7 @@ class AsyncJobInfra(Construct):
 
             # SQS job queue with DLQ for each job type
             dlq = sqs.Queue(scope=self,
-                            id="dlq" + job.type,
+                            id='dlq' + job.type,
                             # fifo=True
                             )
 
@@ -390,14 +395,14 @@ class AsyncJobInfra(Construct):
             # Add the container to task dfn
             base_environment = job.environment.copy()
             base_environment.update({
-                "QUEUE_URL": queue.queue_url,
-                "STATUS_TABLE_NAME": status_table.table_name,
-                "SNS_TOPIC_ARN": topic.topic_arn,
-                "JOB_TYPE": job.type,
+                'QUEUE_URL': queue.queue_url,
+                'STATUS_TABLE_NAME': status_table.table_name,
+                'SNS_TOPIC_ARN': topic.topic_arn,
+                'JOB_TYPE': job.type,
                 # This is also included for all tasks
-                "JOB_API_ENDPOINT": self.job_api_endpoint,
+                'JOB_API_ENDPOINT': self.job_api_endpoint,
                 # Determines how long the job polls before quitting
-                "IDLE_TIMEOUT": str(idle_timeout),
+                'IDLE_TIMEOUT': str(idle_timeout)
             })
             # If this job type produces reports, inject S3 details
             if job.type == JobType.REPORT:
