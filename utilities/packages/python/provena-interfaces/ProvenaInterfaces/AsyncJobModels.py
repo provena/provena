@@ -286,10 +286,10 @@ class ReportGeneratePayload(BaseModel):
     id: str
     item_subtype: ItemSubType
     depth: int = Field(ge=1, le=3)
+    user_info: EncryptedUserInfo
 
 
 class ReportGenerateResult(BaseModel):
-    # The presigned URL for the S3 bucket location of the generated report
     report_url: str
 
 

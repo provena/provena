@@ -33,3 +33,6 @@ python-docx==1.1.2
 
 # Provena Shared Functionality
 ../utilities/packages/python/provena-shared-functionality
+
+# Async utils ecs-sqs tools
+../async-util/ecs-sqs-python-tools

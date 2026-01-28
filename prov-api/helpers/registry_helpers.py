@@ -260,7 +260,7 @@ async def update_model_run_in_registry(
 
 
 async def fetch_item_from_registry_with_subtype(
-    proxy_username: str,
+    user_cipher: str,
     id: str,
     item_subtype: ItemSubType,
     config: Config
@@ -276,10 +276,10 @@ async def fetch_item_from_registry_with_subtype(
     assert config.registry_api_endpoint
     # use proxy update endpoint
     endpoint = config.registry_api_endpoint + endpoints_mapping[item_subtype]
+    
 
     params: Dict[str, str] = {
         'id': id,
-        'proxy_username': proxy_username
     }
 
     # Fetch the actual thing and return it.
@@ -289,7 +289,8 @@ async def fetch_item_from_registry_with_subtype(
     response = await async_get_request(
         endpoint=endpoint,
         token=token,
-        params=params
+        params=params,
+        request_headers=get_user_context_header(user_cipher=user_cipher, config=config)
     )
 
     if response.status_code != 200:
