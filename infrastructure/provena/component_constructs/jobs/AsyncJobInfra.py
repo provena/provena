@@ -207,11 +207,11 @@ class AsyncJobInfra(Construct):
         status_table.add_global_secondary_index(
             index_name=global_list_index_name,
             partition_key=ddb.Attribute(
-                name=gsi_field_key, 
+                name=gsi_field_key,
                 type=ddb.AttributeType.STRING
             ),
             sort_key=ddb.Attribute(
-                name=timestamp_key, 
+                name=timestamp_key,
                 type=ddb.AttributeType.NUMBER
             ),
         )
