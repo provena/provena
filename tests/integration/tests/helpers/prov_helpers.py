@@ -1,6 +1,6 @@
 from ProvenaInterfaces.ProvenanceAPI import *
 from ProvenaInterfaces.RegistryAPI import *
-from ProvenaInterfaces.AsyncJobModels import JobStatusTable, ProvLodgeModelRunResult, JobStatus
+from ProvenaInterfaces.AsyncJobModels import JobStatusTable, ProvLodgeModelRunResult, ProvLodgeUpdateResult, JobStatus
 from ProvenaInterfaces.ProvenanceModels import *
 import requests
 import json
@@ -34,6 +34,29 @@ def register_model_run_from_record_info(token: str, model_run_record: ModelRunRe
     )
 
 
+def update_model_run_from_record_info(token: str, update_model_run_input: PostUpdateModelRunInput) -> Response:
+    """Update a model run from a model run record.
+
+    Parameters
+    ----------
+    token : str
+        _description_
+    model_run_record : ModelRunRecord
+        The model run record to create.
+
+    Returns
+    -------
+    Response
+        The response from the server.
+    """
+    # create is done using the domain_info.record
+    return requests.post(
+        config.PROV_API_ENDPOINT + "/model_run/update",
+        json=json.loads(update_model_run_input.json(exclude_none=True)),
+        auth=BearerAuth(token)
+    )
+
+
 def assert_succesfull_lodge_model_run_and_parse(create_resp: Response) -> RegisterModelRunResponse:
     """Assert that the model run was created successfully and parse the response.
 
@@ -48,9 +71,9 @@ def assert_succesfull_lodge_model_run_and_parse(create_resp: Response) -> Regist
         The record info of the created model run
     """
     assert create_resp.status_code == 200, f"Recieved non 200 status code ({create_resp.status_code}) to register model run. Details: {create_resp.json()}"
-    create_resp = RegisterModelRunResponse.parse_obj(create_resp.json())
-    assert create_resp.status.success, f"Recieved failed status to register model run. {create_resp.status.details}"
-    return create_resp
+    parsed_create_resp = RegisterModelRunResponse.parse_obj(create_resp.json())
+    assert parsed_create_resp.status.success, f"Recieved failed status to register model run. {parsed_create_resp.status.details}"
+    return parsed_create_resp
 
 
 def assert_succesfull_create_model_run_and_parse(status: JobStatusTable) -> ProvenanceRecordInfo:
@@ -154,6 +177,95 @@ def register_modelrun_from_record_info_failed(get_token: TokenGenerator, model_r
         return True, None
     else:
         assert False, f"Status code was expected to be {expected_code} but was {create_resp.status_code}. Details: {create_resp.text}."
+
+
+def assert_successful_update_model_run_and_parse(update_resp: Response) -> PostUpdateModelRunResponse:
+    """Assert that the model run was updated successfully and parse the response.
+
+    Parameters
+    ----------
+    update_resp : Response
+        The unparsed response from the server.
+
+    Returns
+    -------
+    PostUpdateModelRunResponse
+        The parsed model of the response from the server.
+    """
+    assert update_resp.status_code == 200, f"Received non 200 status code ({update_resp.status_code}) to register model run. Details: {update_resp.json()}"
+
+    parsed_update_resp = PostUpdateModelRunResponse.parse_obj(update_resp.json())
+    return parsed_update_resp
+
+
+def assert_successful_update_model_run_result_and_parse(status: JobStatusTable) -> ProvenanceRecordInfo:
+    """Assert that the model run was updated successfully and parse the response.
+
+    Parameters
+    ----------
+    status : JobStatusTable
+        The resulting status object of the model run update job.
+
+    Returns
+    -------
+    None
+        None
+    """
+    assert status.status == JobStatus.SUCCEEDED, f"Expected successful prov lodge but had status {status.status}. Info: {status.info or 'None provided'}"
+
+    # parse the result payload from job status
+    result = ProvLodgeUpdateResult.parse_obj(status.result)
+
+    assert result.record.record, "Received no record in record info to update model run."
+    return result.record
+
+
+def update_modelrun_from_record_info_successfully(get_token: TokenGenerator, model_run_id: str, model_run_record: ModelRunRecord, reason: str) -> ProvenanceRecordInfo:
+    """Update a model run and assert that it was successful.
+
+    Will wait for job infra to dispatch and finish job.
+
+    Blocking operation.
+
+    Parameters
+    ----------
+    token : str
+        _description_
+    model_run_id : str
+        The model run id to update.
+    model_run_record : ModelRunRecord
+        The model run record to update.
+    reason : str
+        The reason for the update.
+
+    Returns
+    -------
+    ProvenanceRecordInfo
+        The record info of the updated model run
+    """
+
+    update_model_run_input = PostUpdateModelRunInput(
+        model_run_id=model_run_id,
+        reason=reason,
+        record=model_run_record)
+
+    # create is done using the domain_info.record
+    update_resp = update_model_run_from_record_info(
+        token=get_token(), update_model_run_input=update_model_run_input
+    )
+
+    parsed_update_resp = assert_successful_update_model_run_and_parse(
+        update_resp=update_resp)
+
+    session_id = parsed_update_resp.session_id
+    assert session_id
+
+    job_status = wait_for_full_lifecycle(
+        session_id=session_id, get_token=get_token)
+
+    updated_model_run_record = assert_successful_update_model_run_result_and_parse(
+        status=job_status)
+    return updated_model_run_record
 
 
 Graph = Dict[str, Any]
