@@ -68,6 +68,7 @@ def link_model_run_to_study_successfully(token: TokenGenerator, study_id: str, m
     assert payload.status == JobStatus.SUCCEEDED, f"Failed to link model run to study. Status: {payload.status}"
     return res
 
+
 def link_model_run_to_study(token: str, study_id: str, model_run_id: str) -> Response:
     """Link a model run to a study.
 
@@ -93,6 +94,7 @@ def link_model_run_to_study(token: str, study_id: str, model_run_id: str) -> Res
         },
         auth=BearerAuth(token)
     )
+
 
 def generate_report(token: str, node_id: str, upstream_depth: int, item_subtype: ItemSubType) -> Response:
     """Helper function that calls the generate report endpoint.
@@ -132,16 +134,47 @@ def generate_report(token: str, node_id: str, upstream_depth: int, item_subtype:
     return response
 
 
-def generate_report_successfully(token: str, node_id: str, upstream_depth: int, item_subtype: ItemSubType) -> ByteString: 
+def generate_report_and_wait_successfully(get_token: TokenGenerator, node_id: str, upstream_depth: int, item_subtype: ItemSubType) -> ByteString:
+    """Lodge a generate-report job, wait for it to complete successfully, then download and return the report bytes.
+
+    Parameters
+    ----------
+    get_token : TokenGenerator
+        Callable that returns an auth token string when invoked.
+    node_id : str
+        The id to generate the report from.
+    upstream_depth : int
+        Upstream depth for traversal.
+    item_subtype : ItemSubType
+        The subtype of the node (STUDY or MODEL_RUN).
+
+    Returns
+    -------
+    ByteString
+        The downloaded report bytes.
+    """
 
     response = generate_report(
-        token=token,
+        token=get_token(),
         node_id=node_id,
         upstream_depth=upstream_depth,
         item_subtype=item_subtype
     )
 
-    assert response.status_code == 200, f"Expected a status code of 200, recieved {response.status_code}"
-    assert response.content is not None, f"Response did not contain a 'content' field."
+    assert response.status_code == 200, f"Expected a status code of 200 when lodging job, received {response.status_code}"
 
-    return response.content
+    payload_json = response.json()
+    session_id = payload_json.get("session_id") or payload_json.get("sessionId")
+    assert session_id is not None, "Generate report response did not include a session_id"
+
+    job_status = wait_for_full_lifecycle(session_id=session_id, get_token=get_token)
+
+    assert job_status.result is not None, "Job succeeded but did not include a result payload"
+    report_url = job_status.result.get("report_url") or job_status.result.get("reportUrl")
+    assert report_url is not None, "Job result did not include a report URL"
+
+    download_resp = requests.get(report_url)
+    assert download_resp.status_code == 200, f"Failed to download report from presigned URL, status {download_resp.status_code}"
+    assert download_resp.content is not None and len(download_resp.content) > 0, "Downloaded report content was empty"
+
+    return download_resp.content
