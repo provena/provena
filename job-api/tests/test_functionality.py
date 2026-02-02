@@ -35,6 +35,7 @@ def global_config_provider() -> Config:
         prov_lodge_topic_arn="",
         global_list_index_name="",
         registry_topic_arn="",
+        report_topic_arn="",
     )
 
 
