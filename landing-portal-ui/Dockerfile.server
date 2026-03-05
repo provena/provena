@@ -32,6 +32,6 @@ RUN echo "VITE_STAGE=DEV" > .env && \
     echo "VITE_GIT_COMMIT_ID=" >> .env && \
     echo "VITE_MONITORING_ENABLED=false" >> .env && \
     echo "VITE_FEATURE_NUMBER=" >> .env && \
-    npm install --ignore-scripts && npx tsc && vite build
+    npm install --ignore-scripts && npx tsc && npx vite build
 EXPOSE 3000
 CMD ["npm", "run", "serve"]
