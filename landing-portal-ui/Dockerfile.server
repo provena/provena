@@ -1,11 +1,12 @@
 # On-prem server mode. Build from repo root: docker build -f landing-portal-ui/Dockerfile.server .
-# Build args: VITE_APP_BASE_URL (e.g. http://rrap1.it.csiro.au), VITE_KEYCLOAK_REALM (default provena)
+# Build args: VITE_APP_BASE_URL, VITE_KEYCLOAK_REALM (default provena), VITE_CONTACT_US_LINK (default #)
 FROM node:18-alpine
 WORKDIR /provena
 COPY . .
 WORKDIR /provena/landing-portal-ui
 ARG VITE_APP_BASE_URL=http://localhost
 ARG VITE_KEYCLOAK_REALM=provena
+ARG VITE_CONTACT_US_LINK=#
 ENV VITE_APP_BASE_URL=$VITE_APP_BASE_URL
 ENV VITE_KEYCLOAK_REALM=$VITE_KEYCLOAK_REALM
 ENV VITE_KEYCLOAK_CLIENT_ID=landing-portal-ui
@@ -26,7 +27,7 @@ RUN echo "VITE_STAGE=DEV" > .env && \
     echo "VITE_KEYCLOAK_AUTH_ENDPOINT=${VITE_APP_BASE_URL}:8180/auth" >> .env && \
     echo "VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM}" >> .env && \
     echo "VITE_DOCUMENTATION_BASE_LINK=https://docs.provena.io" >> .env && \
-    echo "VITE_CONTACT_US_LINK=#" >> .env && \
+    echo "VITE_CONTACT_US_LINK=${VITE_CONTACT_US_LINK}" >> .env && \
     echo "VITE_THEME_ID=" >> .env && \
     echo "VITE_SENTRY_DSN=" >> .env && \
     echo "VITE_GIT_COMMIT_ID=" >> .env && \

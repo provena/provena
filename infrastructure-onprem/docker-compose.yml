@@ -249,6 +249,7 @@ services:
       args:
         VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
         VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
     ports:
       - "3001:3000"
     depends_on:
@@ -261,6 +262,7 @@ services:
       args:
         VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
         VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
     ports:
       - "3002:3000"
     depends_on:
@@ -273,6 +275,7 @@ services:
       args:
         VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
         VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
     ports:
       - "3003:3000"
     depends_on:
@@ -285,6 +288,7 @@ services:
       args:
         VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
         VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
     ports:
       - "3004:3000"
     depends_on:
