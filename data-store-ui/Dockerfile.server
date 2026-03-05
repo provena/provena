@@ -1,5 +1,5 @@
 # On-prem server mode. Build from repo root: docker build -f data-store-ui/Dockerfile.server .
-# Build args: VITE_APP_BASE_URL, VITE_KEYCLOAK_REALM (default provena), VITE_CONTACT_US_LINK (default #)
+# Build args: VITE_APP_BASE_URL, VITE_KEYCLOAK_REALM, VITE_CONTACT_US_LINK, VITE_THEME_ID, VITE_DOCUMENTATION_BASE_LINK
 FROM node:18-alpine
 WORKDIR /provena
 COPY . .
@@ -7,6 +7,8 @@ WORKDIR /provena/data-store-ui
 ARG VITE_APP_BASE_URL=http://localhost
 ARG VITE_KEYCLOAK_REALM=provena
 ARG VITE_CONTACT_US_LINK=#
+ARG VITE_THEME_ID=default
+ARG VITE_DOCUMENTATION_BASE_LINK=https://docs.provena.io
 ENV VITE_APP_BASE_URL=$VITE_APP_BASE_URL
 ENV VITE_KEYCLOAK_REALM=$VITE_KEYCLOAK_REALM
 ENV VITE_KEYCLOAK_CLIENT_ID=data-store-ui
@@ -26,9 +28,9 @@ RUN echo "VITE_STAGE=DEV" > .env && \
     echo "VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID}" >> .env && \
     echo "VITE_KEYCLOAK_AUTH_ENDPOINT=${VITE_APP_BASE_URL}:8180/auth" >> .env && \
     echo "VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM}" >> .env && \
-    echo "VITE_DOCUMENTATION_BASE_LINK=https://docs.provena.io" >> .env && \
+    echo "VITE_DOCUMENTATION_BASE_LINK=${VITE_DOCUMENTATION_BASE_LINK}" >> .env && \
     echo "VITE_CONTACT_US_LINK=${VITE_CONTACT_US_LINK}" >> .env && \
-    echo "VITE_THEME_ID=" >> .env && \
+    echo "VITE_THEME_ID=${VITE_THEME_ID}" >> .env && \
     echo "VITE_SENTRY_DSN=" >> .env && \
     echo "VITE_GIT_COMMIT_ID=" >> .env && \
     echo "VITE_MONITORING_ENABLED=false" >> .env && \
