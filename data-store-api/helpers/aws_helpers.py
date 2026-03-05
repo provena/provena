@@ -1,6 +1,7 @@
 import json
 from typing import List, Any
 import boto3  # type: ignore
+from helpers.s3_client import get_s3_client
 import botocore.session  # type: ignore
 from aws_secretsmanager_caching import SecretCache, SecretCacheConfig  # type: ignore
 from .sanitize import *
@@ -106,8 +107,8 @@ def is_s3_path_in_bucket(path: str, config: Config) -> bool:
     --------
 
     """
-    # Create client
-    s3_client = boto3.client('s3')
+    # Create client (uses MinIO endpoint when storage_backend='minio')
+    s3_client = get_s3_client(config)
 
     # Check that the bucket name is present
     assert config.S3_STORAGE_BUCKET_NAME is not None
@@ -283,8 +284,8 @@ def seed_s3_location_with_metadata(s3_location: S3Location, metadata: ROCrate, c
     # Create the bytes of object
     json_body = json.dumps(metadata, indent=2).encode('UTF-8')
 
-    # Get s3 client
-    client = boto3.client('s3')
+    # Get s3 client (uses MinIO when storage_backend='minio')
+    client = get_s3_client(config)
 
     # Construct full path into s3
     path = s3_location.path.rstrip('/') + '/' + config.METADATA_FILE_NAME
@@ -328,8 +329,8 @@ def update_metadata_at_s3(s3_location: S3Location, metadata: Dict[str, Any], con
     # Create the bytes of object
     json_body = json.dumps(metadata, indent=2).encode('UTF-8')
 
-    # Get s3 client
-    client = boto3.client('s3')
+    # Get s3 client (uses MinIO when storage_backend='minio')
+    client = get_s3_client(config)
 
     # Construct full path into s3
     path = s3_location.path.rstrip('/') + '/' + config.METADATA_FILE_NAME

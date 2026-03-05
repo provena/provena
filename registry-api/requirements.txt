@@ -27,3 +27,6 @@ mypy-boto3-kms
 
 # Provena Shared Functionality package
 ../utilities/packages/python/provena-shared-functionality
+
+# On-prem: PostgreSQL backend
+../utilities/packages/python/provena-storage

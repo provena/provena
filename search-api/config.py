@@ -74,6 +74,14 @@ class Config(BaseConfig):
 
     aws_region: str = "ap-southeast-2"
 
+    # On-prem OpenSearch: set search_auth_type='basic' and provide credentials
+    search_auth_type: str = "iam"
+    opensearch_user: Optional[str] = None
+    opensearch_password: Optional[str] = None
+    opensearch_port: int = 443
+    opensearch_use_ssl: bool = True
+    opensearch_verify_certs: bool = True
+
     TEMP_FILE_LOCATION: str = "/tmp"
 
     class Config:
