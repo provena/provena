@@ -27,7 +27,7 @@ Docker Compose stack for running Provena on-premises with PostgreSQL, MinIO, Ope
 | MinIO | 9000, 9001 | S3-compatible object storage |
 | OpenSearch | 9200 | Search index |
 | Neo4j | 7474, 7687 | Provenance graph |
-| Keycloak | 8080 | Authentication |
+| Keycloak | 8180 | Authentication |
 | Local Identifier Service | 8005 | Handle minting/resolution |
 
 ## Configuring APIs for On-Prem
