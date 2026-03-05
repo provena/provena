@@ -246,6 +246,9 @@ services:
     build:
       context: ..
       dockerfile: registry-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
     ports:
       - "3001:3000"
     depends_on:
@@ -255,6 +258,9 @@ services:
     build:
       context: ..
       dockerfile: data-store-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
     ports:
       - "3002:3000"
     depends_on:
@@ -264,6 +270,9 @@ services:
     build:
       context: ..
       dockerfile: prov-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
     ports:
       - "3003:3000"
     depends_on:
@@ -273,6 +282,9 @@ services:
     build:
       context: ..
       dockerfile: landing-portal-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
     ports:
       - "3004:3000"
     depends_on:

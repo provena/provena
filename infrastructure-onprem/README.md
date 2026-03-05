@@ -12,6 +12,15 @@ Docker Compose stack for running Provena on-premises with PostgreSQL, MinIO, Ope
 
 2. Configure Keycloak at http://localhost:8180 with realm `provena` and clients.
 
+3. **On-prem host URL**: If the UIs are accessed via a hostname (e.g. `http://rrap1.it.csiro.au`), set in `infrastructure-onprem/.env`:
+   - `VITE_APP_BASE_URL=http://rrap1.it.csiro.au`
+   - `VITE_KEYCLOAK_REALM=provena` (optional; default is `provena`)
+   Then rebuild the UI images so login redirects to your Keycloak:
+   ```bash
+   docker compose -f infrastructure-onprem/docker-compose.yml build --no-cache landing-portal-ui registry-ui data-store-ui prov-ui
+   docker compose -f infrastructure-onprem/docker-compose.yml up -d
+   ```
+
 ## Services
 
 | Service | Port | Purpose |
@@ -36,5 +45,5 @@ Docker Compose stack for running Provena on-premises with PostgreSQL, MinIO, Ope
 ## Notes
 
 - **Auth API** and **Job API** require DynamoDB (and SNS for Job) for full functionality. They may fail to start without AWS. For a minimal on-prem setup, start only infrastructure + registry-api + data-store-api + search-api + prov-api + local-identifier-service + UIs.
-- **UIs** use `.env.example` for build - configure API endpoints in each UI's `.env.example` for your deployment.
+- **UIs** are built with `VITE_APP_BASE_URL` and `VITE_KEYCLOAK_REALM` from `infrastructure-onprem/.env`; set your host URL and rebuild the UI images so Keycloak and API links are correct.
 - Run a subset: `docker compose -f infrastructure-onprem/docker-compose.yml up -d postgres minio opensearch neo4j keycloak local-identifier-service registry-api`
