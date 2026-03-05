@@ -1,0 +1,12 @@
+# On-prem server mode. Build from repo root: docker build -f registry-ui/Dockerfile.server .
+FROM node:18-alpine
+WORKDIR /provena
+
+# Copy full repo for shared react-libs
+COPY . .
+
+WORKDIR /provena/registry-ui
+RUN npm install && npm run build:example
+
+EXPOSE 3000
+CMD ["npm", "run", "serve"]

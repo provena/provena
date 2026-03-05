@@ -34,6 +34,18 @@ services:
     volumes:
       - minio_data:/data
 
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb myminio/provena --ignore-existing;
+      exit 0;
+      "
+
   opensearch:
     image: opensearchproject/opensearch:2.11.0
     environment:
@@ -96,6 +108,176 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  # --- APIs ---
+  registry-api:
+    build:
+      context: ..
+      dockerfile: registry-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      TEST_MODE: "true"
+      DB_BACKEND: postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/registry_db
+      REGISTRY_TABLE_NAME: registry_items
+      AUTH_TABLE_NAME: auth_items
+      LOCK_TABLE_NAME: lock_items
+      HANDLE_API_ENDPOINT: http://local-identifier-service:8000
+      AUTH_API_ENDPOINT: http://auth-api:8000
+      JOB_API_ENDPOINT: http://job-api:8000
+      SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      USER_KEY_ID: placeholder
+      USER_KEY_REGION: ap-southeast-2
+      USER_CONTEXT_HEADER: x-user-context
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      local-identifier-service:
+        condition: service_started
+
+  auth-api:
+    build:
+      context: ..
+      dockerfile: auth-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      TEST_MODE: "true"
+    ports:
+      - "8002:8000"
+    depends_on:
+      keycloak:
+        condition: service_started
+
+  data-store-api:
+    build:
+      context: ..
+      dockerfile: data-store-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      TEST_MODE: "true"
+      STORAGE_BACKEND: minio
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_USE_SSL: "false"
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_STORAGE_BUCKET_NAME: provena
+      HANDLE_API_ENDPOINT: http://local-identifier-service:8000
+      REGISTRY_API_ENDPOINT: http://registry-api:8000
+      AUTH_API_ENDPOINT: http://auth-api:8000
+      JOB_API_ENDPOINT: http://job-api:8000
+      REVIEWERS_TABLE_NAME: reviewers
+      SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      KEYCLOAK_ISSUER: http://keycloak:8080/auth/realms/provena
+      OIDC_SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      OIDC_SERVICE_ROLE_ARN: placeholder
+      BUCKET_ROLE_ARN: placeholder
+      USER_KEY_ID: placeholder
+      USER_KEY_REGION: ap-southeast-2
+      USER_CONTEXT_HEADER: x-user-context
+    ports:
+      - "8003:8000"
+    depends_on:
+      minio:
+        condition: service_started
+      registry-api:
+        condition: service_started
+
+  search-api:
+    build:
+      context: ..
+      dockerfile: search-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      TEST_MODE: "true"
+      SEARCH_AUTH_TYPE: none
+      OPENSEARCH_PORT: 9200
+      OPENSEARCH_USE_SSL: "false"
+      OPENSEARCH_VERIFY_CERTS: "false"
+      SEARCH_DOMAIN: opensearch
+    ports:
+      - "8004:8000"
+    depends_on:
+      opensearch:
+        condition: service_healthy
+
+  job-api:
+    build:
+      context: ..
+      dockerfile: job-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+    ports:
+      - "8006:8000"
+    depends_on:
+      keycloak:
+        condition: service_started
+
+  prov-api:
+    build:
+      context: ..
+      dockerfile: prov-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      NEO4J_HOST: neo4j
+      NEO4J_PORT: 7687
+      NEO4J_TEST_USERNAME: neo4j
+      NEO4J_TEST_PASSWORD: provena
+    ports:
+      - "8007:8000"
+    depends_on:
+      neo4j:
+        condition: service_healthy
+
+  # --- UIs ---
+  registry-ui:
+    build:
+      context: ..
+      dockerfile: registry-ui/Dockerfile.server
+    ports:
+      - "3001:3000"
+    depends_on:
+      - registry-api
+
+  data-store-ui:
+    build:
+      context: ..
+      dockerfile: data-store-ui/Dockerfile.server
+    ports:
+      - "3002:3000"
+    depends_on:
+      - data-store-api
+
+  prov-ui:
+    build:
+      context: ..
+      dockerfile: prov-ui/Dockerfile.server
+    ports:
+      - "3003:3000"
+    depends_on:
+      - prov-api
+
+  landing-portal-ui:
+    build:
+      context: ..
+      dockerfile: landing-portal-ui/Dockerfile.server
+    ports:
+      - "3004:3000"
+    depends_on:
+      - registry-api
 
 volumes:
   postgres_data:

@@ -1,0 +1,8 @@
+# On-prem server mode. Build from repo root: docker build -f landing-portal-ui/Dockerfile.server .
+FROM node:18-alpine
+WORKDIR /provena
+COPY . .
+WORKDIR /provena/landing-portal-ui
+RUN npm install && npm run build:example
+EXPOSE 3000
+CMD ["npm", "run", "serve"]

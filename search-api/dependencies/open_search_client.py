@@ -20,6 +20,15 @@ def get_search_client(config: Config = Depends(get_settings)) -> OpenSearch:
             connection_class=RequestsHttpConnection,
         )
 
+    # On-prem: no auth when OpenSearch has security disabled
+    if getattr(config, "search_auth_type", "iam") == "none":
+        return OpenSearch(
+            hosts=[{"host": host, "port": port}],
+            use_ssl=use_ssl,
+            verify_certs=verify_certs,
+            connection_class=RequestsHttpConnection,
+        )
+
     # AWS: IAM SigV4 auth
     # https://github.com/opensearch-project/opensearch-py/blob/main/USER_GUIDE.md#using-iam-credentials-for-authentication
     region = config.aws_region
