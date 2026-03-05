@@ -85,8 +85,8 @@ services:
 
   local-identifier-service:
     build:
-      context: ..
-      dockerfile: local-identifier-service/Dockerfile
+      context: ../local-identifier-service
+      dockerfile: Dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/identifier_db
       HANDLE_PREFIX: "20.5000"
