@@ -3,6 +3,7 @@ FROM node:18-alpine
 WORKDIR /provena
 COPY . .
 WORKDIR /provena/landing-portal-ui
-RUN npm install && npm run build:example
+RUN mkdir -p src && ln -sf ../../utilities/packages/typescript/react-libs/src src/react-libs
+RUN npm install --ignore-scripts && npm run build:example
 EXPOSE 3000
 CMD ["npm", "run", "serve"]

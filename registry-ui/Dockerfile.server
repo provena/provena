@@ -6,7 +6,9 @@ WORKDIR /provena
 COPY . .
 
 WORKDIR /provena/registry-ui
-RUN npm install && npm run build:example
+# Create react-libs symlink (replaces dev_lib_setup.sh preinstall)
+RUN mkdir -p src && ln -sf ../../utilities/packages/typescript/react-libs/src src/react-libs
+RUN npm install --ignore-scripts && npm run build:example
 
 EXPOSE 3000
 CMD ["npm", "run", "serve"]
