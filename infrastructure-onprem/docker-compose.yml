@@ -1,8 +1,6 @@
 # Provena On-Prem Infrastructure
 # Run from repo root: docker compose -f infrastructure-onprem/docker-compose.yml up -d
 
-version: "3.8"
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -74,10 +72,11 @@ services:
     volumes:
       - neo4j_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:7474 || exit 1"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 15
+      start_period: 90s
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
@@ -240,7 +239,7 @@ services:
       - "8007:8000"
     depends_on:
       neo4j:
-        condition: service_healthy
+        condition: service_started
 
   # --- UIs ---
   registry-ui:
