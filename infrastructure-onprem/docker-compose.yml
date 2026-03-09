@@ -114,7 +114,7 @@ services:
       context: ..
       dockerfile: registry-api/Dockerfile.server
     environment:
-      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
       DOMAIN_BASE: localhost
       STAGE: DEV
       TEST_MODE: "true"
@@ -143,7 +143,7 @@ services:
       context: ..
       dockerfile: auth-api/Dockerfile.server
     environment:
-      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
       DOMAIN_BASE: localhost
       STAGE: DEV
       TEST_MODE: "true"
@@ -158,7 +158,7 @@ services:
       context: ..
       dockerfile: data-store-api/Dockerfile.server
     environment:
-      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
       DOMAIN_BASE: localhost
       STAGE: DEV
       TEST_MODE: "true"
@@ -174,7 +174,7 @@ services:
       JOB_API_ENDPOINT: http://job-api:8000
       REVIEWERS_TABLE_NAME: reviewers
       SERVICE_ACCOUNT_SECRET_ARN: placeholder
-      KEYCLOAK_ISSUER: http://keycloak:8080/auth/realms/provena
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/provena
       OIDC_SERVICE_ACCOUNT_SECRET_ARN: placeholder
       OIDC_SERVICE_ROLE_ARN: placeholder
       BUCKET_ROLE_ARN: placeholder
@@ -194,7 +194,7 @@ services:
       context: ..
       dockerfile: search-api/Dockerfile.server
     environment:
-      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
       DOMAIN_BASE: localhost
       STAGE: DEV
       TEST_MODE: "true"
@@ -214,7 +214,7 @@ services:
       context: ..
       dockerfile: job-api/Dockerfile.server
     environment:
-      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
       DOMAIN_BASE: localhost
       STAGE: DEV
     ports:
@@ -228,7 +228,7 @@ services:
       context: ..
       dockerfile: prov-api/Dockerfile.server
     environment:
-      KEYCLOAK_ENDPOINT: http://keycloak:8080/auth/realms/provena
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
       DOMAIN_BASE: localhost
       STAGE: DEV
       NEO4J_HOST: neo4j
