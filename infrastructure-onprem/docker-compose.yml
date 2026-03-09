@@ -314,46 +314,8 @@ services:
     depends_on:
       - registry-api
 
-  # HTTPS reverse proxy (optional). Use with docker-compose.https.yml to expose only Caddy.
-  caddy:
-    image: caddy:2-alpine
-    environment:
-      CADDY_DOMAIN: ${CADDY_DOMAIN:-localhost}
-    ports:
-      - "80:80"
-      - "443:443"
-      - "3001:3001"
-      - "3002:3002"
-      - "3003:3003"
-      - "3004:3004"
-      - "8001:8001"
-      - "8002:8002"
-      - "8003:8003"
-      - "8004:8004"
-      - "8006:8006"
-      - "8007:8007"
-      - "8180:8180"
-    volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-    depends_on:
-      - landing-portal-ui
-      - registry-ui
-      - data-store-ui
-      - prov-ui
-      - keycloak
-      - registry-api
-      - auth-api
-      - data-store-api
-      - search-api
-      - job-api
-      - prov-api
-    profiles:
-      - https
-
 volumes:
   postgres_data:
   minio_data:
   opensearch_data:
   neo4j_data:
-  caddy_data:
