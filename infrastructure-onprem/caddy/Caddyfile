@@ -1,0 +1,64 @@
+# Provena on-prem HTTPS reverse proxy (Caddy)
+# Set CADDY_DOMAIN in env (e.g. rrap1.it.csiro.au). Uses self-signed cert (tls internal).
+# For Let's Encrypt, remove the "tls internal" lines and ensure 80/443 are reachable.
+
+# Redirect HTTP -> HTTPS
+{$CADDY_DOMAIN}:80 {
+	redir https://{host}{uri} permanent
+}
+
+# Landing portal (main HTTPS entry)
+{$CADDY_DOMAIN}:443 {
+	tls internal
+	reverse_proxy landing-portal-ui:3000
+}
+
+# UIs
+{$CADDY_DOMAIN}:3001 {
+	tls internal
+	reverse_proxy registry-ui:3000
+}
+{$CADDY_DOMAIN}:3002 {
+	tls internal
+	reverse_proxy data-store-ui:3000
+}
+{$CADDY_DOMAIN}:3003 {
+	tls internal
+	reverse_proxy prov-ui:3000
+}
+{$CADDY_DOMAIN}:3004 {
+	tls internal
+	reverse_proxy landing-portal-ui:3000
+}
+
+# APIs
+{$CADDY_DOMAIN}:8001 {
+	tls internal
+	reverse_proxy registry-api:8000
+}
+{$CADDY_DOMAIN}:8002 {
+	tls internal
+	reverse_proxy auth-api:8000
+}
+{$CADDY_DOMAIN}:8003 {
+	tls internal
+	reverse_proxy data-store-api:8000
+}
+{$CADDY_DOMAIN}:8004 {
+	tls internal
+	reverse_proxy search-api:8000
+}
+{$CADDY_DOMAIN}:8006 {
+	tls internal
+	reverse_proxy job-api:8000
+}
+{$CADDY_DOMAIN}:8007 {
+	tls internal
+	reverse_proxy prov-api:8000
+}
+
+# Keycloak
+{$CADDY_DOMAIN}:8180 {
+	tls internal
+	reverse_proxy keycloak:8080
+}

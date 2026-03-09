@@ -116,6 +116,12 @@ class Config(BaseConfig):
     # Postfix to add to keycloak endpoint to reach token endpoint
     keycloak_token_postfix: str = "/protocol/openid-connect/token"
     
+    # On-prem: Keycloak service account credentials from env (alternative to AWS Secrets Manager).
+    # When both are set, get_service_token uses these instead of secret_cache.
+    keycloak_service_client_id: Optional[str] = None
+    keycloak_service_client_secret: Optional[str] = None
+    keycloak_service_grant_type: str = "client_credentials"
+    
     # Derived property of token endpoint
     @property
     def keycloak_token_endpoint(self) -> str:
