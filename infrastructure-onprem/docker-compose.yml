@@ -144,9 +144,17 @@ services:
       dockerfile: auth-api/Dockerfile.server
     environment:
       KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
-      DOMAIN_BASE: localhost
+      DOMAIN_BASE: ${DOMAIN_BASE:-localhost}
       STAGE: DEV
       TEST_MODE: "true"
+      SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      JOB_API_ENDPOINT: http://job-api:8000
+      ACCESS_REQUEST_EMAIL_ADDRESS: admin@localhost
+      REGISTRY_API_ENDPOINT: http://registry-api:8000
+      ACCESS_REQUEST_TABLE_NAME: provena-auth-access-requests
+      USER_GROUPS_TABLE_NAME: provena-auth-user-groups
+      USERNAME_PERSON_LINK_TABLE_NAME: provena-auth-username-person-link
+      USERNAME_PERSON_LINK_TABLE_PERSON_INDEX_NAME: person-id-index
     ports:
       - "8002:8000"
     depends_on:

@@ -136,8 +136,8 @@ def dev_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
     https_prefix = "https:\/\/"
     http_prefix = "http:\/\/"
     safe_base = base_domain.replace(".", "\.")
-    # https://*.base.com OR https://base.com OR http(s)://localhost:port
-    return f"({https_prefix}.*\.{safe_base}|{https_prefix}{safe_base}|{https_prefix}localhost:\d*|{http_prefix}localhost:\d*)"
+    # https://*.base.com OR https://base.com OR http(s)://localhost:port OR http://base (for on-prem)
+    return f"({https_prefix}.*\.{safe_base}|{https_prefix}{safe_base}|{https_prefix}localhost:\d*|{http_prefix}localhost:\d*|{http_prefix}.*\.{safe_base}(:\d*)?|{http_prefix}{safe_base}(:\d*)?)"
 
 
 def stage_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
