@@ -1,7 +1,7 @@
 # Override to use Caddy as the only entry point (HTTPS). Run:
 #   docker compose -f infrastructure-onprem/docker-compose.yml -f infrastructure-onprem/docker-compose.https.yml --profile https up -d
 # Set CADDY_DOMAIN in .env (e.g. rrap1.it.csiro.au). Set VITE_APP_BASE_URL=https://$CADDY_DOMAIN and rebuild UIs.
-# Backend services have their ports removed so Caddy can bind them (no clash with Keycloak on 8180, etc.).
+# Backend services have their ports removed so Caddy can bind them. Keycloak is behind Caddy on 8443 (HTTPS).
 
 services:
   keycloak:
@@ -43,7 +43,7 @@ services:
       - "8004:8004"
       - "8006:8006"
       - "8007:8007"
-      - "8180:8180"
+      - "8443:8443"
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

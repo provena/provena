@@ -264,6 +264,7 @@ services:
         VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
         VITE_THEME_ID: ${VITE_THEME_ID:-default}
         VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
     ports:
       - "3001:3000"
     depends_on:
@@ -279,6 +280,7 @@ services:
         VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
         VITE_THEME_ID: ${VITE_THEME_ID:-default}
         VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
     ports:
       - "3002:3000"
     depends_on:
@@ -294,6 +296,7 @@ services:
         VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
         VITE_THEME_ID: ${VITE_THEME_ID:-default}
         VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
     ports:
       - "3003:3000"
     depends_on:
@@ -309,6 +312,7 @@ services:
         VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
         VITE_THEME_ID: ${VITE_THEME_ID:-default}
         VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
     ports:
       - "3004:3000"
     depends_on:

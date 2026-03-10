@@ -1,6 +1,7 @@
 # Provena on-prem HTTPS reverse proxy (Caddy)
 # Set CADDY_DOMAIN in env (e.g. rrap1.it.csiro.au). Uses self-signed cert (tls internal).
 # For Let's Encrypt, remove the "tls internal" lines and ensure 80/443 are reachable.
+# Keycloak is on port 8443 (behind Caddy, HTTPS). Set VITE_KEYCLOAK_PORT=8443 when using this profile.
 
 # Redirect HTTP -> HTTPS
 {$CADDY_DOMAIN}:80 {
@@ -57,8 +58,8 @@
 	reverse_proxy prov-api:8000
 }
 
-# Keycloak
-{$CADDY_DOMAIN}:8180 {
+# Keycloak (HTTPS on 8443 to avoid clash with Keycloak container port 8180)
+{$CADDY_DOMAIN}:8443 {
 	tls internal
 	reverse_proxy keycloak:8080
 }

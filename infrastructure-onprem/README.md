@@ -31,7 +31,7 @@ To put Caddy in front of all UIs, APIs, and Keycloak with TLS (self-signed certi
    ```bash
    docker compose -f infrastructure-onprem/docker-compose.yml -f infrastructure-onprem/docker-compose.https.yml --profile https up -d
    ```
-4. Access the landing portal at `https://your.host.name:443` (or `https://your.host.name`) and Keycloak at `https://your.host.name:8180`. Accept the self-signed certificate in the browser. Update Keycloak client valid redirect URIs and web origins to use `https://` and the same host/ports.
+4. Set `VITE_KEYCLOAK_PORT=8443` in `.env` and rebuild the UIs so login uses Keycloak behind Caddy. Access the landing portal at `https://your.host.name` and Keycloak at `https://your.host.name:8443`. Accept the self-signed certificate. Update Keycloak client valid redirect URIs and web origins to use `https://` and port 8443 for the auth server.
 5. To use Let's Encrypt instead of a self-signed cert, ensure ports 80 and 443 are reachable from the internet, then edit `infrastructure-onprem/caddy/Caddyfile` and remove every `tls internal` line so Caddy can obtain a certificate automatically.
 
 ## Services
@@ -54,7 +54,7 @@ To put Caddy in front of all UIs, APIs, and Keycloak with TLS (self-signed certi
 | Data Store UI | 3002 | Dataset UI |
 | Prov UI | 3003 | Provenance UI |
 | Landing Portal UI | 3004 | Landing page |
-| Caddy (profile `https`) | 80, 443, 3001–3004, 8001–8004, 8006, 8007, 8180 | HTTPS reverse proxy |
+| Caddy (profile `https`) | 80, 443, 3001–3004, 8001–8004, 8006, 8007, 8443 (Keycloak) | HTTPS reverse proxy |
 
 ## Notes
 
