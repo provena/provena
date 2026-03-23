@@ -132,6 +132,8 @@ class ProvenaPipelineStack(Stack):
             "apt-get install jq",
             # Install cdk
             "npm install -g aws-cdk",
+            # Ensure setuptools is available (needed by checksumdir for pkg_resources)
+            "pip install setuptools",
             # Install the pip dependencies
             "pip install -r requirements.txt",
             # read version info from file and export to env to be used in synth of pipeline stack
