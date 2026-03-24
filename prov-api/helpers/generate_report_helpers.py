@@ -10,6 +10,8 @@ from ProvenaInterfaces.RegistryAPI import ItemBase, ItemSubType, SeededItem, Nod
 from helpers.entity_validators import RequestStyle, validate_model_run_id, validate_study_id, UserCipherProxy, ServiceAccountProxy
 from helpers.prov_connector import upstream_query, downstream_query
 from helpers.registry_helpers import fetch_item_from_registry_with_subtype
+from dependencies.dependencies import build_kms_service_from_config
+from ProvenaSharedFunctionality.Helpers.encryption_helpers import decrypt_user_info
 
 from docx import Document
 from docx.text.paragraph import Paragraph
@@ -160,7 +162,7 @@ def parse_nodes(node_list: List[Any]) -> List[Node]:
 
 
 async def generate_report(
-        user_cipher: str,
+        proxy_username: str,
         starting_id: str,
         upstream_depth: int,
         config: Config,
@@ -191,7 +193,7 @@ async def generate_report(
     """
 
     collection = await fetch_parse_all_upstream_downstream_nodes(
-        user_cipher=user_cipher,
+        proxy_username=proxy_username,
         starting_id=starting_id,
         upstream_depth=upstream_depth,
         config=config,
@@ -202,7 +204,7 @@ async def generate_report(
 
 
 async def fetch_parse_all_upstream_downstream_nodes(
-    user_cipher: str,
+    proxy_username: str,
     starting_id: str,
     upstream_depth: int,
     config: Config,
@@ -251,7 +253,7 @@ async def fetch_parse_all_upstream_downstream_nodes(
         await process_node_collection(
             nodes = nodes_upstream, 
             direction = NodeDirection.UPSTREAM,
-            user_cipher = user_cipher,
+            proxy_username = proxy_username,
             config = config,
             report_node_collection = report_node_collection
         )
@@ -259,7 +261,7 @@ async def fetch_parse_all_upstream_downstream_nodes(
         await process_node_collection(
             nodes = nodes_downstream,
             direction = NodeDirection.DOWNSTREAM,
-            user_cipher = user_cipher, 
+            proxy_username = proxy_username, 
             config = config,
             report_node_collection = report_node_collection
         )
@@ -272,7 +274,7 @@ async def fetch_parse_all_upstream_downstream_nodes(
 async def process_node_collection(
         nodes: List[Any], 
         direction: NodeDirection,
-        user_cipher: str, 
+        proxy_username: str, 
         config: Config, 
         report_node_collection: ReportNodeCollection
 ) -> ReportNodeCollection:
@@ -304,7 +306,7 @@ async def process_node_collection(
     for node in parsed_nodes:
         if should_load_node(node, direction):
             loaded_item = await fetch_item_from_registry_with_subtype(
-                user_cipher=user_cipher, 
+                proxy_username=proxy_username, 
                 id=node.id,
                 item_subtype=node.item_subtype,
                 config=config
@@ -583,7 +585,7 @@ def get_model_runs_from_study(study_node_id:str, config:Config, depth:int = 1) -
         raise RuntimeError(f"Error fetching downstream nodes from the provided study with id {study_node_id} - error: {str(e)}")
 
 async def populate_model_run_report(
-    user_cipher: str,
+    proxy_username: str,
     node_id: str,
     upstream_depth: int,
     config: Config,
@@ -607,7 +609,7 @@ async def populate_model_run_report(
     """
 
     await generate_report(
-        user_cipher=user_cipher,
+        proxy_username=proxy_username,
         starting_id=node_id,
         upstream_depth=upstream_depth,
         config=config,
@@ -615,7 +617,7 @@ async def populate_model_run_report(
     )
 
 async def populate_study_report(
-    user_cipher: str,
+    proxy_username: str,
     study_node_id:str,
     upstream_depth:int, 
     config:Config, 
@@ -645,7 +647,7 @@ async def populate_study_report(
     for node in model_run_nodes:
         if node.item_subtype == ItemSubType.MODEL_RUN:
             await populate_model_run_report(
-                user_cipher=user_cipher,
+                proxy_username=proxy_username,
                 node_id=node.id,
                 upstream_depth=upstream_depth,
                 config=config,
@@ -698,6 +700,14 @@ async def generate_report_helper(
         )
     )
 
+    # Decrypt the user cipher to get the proxy username for registry fetch calls
+    encryption_service = build_kms_service_from_config(config)
+    user_info = await decrypt_user_info(
+        cipher_text=proxy.user_cipher,
+        encryption_service=encryption_service
+    )
+    proxy_username = user_info.username
+
     # Shared dataclass that is passed via reference to other helper functions. 
     # Allows you to store multiple entries due to single instantiation.
     report_nodes: ReportNodeCollection = ReportNodeCollection()
@@ -715,7 +725,7 @@ async def generate_report_helper(
 
     if item_subtype == ItemSubType.MODEL_RUN: 
         await populate_model_run_report(
-            user_cipher=proxy.user_cipher, 
+            proxy_username=proxy_username, 
             node_id=node_id,
             upstream_depth=upstream_depth,
             config=config,
@@ -723,7 +733,7 @@ async def generate_report_helper(
         )
     elif item_subtype == ItemSubType.STUDY: 
         await populate_study_report(
-            user_cipher=proxy.user_cipher, 
+            proxy_username=proxy_username, 
             study_node_id=node_id,
             upstream_depth=upstream_depth,
             config=config,
