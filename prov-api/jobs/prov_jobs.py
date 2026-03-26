@@ -1,5 +1,5 @@
-from ProvenaInterfaces.AsyncJobModels import *
-from EcsSqsPythonTools.Types import *
+from ProvenaInterfaces.AsyncJobModels import JobSnsPayload, JobStatus, JobSubType
+from EcsSqsPythonTools.Types import CallbackFunc, CallbackResponse
 from EcsSqsPythonTools.Settings import JobBaseSettings
 from EcsSqsPythonTools.Workflow import parse_job_specific_payload
 from helpers.util import py_to_dict
@@ -9,10 +9,13 @@ from helpers.validate_model_run_record import validate_model_run_record
 from helpers.prov_helpers import create_to_graph, version_to_graph
 from helpers.job_api_helpers import launch_generic_job
 from helpers.prov_connector import Neo4jGraphManager
+from helpers.generate_report_helpers import generate_report_helper, remove_file
+from helpers.s3_helpers import upload_file_to_s3, generate_presigned_url_for_report
 from ProvenaInterfaces.AsyncJobAPI import *
 from config import Config
 from typing import cast
 import asyncio
+import os
 
 ProvJobHandler = CallbackFunc
 
@@ -720,8 +723,101 @@ def version_lodge_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> 
     )
 
 
+def generate_report_handler(payload: JobSnsPayload, settings: JobBaseSettings) -> CallbackResponse:
+    """
+    Handles generating a report for the specified model run record.
+
+    Parameters
+    ----------
+    payload : JobSnsPayload
+        The payload which validates against subtype payload from map
+    settings : JobBaseSettings
+        The job settings
+
+    Returns
+    -------
+    CallbackResponse
+        The response indicating success/failure and returning a presigned S3 URL for the generated report if successful
+    """
+    print(f"Running generate report job")
+ 
+    print("Parsing full API config from environment.")
+    try:
+        config = Config()
+    except Exception as e:
+        return CallbackResponse(
+            status=JobStatus.FAILED,
+            info=f"Failed to parse job configuration from the environment. Error: {e}."
+        )
+    print("Successfully parsed environment config.")
+ 
+    print(f"Parsing job specific payload")
+    try:
+        job_specific_payload = cast(ReportGeneratePayload, parse_job_specific_payload(
+            payload=payload, job_sub_type=JobSubType.GENERATE_REPORT))
+    except Exception as e:
+        print(f"Error parsing job specific payload: {e}")
+        return generate_failed_job(error=f"Failed to parse job payload from the event. Error: {e}.")
+ 
+    print(f"Parsed specific payload: {job_specific_payload}")
+    
+    print("Starting report generation.")
+    try: 
+        generated_doc_path:str = asyncio.run(generate_report_helper(
+            node_id=job_specific_payload.id,
+            upstream_depth=job_specific_payload.depth, 
+            item_subtype=job_specific_payload.item_subtype,
+            config=config,
+            proxy=UserCipherProxy(
+                user_cipher=job_specific_payload.user_info
+            )
+        ))
+    except Exception as e:
+        return generate_failed_job(
+            error=f"An error occurred while attempting to generate report. Error: {e}."
+        )
+    
+    # Upload the report to S3 and generate a presigned URL for download
+    try:
+        bucket = config.REPORT_BUCKET_NAME
+        prefix = config.REPORT_S3_PREFIX.rstrip('/')
+        if not bucket:
+            raise RuntimeError("REPORT_BUCKET_NAME is not configured")
+
+        filename = os.path.basename(generated_doc_path)
+        unique_key = f"{prefix}/{filename}" if prefix else f"{filename}"
+
+        upload_file_to_s3(path=generated_doc_path, bucket=bucket, key=unique_key)
+
+        expiry = int(config.REPORT_PRESIGNED_EXPIRY_SECONDS)
+        presigned_url = generate_presigned_url_for_report(unique_key, expiry, config)
+
+        # remove local file
+        try:
+            remove_file(generated_doc_path)
+        except Exception:
+            pass
+
+        return CallbackResponse(
+            status=JobStatus.SUCCEEDED,
+            info=None,
+            result=py_to_dict(
+                ReportGenerateResult(
+                    report_url=presigned_url
+                )
+            )
+        )
+    except Exception as e:
+        # ensure local file is removed on failure
+        try:
+            remove_file(generated_doc_path)
+        except Exception:
+            pass
+        return generate_failed_job(error=f"Failed to upload or presign report. Error: {e}")
+
+
 # Map from the job sub type to the prov handler
-PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
+PROV_LODGE_HANDLER_MAP: Dict[JobSubType, CallbackFunc] = {
     JobSubType.PROV_LODGE_WAKE_UP: wake_up_handler,
     JobSubType.MODEL_RUN_PROV_LODGE: model_run_lodge_handler,
     JobSubType.MODEL_RUN_LODGE_ONLY: model_run_lodge_only_handler,
@@ -730,6 +826,7 @@ PROV_LODGE_HANDLER_MAP: Dict[JobSubType, ProvJobHandler] = {
     JobSubType.LODGE_VERSION_ACTIVITY: version_lodge_handler,
     JobSubType.MODEL_RUN_UPDATE: model_run_update_handler,
     JobSubType.MODEL_RUN_UPDATE_LODGE_ONLY: model_run_update_lodge_only_handler,
+    JobSubType.GENERATE_REPORT: generate_report_handler,
 }
 
 

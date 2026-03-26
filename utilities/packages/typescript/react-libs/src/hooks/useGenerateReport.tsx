@@ -1,5 +1,5 @@
 // A small custom hook that manages the react-query/api calls for the "Export" feature. 
-import { useMutation} from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 
 import { generateReport } from "../queries"
 import { ItemSubType } from "../provena-interfaces/RegistryModels"
@@ -26,12 +26,11 @@ export const useGenerateReport = (props: useGenerateReportProps) => {
                 id: props.id!!,
                 item_subtype: props.itemSubType!!,
                 depth: props.depth
-
             })
         }
     })
 
     // Return the values generated in the hook. 
-    return {dataReady:dataReady, mutate: dataReady ? generateReportQuery: undefined}
+    return { dataReady: dataReady, mutate: dataReady ? generateReportQuery : undefined }
 
 }

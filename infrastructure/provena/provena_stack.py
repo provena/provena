@@ -785,6 +785,24 @@ class ProvenaStack(Stack):
                     ),
                 },
             ),
+            JobConfig(
+                type=JobType.REPORT,
+                image=ecs.ContainerImage.from_asset(
+                    directory="../prov-api",
+                    file="JobDockerfile",
+                    build_args={
+                        "github_token": github_token,
+                        "repo_string": config.deployment.git_repo_string,
+                        "branch_name": config.deployment.git_branch_name,
+                        "CACHE_BUSTER": hash_dir_list(
+                            async_config.prov_job_extra_hash_dirs
+                        ),
+                    },
+                ),
+                visibility_timeout=Duration.minutes(5),
+                environment=prov_lodge_environment,
+                secrets={},
+            ),
         ]
 
         async_infra: AsyncJobInfra = AsyncJobInfra(
@@ -875,6 +893,12 @@ class ProvenaStack(Stack):
         # permissions/rights as the prov API
         prov_api.grant_equivalent_permissions(
             async_infra.task_roles[JobType.PROV_LODGE]
+        )
+
+        # Also grant equivalent permissions to the REPORT job task role
+        # so report tasks can read service secrets and use the user context key
+        prov_api.grant_equivalent_permissions(
+            async_infra.task_roles[JobType.REPORT]
         )
 
         # Add permissions to job

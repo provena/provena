@@ -21,3 +21,6 @@ class Settings(BaseSettings):
 
     # Type = EMAIL
     email_task_definition_arn: str
+
+    # Type = REPORT
+    report_task_definition_arn: str

@@ -216,6 +216,8 @@ def get_task_dfn(job_type: JobType, settings: Settings) -> str:
         return settings.registry_task_definition_arn
     elif job_type == JobType.EMAIL:
         return settings.email_task_definition_arn
+    elif job_type == JobType.REPORT:
+        return settings.report_task_definition_arn
     else:
         raise Exception(
             f"Not sure how to process the job type: {job_type}. No settings task definition arn.")

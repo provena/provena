@@ -1,11 +1,13 @@
-from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, user_general_dependency, admin_user_protected_role_dependency
+from dependencies.dependencies import read_user_protected_role_dependency, read_write_user_protected_role_dependency, user_general_dependency, admin_user_protected_role_dependency, get_user_cipher
 from KeycloakFastAPI.Dependencies import User, ProtectedRole
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
+from ProvenaInterfaces.AsyncJobModels import ReportGeneratePayload
 from ProvenaInterfaces.ProvenanceAPI import *
 from ProvenaInterfaces.ProvenanceModels import *
 from ProvenaInterfaces.SharedTypes import Status
 from helpers.entity_validators import unknown_validator, RequestStyle, ServiceAccountProxy
+from helpers.job_api_helpers import submit_generate_report_job
 import helpers.prov_connector as prov_connector
 from typing import Dict, Any
 from config import Config, get_settings
@@ -322,16 +324,17 @@ async def effected_agents(
     )
 
 
-@router.post("/generate/report", response_class = FileResponse, operation_id="export_prov_graph")
+@router.post("/generate/report", response_model=GenerateReportResponse, operation_id="export_prov_graph")
 async def generate_report(
     request: GenerateReportRequest,    
     background_tasks: BackgroundTasks,
     roles: ProtectedRole = Depends(read_user_protected_role_dependency),
-    config: Config = Depends(get_settings),  
-) -> FileResponse:
+    config: Config = Depends(get_settings),
+    user_cipher: str = Depends(get_user_cipher)
+) -> GenerateReportResponse:
     
     """Exports the provenance graph upto a certain upstream depth and fixed downstream depth (1) for Study and Model Run based entities.  
-    This generates a Word Document (.docx) and contains the input, outputs and model runs involved within the Study or within the Model Run. 
+    This lodges a asynchronous task to generate a Word Document (.docx) that contains the input, outputs and model runs involved within the Study or within the Model Run. 
 
     Parameters
     ----------
@@ -346,8 +349,8 @@ async def generate_report(
 
     Returns
     -------
-    FileResponse
-        A FileResponse object that contains the generated word-document and is sent to the front-end. 
+    GenerateReportResponse
+        A GenerateReportResponse object that contains a session ID for the lodged generate report job. 
 
     Raises
     ------
@@ -356,29 +359,18 @@ async def generate_report(
     HTTPException
         Raised if an unsupported item subtype is provided.
     HTTPException
-        Raised if there is an error in generating the word document.
+        Raised if there is an error lodging the generate report job.
 
     """
 
-    generated_doc_path:str = await generate_report_helper(
-        node_id=request.id,
-        upstream_depth=request.depth, 
-        item_subtype=request.item_subtype,
-        roles=roles,
-        config=config
-    )
-
-    # Add the removal of the generated word doc as a background task.
-    background_tasks.add_task(remove_file, file_path=generated_doc_path)
-
-    # Explicitly set the headers 
-    headers = {
-        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": 'attachment; filename="Study Close Out Report.docx"',
-    }
-
-    return FileResponse(
-        path = generated_doc_path, 
-        filename= "Study Close Out Report.docx", 
-        headers = headers
-    )  
+    res = await submit_generate_report_job(
+        username=roles.user.username,
+        payload=ReportGeneratePayload(
+            id=request.id,
+            depth=request.depth,
+            item_subtype=request.item_subtype,
+            user_info=user_cipher
+        ),
+        config=config)
+    
+    return GenerateReportResponse(session_id=res) 

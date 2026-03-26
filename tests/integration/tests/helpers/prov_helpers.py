@@ -292,7 +292,7 @@ def assert_graph_property(prop: GraphProperty, graph: Graph) -> None:
         graph (Graph): The graph to analyse
     """
 
-    links = graph['links']
+    links = graph['edges']
     found = False
     for l in links:
         actual_prop = GraphProperty(**l)

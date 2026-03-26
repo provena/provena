@@ -99,6 +99,11 @@ class Config(BaseConfig):
     # for use in writing temp files
     TEMP_FILE_LOCATION: str = "/tmp"
 
+    # Report storage settings (optional)
+    REPORT_BUCKET_NAME: Optional[str] = None
+    REPORT_S3_PREFIX: Optional[str] = None
+    REPORT_PRESIGNED_EXPIRY_SECONDS: int = 3600
+
     # config options for csv templates
     INPUT_DATASET_TEMPLATE_PREFIX: str = "Input dataset id for template: "
     OUTPUT_DATASET_TEMPLATE_PREFIX: str = "Output dataset id for template: "

@@ -9,6 +9,7 @@ from tests.helpers.fixtures import *
 from tests.helpers.prov_api_helpers import *
 from tests.helpers.general_helpers import parse_assert_json_response
 
+
 @pytest.fixture(scope="function")
 def study_linked_to_model_run(
     linked_person_fixture: ItemPerson, 
@@ -265,6 +266,7 @@ def study_linked_to_multiple_model_run(
 
     return study_item, list_of_created_model_runs
 
+
 def test_generate_report_from_study_and_model_run(study_linked_to_model_run: Tuple[ItemBase, ProvenanceRecordInfo]) -> None: 
     """Tests generating a report from a study and model run entity.
 
@@ -278,11 +280,12 @@ def test_generate_report_from_study_and_model_run(study_linked_to_model_run: Tup
 
     # Test 1: Generate a report successfully from study entity.
     # Now based on the created study-id call the generate-report-endpoint
-    response_content = generate_report_successfully(
-        token=Tokens.user1(), 
+    response_content = generate_report_and_wait_successfully(
+        get_token=Tokens.user1,
         node_id=study_item.id,
-        upstream_depth=2, 
-        item_subtype=study_item.item_subtype)
+        upstream_depth=2,
+        item_subtype=study_item.item_subtype,
+    )
 
     # Assert that the response content is not None and contains bytes
     assert response_content is not None, "Expected non-empty response content, got None"
@@ -290,11 +293,12 @@ def test_generate_report_from_study_and_model_run(study_linked_to_model_run: Tup
     assert len(response_content) > 0, "Expected non-empty byte content, but response is empty"
 
     # Test 2: Generate a report succesfully from a model run entity. 
-    response_content = generate_report_successfully(
-        token=Tokens.user1(), 
+    response_content = generate_report_and_wait_successfully(
+        get_token=Tokens.user1,
         node_id=model_run_record.id,
-        upstream_depth=2, 
-        item_subtype=ItemSubType.MODEL_RUN)
+        upstream_depth=2,
+        item_subtype=ItemSubType.MODEL_RUN,
+    )
 
     # Assert that the response content is not None and contains bytes
     assert response_content is not None, "Expected non-empty response content, got None"
@@ -314,6 +318,7 @@ def test_generate_report_from_study_and_model_run(study_linked_to_model_run: Tup
         expected_status_code=422
     )
 
+
 def test_generate_report_with_multiple_model_runs(study_linked_to_multiple_model_run: Tuple[ItemBase, List[ProvenanceRecordInfo]]) -> None:
     """Tests generating a report from a study linked to multiple model runs.
 
@@ -324,16 +329,18 @@ def test_generate_report_with_multiple_model_runs(study_linked_to_multiple_model
     """
 
     study_item, model_run_record_list = study_linked_to_multiple_model_run
-    response_content = generate_report_successfully(
-        token=Tokens.user1(), 
+    response_content = generate_report_and_wait_successfully(
+        get_token=Tokens.user1,
         node_id=study_item.id,
-        upstream_depth=2, 
-        item_subtype=study_item.item_subtype)
+        upstream_depth=2,
+        item_subtype=study_item.item_subtype,
+    )
 
     # Assert that the response content is not None and contains bytes
     assert response_content is not None, "Expected non-empty response content, got None"
     assert isinstance(response_content, (bytes, bytearray)), f"Expected response to be bytes or bytearray, got {type(response_content)}"
     assert len(response_content) > 0, "Expected non-empty byte content, but response is empty"
+
 
 def test_generate_report_with_invalid_subtype(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
     """Tests generating a report with an invalid item subtype.
@@ -359,20 +366,25 @@ def test_generate_report_with_invalid_subtype(linked_person_fixture: ItemPerson,
         get_token=Tokens.user1
     )
 
-    # Call endpoint with invalid subtype entity
+    # Call endpoint with invalid subtype entity - async job is lodged
     response: Response = generate_report(
         token=Tokens.user1(),
         node_id=model_item.id,
-        upstream_depth=1, 
+        upstream_depth=1,
         item_subtype=model_item.item_subtype
     )
 
-    parse_assert_json_response(
-        response=response, 
-        expected_status_code=400,
-        expected_error_message=expected_base_error_message,
-        expected_field_key="detail"
-    )
+    # Endpoint should lodge a job and return a session id
+    assert response.status_code == 200, f"Expected 200 when lodging async job, got {response.status_code}. Text: {response.text}"
+    payload = response.json()
+    session_id = payload.get("session_id") or payload.get("sessionId")
+    assert session_id is not None, "Expected session_id in response when lodging async job"
+
+    # Wait for job to complete and assert it failed with expected message
+    job_status = wait_for_full_lifecycle(session_id=session_id, get_token=Tokens.user1)
+    assert job_status.status == JobStatus.FAILED, f"Expected job to fail for invalid subtype, got {job_status.status}"
+    assert expected_base_error_message in (job_status.info or ""), f"Expected error message {expected_base_error_message} in job info, got {job_status.info}"
+
 
 def test_generate_report_with_invalid_study_entity() -> None:
     """Tests generating a report with an invalid study entity."""
@@ -386,12 +398,16 @@ def test_generate_report_with_invalid_study_entity() -> None:
         item_subtype=ItemSubType.STUDY
     )
 
-    parse_assert_json_response(
-        response=response,
-        expected_status_code=400,
-        expected_error_message="Validation error with provided STUDY: Failed to retrieve item",
-        expected_field_key="detail"
-    )
+    # Should lodge an async job
+    assert response.status_code == 200, f"Expected 200 when lodging async job, got {response.status_code}. Text: {response.text}"
+    payload = response.json()
+    session_id = payload.get("session_id") or payload.get("sessionId")
+    assert session_id is not None, "Expected session_id in response when lodging async job"
+
+    job_status = wait_for_full_lifecycle(session_id=session_id, get_token=Tokens.user1)
+    assert job_status.status == JobStatus.FAILED, f"Expected job to fail for invalid study entity, got {job_status.status}"
+    assert "Validation error with provided STUDY" in (job_status.info or ""), f"Expected validation error in job info, got {job_status.info}"
+
 
 def test_valid_study_entity_with_no_connections(linked_person_fixture: ItemPerson, organisation_fixture: ItemOrganisation) -> None:
     """Tests generating a report from a valid study entity with no connections.
@@ -411,20 +427,13 @@ def test_valid_study_entity_with_no_connections(linked_person_fixture: ItemPerso
     )
     cleanup_items.append((ItemSubType.STUDY,study_item.id))
 
-    # Expected base error message 
-    expected_base_error_message = f"The study with id {study_item.id} does not have any associated model runs."
-
-    # Call the endpoint and see the response type. 
-    response: Response = generate_report(
-        token=Tokens.user1(),
+    # Lodge the async job and wait for the generated report to be available
+    report_bytes = generate_report_and_wait_successfully(
+        get_token=Tokens.user1,
         node_id=study_item.id,
         upstream_depth=1,
-        item_subtype=study_item.item_subtype
+        item_subtype=study_item.item_subtype,
     )
 
-    parse_assert_json_response(
-        response=response, 
-        expected_status_code=404,
-        expected_error_message=expected_base_error_message,
-        expected_field_key="detail"
-    )
+    # Assert that we received bytes for the generated report
+    assert report_bytes is not None and len(report_bytes) > 0, "Expected non-empty report bytes for study with no connections"

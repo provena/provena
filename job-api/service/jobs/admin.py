@@ -39,6 +39,8 @@ def get_correct_topic_arn(job_type: JobType, config: Config) -> str:
         return config.registry_topic_arn
     elif job_type == JobType.EMAIL:
         return config.email_topic_arn
+    elif job_type == JobType.REPORT:
+        return config.report_topic_arn
 
     err = f"Cannot handle job type: {job_type}"
     logging.error(err)

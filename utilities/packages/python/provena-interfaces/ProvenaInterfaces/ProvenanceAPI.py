@@ -5,6 +5,7 @@ try:
 except:
     from .SharedTypes import StatusResponse
     from .ProvenanceModels import *
+    from .RegistryAPI import ItemSubType
     from .RegistryModels import *
 
 from typing import Optional, Any, Dict, Type
@@ -82,6 +83,10 @@ class GenerateReportRequest(BaseModel):
     item_subtype: ItemSubType
     # Greater than or equal to 1 and less than equal to 3
     depth: int = Field(ge=1, le=3)
+
+
+class GenerateReportResponse(BaseModel):
+    session_id: str
 
 
 class PostDeleteGraphRequest(BaseModel):

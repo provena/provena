@@ -5,7 +5,6 @@ from aws_cdk import (
 
 from constructs import Construct
 from typing import Optional, Dict, Any, List
-import checksumdir
 import os
 from provena.utility import hash_dir
 
