@@ -116,6 +116,12 @@ class Config(BaseConfig):
     # Postfix to add to keycloak endpoint to reach token endpoint
     keycloak_token_postfix: str = "/protocol/openid-connect/token"
     
+    # On-prem: Keycloak service account credentials from env (alternative to AWS Secrets Manager).
+    # When both are set, get_service_token uses these instead of secret_cache.
+    keycloak_service_client_id: Optional[str] = None
+    keycloak_service_client_secret: Optional[str] = None
+    keycloak_service_grant_type: str = "client_credentials"
+    
     # Derived property of token endpoint
     @property
     def keycloak_token_endpoint(self) -> str:
@@ -136,8 +142,8 @@ def dev_cors_generator(base_domain: str) -> CorsGeneratorReturnType:
     https_prefix = "https:\/\/"
     http_prefix = "http:\/\/"
     safe_base = base_domain.replace(".", "\.")
-    # https://*.base.com OR https://base.com OR http(s)://localhost:port
-    return f"({https_prefix}.*\.{safe_base}|{https_prefix}{safe_base}|{https_prefix}localhost:\d*|{http_prefix}localhost:\d*)"
+    # https://*.base.com OR https://base.com OR http(s)://localhost:port OR http://base (for on-prem)
+    return f"({https_prefix}.*\.{safe_base}|{https_prefix}{safe_base}|{https_prefix}localhost:\d*|{http_prefix}localhost:\d*|{http_prefix}.*\.{safe_base}(:\d*)?|{http_prefix}{safe_base}(:\d*)?)"
 
 
 def stage_cors_generator(base_domain: str) -> CorsGeneratorReturnType:

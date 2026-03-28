@@ -142,8 +142,8 @@ async def generate_presigned_url(
     # create full path to compare with other full paths to items inside dataset_id
     full_file_path = config.DATASET_PATH + '/' + sanitize_handle(dataset_id) + '/' + file_path
 
-    # validate file path exists in dataset    
-    if not check_file_exists(config.S3_STORAGE_BUCKET_NAME, full_file_path):
+    # validate file path exists in dataset
+    if not check_file_exists(config.S3_STORAGE_BUCKET_NAME, full_file_path, config):
         raise HTTPException(
             status_code=400,
             detail=f"File path '{file_path}' does not exist in dataset with id {dataset_id}"

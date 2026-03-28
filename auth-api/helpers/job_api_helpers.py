@@ -24,7 +24,7 @@ async def launch_generic_job(payload: AdminLaunchJobRequest, config: Config) -> 
 
     request = py_to_dict(payload)
 
-    # Use client auth
+    # Use client auth (env credentials on-prem, or AWS Secrets Manager)
     token = get_service_token(secret_cache=secret_cache, config=config)
 
     try:
