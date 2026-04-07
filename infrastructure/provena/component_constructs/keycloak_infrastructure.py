@@ -231,13 +231,14 @@ class KeycloakConstruct(Construct):
             "DB_DATABASE": "keycloak",
             "DB_USER": "keycloak",
             "PROXY_ADDRESS_FORWARDING": "true",
-            # WildFly resolves a logical "private" interface for mod_cluster/JGroups.
-            # In Fargate/container networks, NIC layout can change (e.g. platform
-            # updates), causing WFLYSRV0082 "failed to resolve interface private".
-            # Pin bind addresses explicitly (same idea as -Djboss.bind.address.* on docker run).
-            "JAVA_OPTS_APPEND": (
-                "-Djboss.bind.address.private=127.0.0.1 "
-                "-Djboss.bind.address=0.0.0.0"
+            # Keycloak entrypoint builds BIND_OPTS from hostname --all-ip-addresses unless
+            # BIND_OPTS is set; it passes those flags to standalone.sh after JAVA_OPTS, so
+            # JAVA_OPTS_APPEND cannot reliably override. Multiple IPs → last-wins bind props
+            # and WildFly can fail WFLYSRV0082 on interface private; we also patch
+            # standalone-ha.xml (Dockerfile) to use <nic name="lo"/> for private.
+            "BIND_OPTS": (
+                "-Djboss.bind.address=0.0.0.0 "
+                "-Djboss.bind.address.private=127.0.0.1"
             ),
             # Set debug log level for non production
             "KEYCLOAK_LOGLEVEL": "DEBUG"

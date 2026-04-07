@@ -1,5 +1,9 @@
 FROM quay.io/keycloak/keycloak:16.0.0
 
+# See Dockerfile in this folder for rationale (WFLYSRV0082 private interface on Fargate).
+RUN sed -i 's|<inet-address value="${jboss.bind.address.private:127.0.0.1}"/>|<nic name="lo"/>|' \
+    /opt/jboss/keycloak/standalone/configuration/standalone-ha.xml
+
 # Include the modules in the plugin folder
 COPY ./modules/* /opt/jboss/keycloak/providers/
 
