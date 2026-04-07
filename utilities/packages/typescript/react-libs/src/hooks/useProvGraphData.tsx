@@ -29,6 +29,45 @@ export interface NodeGraphData {
   links: GraphLinkData[];
 }
 
+/**
+ * Coerce lineage API graph payloads into NodeGraphData. NetworkX 3+ uses
+ * `edges` instead of `links` in node_link_data; some payloads use `from`/`to`
+ * for endpoints instead of `source`/`target`.
+ */
+export function normalizeLineageGraphPayload(raw: unknown): NodeGraphData {
+  if (!raw || typeof raw !== "object") {
+    return { nodes: [], links: [] };
+  }
+  const g = raw as Record<string, unknown>;
+  const nodes = Array.isArray(g.nodes) ? (g.nodes as GraphNodeData[]) : [];
+  const rawEdgeList = g.links ?? g.edges;
+  const edgeList = Array.isArray(rawEdgeList) ? rawEdgeList : [];
+
+  const endpointId = (v: unknown): string => {
+    if (v === null || v === undefined) {
+      return "";
+    }
+    if (typeof v === "object" && "id" in (v as object)) {
+      return String((v as { id: unknown }).id);
+    }
+    return String(v);
+  };
+
+  const links: GraphLinkData[] = edgeList.map((link) => {
+    const L = link as Record<string, unknown>;
+    const source = endpointId(L.source ?? L.from);
+    const target = endpointId(L.target ?? L.to);
+    const typeVal = L.type ?? L.label ?? "";
+    return {
+      source,
+      target,
+      type: String(typeVal),
+    };
+  });
+
+  return { nodes, links };
+}
+
 export interface GraphConfig {}
 
 const DEFAULT_CONFIG: GraphConfig = {};
@@ -316,10 +355,8 @@ export const useProvGraphData = (
         // This can potentially be a list of lineage responses - not just one
         const lineageResponse = result.data;
 
-        // Parse as graphs
-        const fallbackGraph = { nodes: [], links: [] } as NodeGraphData;
-        const newGraph = (lineageResponse.graph ??
-          fallbackGraph) as unknown as NodeGraphData;
+        // Parse as graphs (normalize edges vs links and endpoint field names)
+        const newGraph = normalizeLineageGraphPayload(lineageResponse.graph);
         cumulativeGraph = mergeGraphs(cumulativeGraph, newGraph);
       }
     }
