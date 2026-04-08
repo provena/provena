@@ -27,4 +27,5 @@ sys_admin_read_dependency = kc_auth.get_all_protected_role_dependency([
 sys_admin_admin_dependency = kc_auth.get_all_protected_role_dependency([
                                                                        sys_admin_admin_role])
 
-secret_cache = setup_secret_cache()
+# Skip AWS Secrets Manager in test mode (e.g. on-prem); job-launch endpoints will be unavailable
+secret_cache = setup_secret_cache() if not base_config.test_mode else None

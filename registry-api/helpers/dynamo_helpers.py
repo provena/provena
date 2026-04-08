@@ -1,34 +1,35 @@
 from dataclasses import dataclass
+from typing import Optional
 from ProvenaInterfaces.RegistryAPI import *
 from ProvenaInterfaces.RegistryModels import *
 from fastapi import HTTPException
 import boto3  # type: ignore
-from config import Config
+from config import Config, get_settings
 from boto3.dynamodb.conditions import Attr, And, Key  # type: ignore
+from helpers.postgres_table_adapter import query_filter_to_dict, is_postgres_backend
 import json
 
+try:
+    from provena_storage import get_backend
+    PROVENA_STORAGE_AVAILABLE = True
+except ImportError:
+    PROVENA_STORAGE_AVAILABLE = False
 
-def get_table_from_name(table_name: str) -> Any:
-    """    get_table_from_name
-        Generates a dynamodb resource table to be 
-        used in the below methods. Uses the registry 
-        table name environment variable for target
-        table.
 
-        Returns
-        -------
-         : DynamoDB table resource
-            The botocore resource for the table
-
-        See Also (optional)
-        --------
-
-        Examples (optional)
-        --------
-    """
-    ddb_resource = boto3.resource('dynamodb')
-    table = ddb_resource.Table(table_name)
-    return table
+def get_table_from_name(table_name: str, config: Optional[Config] = None) -> Any:
+    """Returns DynamoDB table or Postgres backend based on config.db_backend."""
+    if config is None:
+        config = get_settings()
+    if getattr(config, "db_backend", "dynamodb") == "postgres" and config.database_url:
+        if not PROVENA_STORAGE_AVAILABLE:
+            raise ImportError("provena-storage required for postgres backend. pip install provena-storage")
+        return get_backend(
+            table_name=table_name,
+            backend_type="postgres",
+            database_url=config.database_url,
+        )
+    ddb_resource = boto3.resource("dynamodb")
+    return ddb_resource.Table(table_name)
 
 
 def get_auth_table(config: Config) -> Any:
@@ -49,7 +50,7 @@ def get_auth_table(config: Config) -> Any:
         Examples (optional)
         --------
     """
-    return get_table_from_name(table_name=config.auth_table_name)
+    return get_table_from_name(table_name=config.auth_table_name, config=config)
 
 
 def get_lock_table(config: Config) -> Any:
@@ -70,7 +71,7 @@ def get_lock_table(config: Config) -> Any:
         Examples (optional)
         --------
     """
-    return get_table_from_name(table_name=config.lock_table_name)
+    return get_table_from_name(table_name=config.lock_table_name, config=config)
 
 
 def get_registry_table(config: Config) -> Any:
@@ -91,7 +92,7 @@ def get_registry_table(config: Config) -> Any:
         Examples (optional)
         --------
     """
-    return get_table_from_name(table_name=config.registry_table_name)
+    return get_table_from_name(table_name=config.registry_table_name, config=config)
 
 
 def delete_dynamo_db_entry(id: str, table: Any) -> None:
@@ -573,10 +574,13 @@ def list_all_items(
     filter: Optional[QueryFilter],
 ) -> List[Dict[str, Any]]:
 
-    # Get filter expression if required
+    # Get filter expression if required (for DynamoDB)
     filter_expression: Optional[And] = None
     if filter:
         filter_expression = filter_expression_from_query_filter(filter)
+
+    # Postgres backend uses filter_dict
+    filter_dict = query_filter_to_dict(filter) if is_postgres_backend(table) else None
 
     # try to scan with filter query
     try:
@@ -584,7 +588,9 @@ def list_all_items(
         items: List[Dict[str, Any]] = []
 
         # perform first scan
-        if filter_expression:
+        if is_postgres_backend(table):
+            response = table.scan(filter_dict=filter_dict)
+        elif filter_expression:
             response = table.scan(FilterExpression=filter_expression)
         else:
             response = table.scan()
@@ -593,19 +599,20 @@ def list_all_items(
         for item in response["Items"]:
             items.append(item)
 
-        # is not empty. (i.e., haven't finished scanning all the table.)
-        while 'LastEvaluatedKey' in response.keys():
-            if filter_expression:
-                response = table.scan(
-                    ExclusiveStartKey=response['LastEvaluatedKey'],
-                    FilterExpression=filter_expression
-                )
-            else:
-                response = table.scan(
-                    ExclusiveStartKey=response['LastEvaluatedKey'],
-                )
-            for item in response["Items"]:
-                items.append(item)
+        # is not empty. (i.e., haven't finished scanning all the table.) - DynamoDB pagination
+        if not is_postgres_backend(table):
+            while "LastEvaluatedKey" in response.keys():
+                if filter_expression:
+                    response = table.scan(
+                        ExclusiveStartKey=response["LastEvaluatedKey"],
+                        FilterExpression=filter_expression,
+                    )
+                else:
+                    response = table.scan(
+                        ExclusiveStartKey=response["LastEvaluatedKey"],
+                    )
+                for item in response["Items"]:
+                    items.append(item)
 
     # Catch any errors
     except Exception as e:

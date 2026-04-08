@@ -79,6 +79,13 @@ class Config(BaseConfig):
     OIDC_SERVICE_ROLE_ARN: str
     BUCKET_ROLE_ARN: str
 
+    # On-prem MinIO: set storage_backend='minio' and provide endpoint + static creds
+    storage_backend: str = "aws"
+    s3_endpoint_url: Optional[str] = None
+    s3_use_ssl: bool = True
+    s3_access_key: Optional[str] = None
+    s3_secret_key: Optional[str] = None
+
     SCHEMA_PATH: str = 'resources/schema.json'
     DATASET_PATH: str = "datasets"
     METADATA_FILE_NAME: str = "metadata.json"

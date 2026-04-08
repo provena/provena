@@ -1,0 +1,12 @@
+# On-prem server mode. Build from repo root: docker build -f registry-api/Dockerfile.server .
+FROM python:3.10
+WORKDIR /provena
+
+# Copy repo so ../utilities paths in requirements.txt resolve
+COPY . .
+
+WORKDIR /provena/registry-api
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
