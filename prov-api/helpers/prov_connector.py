@@ -299,7 +299,7 @@ def special_contributing_dataset_query(starting_id: str, depth: int, config: Con
     )
 
     # Return D3.js friendly serialisation
-    return networkx.node_link_data(graph)
+    return networkx.node_link_data(graph, edges="links")
 
 
 def special_effected_dataset_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
@@ -349,7 +349,7 @@ def special_effected_dataset_query(starting_id: str, depth: int, config: Config)
     )
 
     # Return D3.js friendly serialisation
-    return networkx.node_link_data(graph)
+    return networkx.node_link_data(graph, edges="links")
 
 
 def special_contributing_agent_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
@@ -399,7 +399,7 @@ def special_contributing_agent_query(starting_id: str, depth: int, config: Confi
     )
 
     # Return D3.js friendly serialisation
-    return networkx.node_link_data(graph)
+    return networkx.node_link_data(graph, edges="links")
 
 
 def special_effected_agent_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
@@ -449,7 +449,7 @@ def special_effected_agent_query(starting_id: str, depth: int, config: Config) -
     )
 
     # Return D3.js friendly serialisation
-    return networkx.node_link_data(graph)
+    return networkx.node_link_data(graph, edges="links")
 
 
 def upstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
@@ -521,7 +521,7 @@ def upstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, An
     )
 
     # Return D3.js friendly serialisation
-    return networkx.node_link_data(graph)
+    return networkx.node_link_data(graph, edges="links")
 
 
 def downstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, Any]:
@@ -593,7 +593,7 @@ def downstream_query(starting_id: str, depth: int, config: Config) -> Dict[str, 
     )
 
     # Return D3.js friendly serialisation
-    return networkx.node_link_data(graph)
+    return networkx.node_link_data(graph, edges="links")
 
 
 class NodeLinkProps(BaseModel):
