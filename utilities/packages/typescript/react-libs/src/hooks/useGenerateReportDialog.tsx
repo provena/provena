@@ -2,6 +2,7 @@ import {
     Alert,
     AlertTitle,
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -78,8 +79,8 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         }
     }
 
-    // Submit button is disabled if depth is not picked.
-    const submitDisabled = depth === null
+    // Submit button is disabled if depth is not picked or mutation is in flight.
+    const submitDisabled = depth === null || !!mutate?.isLoading
 
     const monitor = useJobMonitor({
         sessionId: sessionId,
@@ -118,12 +119,15 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
                             {monitor.isRetrying && (
                                 <Alert severity="info" variant="outlined" sx={{ mb: 1 }}>
                                     <AlertTitle>Starting up</AlertTitle>
-                                    <Typography variant="subtitle1">
-                                        The job service is starting up. Your report will begin shortly...
-                                    </Typography>
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Typography variant="subtitle1">
+                                            The job service is starting up. Your report will begin shortly...
+                                        </Typography>
+                                        <CircularProgress size={20} />
+                                    </Stack>
                                 </Alert>
                             )}
-                            {monitor.render()}
+                            {!monitor.isRetrying && monitor.render()}
                         </div>
                     ) : (
                         <>
