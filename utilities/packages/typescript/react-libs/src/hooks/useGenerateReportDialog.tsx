@@ -49,12 +49,20 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         depth: depth
     })
 
+    // Ref always pointing at the latest mutate object so retry timeouts avoid stale closures.
+    const mutateRef = useRef(mutate);
+
+    // Keep mutateRef current so the retry timeout always calls the latest mutate function.
+    useEffect(() => {
+        mutateRef.current = mutate;
+    });
+
     // When the mutation errors, automatically retry up to MAX_RETRIES times.
     useEffect(() => {
         if (mutate?.isError && retryCount < MAX_RETRIES) {
             const timeoutId = setTimeout(() => {
                 setRetryCount((prev: number) => prev + 1);
-                mutate?.mutate(undefined, {
+                mutateRef.current?.mutate(undefined, {
                     onSuccess: (res: any) => {
                         const sid = res?.session_id ?? res?.sessionId ?? undefined;
                         if (sid) {
