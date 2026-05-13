@@ -114,7 +114,17 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
                     {/* If we have a session id, render the job monitor view */}
                     {sessionId ? (
-                        <div>{monitor.render()}</div>
+                        <div>
+                            {monitor.isRetrying && (
+                                <Alert severity="info" variant="outlined" sx={{ mb: 1 }}>
+                                    <AlertTitle>Starting up</AlertTitle>
+                                    <Typography variant="subtitle1">
+                                        The job service is starting up. Your report will begin shortly...
+                                    </Typography>
+                                </Alert>
+                            )}
+                            {monitor.render()}
+                        </div>
                     ) : (
                         <>
                             <DialogContentText>
