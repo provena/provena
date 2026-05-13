@@ -15,7 +15,7 @@ import {
     SelectChangeEvent
 } from "@mui/material";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useGenerateReport } from "./useGenerateReport";
 import { useJobMonitor } from "./useJobMonitor";
 import { ItemSubType } from "../provena-interfaces/RegistryModels";
@@ -29,55 +29,18 @@ export interface GenerateReportProps {
 // A literal list with set depth values.
 const DEPTH_LIST = [1, 2, 3]
 
-// Auto-retry configuration for cold-start failures
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 5000;
-
 export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
     const [popUpOpen, setPopupOpen] = useState<boolean>(false);
     const [depth, setDepth] = useState<number>(DEPTH_LIST[0]);
     const [sessionId, setSessionId] = useState<string | undefined>(undefined);
     const [reportUrl, setReportUrl] = useState<string | undefined>(undefined);
-    const [retryCount, setRetryCount] = useState<number>(0);
-    const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
     // Call the react-query defined. 
     const { mutate, dataReady } = useGenerateReport({
         id: props.id,
         itemSubType: props.itemSubType,
         depth: depth
     })
-
-    // Ref always pointing at the latest mutate object so retry timeouts avoid stale closures.
-    const mutateRef = useRef(mutate);
-
-    // Keep mutateRef current so the retry timeout always calls the latest mutate function.
-    useEffect(() => {
-        mutateRef.current = mutate;
-    });
-
-    // When the mutation errors, automatically retry up to MAX_RETRIES times.
-    useEffect(() => {
-        if (mutate?.isError && retryCount < MAX_RETRIES) {
-            const timeoutId = setTimeout(() => {
-                setRetryCount((prev: number) => prev + 1);
-                mutateRef.current?.mutate(undefined, {
-                    onSuccess: (res: any) => {
-                        const sid = res?.session_id ?? res?.sessionId ?? undefined;
-                        if (sid) {
-                            setSessionId(sid);
-                        }
-                    }
-                });
-            }, RETRY_DELAY_MS);
-            retryTimeoutRef.current = timeoutId;
-            return () => {
-                clearTimeout(timeoutId);
-                retryTimeoutRef.current = null;
-            };
-        }
-    }, [mutate?.isError, retryCount]);
 
     // Helper functions to open and close the popup. 
     const openDialog = () => {
@@ -90,11 +53,6 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         setPopupOpen(false);
         setSessionId(undefined);
         setReportUrl(undefined);
-        setRetryCount(0);
-        if (retryTimeoutRef.current) {
-            clearTimeout(retryTimeoutRef.current);
-            retryTimeoutRef.current = null;
-        }
         if (dataReady) {
             // reset mutation
             mutate?.reset()
@@ -108,12 +66,6 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
     const onSubmit = () => {
         // Validate that a depth has been chosen.
         if (depth !== null && dataReady) {
-            // Cancel any pending auto-retry before a fresh manual submission
-            if (retryTimeoutRef.current) {
-                clearTimeout(retryTimeoutRef.current);
-                retryTimeoutRef.current = null;
-            }
-            setRetryCount(0);
             // Proceed to submit... store session id on success so we can monitor
             mutate?.mutate(undefined, {
                 onSuccess: (res: any) => {
@@ -132,7 +84,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
     const monitor = useJobMonitor({
         sessionId: sessionId,
         showIO: true,
-        refetchOnError: false,
+        refetchOnError: true,
         adminMode: false,
         onJobSuccess: (entry: any) => {
             const url = entry?.result?.report_url ?? entry?.result?.reportUrl;
@@ -148,16 +100,7 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
             <DialogContent>
                 <Stack spacing={2} gap={2} direction="column">
 
-                    {mutate?.isError && retryCount < MAX_RETRIES && (
-                        <Alert severity="warning" variant="outlined">
-                            <AlertTitle>Retrying automatically</AlertTitle>
-                            <Typography variant="subtitle1">
-                                The report service may be starting up. Retrying automatically (attempt {retryCount + 1} of {MAX_RETRIES})...
-                            </Typography>
-                        </Alert>
-                    )}
-
-                    {mutate?.isError && retryCount >= MAX_RETRIES && (
+                    {mutate?.isError && (
                         <Alert severity="error" variant="outlined">
                             <AlertTitle>An error occurred</AlertTitle>
                             <Typography variant="subtitle1">
