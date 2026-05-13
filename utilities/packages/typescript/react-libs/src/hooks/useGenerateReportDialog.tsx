@@ -117,14 +117,13 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
                     {sessionId ? (
                         <div>
                             {monitor.isRetrying && (
-                                <Alert severity="info" variant="outlined" sx={{ mb: 1 }}>
+                                <Alert severity="info" variant="outlined" sx={{ mb: 1 }}
+                                    icon={<CircularProgress size={20} />}
+                                >
                                     <AlertTitle>Starting up</AlertTitle>
-                                    <Stack direction="row" spacing={2} alignItems="center">
-                                        <Typography variant="subtitle1">
-                                            The job service is starting up. Your report will begin shortly...
-                                        </Typography>
-                                        <CircularProgress size={20} />
-                                    </Stack>
+                                    <Typography variant="subtitle1">
+                                        The job service is starting up. Your report will begin shortly...
+                                    </Typography>
                                 </Alert>
                             )}
                             {!monitor.isRetrying && monitor.render()}
