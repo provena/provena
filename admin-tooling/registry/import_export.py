@@ -13,6 +13,7 @@ from helpers.import_export_helpers import yes_or_no
 from datetime import datetime
 import modifiers
 import misc_scripts
+import manual_dump
 import os
 from helpers.api_helpers import fetch_item, GetAuthFunction, resolve_linked_person, JobListManager, submit_graph_restore_request_print_response
 import asyncio
@@ -701,6 +702,10 @@ app.add_typer(modifiers.app, name="modifiers",
 # add the misc scripts sub app
 app.add_typer(misc_scripts.app, name="scripts",
               help="Miscellaneous scripts such as statistic summaries.")
+
+# direct DynamoDB registry dump (bypasses API; same JSON as export-items)
+app.add_typer(manual_dump.app, name="manual-dump",
+              help="Dump registry tables via DynamoDB (manual export when API export hits size limits).")
 
 
 if __name__ == "__main__":
