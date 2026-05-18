@@ -2,6 +2,7 @@ import {
     Alert,
     AlertTitle,
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -35,7 +36,6 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
     const [depth, setDepth] = useState<number>(DEPTH_LIST[0]);
     const [sessionId, setSessionId] = useState<string | undefined>(undefined);
     const [reportUrl, setReportUrl] = useState<string | undefined>(undefined);
-
     // Call the react-query defined. 
     const { mutate, dataReady } = useGenerateReport({
         id: props.id,
@@ -79,13 +79,13 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
         }
     }
 
-    // Submit button is disabled if depth is not picked.
-    const submitDisabled = depth === null
+    // Submit button is disabled if depth is not picked or mutation is in flight.
+    const submitDisabled = depth === null || !!mutate?.isLoading
 
     const monitor = useJobMonitor({
         sessionId: sessionId,
         showIO: true,
-        refetchOnError: false,
+        refetchOnError: true,
         adminMode: false,
         onJobSuccess: (entry: any) => {
             const url = entry?.result?.report_url ?? entry?.result?.reportUrl;
@@ -115,7 +115,19 @@ export const useGenerateReportDialog = (props: GenerateReportProps) => {
 
                     {/* If we have a session id, render the job monitor view */}
                     {sessionId ? (
-                        <div>{monitor.render()}</div>
+                        <div>
+                            {monitor.isRetrying && (
+                                <Alert severity="info" variant="outlined" sx={{ mb: 1 }}
+                                    icon={<CircularProgress size={20} />}
+                                >
+                                    <AlertTitle>Starting up</AlertTitle>
+                                    <Typography variant="subtitle1">
+                                        The job service is starting up. Your report will begin shortly...
+                                    </Typography>
+                                </Alert>
+                            )}
+                            {!monitor.isRetrying && monitor.render()}
+                        </div>
                     ) : (
                         <>
                             <DialogContentText>

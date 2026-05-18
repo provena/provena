@@ -198,6 +198,8 @@ export interface UseJobMonitorOutput {
   // The entry if it is available
   entry: JobStatusTable | undefined;
   render: () => JSX.Element | null;
+  // True when the monitor has errored on a fetch but is still actively retrying
+  isRetrying: boolean;
 }
 export const useJobMonitor = (
   props: UseJobMonitorProps,
@@ -277,5 +279,6 @@ export const useJobMonitor = (
   return {
     entry: monitor.data,
     render,
+    isRetrying: monitor.error && monitor.isAutoRefetching,
   };
 };
