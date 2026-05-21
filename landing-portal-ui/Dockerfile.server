@@ -1,0 +1,41 @@
+# On-prem server mode. Build from repo root: docker build -f landing-portal-ui/Dockerfile.server .
+# Build args: VITE_APP_BASE_URL, VITE_KEYCLOAK_REALM, VITE_CONTACT_US_LINK, VITE_THEME_ID, VITE_DOCUMENTATION_BASE_LINK
+FROM node:18-alpine
+WORKDIR /provena
+COPY . .
+WORKDIR /provena/landing-portal-ui
+ARG VITE_APP_BASE_URL=http://localhost
+ARG VITE_KEYCLOAK_REALM=provena
+ARG VITE_KEYCLOAK_PORT=8180
+ARG VITE_CONTACT_US_LINK=#
+ARG VITE_THEME_ID=default
+ARG VITE_DOCUMENTATION_BASE_LINK=https://docs.provena.io
+ENV VITE_APP_BASE_URL=$VITE_APP_BASE_URL
+ENV VITE_KEYCLOAK_REALM=$VITE_KEYCLOAK_REALM
+ENV VITE_KEYCLOAK_CLIENT_ID=landing-portal-ui
+RUN mkdir -p src && ln -sf ../../utilities/packages/typescript/react-libs/src src/react-libs
+RUN echo "VITE_STAGE=DEV" > .env && \
+    echo "VITE_DATA_STORE_API_ENDPOINT=${VITE_APP_BASE_URL}:8003" >> .env && \
+    echo "VITE_REGISTRY_API_ENDPOINT=${VITE_APP_BASE_URL}:8001" >> .env && \
+    echo "VITE_AUTH_API_ENDPOINT=${VITE_APP_BASE_URL}:8002" >> .env && \
+    echo "VITE_PROV_API_ENDPOINT=${VITE_APP_BASE_URL}:8007" >> .env && \
+    echo "VITE_JOB_API_ENDPOINT=${VITE_APP_BASE_URL}:8006" >> .env && \
+    echo "VITE_SEARCH_API_ENDPOINT=${VITE_APP_BASE_URL}:8004" >> .env && \
+    echo "VITE_WARMER_API_ENDPOINT=${VITE_APP_BASE_URL}:8004" >> .env && \
+    echo "VITE_LANDING_PAGE_LINK=${VITE_APP_BASE_URL}:3004" >> .env && \
+    echo "VITE_DATA_STORE_LINK=${VITE_APP_BASE_URL}:3002" >> .env && \
+    echo "VITE_PROV_STORE_LINK=${VITE_APP_BASE_URL}:3003" >> .env && \
+    echo "VITE_REGISTRY_LINK=${VITE_APP_BASE_URL}:3001" >> .env && \
+    echo "VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID}" >> .env && \
+    echo "VITE_KEYCLOAK_AUTH_ENDPOINT=${VITE_APP_BASE_URL}:${VITE_KEYCLOAK_PORT}" >> .env && \
+    echo "VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM}" >> .env && \
+    echo "VITE_DOCUMENTATION_BASE_LINK=${VITE_DOCUMENTATION_BASE_LINK}" >> .env && \
+    echo "VITE_CONTACT_US_LINK=${VITE_CONTACT_US_LINK}" >> .env && \
+    echo "VITE_THEME_ID=${VITE_THEME_ID}" >> .env && \
+    echo "VITE_SENTRY_DSN=" >> .env && \
+    echo "VITE_GIT_COMMIT_ID=" >> .env && \
+    echo "VITE_MONITORING_ENABLED=false" >> .env && \
+    echo "VITE_FEATURE_NUMBER=" >> .env && \
+    npm install --ignore-scripts && npx tsc && npx vite build
+EXPOSE 3000
+CMD ["npm", "run", "serve"]

@@ -1,0 +1,325 @@
+# Provena On-Prem Infrastructure
+# Run from repo root: docker compose -f infrastructure-onprem/docker-compose.yml up -d
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: identifier_db,registry_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - ./scripts/init-registry.sql:/docker-entrypoint-initdb.d/init-registry.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb myminio/provena --ignore-existing;
+      exit 0;
+      "
+
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - plugins.security.ssl.http.enabled=false
+      - plugins.security.disabled=true
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  neo4j:
+    image: neo4j:4.4.12-community
+    environment:
+      NEO4J_AUTH: neo4j/provena
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 90s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+    ports:
+      - "8180:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  local-identifier-service:
+    build:
+      context: ../local-identifier-service
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/identifier_db
+      HANDLE_PREFIX: "20.5000"
+      RESOLVE_BASE_URL: http://localhost:8001/item
+    ports:
+      - "8005:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # --- APIs ---
+  registry-api:
+    build:
+      context: ..
+      dockerfile: registry-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      TEST_MODE: "true"
+      DB_BACKEND: postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/registry_db
+      REGISTRY_TABLE_NAME: registry_items
+      AUTH_TABLE_NAME: auth_items
+      LOCK_TABLE_NAME: lock_items
+      HANDLE_API_ENDPOINT: http://local-identifier-service:8000
+      AUTH_API_ENDPOINT: http://auth-api:8000
+      JOB_API_ENDPOINT: http://job-api:8000
+      SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      USER_KEY_ID: placeholder
+      USER_KEY_REGION: ap-southeast-2
+      USER_CONTEXT_HEADER: x-user-context
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      local-identifier-service:
+        condition: service_started
+
+  auth-api:
+    build:
+      context: ..
+      dockerfile: auth-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
+      DOMAIN_BASE: ${DOMAIN_BASE:-localhost}
+      STAGE: DEV
+      TEST_MODE: "true"
+      SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      JOB_API_ENDPOINT: http://job-api:8000
+      ACCESS_REQUEST_EMAIL_ADDRESS: admin@localhost
+      REGISTRY_API_ENDPOINT: http://registry-api:8000
+      ACCESS_REQUEST_TABLE_NAME: provena-auth-access-requests
+      USER_GROUPS_TABLE_NAME: provena-auth-user-groups
+      USERNAME_PERSON_LINK_TABLE_NAME: provena-auth-username-person-link
+      USERNAME_PERSON_LINK_TABLE_PERSON_INDEX_NAME: person-id-index
+      # On-prem: Keycloak service account (client credentials) for job launch etc. Create a
+      # Keycloak client with Client authentication ON, service account roles, and set id/secret here.
+      KEYCLOAK_SERVICE_CLIENT_ID: ${KEYCLOAK_SERVICE_CLIENT_ID:-}
+      KEYCLOAK_SERVICE_CLIENT_SECRET: ${KEYCLOAK_SERVICE_CLIENT_SECRET:-}
+    ports:
+      - "8002:8000"
+    depends_on:
+      keycloak:
+        condition: service_started
+
+  data-store-api:
+    build:
+      context: ..
+      dockerfile: data-store-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      TEST_MODE: "true"
+      STORAGE_BACKEND: minio
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_USE_SSL: "false"
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_STORAGE_BUCKET_NAME: provena
+      HANDLE_API_ENDPOINT: http://local-identifier-service:8000
+      REGISTRY_API_ENDPOINT: http://registry-api:8000
+      AUTH_API_ENDPOINT: http://auth-api:8000
+      JOB_API_ENDPOINT: http://job-api:8000
+      REVIEWERS_TABLE_NAME: reviewers
+      SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/provena
+      OIDC_SERVICE_ACCOUNT_SECRET_ARN: placeholder
+      OIDC_SERVICE_ROLE_ARN: placeholder
+      BUCKET_ROLE_ARN: placeholder
+      USER_KEY_ID: placeholder
+      USER_KEY_REGION: ap-southeast-2
+      USER_CONTEXT_HEADER: x-user-context
+    ports:
+      - "8003:8000"
+    depends_on:
+      minio:
+        condition: service_started
+      registry-api:
+        condition: service_started
+
+  search-api:
+    build:
+      context: ..
+      dockerfile: search-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      TEST_MODE: "true"
+      SEARCH_AUTH_TYPE: none
+      OPENSEARCH_PORT: 9200
+      OPENSEARCH_USE_SSL: "false"
+      OPENSEARCH_VERIFY_CERTS: "false"
+      SEARCH_DOMAIN: opensearch
+    ports:
+      - "8004:8000"
+    depends_on:
+      opensearch:
+        condition: service_healthy
+
+  job-api:
+    build:
+      context: ..
+      dockerfile: job-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+    ports:
+      - "8006:8000"
+    depends_on:
+      keycloak:
+        condition: service_started
+
+  prov-api:
+    build:
+      context: ..
+      dockerfile: prov-api/Dockerfile.server
+    environment:
+      KEYCLOAK_ENDPOINT: http://keycloak:8080/realms/provena
+      DOMAIN_BASE: localhost
+      STAGE: DEV
+      NEO4J_HOST: neo4j
+      NEO4J_PORT: 7687
+      NEO4J_TEST_USERNAME: neo4j
+      NEO4J_TEST_PASSWORD: provena
+    ports:
+      - "8007:8000"
+    depends_on:
+      neo4j:
+        condition: service_started
+
+  # --- UIs ---
+  registry-ui:
+    build:
+      context: ..
+      dockerfile: registry-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
+        VITE_THEME_ID: ${VITE_THEME_ID:-default}
+        VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
+    ports:
+      - "3001:3000"
+    depends_on:
+      - registry-api
+
+  data-store-ui:
+    build:
+      context: ..
+      dockerfile: data-store-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
+        VITE_THEME_ID: ${VITE_THEME_ID:-default}
+        VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
+    ports:
+      - "3002:3000"
+    depends_on:
+      - data-store-api
+
+  prov-ui:
+    build:
+      context: ..
+      dockerfile: prov-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
+        VITE_THEME_ID: ${VITE_THEME_ID:-default}
+        VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
+    ports:
+      - "3003:3000"
+    depends_on:
+      - prov-api
+
+  landing-portal-ui:
+    build:
+      context: ..
+      dockerfile: landing-portal-ui/Dockerfile.server
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-http://localhost}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-provena}
+        VITE_CONTACT_US_LINK: ${VITE_CONTACT_US_LINK:-#}
+        VITE_THEME_ID: ${VITE_THEME_ID:-default}
+        VITE_DOCUMENTATION_BASE_LINK: ${VITE_DOCUMENTATION_BASE_LINK:-https://docs.provena.io}
+        VITE_KEYCLOAK_PORT: ${VITE_KEYCLOAK_PORT:-8180}
+    ports:
+      - "3004:3000"
+    depends_on:
+      - registry-api
+
+volumes:
+  postgres_data:
+  minio_data:
+  opensearch_data:
+  neo4j_data:

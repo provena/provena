@@ -2,7 +2,7 @@ from ProvenaInterfaces.RegistryModels import *
 from ProvenaInterfaces.SharedTypes import VersionDetails
 from pydantic import BaseSettings, validator
 from functools import lru_cache
-from typing import List, Union, Callable, Dict
+from typing import List, Union, Callable, Dict, Optional
 import os
 
 
@@ -78,6 +78,12 @@ class Config(BaseConfig):
 
     # Dynamo DB table name where reg items lock information is persisted
     lock_table_name: str
+
+    # On-prem: use 'postgres' for PostgreSQL backend, 'dynamodb' (default) for AWS
+    db_backend: str = "dynamodb"
+
+    # On-prem: PostgreSQL connection URL when db_backend='postgres'
+    database_url: Optional[str] = None
 
     # Auth api endpoint
     auth_api_endpoint: str

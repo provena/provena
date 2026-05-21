@@ -1,15 +1,17 @@
 
 from typing import List
 import boto3  # type: ignore
-from botocore.exceptions import ClientError #type: ignore
+from botocore.exceptions import ClientError  # type: ignore
 from fastapi import HTTPException
 from helpers.sts_helpers import call_sts_oidc_service
+from helpers.s3_client import get_s3_client
 from ProvenaInterfaces.DataStoreAPI import Credentials
 from .sanitize import *
 from config import Config
 from ProvenaInterfaces.RegistryModels import *
 
-def check_file_exists(bucket_name: str, file_path: str ) -> bool:
+
+def check_file_exists(bucket_name: str, file_path: str, config: Config = None) -> bool:
     """Checks if a file exists inside an s3 bucket
 
     Parameters
@@ -31,7 +33,9 @@ def check_file_exists(bucket_name: str, file_path: str ) -> bool:
     Exception
         Unexpected error occurred during s3 head operation.
     """
-    s3 = boto3.client('s3')
+    from config import get_settings
+    cfg = config or get_settings()
+    s3 = get_s3_client(cfg)
 
     try:
         s3.head_object(Bucket=bucket_name, Key=file_path)
@@ -79,20 +83,25 @@ def generate_presigned_url_for_download(path: str, expires_in: int, s3_loc: S3Lo
         Examples (optional)
         --------
     """
-
-    # credentials scoped to this dataset s3 location only
-    creds: Credentials = call_sts_oidc_service(
-        session_name=f"Generate-presigned-url-for-dataset-download",
-        s3_location=s3_loc,
-        write=False,
-        config=config
-    )
+    # On-prem MinIO: use static creds, no STS
+    if config.storage_backend == "minio" and config.s3_access_key and config.s3_secret_key:
+        s3 = get_s3_client(config)
+    else:
+        # AWS: credentials scoped to this dataset s3 location only
+        creds: Credentials = call_sts_oidc_service(
+            session_name="Generate-presigned-url-for-dataset-download",
+            s3_location=s3_loc,
+            write=False,
+            config=config,
+        )
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=creds.aws_access_key_id,
+            aws_secret_access_key=creds.aws_secret_access_key,
+            aws_session_token=creds.aws_session_token,
+        )
 
     try:
-        # generate presigned url using s3 client with creds scope to the dataset at s3 loc only
-        s3 = boto3.client('s3', aws_access_key_id=creds.aws_access_key_id,
-                          aws_secret_access_key=creds.aws_secret_access_key, aws_session_token=creds.aws_session_token)
-
         url = s3.generate_presigned_url(
             ClientMethod='get_object',  # get_object for download rights only.
             Params=get_presigned_url_method_params(path, config),
